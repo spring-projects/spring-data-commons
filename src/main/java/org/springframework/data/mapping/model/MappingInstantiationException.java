@@ -60,7 +60,7 @@ public class MappingInstantiationException extends RuntimeException {
 	 * @param cause
 	 */
 	public MappingInstantiationException(PersistentEntity<?, ?> entity, List<Object> arguments, Exception cause) {
-		this(Optional.ofNullable(entity), arguments, null, cause);
+		this(entity, arguments, null, cause);
 	}
 
 	/**
@@ -70,39 +70,39 @@ public class MappingInstantiationException extends RuntimeException {
 	 * @param cause
 	 */
 	public MappingInstantiationException(List<Object> arguments, Exception cause) {
-		this(Optional.empty(), arguments, null, cause);
+		this(null, arguments, null, cause);
 	}
 
-	private MappingInstantiationException(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
+	private MappingInstantiationException(@Nullable PersistentEntity<?, ?> entity, List<Object> arguments,
 			@Nullable String message, Exception cause) {
 
 		super(buildExceptionMessage(entity, arguments, message), cause);
 
-		this.entityType = entity.map(PersistentEntity::getType).orElse(null);
-		this.entityCreator = entity.map(PersistentEntity::getInstanceCreatorMetadata).orElse(null);
+		this.entityType = entity != null ? entity.getType() : null;
+		this.entityCreator = entity != null ? entity.getInstanceCreatorMetadata() : null;
 		this.constructorArguments = arguments;
 	}
 
-	private static String buildExceptionMessage(Optional<PersistentEntity<?, ?>> entity, List<Object> arguments,
+	@Nullable
+	private static String buildExceptionMessage(@Nullable PersistentEntity<?, ?> entity, List<Object> arguments,
 			@Nullable String defaultMessage) {
 
-		return entity.map(it -> {
+		if (entity == null) {
+			return defaultMessage;
+		}
 
-			Optional<? extends InstanceCreatorMetadata<?>> constructor = Optional.ofNullable(it.getInstanceCreatorMetadata());
-			List<String> toStringArgs = new ArrayList<>(arguments.size());
+		InstanceCreatorMetadata<?> constructor = entity.getInstanceCreatorMetadata();
+		List<String> toStringArgs = new ArrayList<>(arguments.size());
 
-			for (Object o : arguments) {
-				toStringArgs.add(ObjectUtils.nullSafeToString(o));
-			}
+		for (Object o : arguments) {
+			toStringArgs.add(ObjectUtils.nullSafeToString(o));
+		}
 
-			return String.format(TEXT_TEMPLATE, it.getType().getName(),
-					constructor.map(MappingInstantiationException::toString).orElse("NO_CONSTRUCTOR"), //
-					String.join(",", toStringArgs));
-
-		}).orElse(defaultMessage);
+		return String.format(TEXT_TEMPLATE, entity.getType().getName(), toString(constructor),
+				String.join(",", toStringArgs));
 	}
 
-	private static String toString(InstanceCreatorMetadata<?> creator) {
+	private static String toString(@Nullable InstanceCreatorMetadata<?> creator) {
 
 		if (creator instanceof PreferredConstructor<?, ?> c) {
 			return toString(c);
@@ -112,14 +112,19 @@ public class MappingInstantiationException extends RuntimeException {
 			return toString(m);
 		}
 
-		return creator.toString();
+		if (creator != null) {
+			return creator.toString();
+		}
+
+		return "NO_CONSTRUCTOR";
 	}
 
 	private static String toString(PreferredConstructor<?, ?> preferredConstructor) {
 
 		Constructor<?> constructor = preferredConstructor.getConstructor();
 
-		if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+		if (KotlinDetector.isKotlinPresent()
+				&& KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 
@@ -135,7 +140,8 @@ public class MappingInstantiationException extends RuntimeException {
 
 		Method constructor = factoryMethod.getFactoryMethod();
 
-		if (KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
+		if (KotlinDetector.isKotlinPresent()
+				&& KotlinReflectionUtils.isSupportedKotlinClass(constructor.getDeclaringClass())) {
 
 			KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(constructor);
 

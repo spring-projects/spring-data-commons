@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -113,15 +113,28 @@ public class CustomRepositoryImplementationDetector {
 	private static Optional<AbstractBeanDefinition> selectImplementationCandidate(
 			ImplementationLookupConfiguration lookup, Set<BeanDefinition> definitions) {
 
-		return SelectionSet //
-				.of(definitions, c -> c.isEmpty() ? firstOrEmptyBeanDefinition(definitions) : throwAmbiguousCustomImplementationException(c)) //
+		BeanDefinition beanDefinition = SelectionSet //
+				.of(definitions, c -> {
+
+					if (c.isEmpty()) {
+						return firstOrEmptyBeanDefinition(definitions);
+					}
+
+					String implementationNames = definitions.stream()//
+							.map(BeanDefinition::getBeanClassName)//
+							.collect(Collectors.joining(", "));
+
+					throw new IllegalStateException(String.format(AMBIGUOUS_CUSTOM_IMPLEMENTATIONS, implementationNames));
+				}) //
 				.filterIfNecessary(lookup::hasMatchingBeanName) //
-				.uniqueResult() //
-				.map(AbstractBeanDefinition.class::cast);
+				.uniqueResult();
+
+		return Optional.ofNullable((AbstractBeanDefinition) beanDefinition);
 	}
 
-	static Optional<BeanDefinition> firstOrEmptyBeanDefinition(Set<BeanDefinition> definitions) {
-		return definitions.isEmpty() ? Optional.empty() : Optional.of(definitions.iterator().next());
+	@Nullable
+	static BeanDefinition firstOrEmptyBeanDefinition(Set<BeanDefinition> definitions) {
+		return definitions.isEmpty() ? null : definitions.iterator().next();
 	}
 
 	private Set<BeanDefinition> findCandidateBeanDefinitions(ImplementationDetectionConfiguration config) {
@@ -140,15 +153,5 @@ public class CustomRepositoryImplementationDetector {
 		return config.getBasePackages().stream()//
 				.flatMap(it -> provider.findCandidateComponents(it).stream())//
 				.collect(Collectors.toSet());
-	}
-
-	private static Optional<BeanDefinition> throwAmbiguousCustomImplementationException(
-			Collection<BeanDefinition> definitions) {
-
-		String implementationNames = definitions.stream()//
-				.map(BeanDefinition::getBeanClassName)//
-				.collect(Collectors.joining(", "));
-
-		throw new IllegalStateException(String.format(AMBIGUOUS_CUSTOM_IMPLEMENTATIONS, implementationNames));
 	}
 }

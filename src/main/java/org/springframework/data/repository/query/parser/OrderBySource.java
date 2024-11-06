@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -57,7 +57,7 @@ class OrderBySource {
 	 * @param clause must not be {@literal null}.
 	 */
 	OrderBySource(String clause) {
-		this(clause, Optional.empty());
+		this(clause, null);
 	}
 
 	/**
@@ -67,7 +67,7 @@ class OrderBySource {
 	 * @param clause must not be {@literal null}.
 	 * @param domainClass must not be {@literal null}.
 	 */
-	OrderBySource(String clause, Optional<Class<?>> domainClass) {
+	OrderBySource(String clause, @Nullable Class<?> domainClass) {
 
 		this.orders = new ArrayList<>();
 
@@ -91,31 +91,25 @@ class OrderBySource {
 				throw new IllegalArgumentException(String.format(INVALID_ORDER_SYNTAX, part));
 			}
 
-			this.orders.add(createOrder(propertyString, Direction.fromOptionalString(directionString), domainClass));
+			this.orders
+					.add(createOrder(propertyString, Direction.fromOptionalString(directionString).orElse(null), domainClass));
 		}
 	}
 
 	/**
 	 * Creates an {@link Order} instance from the given property source, direction and domain class. If the domain class
 	 * is given, we will use it for nested property traversal checks.
-	 *
-	 * @param propertySource
-	 * @param direction must not be {@literal null}.
-	 * @param domainClass must not be {@literal null}.
-	 * @return
-	 * @see PropertyPath#from(String, Class)
 	 */
-	private Order createOrder(String propertySource, Optional<Direction> direction, Optional<Class<?>> domainClass) {
+	private Order createOrder(String propertySource, @Nullable Direction direction, @Nullable Class<?> domainClass) {
 
-		return domainClass.map(type -> {
+		String property = propertySource;
 
-			PropertyPath propertyPath = PropertyPath.from(propertySource, type);
-			return direction.map(it -> new Order(it, propertyPath.toDotPath()))
-					.orElseGet(() -> Order.by(propertyPath.toDotPath()));
+		if (domainClass != null) {
+			property = PropertyPath.from(propertySource, domainClass).toDotPath();
+		}
 
-		}).orElseGet(() -> direction//
-				.map(it -> new Order(it, StringUtils.uncapitalize(propertySource)))
-				.orElseGet(() -> Order.by(StringUtils.uncapitalize(propertySource))));
+		return direction != null ? new Order(direction, StringUtils.uncapitalize(property))
+				: Order.by(StringUtils.uncapitalize(property));
 	}
 
 	/**

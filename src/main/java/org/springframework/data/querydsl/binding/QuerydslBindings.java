@@ -129,7 +129,7 @@ public class QuerydslBindings {
 		Assert.notEmpty(paths, "At least one path has to be provided");
 
 		for (Path<?> path : paths) {
-			this.denyList.add(toDotPath(Optional.of(path)));
+			this.denyList.add(toDotPath(path));
 		}
 	}
 
@@ -143,7 +143,7 @@ public class QuerydslBindings {
 		Assert.notEmpty(paths, "At least one path has to be provided");
 
 		for (Path<?> path : paths) {
-			this.allowList.add(toDotPath(Optional.of(path)));
+			this.allowList.add(toDotPath(path));
 		}
 	}
 
@@ -208,16 +208,16 @@ public class QuerydslBindings {
 
 		if (pathAndBinding != null) {
 
-			Optional<MultiValueBinding<S, T>> binding = pathAndBinding.getBinding();
+			MultiValueBinding<S, T> binding = pathAndBinding.getBinding();
 
-			if (binding.isPresent()) {
-				return binding;
+			if (binding != null) {
+				return Optional.of(binding);
 			}
 		}
 
 		pathAndBinding = (PathAndBinding<S, T>) typeSpecs.get(path.getLeafType());
 
-		return pathAndBinding == null ? Optional.empty() : pathAndBinding.getBinding();
+		return pathAndBinding == null ? Optional.empty() : Optional.ofNullable(pathAndBinding.getBinding());
 	}
 
 	/**
@@ -226,11 +226,12 @@ public class QuerydslBindings {
 	 * @param path must not be {@literal null}.
 	 * @return
 	 */
-	Optional<Path<?>> getExistingPath(PathInformation path) {
+	@Nullable
+	Path<?> getExistingPath(PathInformation path) {
 
 		Assert.notNull(path, "PropertyPath must not be null");
 
-		return Optional.ofNullable(pathSpecs.get(createKey(path))).flatMap(PathAndBinding::getPath);
+		return getPath(createKey(path));
 	}
 
 	/**
@@ -253,16 +254,14 @@ public class QuerydslBindings {
 		// fully-qualified path lookup
 		String key = createKey(type, path);
 		if (pathSpecs.containsKey(key)) {
-			return pathSpecs.get(key).getPath()//
-					.map(QuerydslPathInformation::of)//
-					.orElse(null);
+			Path<?> spec = getPath(key);
+			return spec != null ? QuerydslPathInformation.of(spec) : null;
 		}
 
 		// alias lookup
 		if (pathSpecs.containsKey(path)) {
-			return pathSpecs.get(path).getPath()//
-					.map(QuerydslPathInformation::of)//
-					.orElse(null);
+			Path<?> spec = getPath(path);
+			return spec != null ? QuerydslPathInformation.of(spec) : null;
 		}
 
 		try {
@@ -273,14 +272,21 @@ public class QuerydslBindings {
 		}
 	}
 
+	@Nullable
+	private Path<?> getPath(String key) {
+
+		PathAndBinding<?, ?> binding = pathSpecs.get(key);
+		return binding != null ? binding.getPath() : null;
+	}
+
 	/**
 	 * Returns the property path key for the given {@link Path}.
 	 *
 	 * @param path can be {@literal null}.
 	 * @return
 	 */
-	private static String createKey(Optional<Path<?>> path) {
-		return path.map(QuerydslPathInformation::of).map(QuerydslBindings::createKey).orElse("");
+	private static String createKey(@Nullable Path<?> path) {
+		return path != null ? QuerydslBindings.createKey(QuerydslPathInformation.of(path)) : "";
 	}
 
 	private static String createKey(PathInformation path) {
@@ -348,8 +354,8 @@ public class QuerydslBindings {
 	 * @param path can be {@literal null}.
 	 * @return
 	 */
-	private static String toDotPath(Optional<Path<?>> path) {
-		return path.map(QuerydslBindings::fromRootPath).orElse("");
+	private static String toDotPath(@Nullable Path<?> path) {
+		return path != null ? QuerydslBindings.fromRootPath(path) : "";
 	}
 
 	private static String fromRootPath(Path<?> path) {
@@ -414,7 +420,7 @@ public class QuerydslBindings {
 			paths.forEach(path -> registerBinding(PathAndBinding.withPath(path).with(binding)));
 		}
 
-		protected void registerBinding(PathAndBinding<P, T> binding) {
+		void registerBinding(PathAndBinding<P, T> binding) {
 			QuerydslBindings.this.pathSpecs.put(createKey(binding.getPath()), binding);
 		}
 	}
@@ -433,7 +439,7 @@ public class QuerydslBindings {
 		/**
 		 * Creates a new {@link AliasingPathBinder} for the given {@link Path}.
 		 *
-		 * @param paths must not be {@literal null}.
+		 * @param path must not be {@literal null}.
 		 */
 		AliasingPathBinder(P path) {
 			this(null, path);
@@ -477,7 +483,7 @@ public class QuerydslBindings {
 		}
 
 		@Override
-		protected void registerBinding(PathAndBinding<P, T> binding) {
+		void registerBinding(PathAndBinding<P, T> binding) {
 
 			super.registerBinding(binding);
 
@@ -543,31 +549,33 @@ public class QuerydslBindings {
 	 */
 	private static final class PathAndBinding<P extends Path<? extends T>, T> {
 
-		private final Optional<Path<?>> path;
-		private final Optional<MultiValueBinding<P, T>> binding;
+		private final @Nullable Path<?> path;
+		private final @Nullable MultiValueBinding<P, T> binding;
 
-		PathAndBinding(Optional<Path<?>> path, Optional<MultiValueBinding<P, T>> binding) {
+		PathAndBinding(@Nullable Path<?> path, @Nullable MultiValueBinding<P, T> binding) {
 			this.path = path;
 			this.binding = binding;
 		}
 
 		public static <T, P extends Path<? extends T>> PathAndBinding<P, T> withPath(P path) {
-			return new PathAndBinding<>(Optional.of(path), Optional.empty());
+			return new PathAndBinding<>(path, null);
 		}
 
 		public static <T, S extends Path<? extends T>> PathAndBinding<S, T> withoutPath() {
-			return new PathAndBinding<>(Optional.empty(), Optional.empty());
+			return new PathAndBinding<>(null, null);
 		}
 
 		public PathAndBinding<P, T> with(MultiValueBinding<P, T> binding) {
-			return new PathAndBinding<>(path, Optional.of(binding));
+			return new PathAndBinding<>(path, binding);
 		}
 
-		public Optional<Path<?>> getPath() {
+		@Nullable
+		public Path<?> getPath() {
 			return this.path;
 		}
 
-		public Optional<MultiValueBinding<P, T>> getBinding() {
+		@Nullable
+		public MultiValueBinding<P, T> getBinding() {
 			return this.binding;
 		}
 
@@ -587,9 +595,7 @@ public class QuerydslBindings {
 
 		@Override
 		public int hashCode() {
-			int result = ObjectUtils.nullSafeHashCode(path);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(binding);
-			return result;
+			return ObjectUtils.nullSafeHash(path, binding);
 		}
 
 		@Override

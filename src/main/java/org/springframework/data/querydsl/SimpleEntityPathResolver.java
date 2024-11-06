@@ -17,8 +17,8 @@ package org.springframework.data.querydsl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Optional;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -54,11 +54,11 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	}
 
 	/**
-	 * Creates an {@link EntityPath} instance for the given domain class. Tries to lookup a class matching the naming
+	 * Creates an {@link EntityPath} instance for the given domain class. Tries to look up a class matching the naming
 	 * convention (prepend Q to the simple name of the class, same package) and find a static field of the same type in
 	 * it.
 	 *
-	 * @param domainClass
+	 * @param domainClass domain class to introspect.
 	 * @return
 	 */
 	@Override
@@ -70,10 +70,13 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 		try {
 
 			Class<?> pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
+			Field field = getStaticFieldOfType(pathClass);
 
-			return getStaticFieldOfType(pathClass)//
-					.map(it -> (EntityPath<T>) ReflectionUtils.getField(it, null))//
-					.orElseThrow(() -> new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass)));
+			if (field == null) {
+				throw new IllegalStateException(String.format(NO_FIELD_FOUND_TEMPLATE, pathClass));
+			}
+
+			return (EntityPath<T>) ReflectionUtils.getField(field, null);
 
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException(String.format(NO_CLASS_FOUND_TEMPLATE, pathClassName, domainClass.getName()),
@@ -87,7 +90,8 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 	 * @param type
 	 * @return
 	 */
-	private Optional<Field> getStaticFieldOfType(Class<?> type) {
+	@Nullable
+	private Field getStaticFieldOfType(Class<?> type) {
 
 		for (Field field : type.getDeclaredFields()) {
 
@@ -95,12 +99,12 @@ public class SimpleEntityPathResolver implements EntityPathResolver {
 			boolean hasSameType = type.equals(field.getType());
 
 			if (isStatic && hasSameType) {
-				return Optional.of(field);
+				return field;
 			}
 		}
 
 		Class<?> superclass = type.getSuperclass();
-		return Object.class.equals(superclass) ? Optional.empty() : getStaticFieldOfType(superclass);
+		return Object.class.equals(superclass) ? null : getStaticFieldOfType(superclass);
 	}
 
 	/**

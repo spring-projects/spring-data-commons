@@ -357,7 +357,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 * @return Optional holding the {@link Direction} enum value or empty, if {@code value} cannot be parsed into
 		 *         {@link Direction}.
 		 */
-		public static Optional<Direction> fromOptionalString(String value) {
+		public static Optional<Direction> fromOptionalString(@Nullable String value) {
 
 			if (ObjectUtils.isEmpty(value)) {
 				return Optional.empty();

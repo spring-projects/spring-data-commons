@@ -16,10 +16,8 @@
 package org.springframework.data.convert;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
@@ -28,12 +26,11 @@ import org.springframework.core.convert.converter.GenericConverter.ConvertiblePa
 import org.springframework.data.convert.ConverterBuilder.ConverterAware;
 import org.springframework.data.convert.ConverterBuilder.ReadingConverterBuilder;
 import org.springframework.data.convert.ConverterBuilder.WritingConverterBuilder;
-import org.springframework.data.util.Optionals;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Builder to easily set up (bi-directional) {@link Converter} instances for Spring Data type mapping using Lambdas. Use
+ * Builder to easily set up (bidirectional) {@link Converter} instances for Spring Data type mapping using Lambdas. Use
  * factory methods on {@link ConverterBuilder} to create instances of this class.
  *
  * @author Oliver Gierke
@@ -44,59 +41,85 @@ import org.springframework.util.ObjectUtils;
  * @see ConverterBuilder#reading(Class, Class, Function)
  * @soundtrack John Mayer - Still Feel Like Your Man (The Search for Everything)
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 record DefaultConverterBuilder<S, T> (ConvertiblePair convertiblePair,
-		Optional<Function<? super S, ? extends T>> writing, Optional<Function<? super T, ? extends S>> reading)
+		@Nullable Function<? super S, ? extends T> writing, @Nullable Function<? super T, ? extends S> reading)
 		implements ConverterAware, ReadingConverterBuilder<T, S>, WritingConverterBuilder<S, T> {
 
 	@Override
 	public ConverterAware andReading(Function<? super T, ? extends S> function) {
-		return withReading(Optional.of(function));
+		return withReading(function);
 	}
 
 	@Override
 	public ConverterAware andWriting(Function<? super S, ? extends T> function) {
-		return withWriting(Optional.of(function));
+		return withWriting(function);
 	}
 
 	@Override
 	public GenericConverter getReadingConverter() {
-		return getOptionalReadingConverter()
-				.orElseThrow(() -> new IllegalStateException("No reading converter specified"));
+
+		GenericConverter converter = getNullableReadingConverter();
+
+		if (converter == null) {
+			throw new IllegalStateException("No reading converter specified");
+		}
+
+		return converter;
 	}
 
 	@Override
 	public GenericConverter getWritingConverter() {
-		return getOptionalWritingConverter()
-				.orElseThrow(() -> new IllegalStateException("No writing converter specified"));
+
+		GenericConverter converter = getNullableWritingConverter();
+
+		if (converter == null) {
+			throw new IllegalStateException("No writing converter specified");
+		}
+
+		return converter;
 	}
 
 	@Override
 	public Set<GenericConverter> getConverters() {
 
-		return Optionals//
-				.toStream(getOptionalReadingConverter(), getOptionalWritingConverter())//
-				.collect(Collectors.toSet());
+		GenericConverter reading = getNullableReadingConverter();
+		GenericConverter writing = getNullableWritingConverter();
+
+		if (reading == null && writing == null) {
+			return Collections.emptySet();
+		}
+
+		if (reading == null) {
+			return Set.of(writing);
+		}
+
+		if (writing == null) {
+			return Set.of(reading);
+		}
+
+		return Set.of(reading, writing);
 	}
 
-	private Optional<GenericConverter> getOptionalReadingConverter() {
-		return reading.map(it -> new ConfigurableGenericConverter.Reading<>(convertiblePair, it));
+	@Nullable
+	private GenericConverter getNullableReadingConverter() {
+		return reading != null ? new ConfigurableGenericConverter.Reading<>(convertiblePair, reading) : null;
 	}
 
-	private Optional<GenericConverter> getOptionalWritingConverter() {
-		return writing.map(it -> new ConfigurableGenericConverter.Writing<>(invertedPair(), it));
+	@Nullable
+	private GenericConverter getNullableWritingConverter() {
+		return writing != null ? new ConfigurableGenericConverter.Writing<>(invertedPair(), writing) : null;
 	}
 
 	private ConvertiblePair invertedPair() {
 		return new ConvertiblePair(convertiblePair.getTargetType(), convertiblePair.getSourceType());
 	}
 
-	DefaultConverterBuilder<S, T> withWriting(Optional<Function<? super S, ? extends T>> writing) {
+	DefaultConverterBuilder<S, T> withWriting(Function<? super S, ? extends T> writing) {
 		return this.writing == writing ? this
 				: new DefaultConverterBuilder<S, T>(this.convertiblePair, writing, this.reading);
 	}
 
-	DefaultConverterBuilder<S, T> withReading(Optional<Function<? super T, ? extends S>> reading) {
+	DefaultConverterBuilder<S, T> withReading(Function<? super T, ? extends S> reading) {
 		return this.reading == reading ? this
 				: new DefaultConverterBuilder<S, T>(this.convertiblePair, this.writing, reading);
 	}

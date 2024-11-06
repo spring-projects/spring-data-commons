@@ -47,6 +47,7 @@ import org.springframework.data.repository.query.QueryMethodValueEvaluationConte
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -75,17 +76,17 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private RepositoryFactorySupport factory;
 	private boolean exposeMetadata;
 	private Key queryLookupStrategyKey;
-	private Optional<Class<?>> repositoryBaseClass = Optional.empty();
-	private Optional<Object> customImplementation = Optional.empty();
-	private Optional<RepositoryFragments> repositoryFragments = Optional.empty();
+	private @Nullable Class<?> repositoryBaseClass;
+	private @Nullable Object customImplementation;
+	private @Nullable RepositoryFragments repositoryFragments;
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
-	private Optional<MappingContext<?, ?>> mappingContext = Optional.empty();
+	private @Nullable MappingContext<?, ?> mappingContext;
 	private ClassLoader classLoader;
 	private ApplicationEventPublisher publisher;
 	private BeanFactory beanFactory;
 	private Environment environment;
 	private boolean lazyInit = false;
-	private Optional<EvaluationContextProvider> evaluationContextProvider = Optional.empty();
+	private @Nullable EvaluationContextProvider evaluationContextProvider;
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 
 	private Lazy<T> repository;
@@ -110,7 +111,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @since 1.11
 	 */
 	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
-		this.repositoryBaseClass = Optional.ofNullable(repositoryBaseClass);
+		this.repositoryBaseClass = repositoryBaseClass;
 	}
 
 	/**
@@ -142,7 +143,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param customImplementation
 	 */
 	public void setCustomImplementation(Object customImplementation) {
-		this.customImplementation = Optional.of(customImplementation);
+		this.customImplementation = customImplementation;
 	}
 
 	/**
@@ -151,7 +152,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param repositoryFragments
 	 */
 	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
-		this.repositoryFragments = Optional.of(repositoryFragments);
+		this.repositoryFragments = repositoryFragments;
 	}
 
 	/**
@@ -170,7 +171,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param mappingContext
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
-		this.mappingContext = Optional.of(mappingContext);
+		this.mappingContext = mappingContext;
 	}
 
 	/**
@@ -180,7 +181,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @since 3.4
 	 */
 	public void setEvaluationContextProvider(EvaluationContextProvider evaluationContextProvider) {
-		this.evaluationContextProvider = Optional.of(evaluationContextProvider);
+		this.evaluationContextProvider = evaluationContextProvider;
 	}
 
 	/**
@@ -227,8 +228,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		this.beanFactory = beanFactory;
 
-		if (this.evaluationContextProvider.isEmpty() && beanFactory instanceof ListableBeanFactory lbf) {
-			this.evaluationContextProvider = createDefaultEvaluationContextProvider(lbf);
+		if (this.evaluationContextProvider == null && beanFactory instanceof ListableBeanFactory lbf) {
+			this.evaluationContextProvider = createDefaultEvaluationContextProvider(lbf).orElse(null);
 		}
 	}
 
@@ -278,8 +279,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	public RepositoryInformation getRepositoryInformation() {
 
-		RepositoryFragments fragments = customImplementation.map(RepositoryFragments::just)//
-				.orElse(RepositoryFragments.empty());
+		RepositoryFragments fragments = customImplementation != null ? RepositoryFragments.just(customImplementation)
+				: RepositoryFragments.empty();
 
 		return factory.getRepositoryInformation(repositoryMetadata, fragments);
 	}
@@ -287,8 +288,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	public PersistentEntity<?, ?> getPersistentEntity() {
 
-		return mappingContext.orElseThrow(() -> new IllegalStateException("No MappingContext available"))
-				.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
+		if (mappingContext == null) {
+			throw new IllegalStateException("No MappingContext available");
+		}
+
+		return mappingContext.getRequiredPersistentEntity(repositoryMetadata.getDomainType());
 	}
 
 	@Override
@@ -312,40 +316,44 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	public void afterPropertiesSet() {
 
 		this.factory = createRepositoryFactory();
-		this.factory.setExposeMetadata(exposeMetadata);
-		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
-		this.factory.setNamedQueries(namedQueries);
+		this.factory.setExposeMetadata(this.exposeMetadata);
+		this.factory.setQueryLookupStrategyKey(this.queryLookupStrategyKey);
+		this.factory.setNamedQueries(this.namedQueries);
 		this.factory.setEvaluationContextProvider(
-				evaluationContextProvider.orElse(QueryMethodValueEvaluationContextAccessor.DEFAULT_CONTEXT_PROVIDER));
-		this.factory.setBeanClassLoader(classLoader);
-		this.factory.setBeanFactory(beanFactory);
+				this.evaluationContextProvider != null ? this.evaluationContextProvider
+						: QueryMethodValueEvaluationContextAccessor.DEFAULT_CONTEXT_PROVIDER);
+		this.factory.setBeanClassLoader(this.classLoader);
+		this.factory.setBeanFactory(this.beanFactory);
 
 		if (this.publisher != null) {
-			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
+			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(this.publisher));
 		}
 
 		if (this.environment != null) {
 			this.factory.setEnvironment(this.environment);
 		}
 
-		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);
+		if (repositoryBaseClass != null) {
+			this.factory.setRepositoryBaseClass(this.repositoryBaseClass);
+		}
 
 		this.repositoryFactoryCustomizers.forEach(customizer -> customizer.customize(this.factory));
 
-		RepositoryFragments customImplementationFragment = customImplementation //
-				.map(RepositoryFragments::just) //
-				.orElseGet(RepositoryFragments::empty);
+		RepositoryFragments customImplementationFragment = customImplementation != null
+				? RepositoryFragments.just(customImplementation)
+				: RepositoryFragments.empty();
 
-		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments //
-				.orElseGet(RepositoryFragments::empty) //
-				.append(customImplementationFragment);
+		RepositoryFragments repositoryFragmentsToUse = this.repositoryFragments != null
+				? repositoryFragments.append(customImplementationFragment)
+				: customImplementationFragment;
 
 		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
-
 		this.repository = Lazy.of(() -> this.factory.getRepository(repositoryInterface, repositoryFragmentsToUse));
 
 		// Make sure the aggregate root type is present in the MappingContext (e.g. for auditing)
-		this.mappingContext.ifPresent(it -> it.getPersistentEntity(repositoryMetadata.getDomainType()));
+		if (this.mappingContext != null) {
+			this.mappingContext.getPersistentEntity(repositoryMetadata.getDomainType());
+		}
 
 		if (!lazyInit) {
 			this.repository.get();

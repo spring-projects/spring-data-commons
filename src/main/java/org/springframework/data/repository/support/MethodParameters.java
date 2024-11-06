@@ -47,7 +47,7 @@ class MethodParameters {
 	 * @param method must not be {@literal null}.
 	 */
 	public MethodParameters(Method method) {
-		this(method, Optional.empty());
+		this(method, null);
 	}
 
 	/**
@@ -57,7 +57,7 @@ class MethodParameters {
 	 * @param method must not be {@literal null}.
 	 * @param namingAnnotation must not be {@literal null}.
 	 */
-	public MethodParameters(Method method, Optional<AnnotationAttribute> namingAnnotation) {
+	public MethodParameters(Method method, @Nullable AnnotationAttribute namingAnnotation) {
 
 		Assert.notNull(method, "Method must not be null");
 		this.parameters = new ArrayList<>();
@@ -132,7 +132,6 @@ class MethodParameters {
 	 */
 	private static class AnnotationNamingMethodParameter extends MethodParameter {
 
-		private final Optional<AnnotationAttribute> attribute;
 		private final Lazy<String> name;
 
 		/**
@@ -143,20 +142,25 @@ class MethodParameters {
 		 * @param parameterIndex
 		 * @param attribute can be {@literal null}
 		 */
-		public AnnotationNamingMethodParameter(Method method, int parameterIndex, Optional<AnnotationAttribute> attribute) {
+		public AnnotationNamingMethodParameter(Method method, int parameterIndex, @Nullable AnnotationAttribute attribute) {
 
 			super(method, parameterIndex);
 
-			this.attribute = attribute;
-			this.name = Lazy.of(() -> this.attribute.//
-					flatMap(it -> it.getValueFrom(this).map(Object::toString)).//
-					orElseGet(super::getParameterName));
+			this.name = Lazy.of(() -> {
+
+				if (attribute == null) {
+					return super.getParameterName();
+				}
+
+				Object value = attribute.getValueFrom(this);
+				return value != null ? value.toString() : super.getParameterName();
+			});
 		}
 
 		@Nullable
 		@Override
 		public String getParameterName() {
-			return name.orElse(null);
+			return name.getNullable();
 		}
 	}
 }

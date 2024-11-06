@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -93,17 +92,20 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 		this.isAssociation = Lazy.of(() -> ASSOCIATION_TYPE != null && ASSOCIATION_TYPE.isAssignableFrom(rawType));
 		this.associationTargetType = ASSOCIATION_TYPE == null //
 				? Lazy.empty() //
-				: Lazy.of(() -> Optional.of(getTypeInformation()) //
-						.map(it -> it.getSuperTypeInformation(ASSOCIATION_TYPE)) //
-						.map(TypeInformation::getComponentType) //
-						.orElse(null));
+				: Lazy.of(() -> {
+					TypeInformation<?> type = getTypeInformation().getSuperTypeInformation(ASSOCIATION_TYPE);
+					if (type != null) {
+						return type.getComponentType();
+					}
+					return null;
+				});
 
 		this.entityTypeInformation = Lazy.of(() -> detectEntityTypes(simpleTypeHolder));
 
-		this.getter = property.getGetter().orElse(null);
-		this.setter = property.getSetter().orElse(null);
-		this.field = property.getField().orElse(null);
-		this.wither = property.getWither().orElse(null);
+		this.getter = property.getGetter();
+		this.setter = property.getSetter();
+		this.field = property.getField();
+		this.wither = property.getWither();
 
 		this.immutable = setter == null && (field == null || Modifier.isFinal(field.getModifiers()));
 		this.readable = Lazy.of(() -> {

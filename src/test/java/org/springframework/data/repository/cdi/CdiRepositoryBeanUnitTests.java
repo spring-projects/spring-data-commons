@@ -147,7 +147,7 @@ class CdiRepositoryBeanUnitTests {
 		var detector = mock(CustomRepositoryImplementationDetector.class);
 
 		var bean = new CdiRepositoryBean<SampleRepository>(SINGLE_ANNOTATION,
-				SampleRepository.class, beanManager, Optional.of(detector)) {
+				SampleRepository.class, beanManager, detector) {
 
 			@Override
 			protected SampleRepository create(CreationalContext<SampleRepository> creationalContext,

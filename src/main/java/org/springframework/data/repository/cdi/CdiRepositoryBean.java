@@ -97,6 +97,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
 	 * @param detector detector for the custom repository implementations {@link CustomRepositoryImplementationDetector}.
 	 */
+	@Deprecated
 	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
 			Optional<CustomRepositoryImplementationDetector> detector) {
 
@@ -110,6 +111,30 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 		this.beanManager = beanManager;
 		this.context = new CdiRepositoryContext(getClass().getClassLoader(), detector
 				.orElseThrow(() -> new IllegalArgumentException("CustomRepositoryImplementationDetector must be present")));
+		this.passivationId = createPassivationId(qualifiers, repositoryType);
+	}
+
+	/**
+	 * Creates a new {@link CdiRepositoryBean}.
+	 *
+	 * @param qualifiers must not be {@literal null}.
+	 * @param repositoryType has to be an interface must not be {@literal null}.
+	 * @param beanManager the CDI {@link BeanManager}, must not be {@literal null}.
+	 * @param detector detector for the custom repository implementations {@link CustomRepositoryImplementationDetector}.
+	 */
+	public CdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
+			CustomRepositoryImplementationDetector detector) {
+
+		Assert.notNull(qualifiers, "Qualifiers must not be null");
+		Assert.notNull(beanManager, "BeanManager must not be null");
+		Assert.notNull(repositoryType, "Repoitory type must not be null");
+		Assert.isTrue(repositoryType.isInterface(), "RepositoryType must be an interface");
+		Assert.notNull(detector, "CustomRepositoryImplementationDetector must not be null");
+
+		this.qualifiers = qualifiers;
+		this.repositoryType = repositoryType;
+		this.beanManager = beanManager;
+		this.context = new CdiRepositoryContext(getClass().getClassLoader(), detector);
 		this.passivationId = createPassivationId(qualifiers, repositoryType);
 	}
 
@@ -386,7 +411,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 	}
 
 	/**
-	 * Try to lookup a custom implementation for a {@link org.springframework.data.repository.Repository}. Can only be
+	 * Try to look up a custom implementation for a {@link org.springframework.data.repository.Repository}. Can only be
 	 * used when a {@code CustomRepositoryImplementationDetector} is provided.
 	 *
 	 * @param repositoryType

@@ -37,6 +37,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ProxyUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentLruCache;
@@ -58,7 +59,7 @@ public class Repositories implements Iterable<Class<?>> {
 	private static final RepositoryFactoryInformation<Object, Object> EMPTY_REPOSITORY_FACTORY_INFO = EmptyRepositoryFactoryInformation.INSTANCE;
 	private static final String DOMAIN_TYPE_MUST_NOT_BE_NULL = "Domain type must not be null";
 
-	private final Optional<BeanFactory> beanFactory;
+	private final @Nullable BeanFactory beanFactory;
 	private final Map<Class<?>, String> repositoryBeanNames;
 	private final Map<Class<?>, RepositoryFactoryInformation<Object, Object>> repositoryFactoryInfos;
 	private final ConcurrentLruCache<Class<?>, Class<?>> domainTypeMapping = new ConcurrentLruCache<>(64,
@@ -69,7 +70,7 @@ public class Repositories implements Iterable<Class<?>> {
 	 */
 	private Repositories() {
 
-		this.beanFactory = Optional.empty();
+		this.beanFactory = null;
 		this.repositoryBeanNames = Collections.emptyMap();
 		this.repositoryFactoryInfos = Collections.emptyMap();
 	}
@@ -84,7 +85,7 @@ public class Repositories implements Iterable<Class<?>> {
 
 		Assert.notNull(factory, "ListableBeanFactory must not be null");
 
-		this.beanFactory = Optional.of(factory);
+		this.beanFactory = factory;
 		this.repositoryFactoryInfos = new HashMap<>();
 		this.repositoryBeanNames = new HashMap<>();
 
@@ -113,22 +114,25 @@ public class Repositories implements Iterable<Class<?>> {
 		typesToRegister.add(domainType);
 		typesToRegister.addAll(alternativeDomainTypes);
 
-		Optional<ConfigurableListableBeanFactory> beanFactory = Optional.of(factory).map(it -> {
-
-			if (it instanceof ConfigurableListableBeanFactory) {
-				return (ConfigurableListableBeanFactory) it;
-			}
-
-			if (it instanceof ConfigurableApplicationContext) {
-				return ((ConfigurableApplicationContext) it).getBeanFactory();
-			}
-
-			return null;
-		});
+		ConfigurableListableBeanFactory beanFactory = getBeanFactory(factory);
 
 		for (Class<?> type : typesToRegister) {
 			cacheFirstOrPrimary(beanFactory, type, repositoryFactoryInformation, BeanFactoryUtils.transformedBeanName(name));
 		}
+	}
+
+	@Nullable
+	private static ConfigurableListableBeanFactory getBeanFactory(ListableBeanFactory beanFactory) {
+
+		if (beanFactory instanceof ConfigurableListableBeanFactory clbf) {
+			return clbf;
+		}
+
+		if (beanFactory instanceof ConfigurableApplicationContext cac) {
+			return cac.getBeanFactory();
+		}
+
+		return null;
 	}
 
 	/**
@@ -159,9 +163,13 @@ public class Repositories implements Iterable<Class<?>> {
 		Assert.notNull(domainClass, DOMAIN_TYPE_MUST_NOT_BE_NULL);
 
 		Class<?> userClass = domainTypeMapping.get(ProxyUtils.getUserClass(domainClass));
-		Optional<String> repositoryBeanName = Optional.ofNullable(repositoryBeanNames.get(userClass));
+		String repositoryBeanName = repositoryBeanNames.get(userClass);
 
-		return beanFactory.flatMap(it -> repositoryBeanName.map(it::getBean));
+		if (beanFactory == null || repositoryBeanName == null) {
+			return Optional.empty();
+		}
+
+		return Optional.of(beanFactory.getBean(repositoryBeanName));
 	}
 
 	/**
@@ -301,16 +309,14 @@ public class Repositories implements Iterable<Class<?>> {
 	 * @param name must not be {@literal null}.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void cacheFirstOrPrimary(Optional<ConfigurableListableBeanFactory> beanFactory, Class<?> type,
+	private void cacheFirstOrPrimary(@Nullable ConfigurableListableBeanFactory beanFactory, Class<?> type,
 			RepositoryFactoryInformation information, String name) {
 
-		if (repositoryBeanNames.containsKey(type)) {
+		if (repositoryBeanNames.containsKey(type) && beanFactory != null) {
 
-			Boolean presentAndPrimary = beanFactory.map(it -> it.getMergedBeanDefinition(name)) //
-					.map(BeanDefinition::isPrimary) //
-					.orElse(false);
+			BeanDefinition bd = beanFactory.getMergedBeanDefinition(name);
 
-			if (!presentAndPrimary) {
+			if (!bd.isPrimary()) {
 				return;
 			}
 		}
@@ -321,8 +327,8 @@ public class Repositories implements Iterable<Class<?>> {
 
 	/**
 	 * Returns the repository domain type for which to look up the repository. The input can either be a repository
-	 * managed type directly. Or it can be a sub-type of a repository managed one, in which case we check the domain types
-	 * we have repositories registered for for assignability.
+	 * managed type directly. Or it can be a subtype of a repository managed one, in which case we check the domain types
+	 * we have repositories registered for assignability.
 	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return

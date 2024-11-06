@@ -19,12 +19,10 @@ import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -40,22 +38,25 @@ import org.springframework.util.StringUtils;
  */
 public class Property {
 
-	private final Optional<Field> field;
-	private final Optional<PropertyDescriptor> descriptor;
+	private final @Nullable Field field;
+	private final @Nullable PropertyDescriptor descriptor;
 
 	private final Class<?> rawType;
 	private final Lazy<Integer> hashCode;
-	private final Optional<Method> getter;
-	private final Optional<Method> setter;
+	private final @Nullable Method getter;
+	private final @Nullable Method setter;
 
 	private final Lazy<String> name;
 	private final Lazy<String> toString;
-	private final Lazy<Optional<Method>> wither;
+	private final Lazy<Method> wither;
 
-	private Property(TypeInformation<?> type, Optional<Field> field, Optional<PropertyDescriptor> descriptor) {
+	private Property(TypeInformation<?> type, @Nullable Field field, @Nullable PropertyDescriptor descriptor) {
 
 		Assert.notNull(type, "Type must not be null");
-		Assert.isTrue(Optionals.isAnyPresent(field, descriptor), "Either field or descriptor has to be given");
+
+		if (field == null && descriptor == null) {
+			throw new IllegalArgumentException("Either field or descriptor has to be given");
+		}
 
 		this.field = field;
 		this.descriptor = descriptor;
@@ -69,13 +70,23 @@ public class Property {
 		this.toString = Lazy.of(() -> withFieldOrDescriptor(Object::toString,
 				it -> String.format("%s.%s", type.getType().getName(), it.getDisplayName())));
 
-		this.getter = descriptor.map(PropertyDescriptor::getReadMethod)//
-				.filter(it -> getType() != null)//
-				.filter(it -> getType().isAssignableFrom(type.getReturnType(it).getType()));
+		Method getter = null;
+		Method setter = null;
 
-		this.setter = descriptor.map(PropertyDescriptor::getWriteMethod)//
-				.filter(it -> getType() != null)//
-				.filter(it -> type.getParameterTypes(it).get(0).getType().isAssignableFrom(getType()));
+		if (descriptor != null) {
+			Method readMethod = descriptor.getReadMethod();
+			if (readMethod != null && getType().isAssignableFrom(type.getReturnType(readMethod).getType())) {
+				getter = readMethod;
+			}
+
+			Method writeMethod = descriptor.getWriteMethod();
+			if (writeMethod != null && type.getParameterTypes(writeMethod).get(0).getType().isAssignableFrom(getType())) {
+				setter = writeMethod;
+			}
+		}
+
+		this.getter = getter;
+		this.setter = setter;
 
 		this.wither = Lazy.of(() -> findWither(type, getName(), getType()));
 	}
@@ -91,7 +102,7 @@ public class Property {
 
 		Assert.notNull(field, "Field must not be null");
 
-		return new Property(type, Optional.of(field), Optional.empty());
+		return new Property(type, field, null);
 	}
 
 	/**
@@ -107,7 +118,7 @@ public class Property {
 		Assert.notNull(field, "Field must not be null");
 		Assert.notNull(descriptor, "PropertyDescriptor must not be null");
 
-		return new Property(type, Optional.of(field), Optional.of(descriptor));
+		return new Property(type, field, descriptor);
 	}
 
 	/**
@@ -123,7 +134,7 @@ public class Property {
 
 		Assert.notNull(descriptor, "PropertyDescriptor must not be null");
 
-		return new Property(type, Optional.empty(), Optional.of(descriptor));
+		return new Property(type, null, descriptor);
 	}
 
 	/**
@@ -146,7 +157,7 @@ public class Property {
 	 * @return
 	 */
 	public boolean isFieldBacked() {
-		return field.isPresent();
+		return field != null;
 	}
 
 	/**
@@ -154,7 +165,8 @@ public class Property {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public Optional<Method> getGetter() {
+	@Nullable
+	public Method getGetter() {
 		return getter;
 	}
 
@@ -163,7 +175,8 @@ public class Property {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public Optional<Method> getSetter() {
+	@Nullable
+	public Method getSetter() {
 		return setter;
 	}
 
@@ -172,8 +185,9 @@ public class Property {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public Optional<Method> getWither() {
-		return wither.get();
+	@Nullable
+	public Method getWither() {
+		return wither.getNullable();
 	}
 
 	/**
@@ -181,7 +195,8 @@ public class Property {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	public Optional<Field> getField() {
+	@Nullable
+	public Field getField() {
 		return this.field;
 	}
 
@@ -191,7 +206,7 @@ public class Property {
 	 * @return
 	 */
 	public boolean hasAccessor() {
-		return getGetter().isPresent() || getSetter().isPresent();
+		return this.getter != null || this.setter != null;
 	}
 
 	/**
@@ -223,7 +238,7 @@ public class Property {
 			return false;
 		}
 
-		return this.field.isPresent() ? this.field.equals(that.field) : this.descriptor.equals(that.descriptor);
+		return this.field != null ? this.field.equals(that.field) : this.descriptor.equals(that.descriptor);
 	}
 
 	@Override
@@ -256,13 +271,19 @@ public class Property {
 	private <T> T withFieldOrDescriptor(Function<? super Field, T> field,
 			Function<? super PropertyDescriptor, T> descriptor) {
 
-		return Optionals.firstNonEmpty(//
-				() -> this.field.map(field), //
-				() -> this.descriptor.map(descriptor))//
-				.orElseThrow(() -> new IllegalStateException("Should not occur; Either field or descriptor has to be given"));
+		if (this.field != null) {
+			return field.apply(this.field);
+		}
+
+		if (this.descriptor != null) {
+			return descriptor.apply(this.descriptor);
+		}
+
+		throw new IllegalStateException("Should not occur; Either field or descriptor has to be given");
 	}
 
-	private static Optional<Method> findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
+	@Nullable
+	private static Method findWither(TypeInformation<?> owner, String propertyName, Class<?> rawType) {
 
 		AtomicReference<Method> resultHolder = new AtomicReference<>();
 		String methodName = String.format("with%s", StringUtils.capitalize(propertyName));
@@ -274,8 +295,7 @@ public class Property {
 			}
 		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType));
 
-		Method method = resultHolder.get();
-		return method != null ? Optional.of(method) : Optional.empty();
+		return resultHolder.get();
 	}
 
 	private static boolean isMethodWithSingleParameterOfType(Method method, String name, Class<?> type) {

@@ -159,7 +159,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	private Object[] prepareParameters(Method method, MultiValueMap<String, ?> rawParameters, Pageable pageable,
 			Sort sort) {
 
-		List<MethodParameter> parameters = new MethodParameters(method, Optional.of(PARAM_ANNOTATION)).getParameters();
+		List<MethodParameter> parameters = new MethodParameters(method, PARAM_ANNOTATION).getParameters();
 
 		if (parameters.isEmpty()) {
 			return new Object[0];

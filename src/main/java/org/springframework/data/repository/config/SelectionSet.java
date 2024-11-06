@@ -16,10 +16,11 @@
 package org.springframework.data.repository.config;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Allows filtering of a collection in order to select a unique element. Once a unique element is found all further
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
 class SelectionSet<T> {
 
 	private final Collection<T> collection;
-	private final Function<Collection<T>, Optional<T>> fallback;
+	private final Function<Collection<T>, T> fallback;
 
-	private SelectionSet(Collection<T> collection, Function<Collection<T>, Optional<T>> fallback) {
+	private SelectionSet(Collection<T> collection, Function<Collection<T>, T> fallback) {
 		this.collection = collection;
 		this.fallback = fallback;
 	}
@@ -48,7 +49,7 @@ class SelectionSet<T> {
 		return new SelectionSet<>(collection, defaultFallback());
 	}
 
-	public static <T> SelectionSet<T> of(Collection<T> collection, Function<Collection<T>, Optional<T>> fallback) {
+	public static <T> SelectionSet<T> of(Collection<T> collection, Function<Collection<T>, T> fallback) {
 		return new SelectionSet<>(collection, fallback);
 	}
 
@@ -59,11 +60,12 @@ class SelectionSet<T> {
 	 *
 	 * @return a unique result, or the result of the callback provided in the constructor.
 	 */
-	Optional<T> uniqueResult() {
+	@Nullable
+	T uniqueResult() {
 
-		Optional<T> uniqueResult = findUniqueResult();
+		T uniqueResult = findUniqueResult();
 
-		return uniqueResult.isPresent() ? uniqueResult : fallback.apply(collection);
+		return uniqueResult != null ? uniqueResult : fallback.apply(collection);
 	}
 
 	/**
@@ -73,22 +75,28 @@ class SelectionSet<T> {
 	 */
 	SelectionSet<T> filterIfNecessary(Predicate<T> predicate) {
 
-		return findUniqueResult().map(it -> this).orElseGet(
-				() -> new SelectionSet<>(collection.stream().filter(predicate).collect(Collectors.toList()), fallback));
+		T result = findUniqueResult();
+
+		if (result != null) {
+			return this;
+		}
+
+		return new SelectionSet<>(collection.stream().filter(predicate).collect(Collectors.toList()), fallback);
 	}
 
-	private static <S> Function<Collection<S>, Optional<S>> defaultFallback() {
+	private static <S> Function<Collection<S>, S> defaultFallback() {
 
 		return c -> {
 			if (c.isEmpty()) {
-				return Optional.empty();
+				return null;
 			} else {
 				throw new IllegalStateException("More than one element in collection");
 			}
 		};
 	}
 
-	private Optional<T> findUniqueResult() {
-		return Optional.ofNullable(collection.size() == 1 ? collection.iterator().next() : null);
+	@Nullable
+	private T findUniqueResult() {
+		return collection.size() == 1 ? collection.iterator().next() : null;
 	}
 }

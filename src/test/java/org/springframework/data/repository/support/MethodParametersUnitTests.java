@@ -17,9 +17,8 @@ package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
@@ -33,7 +32,7 @@ class MethodParametersUnitTests {
 	void prefersAnnotatedParameterOverDiscovered() throws Exception {
 
 		var method = Sample.class.getMethod("method", String.class, String.class, Object.class);
-		var parameters = new MethodParameters(method, Optional.of(new AnnotationAttribute(Qualifier.class)));
+		var parameters = new MethodParameters(method, new AnnotationAttribute(Qualifier.class));
 
 		assertThat(parameters.getParameter("param")).isPresent();
 		assertThat(parameters.getParameter("foo")).isPresent();

@@ -17,9 +17,8 @@ package org.springframework.data.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,14 +35,14 @@ class AnnotationAttributeUnitTests {
 
 	@Test // DATACMNS-607
 	void rejectsNullAnnotationTypeForAnnotationAndAttributeName() {
-		assertThatIllegalArgumentException().isThrownBy(() -> new AnnotationAttribute(null, Optional.of("name")));
+		assertThatIllegalArgumentException().isThrownBy(() -> new AnnotationAttribute(null, "name"));
 	}
 
 	@Test // DATACMNS-607
 	void looksUpAttributeFromAnnotatedElement() {
 
 		var attribute = new AnnotationAttribute(Component.class);
-		assertThat(attribute.getValueFrom(Sample.class)).hasValue("foo");
+		assertThat(attribute.getValueFrom(Sample.class)).isEqualTo("foo");
 	}
 
 	@Component("foo")

@@ -909,7 +909,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Generate the {@link PersistentPropertyAccessor#setProperty(PersistentProperty, Object)} method.
 		 *
 		 * <pre class="code">
-		 * public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
+		 * public void setProperty(PersistentProperty<?> property, Object value) {
 		 * 	Object bean = this.bean;
 		 * 	switch (property.getName().hashCode()) {
 		 * 		case 3355:

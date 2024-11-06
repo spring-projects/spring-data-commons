@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,6 +36,7 @@ import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -126,7 +126,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		private static final Log logger = LogFactory.getLog(PropertyDescriptorSource.class);
 
 		private final Class<?> type;
-		private final Optional<AnnotationMetadata> metadata;
+		private final @Nullable AnnotationMetadata metadata;
 
 		/**
 		 * Creates a new {@link PropertyDescriptorSource} for the given type.
@@ -161,14 +161,19 @@ class DefaultProjectionInformation implements ProjectionInformation {
 			Stream<PropertyDescriptor> allButDefaultGetters = Arrays.stream(BeanUtils.getPropertyDescriptors(type)) //
 					.filter(it -> !hasDefaultGetter(it));
 
-			Stream<PropertyDescriptor> ownDescriptors = metadata.map(it -> filterAndOrder(allButDefaultGetters, it)) //
-					.orElse(allButDefaultGetters);
+			Stream<PropertyDescriptor> ownDescriptors;
+			Stream<Class<?>> superTypeDescriptors;
 
-			Stream<PropertyDescriptor> superTypeDescriptors = metadata.map(this::fromMetadata) //
-					.orElseGet(this::fromType) //
-					.flatMap(it -> new PropertyDescriptorSource(it).collectDescriptors());
+			if (metadata != null) {
+				ownDescriptors = filterAndOrder(allButDefaultGetters, metadata);
+				superTypeDescriptors = fromMetadata(metadata);
+			} else {
+				ownDescriptors = allButDefaultGetters;
+				superTypeDescriptors = fromType();
+			}
 
-			return Stream.concat(ownDescriptors, superTypeDescriptors);
+			return Stream.concat(ownDescriptors,
+					superTypeDescriptors.flatMap(it -> new PropertyDescriptorSource(it).collectDescriptors()));
 		}
 
 		/**
@@ -179,16 +184,14 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 * @param metadata must not be {@literal null}.
 		 * @return
 		 */
-		private Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source,
-				AnnotationMetadata metadata) {
+		private Stream<PropertyDescriptor> filterAndOrder(Stream<PropertyDescriptor> source, AnnotationMetadata metadata) {
 
 			Map<String, Integer> orderedMethods = getMethodOrder(metadata);
 
 			Stream<PropertyDescriptor> filtered = source.filter(it -> it.getReadMethod() != null)
 					.filter(it -> it.getReadMethod().getDeclaringClass().equals(type));
 
-			return orderedMethods.isEmpty()
-					? filtered
+			return orderedMethods.isEmpty() ? filtered
 					: filtered.sorted(Comparator.comparingInt(left -> orderedMethods.get(left.getReadMethod().getName())));
 		}
 
@@ -212,26 +215,27 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		}
 
 		/**
-		 * Attempts to obtain {@link AnnotationMetadata} from {@link Class}. Returns {@link Optional} containing
-		 * {@link AnnotationMetadata} if metadata was read successfully, {@link Optional#empty()} otherwise.
+		 * Attempts to obtain {@link AnnotationMetadata} from {@link Class}. Returns {@link AnnotationMetadata} if metadata
+		 * was read successful or {@literal null} if metadata reading failed.
 		 *
 		 * @param type must not be {@literal null}.
 		 * @return the optional {@link AnnotationMetadata}.
 		 */
-		private static Optional<AnnotationMetadata> getMetadata(Class<?> type) {
+		@Nullable
+		private static AnnotationMetadata getMetadata(Class<?> type) {
 
 			try {
 
 				SimpleMetadataReaderFactory factory = new SimpleMetadataReaderFactory(type.getClassLoader());
 				MetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
 
-				return Optional.of(metadataReader.getAnnotationMetadata());
+				return metadataReader.getAnnotationMetadata();
 
 			} catch (IOException e) {
 
 				logger.info(
 						LogMessage.format("Couldn't read class metadata for %s. Input property calculation might fail", type));
-				return Optional.empty();
+				return null;
 			}
 		}
 
@@ -246,8 +250,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 			return Arrays.stream(types) //
 					.filter(it -> name.equals(it.getName())) //
-					.findFirst()
-					.orElseThrow(() -> new IllegalStateException(
+					.findFirst().orElseThrow(() -> new IllegalStateException(
 							String.format("Did not find type %s in %s", name, Arrays.toString(types))));
 		}
 

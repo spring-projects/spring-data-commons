@@ -33,10 +33,11 @@ class PropertyUnitTests {
 
 		assertThat(Property
 				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id")).getWither())
-						.isEmpty();
+				.isNull();
 		assertThat(
 				Property.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
-						.getWither()).isEmpty();
+						.getWither())
+				.isNull();
 	}
 
 	@Test // DATACMNS-1322
@@ -44,7 +45,7 @@ class PropertyUnitTests {
 
 		var property = Property.of(TypeInformation.of(WitherType.class), ReflectionUtils.findField(WitherType.class, "id"));
 
-		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
+		assertThat(property.getWither()).satisfies(actual -> {
 			assertThat(actual.getName()).isEqualTo("withId");
 			assertThat(actual.getReturnType()).isEqualTo(WitherType.class);
 		});
@@ -56,7 +57,7 @@ class PropertyUnitTests {
 		var property = Property.of(TypeInformation.of(DerivedWitherClass.class),
 				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
 
-		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
+		assertThat(property.getWither()).satisfies(actual -> {
 			assertThat(actual.getName()).isEqualTo("withId");
 			assertThat(actual.getReturnType()).isEqualTo(DerivedWitherClass.class);
 			assertThat(actual.getDeclaringClass()).isEqualTo(DerivedWitherClass.class);
@@ -69,7 +70,7 @@ class PropertyUnitTests {
 		var property = Property.of(TypeInformation.of(AnotherLevel.class),
 				ReflectionUtils.findField(AnotherLevel.class, "id"));
 
-		assertThat(property.getWither()).isEmpty();
+		assertThat(property.getWither()).isNull();
 	}
 
 	static class ImmutableType {

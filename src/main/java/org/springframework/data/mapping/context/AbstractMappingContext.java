@@ -899,7 +899,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			@Override
 			public boolean matches(Property property) {
 
-				Field field = property.getField().orElse(null);
+				Field field = property.getField();
 
 				if (field == null || !KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
 					return false;

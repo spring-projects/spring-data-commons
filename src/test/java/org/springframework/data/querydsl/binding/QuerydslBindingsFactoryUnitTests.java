@@ -64,7 +64,7 @@ class QuerydslBindingsFactoryUnitTests {
 		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(new SampleRepo()));
 
 		var factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
-		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
+		ReflectionTestUtils.setField(factory, "repositories", repositories);
 
 		var bindings = factory.createBindingsFor(USER_TYPE);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings
@@ -84,7 +84,7 @@ class QuerydslBindingsFactoryUnitTests {
 		when(beanFactory.getBean(SpecificBinding.class)).thenReturn(new SpecificBinding());
 
 		var factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
-		ReflectionTestUtils.setField(factory, "beanFactory", Optional.of(beanFactory));
+		ReflectionTestUtils.setField(factory, "beanFactory", beanFactory);
 
 		var bindings = factory.createBindingsFor(USER_TYPE, SpecificBinding.class);
 		Optional<MultiValueBinding<Path<Object>, Object>> binding = bindings

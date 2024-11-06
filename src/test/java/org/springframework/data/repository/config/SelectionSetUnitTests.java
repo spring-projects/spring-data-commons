@@ -19,8 +19,6 @@ import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,12 +31,12 @@ class SelectionSetUnitTests {
 
 	@Test // DATACMNS-764
 	void returnsUniqueResult() {
-		assertThat(SelectionSet.of(singleton("single value")).uniqueResult()).hasValue("single value");
+		assertThat(SelectionSet.of(singleton("single value")).uniqueResult()).isEqualTo("single value");
 	}
 
 	@Test // DATACMNS-764
 	void emptyCollectionReturnsNull() {
-		assertThat(SelectionSet.of(emptySet()).uniqueResult()).isEmpty();
+		assertThat(SelectionSet.of(emptySet()).uniqueResult()).isNull();
 	}
 
 	@Test // DATACMNS-764
@@ -58,8 +56,7 @@ class SelectionSetUnitTests {
 
 	@Test // DATACMNS-764
 	void usesFallbackWhenConfigured() {
-		assertThat(SelectionSet.of(asList("one", "two"), c -> Optional.of(String.valueOf(c.size()))).uniqueResult())
-				.hasValue("2");
+		assertThat(SelectionSet.of(asList("one", "two"), c -> String.valueOf(c.size())).uniqueResult()).isEqualTo("2");
 	}
 
 	@Test // DATACMNS-764
@@ -68,7 +65,7 @@ class SelectionSetUnitTests {
 		var selection = SelectionSet.of(asList("one", "two", "three"))
 				.filterIfNecessary(s -> s.contains("w"));
 
-		assertThat(selection.uniqueResult()).hasValue("two");
+		assertThat(selection.uniqueResult()).isEqualTo("two");
 	}
 
 	@Test // DATACMNS-764
@@ -76,6 +73,6 @@ class SelectionSetUnitTests {
 
 		var selection = SelectionSet.of(asList("one")).filterIfNecessary(s -> s.contains("w"));
 
-		assertThat(selection.uniqueResult()).hasValue("one");
+		assertThat(selection.uniqueResult()).isEqualTo("one");
 	}
 }

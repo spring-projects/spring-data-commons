@@ -74,7 +74,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	 * given additional mappers.
 	 *
 	 * @param accessor must not be {@literal null}.
-	 * @param mappingContext
+	 * @param mappingContext can be {@literal null} if absent.
 	 * @param additionalMappers must not be {@literal null}.
 	 */
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
@@ -116,7 +116,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	}
 
 	/**
-	 * Tries to lookup a {@link TypeInformation} for the given alias from the cache and return it if found. If none is
+	 * Tries to look up a {@link TypeInformation} for the given alias from the cache and return it if found. If none is
 	 * found it'll consult the {@link TypeInformationMapper}s and cache the value found.
 	 *
 	 * @param alias

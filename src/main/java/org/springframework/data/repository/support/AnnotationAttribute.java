@@ -17,7 +17,6 @@ package org.springframework.data.repository.support;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -34,7 +33,7 @@ import org.springframework.util.Assert;
 class AnnotationAttribute {
 
 	private final Class<? extends Annotation> annotationType;
-	private final Optional<String> attributeName;
+	private final @Nullable String attributeName;
 
 	/**
 	 * Creates a new {@link AnnotationAttribute} to the {@code value} attribute of the given {@link Annotation} type.
@@ -42,13 +41,12 @@ class AnnotationAttribute {
 	 * @param annotationType must not be {@literal null}.
 	 */
 	public AnnotationAttribute(Class<? extends Annotation> annotationType) {
-		this(annotationType, Optional.empty());
+		this(annotationType, null);
 	}
 
-	public AnnotationAttribute(Class<? extends Annotation> annotationType, Optional<String> attributeName) {
+	public AnnotationAttribute(Class<? extends Annotation> annotationType, @Nullable String attributeName) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null");
-		Assert.notNull(attributeName, "Attribute name must not be null");
 
 		this.annotationType = annotationType;
 		this.attributeName = attributeName;
@@ -69,12 +67,13 @@ class AnnotationAttribute {
 	 * @param parameter must not be {@literal null}.
 	 * @return
 	 */
-	public Optional<Object> getValueFrom(MethodParameter parameter) {
+	@Nullable
+	public Object getValueFrom(MethodParameter parameter) {
 
 		Assert.notNull(parameter, "MethodParameter must not be null");
 		Annotation annotation = parameter.getParameterAnnotation(annotationType);
 
-		return Optional.ofNullable(annotation).map(this::getValueFrom);
+		return annotation != null ? getValueFrom(annotation) : null;
 	}
 
 	/**
@@ -83,12 +82,13 @@ class AnnotationAttribute {
 	 * @param annotatedElement must not be {@literal null}.
 	 * @return
 	 */
-	public Optional<Object> getValueFrom(AnnotatedElement annotatedElement) {
+	@Nullable
+	public Object getValueFrom(AnnotatedElement annotatedElement) {
 
 		Assert.notNull(annotatedElement, "Annotated element must not be null");
 		Annotation annotation = annotatedElement.getAnnotation(annotationType);
 
-		return Optional.ofNullable(annotation).map(it -> getValueFrom(annotation));
+		return annotation != null ? getValueFrom(annotation) : null;
 	}
 
 	/**
@@ -101,7 +101,7 @@ class AnnotationAttribute {
 	public Object getValueFrom(Annotation annotation) {
 
 		Assert.notNull(annotation, "Annotation must not be null");
-		return attributeName.map(it -> AnnotationUtils.getValue(annotation, it))
-				.orElseGet(() -> AnnotationUtils.getValue(annotation));
+		return attributeName != null ? AnnotationUtils.getValue(annotation, attributeName)
+				: AnnotationUtils.getValue(annotation);
 	}
 }

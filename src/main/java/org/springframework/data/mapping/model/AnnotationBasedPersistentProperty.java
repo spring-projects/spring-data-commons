@@ -118,33 +118,17 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 */
 	private void populateAnnotationCache(Property property) {
 
-		Optionals.toStream(property.getGetter(), property.getSetter()).forEach(it -> {
+		StreamUtils.fromNullable(property.getGetter(), property.getSetter(), property.getField()).forEach(it -> {
 
 			for (Annotation annotation : it.getAnnotations()) {
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
-
 				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
 						"Ambiguous mapping; Annotation %s configured "
 								+ "multiple times on accessor methods of property %s in class %s",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
-
-				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
-			}
-		});
-
-		property.getField().ifPresent(it -> {
-
-			for (Annotation annotation : it.getAnnotations()) {
-
-				Class<? extends Annotation> annotationType = annotation.annotationType();
-				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
-
-				validateAnnotation(mergedAnnotation,
-						"Ambiguous mapping; Annotation %s configured " + "on field %s and one of its accessor methods in class %s",
-						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
 				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
 			}

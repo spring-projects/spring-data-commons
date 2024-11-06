@@ -112,6 +112,26 @@ public interface StreamUtils {
 	}
 
 	/**
+	 * Creates a new {@link Stream} for the given values by considering non-null values only.
+	 *
+	 * @param source elements to create a {@link Stream} for.
+	 * @return a new {@link Stream} for the given non-null values. Any {@literal null} value are skipped.
+	 * @since 4.0
+	 */
+	static <T> Stream<T> fromNullable(@Nullable T... source) {
+
+		Stream.Builder<T> builder = Stream.builder();
+
+		for (T element : source) {
+			if (element != null) {
+				builder.add(element);
+			}
+		}
+
+		return builder.build();
+	}
+
+	/**
 	 * Zips the given {@link Stream}s using the given {@link BiFunction}. The resulting {@link Stream} will have the
 	 * length of the shorter of the two, abbreviating the zipping when the shorter of the two {@link Stream}s is
 	 * exhausted.

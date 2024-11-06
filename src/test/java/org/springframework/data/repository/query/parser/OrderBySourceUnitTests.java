@@ -17,9 +17,8 @@ package org.springframework.data.repository.query.parser;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.Sort;
 
 /**
@@ -54,7 +53,7 @@ class OrderBySourceUnitTests {
 	@Test
 	void usesNestedPropertyCorrectly() throws Exception {
 
-		var source = new OrderBySource("BarNameDesc", Optional.of(Foo.class));
+		var source = new OrderBySource("BarNameDesc", Foo.class);
 		assertThat(source.toSort()).isEqualTo(Sort.by("bar.name").descending());
 	}
 

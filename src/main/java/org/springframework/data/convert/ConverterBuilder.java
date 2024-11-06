@@ -15,7 +15,6 @@
  */
 package org.springframework.data.convert;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -52,7 +51,7 @@ public interface ConverterBuilder {
 		Assert.notNull(target, "Target type must not be null");
 		Assert.notNull(function, "Conversion function must not be null");
 
-		return new DefaultConverterBuilder<>(new ConvertiblePair(source, target), Optional.empty(), Optional.of(function));
+		return new DefaultConverterBuilder<>(new ConvertiblePair(source, target), null, function);
 	}
 
 	/**
@@ -71,7 +70,7 @@ public interface ConverterBuilder {
 		Assert.notNull(target, "Target type must not be null");
 		Assert.notNull(function, "Conversion function must not be null");
 
-		return new DefaultConverterBuilder<>(new ConvertiblePair(target, source), Optional.of(function), Optional.empty());
+		return new DefaultConverterBuilder<>(new ConvertiblePair(target, source), function, null);
 	}
 
 	/**

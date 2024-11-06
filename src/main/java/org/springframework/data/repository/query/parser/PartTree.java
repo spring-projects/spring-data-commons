@@ -18,7 +18,6 @@ package org.springframework.data.repository.query.parser;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -96,10 +95,10 @@ public class PartTree implements Streamable<OrPart> {
 		Matcher matcher = PREFIX_TEMPLATE.matcher(source);
 
 		if (!matcher.find()) {
-			this.subject = new Subject(Optional.empty());
+			this.subject = new Subject();
 			this.predicate = new Predicate(source, domainClass);
 		} else {
-			this.subject = new Subject(Optional.of(matcher.group(0)));
+			this.subject = new Subject(matcher.group(0));
 			this.predicate = new Predicate(source.substring(matcher.group().length()), domainClass);
 		}
 	}
@@ -157,7 +156,7 @@ public class PartTree implements Streamable<OrPart> {
 	}
 
 	/**
-	 * Return {@literal true} if the create {@link PartTree} is meant to be used for a query with limited maximal results.
+	 * Return {@literal true} if the {@link PartTree} is meant to be used for a query with limited maximal results.
 	 *
 	 * @return
 	 * @since 1.9
@@ -174,7 +173,7 @@ public class PartTree implements Streamable<OrPart> {
 	 */
 	@Nullable
 	public Integer getMaxResults() {
-		return subject.getMaxResults().orElse(null);
+		return subject.getMaxResults();
 	}
 
 	/**
@@ -184,7 +183,9 @@ public class PartTree implements Streamable<OrPart> {
 	 * @since 3.2
 	 */
 	public Limit getResultLimit() {
-		return subject.getMaxResults().map(Limit::of).orElse(Limit.unlimited());
+
+		Integer maxResults = getMaxResults();
+		return maxResults != null ? Limit.of(maxResults) : Limit.unlimited();
 	}
 
 	/**
@@ -261,6 +262,7 @@ public class PartTree implements Streamable<OrPart> {
 					.collect(Collectors.toList());
 		}
 
+		@Override
 		public Iterator<Part> iterator() {
 			return children.iterator();
 		}
@@ -294,11 +296,20 @@ public class PartTree implements Streamable<OrPart> {
 		private final boolean count;
 		private final boolean exists;
 		private final boolean delete;
-		private final Optional<Integer> maxResults;
+		private final @Nullable Integer maxResults;
 
-		public Subject(Optional<String> subject) {
+		public Subject() {
 
-			this.distinct = subject.map(it -> it.contains(DISTINCT)).orElse(false);
+			this.distinct = false;
+			this.count = false;
+			this.exists = false;
+			this.delete = false;
+			this.maxResults = null;
+		}
+
+		public Subject(String subject) {
+
+			this.distinct = subject.contains(DISTINCT);
 			this.count = matches(subject, COUNT_BY_TEMPLATE);
 			this.exists = matches(subject, EXISTS_BY_TEMPLATE);
 			this.delete = matches(subject, DELETE_BY_TEMPLATE);
@@ -310,19 +321,16 @@ public class PartTree implements Streamable<OrPart> {
 		 * @return
 		 * @since 1.9
 		 */
-		private Optional<Integer> returnMaxResultsIfFirstKSubjectOrNull(Optional<String> subject) {
+		@Nullable
+		private Integer returnMaxResultsIfFirstKSubjectOrNull(String subject) {
 
-			return subject.map(it -> {
+			Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(subject);
 
-				Matcher grp = LIMITED_QUERY_TEMPLATE.matcher(it);
+			if (!grp.find()) {
+				return null;
+			}
 
-				if (!grp.find()) {
-					return null;
-				}
-
-				return StringUtils.hasText(grp.group(4)) ? Integer.valueOf(grp.group(4)) : 1;
-			});
-
+			return StringUtils.hasText(grp.group(4)) ? Integer.parseInt(grp.group(4)) : 1;
 		}
 
 		/**
@@ -353,12 +361,13 @@ public class PartTree implements Streamable<OrPart> {
 			return distinct;
 		}
 
-		public Optional<Integer> getMaxResults() {
+		@Nullable
+		public Integer getMaxResults() {
 			return maxResults;
 		}
 
-		private boolean matches(Optional<String> subject, Pattern pattern) {
-			return subject.map(it -> pattern.matcher(it).find()).orElse(false);
+		private boolean matches(String subject, Pattern pattern) {
+			return pattern.matcher(subject).find();
 		}
 	}
 
@@ -390,7 +399,7 @@ public class PartTree implements Streamable<OrPart> {
 					.map(part -> new OrPart(part, domainClass, alwaysIgnoreCase)) //
 					.collect(Collectors.toList());
 
-			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], Optional.of(domainClass))
+			this.orderBySource = parts.length == 2 ? new OrderBySource(parts[1], domainClass)
 					: OrderBySource.EMPTY;
 		}
 

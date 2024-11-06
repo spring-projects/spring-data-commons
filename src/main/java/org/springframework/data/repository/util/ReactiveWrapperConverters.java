@@ -23,7 +23,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
@@ -191,15 +190,25 @@ public abstract class ReactiveWrapperConverters {
 		Assert.notNull(reactiveObject, "Reactive source object must not be null");
 		Assert.notNull(converter, "Converter must not be null");
 
-		return getFirst(reactiveObject)//
-				.map(it -> (T) it.map(reactiveObject, converter))//
-				.orElseThrow(() -> new IllegalStateException(String.format("Cannot apply converter to %s", reactiveObject)));
+		ReactiveTypeWrapper<?> wrapper = getFirst(reactiveObject);
+
+		if (wrapper == null) {
+			throw new IllegalStateException(String.format("Cannot apply converter to %s", reactiveObject));
+		}
+
+		return (T) wrapper.map(reactiveObject, converter);
 	}
 
-	private static Optional<ReactiveTypeWrapper<?>> getFirst(Object reactiveObject) {
-		return REACTIVE_WRAPPERS.stream()//
-				.filter(it -> ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass()))//
-				.findFirst();
+	@Nullable
+	private static ReactiveTypeWrapper<?> getFirst(Object reactiveObject) {
+
+		for (ReactiveTypeWrapper<?> it : REACTIVE_WRAPPERS) {
+			if (ClassUtils.isAssignable(it.getWrapperClass(), reactiveObject.getClass())) {
+				return it;
+			}
+		}
+
+		return null;
 	}
 
 	/**

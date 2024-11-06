@@ -25,11 +25,11 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.webbeans.context.AbstractContext;
 import org.mockito.Mockito;
+
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.data.repository.core.support.DummyRepositoryFactory;
 
@@ -50,7 +50,7 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		for (var type : getRepositoryTypes()) {
 
 			var bean = new DummyCdiRepositoryBean(type.getValue(), type.getKey(), beanManager,
-					Optional.of(getCustomImplementationDetector()));
+					getCustomImplementationDetector());
 			registerBean(bean);
 			afterBeanDiscovery.addBean(bean);
 		}
@@ -63,7 +63,7 @@ public class DummyCdiExtension extends CdiRepositoryExtensionSupport {
 		}
 
 		DummyCdiRepositoryBean(Set<Annotation> qualifiers, Class<T> repositoryType, BeanManager beanManager,
-				Optional<CustomRepositoryImplementationDetector> detector) {
+				CustomRepositoryImplementationDetector detector) {
 			super(qualifiers, repositoryType, beanManager, detector);
 		}
 
