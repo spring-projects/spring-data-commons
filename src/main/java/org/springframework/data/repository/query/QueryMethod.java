@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import static org.springframework.data.repository.util.ClassUtils.*;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
@@ -38,6 +36,7 @@ import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -77,7 +76,9 @@ public class QueryMethod {
 		Assert.notNull(factory, "ProjectionFactory must not be null");
 
 		Parameters.TYPES.stream() //
-				.filter(type -> getNumberOfOccurrences(method, type) > 1).findFirst().ifPresent(type -> {
+				.filter(type -> ReflectionUtils.getParameterCount(method, type::equals) > 1) //
+				.findFirst() //
+				.ifPresent(type -> {
 					throw new IllegalStateException(String.format(
 							"Method must have only one argument of type %s; Offending method: %s", type.getSimpleName(), method));
 				});
@@ -107,19 +108,19 @@ public class QueryMethod {
 
 		QueryMethodValidator.validate(method);
 
-		if (hasParameterOfType(method, Pageable.class)) {
+		if (ReflectionUtils.hasParameterOfType(method, Pageable.class)) {
 
 			if (!isStreamQuery()) {
 				assertReturnTypeAssignable(method, QueryExecutionConverters.getAllowedPageableTypes());
 			}
 
-			if (hasParameterOfType(method, Sort.class)) {
+			if (ReflectionUtils.hasParameterOfType(method, Sort.class)) {
 				throw new IllegalStateException(String.format("Method must not have Pageable *and* Sort parameters. "
 						+ "Use sorting capabilities on Pageable instead; Offending method: %s", method));
 			}
 		}
 
-		if (hasParameterOfType(method, ScrollPosition.class)) {
+		if (ReflectionUtils.hasParameterOfType(method, ScrollPosition.class)) {
 			assertReturnTypeAssignable(method, Collections.singleton(Window.class));
 		}
 
@@ -388,11 +389,12 @@ public class QueryMethod {
 
 		static Predicate<Method> pageableCannotHaveSortOrLimit = (method) -> {
 
-			if (!hasParameterAssignableToType(method, Pageable.class)) {
+			if (!ReflectionUtils.hasParameterAssignableToType(method, Pageable.class)) {
 				return true;
 			}
 
-			if (hasParameterAssignableToType(method, Sort.class) || hasParameterAssignableToType(method, Limit.class)) {
+			if (ReflectionUtils.hasParameterAssignableToType(method, Sort.class)
+					|| ReflectionUtils.hasParameterAssignableToType(method, Limit.class)) {
 				return false;
 			}
 

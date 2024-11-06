@@ -15,6 +15,10 @@
  */
 package org.springframework.data.util;
 
+/**
+ * @deprecated since 3.5 will be removed in a future release.
+ */
+@Deprecated(since = "3.5", forRemoval = true)
 public interface CastUtils {
 
 	@SuppressWarnings("unchecked")
