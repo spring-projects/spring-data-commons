@@ -701,6 +701,7 @@ public abstract class RepositoryFactorySupport
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
 			} catch (Exception ex) {
+
 				if (ex instanceof InvocationTargetException) {
 					throw ((InvocationTargetException) ex).getTargetException();
 				}
