@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core;
 
-import static org.springframework.data.repository.util.ClassUtils.*;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -25,9 +23,12 @@ import java.util.function.Supplier;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.QueryAnnotation;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Contract;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -166,8 +167,8 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 		Class<?> repositoryInterface = getRepositoryInterface();
 
 		return new DefaultQueryMethods(Streamable.of(Arrays.stream(repositoryInterface.getMethods())
-				.map(it -> ClassUtils.getMostSpecificMethod(it, repositoryInterface))
-				.filter(this::isQueryMethodCandidate)
+				.map(it -> ClassUtils.getMostSpecificMethod(it, repositoryInterface)) //
+				.filter(this::isQueryMethodCandidate) //
 				.toList()), calculateHasCustomMethod(repositoryInterface));
 	}
 
@@ -185,6 +186,27 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns where the given type is the {@link Repository} interface.
+	 *
+	 * @param ifc
+	 * @return
+	 */
+	private static boolean isGenericRepositoryInterface(Class<?> ifc) {
+		return Repository.class.equals(ifc);
+	}
+
+	/**
+	 * Returns whether the given type name is a repository interface name.
+	 *
+	 * @param interfaceName
+	 * @return
+	 */
+	@Contract("null -> false")
+	public static boolean isGenericRepositoryInterface(@Nullable String interfaceName) {
+		return Repository.class.getName().equals(interfaceName);
 	}
 
 	/**

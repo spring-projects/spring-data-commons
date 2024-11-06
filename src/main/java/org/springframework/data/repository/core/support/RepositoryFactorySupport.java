@@ -183,7 +183,7 @@ public abstract class RepositoryFactorySupport
 
 	@Override
 	public void setBeanClassLoader(@Nullable ClassLoader classLoader) {
-		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
+		this.classLoader = classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader;
 		this.projectionFactory = createProjectionFactory();
 	}
 
@@ -428,15 +428,15 @@ public abstract class RepositoryFactorySupport
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
 			if (logger.isTraceEnabled()) {
-				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…", repositoryInterface.getName()));
+				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…",
+						repositoryInterface.getName()));
 			}
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				new ValueExpressionDelegate(
-						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider),
-						VALUE_PARSER));
+						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider), VALUE_PARSER));
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
@@ -528,7 +528,7 @@ public abstract class RepositoryFactorySupport
 
 			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
+				Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
 
 				return new DefaultRepositoryInformation(metadata, baseClass, composition);
 			});
@@ -751,7 +751,7 @@ public abstract class RepositoryFactorySupport
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
 			} catch (Exception e) {
-				org.springframework.data.repository.util.ClassUtils.unwrapReflectionException(e);
+				org.springframework.util.ReflectionUtils.handleReflectionException(e);
 			}
 
 			throw new IllegalStateException("Should not occur");
@@ -885,25 +885,24 @@ public abstract class RepositoryFactorySupport
 
 		static {
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
-					"org.springframework.data.querydsl.QuerydslPredicateExecutor", RepositoryValidator.class.getClassLoader(),
-					it -> {
+			org.springframework.data.util.ClassUtils.ifPresent("org.springframework.data.querydsl.QuerydslPredicateExecutor",
+					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Querydsl");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Reactive Querydsl");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.repository.query.QueryByExampleExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Query by Example");
 					});
 
-			org.springframework.data.repository.util.ClassUtils.ifPresent(
+			org.springframework.data.util.ClassUtils.ifPresent(
 					"org.springframework.data.repository.query.ReactiveQueryByExampleExecutor",
 					RepositoryValidator.class.getClassLoader(), it -> {
 						WELL_KNOWN_EXECUTORS.put(it, "Reactive Query by Example");

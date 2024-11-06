@@ -49,7 +49,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 
 	static {
 
-		CAUSE_FIELD = ReflectionUtils.findRequiredField(Throwable.class, "cause");
+		CAUSE_FIELD = ReflectionUtils.getRequiredField(Throwable.class, "cause");
 		ASSOCIATION_TYPE = ReflectionUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
 				AbstractPersistentProperty.class.getClassLoader());
 	}
