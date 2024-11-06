@@ -61,7 +61,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyPath must not be {@literal null} or empty.
-	 * @return
+	 * @return a new {@link PersistentPropertyPath} for the given property path on the given type.
 	 */
 	public PersistentPropertyPath<P> from(Class<?> type, String propertyPath) {
 
@@ -76,7 +76,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyPath must not be {@literal null} or empty.
-	 * @return
+	 * @return a new {@link PersistentPropertyPath} for the given property path on the given type.
 	 */
 	public PersistentPropertyPath<P> from(TypeInformation<?> type, String propertyPath) {
 
@@ -90,7 +90,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	 * Creates a new {@link PersistentPropertyPath} for the given {@link PropertyPath}.
 	 *
 	 * @param path must not be {@literal null}.
-	 * @return
+	 * @return a new {@link PersistentPropertyPath} for the given {@link PropertyPath}.
 	 */
 	public PersistentPropertyPath<P> from(PropertyPath path) {
 
@@ -100,12 +100,12 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	}
 
 	/**
-	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
+	 * Creates a new {@link PersistentPropertyPaths} based on a given type and {@link Predicate} to select properties
 	 * matching it.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
-	 * @return
+	 * @return a new {@link PersistentPropertyPaths} based on a given type and matching {@link Predicate}.
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(Class<T> type, Predicate<? super P> propertyFilter) {
 
@@ -116,13 +116,13 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	}
 
 	/**
-	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
+	 * Creates a new {@link PersistentPropertyPaths} based on a given type and {@link Predicate} to select properties
 	 * matching it.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @param traversalGuard must not be {@literal null}.
-	 * @return
+	 * @return a new {@link PersistentPropertyPaths} based on a given type and matching {@link Predicate}.
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(Class<T> type, Predicate<? super P> propertyFilter,
 			Predicate<P> traversalGuard) {
@@ -135,25 +135,25 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 	}
 
 	/**
-	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
+	 * Creates a new {@link PersistentPropertyPaths} based on a given type and {@link Predicate} to select properties
 	 * matching it.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
-	 * @return
+	 * @return a new {@link PersistentPropertyPaths} based on a given type and matching {@link Predicate}
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(TypeInformation<T> type, Predicate<? super P> propertyFilter) {
 		return from(type, propertyFilter, it -> !it.isAssociation());
 	}
 
 	/**
-	 * Creates a new {@link PersistentPropertyPath} based on a given type and {@link Predicate} to select properties
+	 * Creates a new {@link PersistentPropertyPaths} based on a given type and {@link Predicate} to select properties
 	 * matching it.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @param propertyFilter must not be {@literal null}.
 	 * @param traversalGuard must not be {@literal null}.
-	 * @return
+	 * @return a new {@link PersistentPropertyPaths} based on a given type and matching {@link Predicate}.
 	 */
 	public <T> PersistentPropertyPaths<T, P> from(TypeInformation<T> type, Predicate<? super P> propertyFilter,
 			Predicate<P> traversalGuard) {
@@ -263,8 +263,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		entity.doWithProperties(propertyTester);
 
-		AssociationHandler<P> handler = association -> propertyTester
-				.doWithPersistentProperty(association.getInverse());
+		AssociationHandler<P> handler = association -> propertyTester.doWithPersistentProperty(association.getInverse());
 		entity.doWithAssociations(handler);
 
 		return properties;
@@ -303,8 +302,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 				return false;
 			}
 
-			return Objects.equals(this.type, that.type)
-					&& Objects.equals(this.path, that.path);
+			return Objects.equals(this.type, that.type) && Objects.equals(this.path, that.path);
 		}
 
 		@Override
@@ -315,10 +313,9 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 		@Override
 		public String toString() {
 
-			return "TypeAndPath[" +
-					"type=" + type + ", " +
-					"path=" + path + ']';
+			return "TypeAndPath[" + "type=" + type + ", " + "path=" + path + ']';
 		}
+
 	}
 
 	static class DefaultPersistentPropertyPaths<T, P extends PersistentProperty<P>>
@@ -424,7 +421,9 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 						.findFirst() //
 						.orElse(0);
 			}
+
 		}
+
 	}
 
 	/**
@@ -482,5 +481,7 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 			throw new InvalidPersistentPropertyPath(source, type, segment, path);
 		}
+
 	}
+
 }

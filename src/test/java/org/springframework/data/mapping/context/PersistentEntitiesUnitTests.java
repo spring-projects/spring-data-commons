@@ -73,11 +73,11 @@ class PersistentEntitiesUnitTests {
 
 		var entities = PersistentEntities.of(context);
 
-		assertThat(entities.getPersistentEntity(Sample.class)).isPresent();
-		assertThat(entities.getPersistentEntity(Object.class)).isNotPresent();
+		assertThat(entities.getPersistentEntity(Sample.class)).isNotNull();
+		assertThat(entities.getPersistentEntity(Object.class)).isNull();
 		assertThat(entities.getManagedTypes()).contains(TypeInformation.of(Sample.class));
 
-		assertThat(entities.getPersistentEntity(Sample.class)).hasValueSatisfying(it -> assertThat(entities).contains(it));
+		assertThat(entities).contains(entities.getPersistentEntity(Sample.class));
 	}
 
 	@Test // DATACMNS-1318
@@ -162,31 +162,44 @@ class PersistentEntitiesUnitTests {
 	}
 
 	static class Sample {
+
 		@Id String id;
+
 	}
 
 	static class WithReference {
+
 		@Reference String sampleId;
 		@Reference Long longId;
 		@Reference(FirstWithLongId.class) Long qualifiedLongId;
 		@Reference Identifier<SecondWithGenericId> generic;
+
 	}
 
 	static class FirstWithLongId {
+
 		@Id Long id;
+
 	}
 
 	static class SecondWithLongId {
+
 		@Id Long id;
+
 	}
 
 	static class FirstWithGenericId {
+
 		@Id Identifier<FirstWithGenericId> id;
+
 	}
 
 	static class SecondWithGenericId {
+
 		@Id Identifier<SecondWithGenericId> id;
+
 	}
 
 	interface Identifier<T> {}
+
 }

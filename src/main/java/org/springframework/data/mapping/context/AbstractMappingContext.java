@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -100,7 +100,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	private static final Log LOGGER = LogFactory.getLog(MappingContext.class);
 
-	private final Optional<E> NONE = Optional.empty();
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
 	private final PersistentPropertyPathFactory<E, P> persistentPropertyPathFactory;
@@ -182,7 +182,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Sets the {@link Set} of types to populate the context initially.
 	 *
-	 * @param initialEntitySet
+	 * @param initialEntitySet set of types to that is used to pre-populate the context on {@link #afterPropertiesSet()},
+	 *          must not be {@literal null}.
 	 * @see #setManagedTypes(ManagedTypes)
 	 */
 	public void setInitialEntitySet(Set<? extends Class<?>> initialEntitySet) {
@@ -192,8 +193,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Sets the types to populate the context initially.
 	 *
-	 * @param managedTypes must not be {@literal null}. Use {@link ManagedTypes#empty()} instead.
+	 * @param managedTypes set of types to that is used to pre-populate the context on {@link #afterPropertiesSet()}, must
+	 *          not be {@literal null}, use {@link ManagedTypes#empty()} instead.
 	 * @since 3.0
+	 * @see #setInitialEntitySet(Set)
 	 */
 	public void setManagedTypes(ManagedTypes managedTypes) {
 		this.managedTypes = managedTypes;
@@ -201,11 +204,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 	/**
 	 * Configures whether the {@link MappingContext} is in strict mode which means, that it will throw
-	 * {@link MappingException}s in case one tries to lookup a {@link PersistentEntity} not already in the context. This
+	 * {@link MappingException}s in case one tries to look up a {@link PersistentEntity} not already in the context. This
 	 * defaults to {@literal false} so that unknown types will be transparently added to the MappingContext if not known
 	 * in advance.
 	 *
-	 * @param strict
+	 * @param strict {@literal true} to enable strict mode; {@literal false} otherwise.
 	 */
 	public void setStrict(boolean strict) {
 		this.strict = strict;
@@ -274,7 +277,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			// Try the user type
 			entity = persistentEntities.get(typeInformation.getUserTypeInformation());
 
-			return entity == null ? false : entity.isPresent();
+			return entity != null && entity.isPresent();
 
 		} finally {
 			read.unlock();
@@ -378,8 +381,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * Adds the given type to the {@link MappingContext}.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return the created persistent entity.
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	protected Optional<E> addPersistentEntity(Class<?> type) {
 		return addPersistentEntity(TypeInformation.of(type));
 	}
@@ -388,7 +392,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * Adds the given {@link TypeInformation} to the {@link MappingContext}.
 	 *
 	 * @param typeInformation must not be {@literal null}.
-	 * @return
+	 * @return the created persistent entity.
 	 */
 	protected Optional<E> addPersistentEntity(TypeInformation<?> typeInformation) {
 
@@ -495,7 +499,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		try {
 
 			read.lock();
-			return Collections.unmodifiableSet(new HashSet<>(persistentEntities.keySet()));
+			return Set.copyOf(persistentEntities.keySet());
 
 		} finally {
 			read.unlock();
@@ -505,19 +509,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	/**
 	 * Creates the concrete {@link PersistentEntity} instance.
 	 *
-	 * @param <T>
-	 * @param typeInformation
-	 * @return
+	 * @param typeInformation type information to create the {@link PersistentEntity} for, must not be {@literal null}.
+	 * @return a new persistent entity.
 	 */
 	protected abstract <T> E createPersistentEntity(TypeInformation<T> typeInformation);
 
 	/**
 	 * Creates the concrete instance of {@link PersistentProperty}.
 	 *
-	 * @param property
-	 * @param owner
-	 * @param simpleTypeHolder
-	 * @return
+	 * @param property property for which to create the persistent property.
+	 * @param owner owning {@link PersistentEntity}.
+	 * @param simpleTypeHolder the {@link SimpleTypeHolder} to be used.
+	 * @return a new persistent property.
 	 */
 	protected abstract P createPersistentProperty(Property property, E owner, SimpleTypeHolder simpleTypeHolder);
 
@@ -539,7 +542,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * can implement that type.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the given type is a collection-like type; {@literal false} otherwise.
 	 * @see TypeInformation#isCollectionLike()
 	 */
 	private static boolean isCollectionLike(Class<?> type) {
@@ -568,9 +571,12 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	 * default, this will reject all types considered simple and non-supported Kotlin classes, but it might be necessary
 	 * to tweak that in case you have registered custom converters for top level types (which renders them to be
 	 * considered simple) but still need meta-information about them.
+	 * <p>
+	 * Registering a type as entity allows introspection of the type and use mapping metadata during querying even if
+	 * construction happens in a converter.
 	 *
 	 * @param type will never be {@literal null}.
-	 * @return
+	 * @return {@literal true} if this context should create a {@link PersistentEntity} for the given type.
 	 */
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
 
@@ -750,6 +756,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			return persistentProperty.getType();
 		}
+
 	}
 
 	/**
@@ -790,7 +797,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 * Returns whether the given {@link PropertyDescriptor} is one to create a {@link PersistentProperty} for.
 		 *
 		 * @param property must not be {@literal null}.
-		 * @return
+		 * @return {@literal true} if the given {@link Property} matches this filter.
 		 */
 		public boolean matches(Property property) {
 
@@ -834,7 +841,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 * Returns whether the given {@link Field} matches the defined {@link PropertyMatch}.
 			 *
 			 * @param field must not be {@literal null}.
-			 * @return
+			 * @return {@literal true} if the field matches the defined {@link PropertyMatch}.
 			 */
 			public boolean matches(Field field) {
 				return matches(field.getName(), field.getType());
@@ -844,7 +851,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 * Returns whether the given {@link Property} matches the defined {@link PropertyMatch}.
 			 *
 			 * @param property must not be {@literal null}.
-			 * @return
+			 * @return {@literal true} if the property matches the defined {@link PropertyMatch}.
 			 */
 			public boolean matches(Property property) {
 				return matches(property.getName(), property.getType());
@@ -855,7 +862,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 *
 			 * @param name must not be {@literal null}.
 			 * @param type must not be {@literal null}.
-			 * @return
+			 * @return {@literal true} if the name/type matches the defined {@link PropertyMatch}.
 			 */
 			public boolean matches(String name, Class<?> type) {
 
@@ -866,12 +873,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 					return false;
 				}
 
-				if ((typeName != null) && !type.getName().equals(typeName)) {
-					return false;
-				}
-
-				return true;
+				return (typeName == null) || type.getName().equals(typeName);
 			}
+
 		}
 
 		/**
@@ -907,7 +911,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				return super.matches(property);
 			}
+
 		}
+
 	}
 
 }
