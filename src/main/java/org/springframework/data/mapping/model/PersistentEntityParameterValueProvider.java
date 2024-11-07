@@ -15,21 +15,22 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 
 /**
- * {@link ParameterValueProvider} based on a {@link PersistentEntity} to use a {@link PropertyValueProvider} to lookup
- * the value of the property referenced by the given {@link Parameter}. Additionally a
- * {@link DefaultSpELExpressionEvaluator} can be configured to get property value resolution trumped by a SpEL
- * expression evaluation.
+ * {@link ParameterValueProvider} based on a {@link PersistentEntity} to use a {@link PropertyValueProvider} to look up
+ * the value of the property referenced by the given {@link Parameter}.
  *
  * @author Oliver Gierke
  * @author Johannes Englmeier
+ * @author Mark Paluch
  */
 public class PersistentEntityParameterValueProvider<P extends PersistentProperty<P>>
 		implements ParameterValueProvider<P> {
@@ -39,7 +40,7 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	private final @Nullable Object parent;
 
 	public PersistentEntityParameterValueProvider(PersistentEntity<?, P> entity, PropertyValueProvider<P> provider,
-			Object parent) {
+			@Nullable Object parent) {
 		this.entity = entity;
 		this.provider = provider;
 		this.parent = parent;
@@ -51,12 +52,15 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 	public <T> T getParameterValue(Parameter<T, P> parameter) {
 
 		InstanceCreatorMetadata<P> creator = entity.getInstanceCreatorMetadata();
+		String name = parameter.getName();
 
 		if (creator != null && creator.isParentParameter(parameter)) {
 			return (T) parent;
 		}
 
-		String name = parameter.getName();
+		if (parameter.getAnnotations().isPresent(Transient.class) || (name != null && entity.isTransient(name))) {
+			return (T) getTransientDefault(parameter.getRawType());
+		}
 
 		if (name == null) {
 			throw new MappingException(String.format("Parameter %s does not have a name", parameter));
@@ -71,4 +75,10 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		return provider.getPropertyValue(property);
 	}
+
+	@Nullable
+	private static Object getTransientDefault(Class<?> parameterType) {
+		return parameterType.isPrimitive() ? ReflectionUtils.getPrimitiveDefault(parameterType) : null;
+	}
+
 }

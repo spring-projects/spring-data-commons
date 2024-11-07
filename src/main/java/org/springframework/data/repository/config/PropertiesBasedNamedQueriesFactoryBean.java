@@ -47,7 +47,7 @@ public class PropertiesBasedNamedQueriesFactoryBean extends PropertiesLoaderSupp
 	 * Set whether a shared singleton {@code PropertiesBasedNamedQueries} instance should be created, or rather a new
 	 * {@code PropertiesBasedNamedQueries} instance on each request.
 	 * <p>
-	 * Default is {@code true} (a shared singleton).
+	 * Default is {@literal true} (a shared singleton).
 	 */
 	public void setSingleton(boolean singleton) {
 		this.singleton = singleton;
