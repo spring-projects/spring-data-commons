@@ -23,6 +23,7 @@ interface CustomizedUserRepository {
 ----
 class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 
+  @Override
   public void someCustomMethod(User user) {
     // Your custom implementation
   }
@@ -32,15 +33,21 @@ class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 [NOTE]
 ====
 The most important part of the class name that corresponds to the fragment interface is the `Impl` postfix.
-You can customize the store specific postfix by setting `@Enable<StoreModule>Repositories#repositoryImplementationPostfix`.
+You can customize the store-specific postfix by setting `@Enable<StoreModule>Repositories(repositoryImplementationPostfix = …)`.
 ====
 
 [WARNING]
 ====
-Historically Spring Data custom repository behaviour followed a https://docs.spring.io/spring-data/commons/docs/1.9.0.RELEASE/reference/html/#repositories.single-repository-behaviour[different naming pattern] that is not recommended but still supported.
-A type located in the same package as the repository interface, matching _repository interface name_ + _implementation postfix_, is considered a custom implementation and will be treated as such.
-This can lead to unexpected failures. +
-Please consider the old extension strategy deprecated, with the intention of removal in the next major version.
+Historically, Spring Data custom repository implementation discovery followed a
+https://docs.spring.io/spring-data/commons/docs/1.9.0.RELEASE/reference/html/#repositories.single-repository-behaviour[naming pattern]
+that derived the custom implementation class name from the repository allowing effectively a single custom implementation.
+
+A type located in the same package as the repository interface, matching _repository interface name_ followed by _implementation postfix_,
+is considered a custom implementation and will be treated as a custom implementation.
+A class following that name can lead to undesired behavior.
+
+We consider the single-custom implementation naming deprecated and recommend not using this pattern.
+Instead, migrate to a fragment-based programming model.
 ====
 
 The implementation itself does not depend on Spring Data and can be a regular Spring bean.
@@ -75,6 +82,7 @@ interface HumanRepository {
 
 class HumanRepositoryImpl implements HumanRepository {
 
+  @Override
   public void someHumanMethod(User user) {
     // Your custom implementation
   }
@@ -89,10 +97,12 @@ interface ContactRepository {
 
 class ContactRepositoryImpl implements ContactRepository {
 
+  @Override
   public void someContactMethod(User user) {
     // Your custom implementation
   }
 
+  @Override
   public User anotherContactMethod(User user) {
     // Your custom implementation
   }
@@ -127,6 +137,7 @@ interface CustomizedSave<T> {
 
 class CustomizedSaveImpl<T> implements CustomizedSave<T> {
 
+  @Override
   public <S extends T> S save(S entity) {
     // Your custom implementation
   }
@@ -273,6 +284,7 @@ class MyRepositoryImpl<T, ID>
     this.entityManager = entityManager;
   }
 
+  @Override
   @Transactional
   public <S extends T> S save(S entity) {
     // implementation goes here
