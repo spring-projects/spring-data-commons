@@ -29,7 +29,19 @@ class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
 }
 ----
 
-NOTE: The most important part of the class name that corresponds to the fragment interface is the `Impl` postfix.
+[NOTE]
+====
+The most important part of the class name that corresponds to the fragment interface is the `Impl` postfix.
+You can customize the store specific postfix by setting `@Enable<StoreModule>Repositories#repositoryImplementationPostfix`.
+====
+
+[WARNING]
+====
+Historically Spring Data custom repository behaviour followed a https://docs.spring.io/spring-data/commons/docs/1.9.0.RELEASE/reference/html/#repositories.single-repository-behaviour[different naming pattern] that is not recommended but still supported.
+A type located in the same package as the repository interface, matching _repository interface name_ + _implementation postfix_, is considered a custom implementation and will be treated as such.
+This can lead to unexpected failures. +
+Please consider the old extension strategy deprecated, with the intention of removal in the next major version.
+====
 
 The implementation itself does not depend on Spring Data and can be a regular Spring bean.
 Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a `JdbcTemplate`), take part in aspects, and so on.
