@@ -131,7 +131,6 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 * Returns the expression to be used when looking up a source data structure to populate the actual parameter value.
 	 *
 	 * @return the expression to be used when looking up a source data structure.
-	 * @deprecated since 3.3, use {@link #getValueExpression()} instead.
 	 */
 	@Nullable
 	public String getSpelExpression() {
@@ -163,17 +162,6 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		}
 
 		return getValueExpression();
-	}
-
-	/**
-	 * Returns whether the constructor parameter is equipped with a SpEL expression.
-	 *
-	 * @return {@literal true}} if the parameter is equipped with a SpEL expression.
-	 * @deprecated since 3.3, use {@link #hasValueExpression()} instead.
-	 */
-	@Deprecated(since = "3.3")
-	public boolean hasSpelExpression() {
-		return hasValueExpression();
 	}
 
 	/**

@@ -50,8 +50,8 @@ import org.springframework.data.repository.core.support.QueryCreationListener;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.spel.EvaluationContextProvider;
 
 /**
  * Unit tests for {@link CdiRepositoryBean}.
@@ -182,7 +182,7 @@ class CdiRepositoryBeanUnitTests {
 
 		bean.applyConfiguration(repositoryFactory);
 
-		verify(repositoryFactory).setEvaluationContextProvider(QueryMethodEvaluationContextProvider.DEFAULT);
+		verify(repositoryFactory).setEvaluationContextProvider(EvaluationContextProvider.DEFAULT);
 		verify(repositoryFactory).setNamedQueries(PropertiesBasedNamedQueries.EMPTY);
 		verify(repositoryFactory).setRepositoryBaseClass(String.class);
 		verify(repositoryFactory).setQueryLookupStrategyKey(Key.CREATE);
@@ -217,8 +217,8 @@ class CdiRepositoryBeanUnitTests {
 		INSTANCE;
 
 		@Override
-		public Optional<QueryMethodEvaluationContextProvider> getEvaluationContextProvider() {
-			return Optional.of(QueryMethodEvaluationContextProvider.DEFAULT);
+		public Optional<EvaluationContextProvider> getEvaluationContextProvider() {
+			return Optional.of(EvaluationContextProvider.DEFAULT);
 		}
 
 		@Override

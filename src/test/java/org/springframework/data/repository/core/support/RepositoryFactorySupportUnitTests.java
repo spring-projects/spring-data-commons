@@ -66,9 +66,9 @@ import org.springframework.data.repository.core.support.RepositoryMethodInvocati
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.sample.User;
 import org.springframework.lang.Nullable;
@@ -77,7 +77,6 @@ import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcesso
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Unit tests for {@link RepositoryFactorySupport}.
@@ -502,7 +501,7 @@ class RepositoryFactorySupportUnitTests {
 		var factory = new DummyRepositoryFactory(backingRepo) {
 			@Override
 			protected Optional<QueryLookupStrategy> getQueryLookupStrategy(QueryLookupStrategy.Key key,
-					QueryMethodEvaluationContextProvider evaluationContextProvider) {
+					ValueExpressionDelegate valueExpressionDelegate) {
 				return Optional.of((method, metadata, factory, namedQueries) -> {
 					new PartTree(method.getName(), method.getReturnType());
 					return null;
@@ -628,11 +627,11 @@ class RepositoryFactorySupportUnitTests {
 
 		// DATACMNS-714
 		@Async
-		ListenableFuture<User> findOneByLastname(String lastname);
+		CompletableFuture<User> findOneByLastname(String lastname);
 
 		// DATACMNS-714
 		@Async
-		ListenableFuture<List<User>> readAllByLastname(String lastname);
+		CompletableFuture<List<User>> readAllByLastname(String lastname);
 	}
 
 	static class CustomRepositoryBaseClass {

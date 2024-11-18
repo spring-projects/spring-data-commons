@@ -113,14 +113,12 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	@Test // DATACMNS-283
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	void capturesContextOnInstantiationException() throws Exception {
+	void capturesContextOnInstantiationException() {
 
 		PersistentEntity<Sample, P> entity = new BasicPersistentEntity<>(TypeInformation.of(Sample.class));
 
 		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 
-		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
 		List<Object> parameters = Arrays.asList("FOO", "FOO");
 
 		try {
@@ -129,12 +127,6 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 			fail("Expected MappingInstantiationException");
 
 		} catch (MappingInstantiationException o_O) {
-
-			assertThat(o_O.getEntityCreator()
-				.map(it -> (PreferredConstructor) it)
-				.map(PreferredConstructor::getConstructor))
-				.isPresent()
-				.hasValue(constructor);
 
 			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
 			assertThat(o_O.getEntityType()).hasValue(Sample.class);
