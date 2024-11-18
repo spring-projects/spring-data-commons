@@ -32,11 +32,9 @@ import org.springframework.util.ConcurrentLruCache;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
- * @deprecated since 3.0 to go package protected at some point. Refer to {@link TypeInformation} only.
  */
-@Deprecated(since = "3.0", forRemoval = true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
+class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(128,
 			ClassTypeInformation::new);
@@ -70,9 +68,7 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @param <S>
 	 * @param type
 	 * @return
-	 * @deprecated since 3.0. Use {@link TypeInformation#of} instead.
 	 */
-	@Deprecated
 	public static <S> ClassTypeInformation<S> from(Class<S> type) {
 		return from(resolvableTypeCache.get(type));
 	}
@@ -82,31 +78,6 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		Assert.notNull(type, "Type must not be null");
 
 		return (ClassTypeInformation<S>) cache.get(type);
-	}
-
-	/**
-	 * Warning: Does not fully resolve generic arguments.
-	 *
-	 * @param method
-	 * @return
-	 * @deprecated since 3.0. Use {@link TypeInformation#fromReturnTypeOf(Method)} instead.
-	 */
-	@Deprecated
-	public static <S> TypeInformation<S> fromReturnTypeOf(Method method) {
-		return (TypeInformation<S>) TypeInformation.of(ResolvableType.forMethodReturnType(method));
-	}
-
-	/**
-	 * @param method
-	 * @param actualType can be {@literal null}.
-	 * @return
-	 */
-	static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> actualType) {
-
-		var type = actualType == null ? ResolvableType.forMethodReturnType(method)
-				: ResolvableType.forMethodReturnType(method, actualType);
-
-		return TypeInformation.of(type);
 	}
 
 	@Override

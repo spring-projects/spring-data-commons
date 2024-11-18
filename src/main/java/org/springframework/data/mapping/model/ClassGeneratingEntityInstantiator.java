@@ -32,6 +32,7 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.NativeDetector;
 import org.springframework.data.mapping.FactoryMethod;
@@ -159,8 +160,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 * @return
 	 */
 	protected EntityInstantiator doCreateEntityInstantiator(PersistentEntity<?, ?> entity) {
-		return new EntityInstantiatorAdapter(
-				createObjectInstantiator(entity, entity.getInstanceCreatorMetadata()));
+		return new EntityInstantiatorAdapter(createObjectInstantiator(entity, entity.getInstanceCreatorMetadata()));
 	}
 
 	/**
@@ -239,7 +239,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			@Nullable InstanceCreatorMetadata<?> constructor) {
 
 		try {
-			return (ObjectInstantiator) this.generator.generateCustomInstantiatorClass(entity, constructor).newInstance();
+			Class<?> instantiatorClass = this.generator.generateCustomInstantiatorClass(entity, constructor);
+			return (ObjectInstantiator) BeanUtils.instantiateClass(instantiatorClass);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -482,8 +483,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			String entityTypeResourcePath = Type.getInternalName(entity.getType());
 
 			MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, CREATE_METHOD_NAME,
-					"([" + BytecodeUtil.referenceName(Object.class) + ")" + BytecodeUtil.referenceName(Object.class),
-					null, null);
+					"([" + BytecodeUtil.referenceName(Object.class) + ")" + BytecodeUtil.referenceName(Object.class), null, null);
 			mv.visitCode();
 			mv.visitTypeInsn(NEW, entityTypeResourcePath);
 			mv.visitInsn(DUP);

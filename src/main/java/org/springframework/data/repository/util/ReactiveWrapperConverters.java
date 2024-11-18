@@ -132,8 +132,9 @@ public abstract class ReactiveWrapperConverters {
 	/**
 	 * Returns whether the given type is supported for wrapper type conversion.
 	 * <p>
-	 * NOTE: A reactive wrapper type might be supported in general by {@link ReactiveWrappers#supports(Class)} but not
-	 * necessarily for conversion using this method.
+	 * NOTE: A reactive wrapper type might be supported in general by
+	 * {@link org.springframework.data.util.ReactiveWrappers#supports(Class)} but not necessarily for conversion using
+	 * this method.
 	 * </p>
 	 *
 	 * @param type must not be {@literal null}.

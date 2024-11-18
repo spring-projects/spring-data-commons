@@ -205,7 +205,6 @@ public abstract class QueryExecutionConverters {
 		CustomCollections.registerConvertersIn(conversionService);
 
 		conversionService.addConverter(new NullableWrapperToCompletableFutureConverter());
-		conversionService.addConverter(new NullableWrapperToFutureConverter());
 		conversionService.addConverter(new IterableToStreamableConverter());
 	}
 
@@ -355,28 +354,6 @@ public abstract class QueryExecutionConverters {
 		 * @return must not be {@literal null}.
 		 */
 		protected abstract Object wrap(Object source);
-	}
-
-	/**
-	 * A Spring {@link Converter} to support returning {@link Future} instances from repository methods.
-	 *
-	 * @author Oliver Gierke
-	 */
-	@Deprecated(since = "3.0", forRemoval = true)
-	@SuppressWarnings("removal")
-	private static class NullableWrapperToFutureConverter extends AbstractWrapperTypeConverter {
-
-		/**
-		 * Creates a new {@link NullableWrapperToFutureConverter} using the given {@link ConversionService}.
-		 */
-		NullableWrapperToFutureConverter() {
-			super(new AsyncResult<>(null), List.of(ListenableFuture.class));
-		}
-
-		@Override
-		protected Object wrap(Object source) {
-			return new AsyncResult<>(source);
-		}
 	}
 
 	/**
