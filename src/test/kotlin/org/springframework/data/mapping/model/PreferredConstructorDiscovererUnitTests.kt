@@ -17,7 +17,7 @@ package org.springframework.data.mapping.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.data.annotation.PersistenceConstructor
+import org.springframework.data.annotation.PersistenceCreator
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty
 
 /**
@@ -129,7 +129,7 @@ class PreferredConstructorDiscovererUnitTests {
 
 	class AnnotatedConstructors(val firstname: String) {
 
-		@PersistenceConstructor
+		@PersistenceCreator
 		constructor(firstname: String, lastname: String) : this(firstname)
 	}
 
@@ -140,7 +140,7 @@ class PreferredConstructorDiscovererUnitTests {
 		val lastname: String = "bar"
 	) {
 
-		@PersistenceConstructor
+		@PersistenceCreator
 		constructor(firstname: String = "foo", lastname: String = "bar", age: Int) : this(
 			firstname,
 			lastname

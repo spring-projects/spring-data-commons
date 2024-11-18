@@ -132,13 +132,6 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>> implement
 
 	@Nullable
 	@Override
-	@SuppressWarnings("unchecked")
-	public PreferredConstructor<T, P> getPersistenceConstructor() {
-		return creator instanceof PreferredConstructor ? (PreferredConstructor<T, P>) creator : null;
-	}
-
-	@Nullable
-	@Override
 	public InstanceCreatorMetadata<P> getInstanceCreatorMetadata() {
 		return creator;
 	}
