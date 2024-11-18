@@ -85,23 +85,6 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 * @param resourceLoader must not be {@literal null}.
 	 * @param environment must not be {@literal null}.
 	 * @param registry must not be {@literal null}.
-	 * @deprecated since 2.2. Prefer to use overload taking a {@link BeanNameGenerator} additionally.
-	 */
-	@Deprecated(since = "2.2")
-	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,
-			ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
-		this(metadata, annotation, resourceLoader, environment, registry, null);
-	}
-
-	/**
-	 * Creates a new {@link AnnotationRepositoryConfigurationSource} from the given {@link AnnotationMetadata} and
-	 * annotation.
-	 *
-	 * @param metadata must not be {@literal null}.
-	 * @param annotation must not be {@literal null}.
-	 * @param resourceLoader must not be {@literal null}.
-	 * @param environment must not be {@literal null}.
-	 * @param registry must not be {@literal null}.
 	 * @param importBeanNameGenerator can be {@literal null}.
 	 */
 	public AnnotationRepositoryConfigurationSource(AnnotationMetadata metadata, Class<? extends Annotation> annotation,

@@ -24,9 +24,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * {@link ParameterValueProvider} based on a {@link PersistentEntity} to use a {@link PropertyValueProvider} to lookup
- * the value of the property referenced by the given {@link Parameter}. Additionally a
- * {@link DefaultSpELExpressionEvaluator} can be configured to get property value resolution trumped by a SpEL
- * expression evaluation.
+ * the value of the property referenced by the given {@link Parameter}.
  *
  * @author Oliver Gierke
  * @author Johannes Englmeier

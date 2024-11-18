@@ -24,7 +24,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.support.QueryCreationListener;
 import org.springframework.data.repository.core.support.RepositoryProxyPostProcessor;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.spel.EvaluationContextProvider;
 
 /**
  * Interface containing the configurable options for the Spring Data repository subsystem using CDI.
@@ -36,13 +36,13 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 public interface CdiRepositoryConfiguration {
 
 	/**
-	 * Return the {@link QueryMethodEvaluationContextProvider} to use. Can be {@link Optional#empty()} .
+	 * Return the {@link EvaluationContextProvider} to use. Can be {@link Optional#empty()} .
 	 *
-	 * @return the optional {@link QueryMethodEvaluationContextProvider} base to use, can be {@link Optional#empty()},
-	 *         must not be {@literal null}.
+	 * @return the optional {@link EvaluationContextProvider} base to use, can be {@link Optional#empty()}, must not be
+	 *         {@literal null}.
 	 * @since 2.1
 	 */
-	default Optional<QueryMethodEvaluationContextProvider> getEvaluationContextProvider() {
+	default Optional<EvaluationContextProvider> getEvaluationContextProvider() {
 		return Optional.empty();
 	}
 

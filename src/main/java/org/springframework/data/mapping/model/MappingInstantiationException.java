@@ -156,18 +156,6 @@ public class MappingInstantiationException extends RuntimeException {
 	}
 
 	/**
-	 * The constructor used during the instantiation attempt.
-	 *
-	 * @return the constructor
-	 * @deprecated since 3.0, use {@link #getEntityCreator()} instead.
-	 */
-	@Deprecated
-	public Optional<Constructor<?>> getConstructor() {
-		return getEntityCreator().filter(PreferredConstructor.class::isInstance).map(PreferredConstructor.class::cast)
-				.map(PreferredConstructor::getConstructor);
-	}
-
-	/**
 	 * The entity creator used during the instantiation attempt.
 	 *
 	 * @return the entity creator

@@ -20,12 +20,9 @@ import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.springframework.data.annotation.PersistenceConstructor
-import org.springframework.data.annotation.Persistent
+import org.springframework.data.annotation.PersistenceCreator
 import org.springframework.data.mapping.PersistentEntity
 import org.springframework.data.mapping.context.SamplePersistentProperty
-import org.springframework.data.mapping.model.KotlinValueUtils.BoxingRules
-import kotlin.jvm.internal.Reflection
 import kotlin.reflect.KClass
 
 /**
@@ -297,13 +294,16 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	)
 
 
-	data class WithConstructorsHavingSameParameterCount @PersistenceConstructor constructor(val id: Long?, val notes: Map<String, String> = emptyMap()) {
+	data class WithConstructorsHavingSameParameterCount @PersistenceCreator constructor(
+		val id: Long?,
+		val notes: Map<String, String> = emptyMap()
+	) {
 		constructor(notes: Map<String, String>, additionalNotes: Map<String, String> = emptyMap()) : this(null, notes + additionalNotes)
 	}
 
 	data class ContactWithPersistenceConstructor(val firstname: String, val lastname: String) {
 
-		@PersistenceConstructor
+		@PersistenceCreator
 		constructor(firstname: String) : this(firstname, "")
 	}
 
@@ -312,7 +312,7 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		var organisations: MutableList<Organisation> = mutableListOf()
 	) {
-		@PersistenceConstructor
+		@PersistenceCreator
 		constructor(id: String?) : this(id, mutableListOf())
 	}
 

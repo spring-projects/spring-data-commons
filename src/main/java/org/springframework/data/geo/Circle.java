@@ -15,7 +15,7 @@
  */
 package org.springframework.data.geo;
 
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -40,7 +40,7 @@ public class Circle implements Shape {
 	 * @param center must not be {@literal null}.
 	 * @param radius must not be {@literal null} and it's value greater or equal to zero.
 	 */
-	@PersistenceConstructor
+	@PersistenceCreator
 	public Circle(Point center, Distance radius) {
 
 		Assert.notNull(center, "Center point must not be null");

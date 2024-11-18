@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -114,7 +113,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 		var constructor = PreferredConstructorDiscoverer.discover(entity);
 		assertThat(constructor).isNotNull();
 
-		var annotation = constructor.getConstructor().getAnnotation(PersistenceConstructor.class);
+		var annotation = constructor.getConstructor().getAnnotation(PersistenceCreator.class);
 		assertThat(annotation).isNotNull();
 		assertThat(constructor.getConstructor().isSynthetic()).isFalse();
 	}
@@ -184,7 +183,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 	}
 
 	static class SyntheticConstructor {
-		@PersistenceConstructor
+		@PersistenceCreator
 		private SyntheticConstructor(String x) {}
 
 		class InnerSynthetic {
@@ -225,7 +224,7 @@ class PreferredConstructorDiscovererUnitTests<P extends PersistentProperty<P>> {
 
 		public ClassWithMultipleConstructorsAndAnnotation(String value) {}
 
-		@PersistenceConstructor
+		@PersistenceCreator
 		public ClassWithMultipleConstructorsAndAnnotation(Long value) {}
 	}
 

@@ -43,10 +43,8 @@ public class QPageRequest extends AbstractPageRequest {
 	 *
 	 * @param pageNumber zero-based page number, must not be negative.
 	 * @param pageSize the size of the page to be returned, must be greater than 0.
-	 * @deprecated since 2.1, use {@link #of(int, int)} instead.
 	 */
-	@Deprecated
-	public QPageRequest(int pageNumber, int pageSize) {
+	private QPageRequest(int pageNumber, int pageSize) {
 		this(pageNumber, pageSize, QSort.unsorted());
 	}
 
@@ -56,10 +54,8 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param pageNumber zero-based page number, must not be negative.
 	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param orderSpecifiers must not be {@literal null} or empty;
-	 * @deprecated since 2.1, use {@link #of(int, int, OrderSpecifier...)} instead.
 	 */
-	@Deprecated
-	public QPageRequest(int pageNumber, int pageSize, OrderSpecifier<?>... orderSpecifiers) {
+	private QPageRequest(int pageNumber, int pageSize, OrderSpecifier<?>... orderSpecifiers) {
 		this(pageNumber, pageSize, new QSort(orderSpecifiers));
 	}
 
@@ -69,10 +65,8 @@ public class QPageRequest extends AbstractPageRequest {
 	 * @param pageNumber zero-based page number, must not be negative.
 	 * @param pageSize the size of the page to be returned, must be greater than 0.
 	 * @param sort must not be {@literal null}.
-	 * @deprecated since 2.1, use {@link #of(int, int, QSort)} instead.
 	 */
-	@Deprecated
-	public QPageRequest(int pageNumber, int pageSize, QSort sort) {
+	private QPageRequest(int pageNumber, int pageSize, QSort sort) {
 
 		super(pageNumber, pageSize);
 

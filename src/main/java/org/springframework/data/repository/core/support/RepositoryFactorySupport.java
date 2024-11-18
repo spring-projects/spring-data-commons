@@ -30,6 +30,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.beans.BeanUtils;
@@ -61,11 +62,9 @@ import org.springframework.data.repository.core.RepositoryMethodContextHolder;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.DefaultRepositoryInvocationMulticaster;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
-import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
@@ -207,20 +206,6 @@ public abstract class RepositoryFactorySupport
 		}
 
 		return this.environment;
-	}
-
-	/**
-	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
-	 * queries.
-	 *
-	 * @param evaluationContextProvider can be {@literal null}, defaults to
-	 *          {@link QueryMethodEvaluationContextProvider#DEFAULT}.
-	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
-	 */
-	@Deprecated(since = "3.4", forRemoval = true)
-	public void setEvaluationContextProvider(@Nullable QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		setEvaluationContextProvider(evaluationContextProvider == null ? EvaluationContextProvider.DEFAULT
-				: evaluationContextProvider.getEvaluationContextProvider());
 	}
 
 	/**
@@ -429,15 +414,15 @@ public abstract class RepositoryFactorySupport
 
 		if (DefaultMethodInvokingMethodInterceptor.hasDefaultMethods(repositoryInterface)) {
 			if (logger.isTraceEnabled()) {
-				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…", repositoryInterface.getName()));
+				logger.trace(LogMessage.format("Register DefaultMethodInvokingMethodInterceptor for %s…",
+						repositoryInterface.getName()));
 			}
 			result.addAdvice(new DefaultMethodInvokingMethodInterceptor());
 		}
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				new ValueExpressionDelegate(
-						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider),
-						VALUE_PARSER));
+						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider), VALUE_PARSER));
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
@@ -529,7 +514,7 @@ public abstract class RepositoryFactorySupport
 
 			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
+				Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
 
 				return new DefaultRepositoryInformation(metadata, baseClass, composition);
 			});
@@ -578,28 +563,7 @@ public abstract class RepositoryFactorySupport
 	protected abstract Class<?> getRepositoryBaseClass(RepositoryMetadata metadata);
 
 	/**
-	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link QueryMethodEvaluationContextProvider}.
-	 *
-	 * @param key can be {@literal null}.
-	 * @param evaluationContextProvider will never be {@literal null}.
-	 * @return the {@link QueryLookupStrategy} to use or {@literal null} if no queries should be looked up.
-	 * @since 1.9
-	 * @deprecated since 3.4, use {@link #getQueryLookupStrategy(Key, ValueExpressionDelegate)} instead to support
-	 *             {@link org.springframework.data.expression.ValueExpression} in query methods.
-	 */
-	@Deprecated(since = "3.4", forRemoval = true)
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
-			QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		return Optional.empty();
-	}
-
-	/**
-	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link ValueExpressionDelegate}. Favor
-	 * implementing this method over {@link #getQueryLookupStrategy(Key, QueryMethodEvaluationContextProvider)} for
-	 * extended {@link org.springframework.data.expression.ValueExpression} support.
-	 * <p>
-	 * This method delegates to {@link #getQueryLookupStrategy(Key, QueryMethodEvaluationContextProvider)} unless
-	 * overridden.
+	 * Returns the {@link QueryLookupStrategy} for the given {@link Key} and {@link ValueExpressionDelegate}.
 	 *
 	 * @param key can be {@literal null}.
 	 * @param valueExpressionDelegate will never be {@literal null}.
@@ -608,8 +572,7 @@ public abstract class RepositoryFactorySupport
 	 */
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			ValueExpressionDelegate valueExpressionDelegate) {
-		return getQueryLookupStrategy(key,
-				new ExtensionAwareQueryMethodEvaluationContextProvider(evaluationContextProvider));
+		return Optional.empty();
 	}
 
 	/**
@@ -641,21 +604,6 @@ public abstract class RepositoryFactorySupport
 			Object... constructorArguments) {
 
 		Class<?> baseClass = information.getRepositoryBaseClass();
-		return instantiateClass(baseClass, constructorArguments);
-	}
-
-	/**
-	 * Creates a repository of the repository base class defined in the given {@link RepositoryInformation} using
-	 * reflection.
-	 *
-	 * @param baseClass
-	 * @param constructorArguments
-	 * @return
-	 * @deprecated since 2.6 because it has a misleading name. Use {@link #instantiateClass(Class, Object...)} instead.
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated
-	protected final <R> R getTargetRepositoryViaReflection(Class<?> baseClass, Object... constructorArguments) {
 		return instantiateClass(baseClass, constructorArguments);
 	}
 

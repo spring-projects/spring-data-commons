@@ -115,7 +115,7 @@ public class QueryMethodValueEvaluationContextAccessor {
 		this.evaluationContextProvider = createEvaluationContextProvider(extensions);
 	}
 
-	private static EvaluationContextProvider createEvaluationContextProvider(ListableBeanFactory factory) {
+	public static EvaluationContextProvider createEvaluationContextProvider(ListableBeanFactory factory) {
 
 		return ReactiveWrappers.isAvailable(ReactiveWrappers.ReactiveLibrary.PROJECT_REACTOR)
 				? new ReactiveExtensionAwareEvaluationContextProvider(factory)

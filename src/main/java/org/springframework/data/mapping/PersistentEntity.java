@@ -44,19 +44,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	String getName();
 
 	/**
-	 * Returns the {@link PreferredConstructor} to be used to instantiate objects of this {@link PersistentEntity}.
-	 *
-	 * @return {@literal null} in case no suitable constructor for automatic construction can be found. This usually
-	 *         indicates that the instantiation of the object of that persistent entity is done through either a
-	 *         customer {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom
-	 *         conversion mechanisms entirely.
-	 * @deprecated since 3.0, use {@link #getInstanceCreatorMetadata()}.
-	 */
-	@Nullable
-	@Deprecated
-	PreferredConstructor<T, P> getPersistenceConstructor();
-
-	/**
 	 * Returns the {@link InstanceCreatorMetadata} to be used to instantiate objects of this {@link PersistentEntity}.
 	 *
 	 * @return {@literal null} in case no suitable creation mechanism for automatic construction can be found. This
@@ -67,20 +54,6 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 */
 	@Nullable
 	InstanceCreatorMetadata<P> getInstanceCreatorMetadata();
-
-	/**
-	 * Returns whether the given {@link PersistentProperty} is referred to by a constructor argument of the
-	 * {@link PersistentEntity}.
-	 *
-	 * @param property can be {@literal null}.
-	 * @return true if the given {@link PersistentProperty} is referred to by a constructor argument or {@literal false}
-	 *         if not or {@literal null}.
-	 * @deprecated since 3.0, use {@link #isCreatorArgument(PersistentProperty)} instead.
-	 */
-	@Deprecated
-	default boolean isConstructorArgument(PersistentProperty<?> property) {
-		return isCreatorArgument(property);
-	}
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is referred to by a creator argument of the

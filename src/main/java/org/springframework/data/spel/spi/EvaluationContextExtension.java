@@ -18,13 +18,13 @@ package org.springframework.data.spel.spi;
 import java.util.Collections;
 import java.util.Map;
 
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.lang.Nullable;
 
 /**
  * SPI to allow adding a set of properties and function definitions accessible via the root of an
- * {@link EvaluationContext} provided by an
- * {@link org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider}.
+ * {@link EvaluationContext} provided by an {@link ExtensionAwareEvaluationContextProvider}.
  * <p>
  * Extensions can be ordered by following Spring's {@link org.springframework.core.Ordered} conventions.
  *

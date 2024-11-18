@@ -68,20 +68,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
 	 * {@link Parameter} instance from a {@link MethodParameter}.
 	 *
-	 * @param method must not be {@literal null}.
-	 * @param parameterFactory must not be {@literal null}.
-	 * @since 3.0.2
-	 * @deprecated since 3.2.1, use {@link Parameters(ParametersSource, Function)} instead.
-	 */
-	@Deprecated(since = "3.2.1", forRemoval = true)
-	protected Parameters(Method method, Function<MethodParameter, T> parameterFactory) {
-		this(ParametersSource.of(method), parameterFactory);
-	}
-
-	/**
-	 * Creates a new {@link Parameters} instance for the given {@link Method} and {@link Function} to create a
-	 * {@link Parameter} instance from a {@link MethodParameter}.
-	 *
 	 * @param parametersSource must not be {@literal null}.
 	 * @param parameterFactory must not be {@literal null}.
 	 * @since 3.2.1

@@ -291,20 +291,6 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	}
 
 	/**
-	 * Return the {@link MethodParameter} to be used to potentially qualify the paging and sorting request parameters to.
-	 * Default implementations returns {@literal null}, which means the parameters will not be qualified.
-	 *
-	 * @return
-	 * @since 1.7
-	 * @deprecated since 3.1, rather set up the instance with {@link #withParameter(MethodParameter)}.
-	 */
-	@Nullable
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected MethodParameter getMethodParameter() {
-		return null;
-	}
-
-	/**
 	 * Creates a new {@link PageMetadata} instance from the given {@link Page}.
 	 *
 	 * @param page must not be {@literal null}.

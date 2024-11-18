@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -36,7 +35,6 @@ import org.springframework.util.ReflectionUtils;
  * @author Myeonghyeon Lee
  * @author Xeno Amess
  */
-@SuppressWarnings("deprecation")
 public final class PreferredConstructor<T, P extends PersistentProperty<P>>
 		extends InstanceCreatorMetadataSupport<T, P> {
 
@@ -78,26 +76,15 @@ public final class PreferredConstructor<T, P extends PersistentProperty<P>>
 	}
 
 	/**
-	 * Returns whether the constructor was explicitly selected (by {@link PersistenceConstructor}).
+	 * Returns whether the constructor was explicitly selected (by {@link PersistenceCreator}).
 	 *
-	 * @return
+	 * @return {@literal true} if the constructor was explicitly selected.
 	 */
 	public boolean isExplicitlyAnnotated() {
 
 		var annotations = MergedAnnotations.from(getExecutable());
 
-		return annotations.isPresent(PersistenceConstructor.class)
-				|| annotations.isPresent(PersistenceCreator.class);
-	}
-
-	/**
-	 * @param property
-	 * @return
-	 * @deprecated since 3.0, use {@link #isCreatorParameter(PersistentProperty)} instead.
-	 */
-	@Deprecated
-	public boolean isConstructorParameter(PersistentProperty<?> property) {
-		return isCreatorParameter(property);
+		return annotations.isPresent(PersistenceCreator.class);
 	}
 
 	@Override

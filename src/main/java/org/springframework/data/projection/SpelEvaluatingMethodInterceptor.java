@@ -16,6 +16,7 @@
 package org.springframework.data.projection;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -188,7 +189,7 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(target);
-			result = 31 * result + ObjectUtils.nullSafeHashCode(args);
+			result = 31 * result + Arrays.hashCode(args);
 			return result;
 		}
 

@@ -172,18 +172,6 @@ public interface RepositoryFragment<T> {
 		/**
 		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
 		 *
-		 * @param interfaceClass
-		 * @param implementation
-		 * @deprecated since 3.4 - use {@link ImplementedRepositoryFragment(Class, Object)} instead.
-		 */
-		@Deprecated(since = "3.4", forRemoval = true)
-		public ImplementedRepositoryFragment(Optional<Class<T>> interfaceClass, T implementation) {
-			this(interfaceClass.orElse(null), implementation);
-		}
-
-		/**
-		 * Creates a new {@link ImplementedRepositoryFragment} for the given interface class and implementation.
-		 *
 		 * @param interfaceClass must not be {@literal null}.
 		 * @param implementation must not be {@literal null}.
 		 */

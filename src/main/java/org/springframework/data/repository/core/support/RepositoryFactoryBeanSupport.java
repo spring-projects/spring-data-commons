@@ -38,11 +38,9 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
-import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
@@ -184,18 +182,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
-	 * Sets the {@link QueryMethodEvaluationContextProvider} to be used to evaluate SpEL expressions in manually defined
-	 * queries.
-	 *
-	 * @param evaluationContextProvider must not be {@literal null}.
-	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
-	 */
-	@Deprecated(since = "3.4", forRemoval = true)
-	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		setEvaluationContextProvider(evaluationContextProvider.getEvaluationContextProvider());
-	}
-
-	/**
 	 * Register a {@link RepositoryFactoryCustomizer} to customize the {@link RepositoryFactorySupport repository factor}
 	 * before creating the repository.
 	 *
@@ -246,22 +232,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 */
 	protected Optional<EvaluationContextProvider> createDefaultEvaluationContextProvider(
 			ListableBeanFactory beanFactory) {
-		return createDefaultQueryMethodEvaluationContextProvider(beanFactory)
-				.map(QueryMethodEvaluationContextProvider::getEvaluationContextProvider);
-	}
-
-	/**
-	 * Create a default {@link QueryMethodEvaluationContextProvider} (or subclass) from {@link ListableBeanFactory}.
-	 *
-	 * @param beanFactory the bean factory to use.
-	 * @return the default instance. May be {@link Optional#empty()}.
-	 * @since 2.4
-	 * @deprecated since 3.4, use {@link #createDefaultEvaluationContextProvider(ListableBeanFactory)} instead.
-	 */
-	@Deprecated(since = "3.4", forRemoval = true)
-	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
-			ListableBeanFactory beanFactory) {
-		return Optional.of(new ExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));
+		return Optional.of(QueryMethodValueEvaluationContextAccessor.createEvaluationContextProvider(beanFactory));
 	}
 
 	@Override
