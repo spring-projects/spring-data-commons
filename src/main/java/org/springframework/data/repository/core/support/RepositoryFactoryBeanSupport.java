@@ -190,7 +190,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param evaluationContextProvider must not be {@literal null}.
 	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
 	 */
-	@Deprecated(since = "3.4")
+	@Deprecated(since = "3.4", forRemoval = true)
 	public void setEvaluationContextProvider(QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		setEvaluationContextProvider(evaluationContextProvider.getEvaluationContextProvider());
 	}
@@ -258,7 +258,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @since 2.4
 	 * @deprecated since 3.4, use {@link #createDefaultEvaluationContextProvider(ListableBeanFactory)} instead.
 	 */
-	@Deprecated(since = "3.4")
+	@Deprecated(since = "3.4", forRemoval = true)
 	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
 			ListableBeanFactory beanFactory) {
 		return Optional.of(new ExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));

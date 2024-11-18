@@ -93,6 +93,7 @@ import org.springframework.util.ObjectUtils;
  * @author John Blum
  * @author Johannes Englmeier
  */
+@SuppressWarnings("removal")
 public abstract class RepositoryFactorySupport
 		implements BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware, EnvironmentCapable {
 
@@ -216,7 +217,7 @@ public abstract class RepositoryFactorySupport
 	 *          {@link QueryMethodEvaluationContextProvider#DEFAULT}.
 	 * @deprecated since 3.4, use {@link #setEvaluationContextProvider(EvaluationContextProvider)} instead.
 	 */
-	@Deprecated(since = "3.4")
+	@Deprecated(since = "3.4", forRemoval = true)
 	public void setEvaluationContextProvider(@Nullable QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		setEvaluationContextProvider(evaluationContextProvider == null ? EvaluationContextProvider.DEFAULT
 				: evaluationContextProvider.getEvaluationContextProvider());
@@ -586,7 +587,7 @@ public abstract class RepositoryFactorySupport
 	 * @deprecated since 3.4, use {@link #getQueryLookupStrategy(Key, ValueExpressionDelegate)} instead to support
 	 *             {@link org.springframework.data.expression.ValueExpression} in query methods.
 	 */
-	@Deprecated(since = "3.4")
+	@Deprecated(since = "3.4", forRemoval = true)
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		return Optional.empty();

@@ -38,7 +38,8 @@ import org.springframework.util.Assert;
  * @since 1.9
  * @deprecated since 3.4 in favor of {@link QueryMethodValueEvaluationContextAccessor}.
  */
-@Deprecated(since = "3.4")
+@SuppressWarnings("removal")
+@Deprecated(since = "3.4", forRemoval = true)
 public class ExtensionAwareQueryMethodEvaluationContextProvider implements QueryMethodEvaluationContextProvider {
 
 	private final QueryMethodValueEvaluationContextAccessor delegate;
