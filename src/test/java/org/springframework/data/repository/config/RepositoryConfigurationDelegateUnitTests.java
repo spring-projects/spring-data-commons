@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -44,7 +45,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.RepositoryConfigurationDelegate.LazyRepositoryInjectionPointResolver;
@@ -79,7 +79,7 @@ class RepositoryConfigurationDelegateUnitTests {
 		var context = new GenericApplicationContext();
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
 				context.getDefaultListableBeanFactory(), null);
 
 		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);
@@ -122,7 +122,7 @@ class RepositoryConfigurationDelegateUnitTests {
 		context.setApplicationStartup(startup);
 
 		RepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
-				new StandardAnnotationMetadata(TestConfig.class, true), EnableRepositories.class, context, environment,
+				AnnotationMetadata.introspect(TestConfig.class), EnableRepositories.class, context, environment,
 				context.getDefaultListableBeanFactory(), null);
 
 		var delegate = new RepositoryConfigurationDelegate(configSource, context, environment);

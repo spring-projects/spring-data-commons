@@ -71,19 +71,6 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 	P getLeafProperty();
 
 	/**
-	 * Returns the last property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
-	 * {@link PersistentProperty} for {@code bar}. For a simple {@code foo} it returns {@link PersistentProperty} for
-	 * {@code foo}.
-	 *
-	 * @return will never be {@literal null}.
-	 * @deprecated use {@link #getLeafProperty()} instead.
-	 */
-	@Deprecated(since = "3.1", forRemoval = true)
-	default P getRequiredLeafProperty() {
-		return getLeafProperty();
-	}
-
-	/**
 	 * Returns the first property in the {@link PersistentPropertyPath}. So for {@code foo.bar} it will return the
 	 * {@link PersistentProperty} for {@code foo}. For a simple {@code foo} it returns {@link PersistentProperty} for
 	 * {@code foo}.

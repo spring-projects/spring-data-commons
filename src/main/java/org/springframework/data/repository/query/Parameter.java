@@ -72,17 +72,6 @@ public class Parameter {
 	}
 
 	/**
-	 * Creates a new {@link Parameter} for the given {@link MethodParameter}.
-	 *
-	 * @param parameter must not be {@literal null}.
-	 * @deprecated since 3.1, use {@link #Parameter(MethodParameter, TypeInformation)} instead.
-	 */
-	@Deprecated(since = "3.1", forRemoval = true)
-	protected Parameter(MethodParameter parameter) {
-		this(parameter, TypeInformation.of(Parameter.class));
-	}
-
-	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and domain {@link TypeInformation}.
 	 *
 	 * @param parameter must not be {@literal null}.

@@ -132,7 +132,6 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		doReturn("FOO").when(provider).getParameterValue(any(Parameter.class));
 
-		Constructor constructor = Sample.class.getConstructor(Long.class, String.class);
 		List<Object> parameters = Arrays.asList("FOO", "FOO");
 
 		try {
@@ -141,12 +140,6 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 			fail("Expected MappingInstantiationException");
 
 		} catch (MappingInstantiationException o_O) {
-
-			assertThat(o_O.getEntityCreator()
-				.map(it -> (PreferredConstructor) it)
-				.map(PreferredConstructor::getConstructor))
-				.isPresent()
-				.hasValue(constructor);
 
 			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
 			assertThat(o_O.getEntityType()).hasValue(Sample.class);
