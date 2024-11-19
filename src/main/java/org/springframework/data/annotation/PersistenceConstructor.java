@@ -31,5 +31,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE })
 @PersistenceCreator
-@Deprecated
+@Deprecated(forRemoval = true)
 public @interface PersistenceConstructor {}
