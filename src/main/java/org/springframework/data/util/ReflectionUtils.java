@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -96,27 +95,6 @@ public final class ReflectionUtils {
 	 */
 	public static int getParameterCount(Method method, Predicate<Class<?>> predicate) {
 		return (int) Arrays.stream(method.getParameterTypes()).filter(predicate).count();
-	}
-
-	/**
-	 * Creates an instance of the class with the given fully qualified name or returns the given default instance if the
-	 * class cannot be loaded or instantiated.
-	 *
-	 * @param classname the fully qualified class name to create an instance for.
-	 * @param defaultInstance the instance to fall back to in case the given class cannot be loaded or instantiated.
-	 * @return
-	 * @deprecated since 3.5 as it is not used within the framework anymore.
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated(since = "3.5", forRemoval = true)
-	public static <T> T createInstanceIfPresent(String classname, T defaultInstance) {
-
-		try {
-			Class<?> type = ClassUtils.forName(classname, ClassUtils.getDefaultClassLoader());
-			return (T) BeanUtils.instantiateClass(type);
-		} catch (Exception e) {
-			return defaultInstance;
-		}
 	}
 
 	/**
@@ -265,20 +243,6 @@ public final class ReflectionUtils {
 	}
 
 	/**
-	 * Finds the field of the given name on the given type.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @param name must not be {@literal null} or empty.
-	 * @return the required field.
-	 * @throws IllegalArgumentException in case the field can't be found.
-	 * @deprecated use {@link #getRequiredField(Class, String)} instead.
-	 */
-	@Deprecated(since = "3.5", forRemoval = true)
-	public static Field findRequiredField(Class<?> type, String name) {
-		return getRequiredField(type, name);
-	}
-
-	/**
 	 * Obtains the required field of the given name on the given type or throws {@link IllegalArgumentException} if the
 	 * found could not be found.
 	 *
@@ -417,20 +381,6 @@ public final class ReflectionUtils {
 	 * @param type must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @param parameterTypes must not be {@literal null}.
-	 * @return the optional Method.
-	 * @since 2.0
-	 */
-	@Deprecated(since = "3.5", forRemoval = true)
-	public static Optional<Method> getMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
-		return Optional.ofNullable(findMethod(type, name, parameterTypes));
-	}
-
-	/**
-	 * Returns the {@link Method} with the given name and parameters declared on the given type, if available.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @param name must not be {@literal null} or empty.
-	 * @param parameterTypes must not be {@literal null}.
 	 * @return the required method.
 	 * @since 3.5
 	 */
@@ -555,20 +505,6 @@ public final class ReflectionUtils {
 		}
 
 		throw new IllegalArgumentException(String.format("Primitive type %s not supported", type));
-	}
-
-	/**
-	 * Loads the class with the given name using the given {@link ClassLoader}.
-	 *
-	 * @param name the name of the class to be loaded.
-	 * @param classLoader the {@link ClassLoader} to use to load the class.
-	 * @return the {@link Class} or {@literal null} in case the class can't be loaded for any reason.
-	 * @since 2.5
-	 */
-	@Nullable
-	@Deprecated(since = "3.5", forRemoval = true)
-	public static Class<?> loadIfPresent(String name, ClassLoader classLoader) {
-		return org.springframework.data.util.ClassUtils.loadIfPresent(name, classLoader);
 	}
 
 }
