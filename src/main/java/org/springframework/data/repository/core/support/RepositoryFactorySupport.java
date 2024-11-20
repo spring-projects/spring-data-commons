@@ -659,13 +659,11 @@ public abstract class RepositoryFactorySupport
 	 */
 	static class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
 
-		private final RepositoryInformation information;
 		private final RepositoryComposition composition;
 		private final RepositoryInvocationMulticaster invocationMulticaster;
 
 		public ImplementationMethodExecutionInterceptor(RepositoryInformation information,
 				RepositoryComposition composition, List<RepositoryMethodInvocationListener> methodInvocationListeners) {
-			this.information = information;
 			this.composition = composition;
 			this.invocationMulticaster = methodInvocationListeners.isEmpty() ? NoOpRepositoryInvocationMulticaster.INSTANCE
 					: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
