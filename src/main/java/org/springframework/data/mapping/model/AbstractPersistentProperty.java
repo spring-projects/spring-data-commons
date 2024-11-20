@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ClassUtils;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.ReflectionUtils;
@@ -50,7 +51,7 @@ public abstract class AbstractPersistentProperty<P extends PersistentProperty<P>
 	static {
 
 		CAUSE_FIELD = ReflectionUtils.getRequiredField(Throwable.class, "cause");
-		ASSOCIATION_TYPE = ReflectionUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
+		ASSOCIATION_TYPE = ClassUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
 				AbstractPersistentProperty.class.getClassLoader());
 	}
 

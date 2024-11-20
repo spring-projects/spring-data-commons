@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -678,13 +679,11 @@ public abstract class RepositoryFactorySupport
 	 */
 	static class ImplementationMethodExecutionInterceptor implements MethodInterceptor {
 
-		private final RepositoryInformation information;
 		private final RepositoryComposition composition;
 		private final RepositoryInvocationMulticaster invocationMulticaster;
 
 		public ImplementationMethodExecutionInterceptor(RepositoryInformation information,
 				RepositoryComposition composition, List<RepositoryMethodInvocationListener> methodInvocationListeners) {
-			this.information = information;
 			this.composition = composition;
 			this.invocationMulticaster = methodInvocationListeners.isEmpty() ? NoOpRepositoryInvocationMulticaster.INSTANCE
 					: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
@@ -699,11 +698,14 @@ public abstract class RepositoryFactorySupport
 
 			try {
 				return composition.invoke(invocationMulticaster, method, arguments);
-			} catch (Exception e) {
-				org.springframework.util.ReflectionUtils.handleReflectionException(e);
-			}
+			} catch (Exception ex) {
 
-			throw new IllegalStateException("Should not occur");
+				if (ex instanceof InvocationTargetException) {
+					throw ((InvocationTargetException) ex).getTargetException();
+				}
+
+				throw ex;
+			}
 		}
 	}
 

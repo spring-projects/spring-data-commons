@@ -28,7 +28,6 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
-import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -90,6 +89,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		return false;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	Predicate getPredicate(MethodParameter parameter, MultiValueMap<String, String> queryParameters) {
 
 		MergedAnnotations annotations = MergedAnnotations.from(parameter.getParameter());
@@ -98,7 +98,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		TypeInformation<?> domainType = extractTypeInfo(parameter, predicateAnnotation).getRequiredActualType();
 
 		Optional<Class<? extends QuerydslBinderCustomizer<?>>> bindingsAnnotation = predicateAnnotation.getValue("bindings") //
-				.map(CastUtils::cast);
+				.map(it -> (Class) it);
 
 		QuerydslBindings bindings = bindingsAnnotation //
 				.map(it -> bindingsFactory.createBindingsFor(domainType, it)) //
