@@ -37,9 +37,9 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ClassUtils;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -316,7 +316,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	@SuppressWarnings("unchecked")
 	private static Class<? extends Annotation> loadIdentityType() {
 
-		return (Class<? extends Annotation>) ReflectionUtils.loadIfPresent("org.jmolecules.ddd.annotation.Identity",
+		return (Class<? extends Annotation>) ClassUtils.loadIfPresent("org.jmolecules.ddd.annotation.Identity",
 				AbstractPersistentProperty.class.getClassLoader());
 	}
 }
