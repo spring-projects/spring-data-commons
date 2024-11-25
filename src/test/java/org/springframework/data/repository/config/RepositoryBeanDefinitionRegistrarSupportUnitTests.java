@@ -46,6 +46,7 @@ import org.springframework.data.repository.core.support.DummyRepositoryFactoryBe
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Yanming Zhou
  */
 @ExtendWith(MockitoExtension.class)
 class RepositoryBeanDefinitionRegistrarSupportUnitTests {
@@ -122,6 +123,18 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 		assertNoBeanDefinitionRegisteredFor("fragmentImpl");
 		assertBeanDefinitionRegisteredFor("spiFragmentImplFragment");
 		assertBeanDefinitionRegisteredFor("spiContribution");
+	}
+
+
+	@Test // GH-3212
+	void shouldRegisterIndirectSpiFragment() {
+
+		AnnotationMetadata metadata = new StandardAnnotationMetadata(ExcludedWithSpiFragement.class, true);
+
+		registrar.registerBeanDefinitions(metadata, registry);
+
+		assertBeanDefinitionRegisteredFor("personRepository");
+		assertBeanDefinitionRegisteredFor("spiFragmentImplFragment");
 	}
 
 	@Test // DATACMNS-360
@@ -202,6 +215,9 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 
 	@EnableRepositories(basePackageClasses = FragmentImpl.class)
 	static class LimitsImplementationBasePackages {}
+
+	@EnableRepositories(basePackageClasses = org.springframework.data.repository.config.indirectspifragment.PersonRepository.class)
+	static class ExcludedWithSpiFragement {}
 
 	@EnableRepositories(basePackageClasses = MyNestedRepository.class, considerNestedRepositories = true,
 			excludeFilters = {
