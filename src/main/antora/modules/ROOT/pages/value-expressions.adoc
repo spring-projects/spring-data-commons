@@ -1,14 +1,22 @@
 [[valueexpressions.fundamentals]]
 = Value Expressions Fundamentals
 
-Value Expressions are a combination of {spring-framework-docs}/core/expressions.html[Spring Expression Language (SpEL)] and {spring-framework-docs}/core/beans/environment.html#beans-placeholder-resolution-in-statements[Property Placeholder Resolution].
+Value Expressions are a combination of {spring-framework-docs}/core/expressions.html[Spring Expression Language (SpEL)] and {spring-framework-docs}/core/beans/annotation-config/value-annotations.html[Property Placeholder Resolution].
 They combine powerful evaluation of programmatic expressions with the simplicity to resort to property-placeholder resolution to obtain values from the `Environment` such as configuration properties.
 
 Expressions are expected to be defined by a trusted input such as an annotation value and not to be determined from user input.
 
-The following code demonstrates how to use expressions in the context of annotations.
+== Scope
 
-.Annotation Usage
+Value Expressions are used in contexts across annotations.
+Spring Data offers Value Expression evaluation in two main contexts:
+
+* *Mapping Model Annotations*: such as `@Document`, `@Field`, `@Value` and other annotations in Spring Data modules that ship with their own mapping models respective Entity Readers such as MongoDB, Elasticsearch, Cassandra, Neo4j.
+Modules that build on libraries providing their own mapping models (JPA, LDAP) do not support Value Expressions in mapping annotations.
++
+The following code demonstrates how to use expressions in the context of mapping model annotations.
++
+.`@Document` Annotation Usage
 ====
 [source,java]
 ----
@@ -18,6 +26,27 @@ class Order {
 }
 ----
 ====
+
+* *Repository Query Methods*: primarily through `@Query`.
++
+The following code demonstrates how to use expressions in the context of repository query methods.
++
+.`@Query` Annotation Usage
+====
+[source,java]
+----
+class OrderRepository extends Repository<Order, String> {
+
+  @Query("select u from User u where u.tenant = ?${spring.application.name:unknown} and u.firstname like %?#{escape([0])}% escape ?#{escapeCharacter()}")
+  List<Order> findContainingEscaped(String namePart);
+}
+----
+====
+
+NOTE: Consult your module's documentation to determine the actual parameter by-name/by-index binding syntax.
+Typically, expressions are prefixed with `:#{…}`/`:${…}` or `?#{…}`/`?${…}`.
+
+== Expression Syntax
 
 Value Expressions can be defined from a sole SpEL Expression, a Property Placeholder or a composite expression mixing various expressions including literals.
 
@@ -41,6 +70,8 @@ orders-${tenant-config.suffix}                                 <4>
 
 NOTE: Using value expressions introduces a lot of flexibility to your code.
 Doing so requires evaluation of the expression on each usage and, therefore, value expression evaluation has an impact on the performance profile.
+
+{spring-framework-docs}/core/expressions/language-ref.html[Spring Expression Language (SpEL)] and {spring-framework-docs}/core/beans/annotation-config/value-annotations.html[Property Placeholder Resolution] explain the syntax and capabilities of SpEL and Property Placeholders in detail.
 
 [[valueexpressions.api]]
 == Parsing and Evaluation
