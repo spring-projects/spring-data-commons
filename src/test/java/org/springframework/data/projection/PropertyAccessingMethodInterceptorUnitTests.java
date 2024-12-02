@@ -121,7 +121,7 @@ class PropertyAccessingMethodInterceptorUnitTests {
 		assertThat(new PropertyAccessingMethodInterceptor(source).invoke(invocation)).isEqualTo(true);
 	}
 
-	@Test // GH-3697
+	@Test // GH-3215
 	void considersPropertyDescriptorsFromPackageProtectedSuperclass() throws Throwable {
 
 		var source = new SomeExposedClass();
