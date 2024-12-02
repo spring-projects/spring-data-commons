@@ -20,8 +20,10 @@ import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.core.BridgeMethodResolver;
 import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -63,7 +65,8 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {
-			throw new IllegalStateException("Invoked method is not a property accessor");
+			throw new IllegalStateException("Invoked method '%s' is not a property accessor on '%s'"
+					.formatted(invocation.getMethod(), target.getWrappedClass().getName()));
 		}
 
 		if (!isSetterMethod(method, descriptor)) {
@@ -84,9 +87,14 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 
 	private static Method lookupTargetMethod(MethodInvocation invocation, Class<?> targetType) {
 
-		Method method = BeanUtils.findMethod(targetType, invocation.getMethod().getName(),
-			invocation.getMethod().getParameterTypes());
+		Method invokedMethod = invocation.getMethod();
+		Method method = BeanUtils.findMethod(targetType, invokedMethod.getName(), invokedMethod.getParameterTypes());
 
-		return method != null ? method : invocation.getMethod();
+		if (method == null) {
+			return invokedMethod;
+		}
+
+		return BridgeMethodResolver.findBridgedMethod(method);
 	}
+
 }
