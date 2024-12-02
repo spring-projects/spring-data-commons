@@ -121,6 +121,19 @@ class PropertyAccessingMethodInterceptorUnitTests {
 		assertThat(new PropertyAccessingMethodInterceptor(source).invoke(invocation)).isEqualTo(true);
 	}
 
+	@Test // GH-3697
+	void considersPropertyDescriptorsFromPackageProtectedSuperclass() throws Throwable {
+
+		var source = new SomeExposedClass();
+		source.setFirstname("Walter");
+
+		when(invocation.getMethod()).thenReturn(Projection.class.getMethod("getFirstname"));
+
+		Object result = new PropertyAccessingMethodInterceptor(source).invoke(invocation);
+
+		assertThat(result).isEqualTo(source.getFirstname());
+	}
+
 	static class Source {
 
 		String firstname;
@@ -137,5 +150,31 @@ class PropertyAccessingMethodInterceptorUnitTests {
 		String getLastname();
 
 		String someGarbage();
+	}
+
+	static class SomeBaseclass {
+
+		private String firstname;
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+	}
+
+	public static class SomeExposedClass extends SomeBaseclass {
+
+		private String lastname;
+
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
 	}
 }
