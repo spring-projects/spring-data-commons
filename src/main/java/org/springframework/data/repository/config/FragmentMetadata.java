@@ -16,7 +16,8 @@
 package org.springframework.data.repository.config;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -32,6 +33,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Oliver Gierke
  * @author Johannes Englmeier
+ * @author Yanming Zhou
  * @since 2.1
  */
 public class FragmentMetadata {
@@ -52,8 +54,23 @@ public class FragmentMetadata {
 
 		Assert.hasText(interfaceName, "Interface name must not be null or empty");
 
-		return Arrays.stream(getClassMetadata(interfaceName).getInterfaceNames()) //
+		return getAllSuperInterfaces(interfaceName).stream() //
 				.filter(this::isCandidate);
+	}
+
+	/**
+	 * Returns all super interfaces of the given interface.
+	 *
+	 * @param interfaceName must not be {@literal null} or empty.
+	 * @return
+	 */
+	private Set<String> getAllSuperInterfaces(String interfaceName) {
+		Set<String> interfaces = new LinkedHashSet<>();
+		for (String ifc : getClassMetadata(interfaceName).getInterfaceNames()) {
+			interfaces.add(ifc);
+			interfaces.addAll(getAllSuperInterfaces(ifc));
+		}
+		return interfaces;
 	}
 
 	/**
