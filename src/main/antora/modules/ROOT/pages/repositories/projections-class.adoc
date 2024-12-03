@@ -57,3 +57,29 @@ void someMethod(PersonRepository people) {
 NOTE: Query parameters of type `Class` are inspected whether they qualify as dynamic projection parameter.
 If the actual return type of the query equals the generic parameter type of the `Class` parameter, then the matching `Class` parameter is not available for usage within the query or SpEL expressions.
 If you want to use a `Class` parameter as query argument then make sure to use a different generic parameter, for example `Class<?>`.
+
+[NOTE]
+====
+When using <<projections.dtos,Class-based projection>>, types must declare a single constructor so that Spring Data can determine their input properties.
+If your class defines more than one constructor, then you cannot use the type without further hints for DTO projections.
+In such a case annotate the desired constructor with `@PersistenceCreator` as outlined below so that Spring Data can determine which properties to select:
+
+[source,java]
+----
+public class NamesOnly {
+
+  private final String firstname;
+  private final String lastname;
+
+  protected NamesOnly() { }
+
+  @PersistenceCreator
+  public NamesOnly(String firstname, String lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+  }
+
+  // ...
+}
+----
+====
