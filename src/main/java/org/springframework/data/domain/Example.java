@@ -33,7 +33,7 @@ public interface Example<T> {
 	 * Create a new {@link Example} including all non-null properties by default.
 	 *
 	 * @param probe must not be {@literal null}.
-	 * @return
+	 * @return a new {@link Example} for {@code probe}.
 	 */
 	static <T> Example<T> of(T probe) {
 		return new TypedExample<>(probe, ExampleMatcher.matching());
@@ -44,7 +44,7 @@ public interface Example<T> {
 	 *
 	 * @param probe must not be {@literal null}.
 	 * @param matcher must not be {@literal null}.
-	 * @return
+	 * @return a new {@link Example} for {@code probe} and {@link ExampleMatcher}.
 	 */
 	static <T> Example<T> of(T probe, ExampleMatcher matcher) {
 		return new TypedExample<>(probe, matcher);
@@ -68,7 +68,7 @@ public interface Example<T> {
 	 * Get the actual type for the probe used. This is usually the given class, but the original class in case of a
 	 * CGLIB-generated subclass.
 	 *
-	 * @return
+	 * @return the underlying probe type, potentially an unwrapped proxy.
 	 * @see ProxyUtils#getUserClass(Class)
 	 */
 	@SuppressWarnings("unchecked")

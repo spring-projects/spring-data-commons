@@ -15,6 +15,8 @@
  */
 package org.springframework.data.crossstore;
 
+import java.io.Serial;
+
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -59,7 +61,7 @@ public interface ChangeSetPersister<K> {
 	 */
 	class NotFoundException extends Exception {
 
-		private static final long serialVersionUID = -8604207973816331140L;
+		private static final @Serial long serialVersionUID = -8604207973816331140L;
 	}
 
 }

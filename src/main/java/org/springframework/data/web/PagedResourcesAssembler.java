@@ -58,7 +58,7 @@ public class PagedResourcesAssembler<T> implements RepresentationModelAssembler<
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstAndLastRels = false;
-	private @Nullable MethodParameter parameter;
+	private final @Nullable MethodParameter parameter;
 
 	/**
 	 * Creates a new {@link PagedResourcesAssembler} using the given {@link PageableHandlerMethodArgumentResolver} and

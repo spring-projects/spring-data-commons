@@ -48,7 +48,7 @@ public class MethodInvocationRecorder {
 
 	public static PropertyNameDetectionStrategy DEFAULT = DefaultPropertyNameDetectionStrategy.INSTANCE;
 
-	private Optional<RecordingMethodInterceptor> interceptor;
+	private final Optional<RecordingMethodInterceptor> interceptor;
 
 	/**
 	 * Creates a new {@link MethodInvocationRecorder}. For ad-hoc instantation prefer the static

@@ -436,8 +436,8 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 
 		private final PersistentPropertyPath<?> path;
 		private final boolean resolvable;
-		private @Nullable final String source;
 
+		private @Nullable final String source;
 		private @Nullable final String segment;
 		private @Nullable final TypeInformation<?> type;
 

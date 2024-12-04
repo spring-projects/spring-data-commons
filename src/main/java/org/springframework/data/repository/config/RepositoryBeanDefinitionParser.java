@@ -54,6 +54,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 		this.extension = extension;
 	}
 
+	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parser) {
 

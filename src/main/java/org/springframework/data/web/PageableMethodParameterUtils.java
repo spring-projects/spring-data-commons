@@ -25,6 +25,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.server.core.MethodParameters;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 
 /**
@@ -95,6 +96,7 @@ class PageableMethodParameterUtils {
 	}
 
 	@Nullable
+	@Contract("_, null -> null")
 	private static MethodParameter returnIfQualifiersMatch(MethodParameter pageableParameter,
 			@Nullable Qualifier assemblerQualifier) {
 

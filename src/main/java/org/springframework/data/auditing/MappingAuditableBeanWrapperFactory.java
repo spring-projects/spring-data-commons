@@ -40,6 +40,8 @@ import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Lazy;
+import org.springframework.lang.Contract;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -203,7 +205,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		}
 
 		@Override
-		public Object setLastModifiedBy(Object value) {
+		public Object setLastModifiedBy(@Nullable Object value) {
 			return setProperty(metadata.lastModifiedByPaths, value);
 		}
 
@@ -226,8 +228,10 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 			return accessor.getBean();
 		}
 
+		@Nullable
+		@Contract("_, null -> null; _, !null -> !null")
 		private <S> S setProperty(
-				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, S value) {
+				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, @Nullable S value) {
 
 			paths.forEach(it -> this.accessor.setProperty(it, value, OPTIONS));
 

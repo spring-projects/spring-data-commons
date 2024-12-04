@@ -87,8 +87,8 @@ public class SimpleTypeHolder {
 	 * Creates a new {@link SimpleTypeHolder} to carry the given custom simple types. Registration of default simple types
 	 * can be deactivated by passing {@literal false} for {@code registerDefaults}.
 	 *
-	 * @param customSimpleTypes
-	 * @param registerDefaults
+	 * @param customSimpleTypes set of custom simple types.
+	 * @param registerDefaults whether to register default simple types, see {@link #DEFAULTS}.
 	 */
 	public SimpleTypeHolder(Set<? extends Class<?>> customSimpleTypes, boolean registerDefaults) {
 
@@ -136,7 +136,7 @@ public class SimpleTypeHolder {
 	 * Returns whether the given type is considered a simple one.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return {@literal true} if the given type is considered simple.
 	 */
 	public boolean isSimpleType(Class<?> type) {
 

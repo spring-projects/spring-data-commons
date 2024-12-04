@@ -30,8 +30,7 @@ import org.springframework.lang.Nullable;
  */
 public class SliceImpl<T> extends Chunk<T> {
 
-	@Serial
-	private static final long serialVersionUID = 867755909294344406L;
+	private static final @Serial long serialVersionUID = 867755909294344406L;
 
 	private final boolean hasNext;
 	private final Pageable pageable;
@@ -72,19 +71,6 @@ public class SliceImpl<T> extends Chunk<T> {
 	}
 
 	@Override
-	public String toString() {
-
-		String contentType = "UNKNOWN";
-		List<T> content = getContent();
-
-		if (!content.isEmpty()) {
-			contentType = content.get(0).getClass().getName();
-		}
-
-		return String.format("Slice %d containing %s instances", getNumber(), contentType);
-	}
-
-	@Override
 	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
@@ -100,12 +86,20 @@ public class SliceImpl<T> extends Chunk<T> {
 
 	@Override
 	public int hashCode() {
-
-		int result = 17;
-
-		result += 31 * (hasNext ? 1 : 0);
-		result += 31 * super.hashCode();
-
-		return result;
+		return 31 * super.hashCode() + (hasNext ? 1 : 0);
 	}
+
+	@Override
+	public String toString() {
+
+		String contentType = "UNKNOWN";
+		List<T> content = getContent();
+
+		if (!content.isEmpty()) {
+			contentType = content.get(0).getClass().getName();
+		}
+
+		return String.format("Slice %d containing %s instances", getNumber(), contentType);
+	}
+
 }

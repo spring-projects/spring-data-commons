@@ -33,5 +33,4 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
 public @interface Version {
-
 }

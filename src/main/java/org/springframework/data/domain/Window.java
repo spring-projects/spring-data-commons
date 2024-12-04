@@ -41,7 +41,6 @@ public interface Window<T> extends Streamable<T> {
 	 * @param items the list of data.
 	 * @param positionFunction the list of data.
 	 * @return the {@link Window}.
-	 * @param <T>
 	 */
 	static <T> Window<T> from(List<T> items, IntFunction<? extends ScrollPosition> positionFunction) {
 		return new WindowImpl<>(items, positionFunction, false);
@@ -54,7 +53,6 @@ public interface Window<T> extends Streamable<T> {
 	 * @param positionFunction the list of data.
 	 * @param hasNext
 	 * @return the {@link Window}.
-	 * @param <T>
 	 */
 	static <T> Window<T> from(List<T> items, IntFunction<? extends ScrollPosition> positionFunction, boolean hasNext) {
 		return new WindowImpl<>(items, positionFunction, hasNext);
@@ -78,14 +76,14 @@ public interface Window<T> extends Streamable<T> {
 	/**
 	 * Returns the windows content as {@link List}.
 	 *
-	 * @return
+	 * @return the windows content as {@link List}.
 	 */
 	List<T> getContent();
 
 	/**
 	 * Returns whether the current window is the last one.
 	 *
-	 * @return
+	 * @return {@literal true} if the current window is the last one.
 	 */
 	default boolean isLast() {
 		return !hasNext();
@@ -101,13 +99,14 @@ public interface Window<T> extends Streamable<T> {
 	/**
 	 * Returns whether the underlying scroll mechanism can provide a {@link ScrollPosition} at {@code index}.
 	 *
-	 * @param index
+	 * @param index the result index to check for a {@link ScrollPosition}.
 	 * @return {@code true} if a {@link ScrollPosition} can be created; {@code false} otherwise.
 	 * @see #positionAt(int)
 	 */
 	default boolean hasPosition(int index) {
 		try {
-			return positionAt(index) != null;
+			positionAt(index);
+			return true;
 		} catch (IllegalStateException e) {
 			return false;
 		}
@@ -116,8 +115,8 @@ public interface Window<T> extends Streamable<T> {
 	/**
 	 * Returns the {@link ScrollPosition} at {@code index}.
 	 *
-	 * @param index
-	 * @return
+	 * @param index index of the window element to determine the scroll position for.
+	 * @return the scroll position for the given object index.
 	 * @throws IndexOutOfBoundsException if the index is out of range ({@code index < 0 || index >= size()}).
 	 * @throws IllegalStateException if the underlying scroll mechanism cannot provide a scroll position for the given
 	 *           object.
@@ -127,8 +126,8 @@ public interface Window<T> extends Streamable<T> {
 	/**
 	 * Returns the {@link ScrollPosition} for {@code object}.
 	 *
-	 * @param object
-	 * @return
+	 * @param object member of the window to determine the scroll position for.
+	 * @return the scroll position for the given object.
 	 * @throws NoSuchElementException if the object is not part of the result.
 	 * @throws IllegalStateException if the underlying scroll mechanism cannot provide a scroll position for the given
 	 *           object.

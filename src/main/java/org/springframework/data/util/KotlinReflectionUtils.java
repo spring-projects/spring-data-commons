@@ -260,7 +260,7 @@ public final class KotlinReflectionUtils {
 
 		CLASS(1), FILE(2), SYNTHETIC_CLASS(3), MULTI_FILE_CLASS_FACADE(4), MULTI_FILE_CLASS_PART(5);
 
-		int id;
+		final int id;
 
 		KotlinClassHeaderKind(int val) {
 			this.id = val;

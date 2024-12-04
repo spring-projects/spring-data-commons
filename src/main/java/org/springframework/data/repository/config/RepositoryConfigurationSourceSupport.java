@@ -117,16 +117,8 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		return new SpringImplementationDetectionConfiguration(this, factory);
 	}
 
-	private class SpringImplementationDetectionConfiguration implements ImplementationDetectionConfiguration {
-
-		private final RepositoryConfigurationSource source;
-		private final MetadataReaderFactory metadataReaderFactory;
-
-		SpringImplementationDetectionConfiguration(RepositoryConfigurationSource source,
-				MetadataReaderFactory metadataReaderFactory) {
-			this.source = source;
-			this.metadataReaderFactory = metadataReaderFactory;
-		}
+	private record SpringImplementationDetectionConfiguration(RepositoryConfigurationSource source,
+			MetadataReaderFactory metadataReaderFactory) implements ImplementationDetectionConfiguration {
 
 		@Override
 		public String getImplementationPostfix() {
@@ -145,13 +137,14 @@ public abstract class RepositoryConfigurationSourceSupport implements Repository
 		}
 
 		@Override
+		public MetadataReaderFactory getMetadataReaderFactory() {
+			return metadataReaderFactory;
+		}
+
+		@Override
 		public String generateBeanName(BeanDefinition definition) {
 			return source.generateBeanName(definition);
 		}
 
-		@Override
-		public MetadataReaderFactory getMetadataReaderFactory() {
-			return this.metadataReaderFactory;
-		}
 	}
 }

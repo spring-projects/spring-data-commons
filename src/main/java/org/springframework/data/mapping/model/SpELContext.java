@@ -92,7 +92,7 @@ public class SpELContext implements EvaluationContextProvider {
 	}
 
 	@Override
-	public EvaluationContext getEvaluationContext(Object source) {
+	public EvaluationContext getEvaluationContext(@Nullable Object source) {
 
 		StandardEvaluationContext evaluationContext = new StandardEvaluationContext(source);
 		evaluationContext.addPropertyAccessor(accessor);

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static org.springframework.util.ReflectionUtils.*;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.lang.Contract;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Default implementation of {@link RepositoryInformation}.
@@ -78,10 +79,12 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 		return cacheAndReturn(method, baseComposition.findMethod(method).orElse(method));
 	}
 
-	private Method cacheAndReturn(Method key, Method value) {
+	@Nullable
+	@Contract("_, null -> null; _, !null -> !null")
+	private Method cacheAndReturn(Method key, @Nullable Method value) {
 
 		if (value != null) {
-			makeAccessible(value);
+			ReflectionUtils.makeAccessible(value);
 		}
 
 		methodCache.put(key, value);

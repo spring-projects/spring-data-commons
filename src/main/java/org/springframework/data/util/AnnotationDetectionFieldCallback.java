@@ -50,6 +50,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 		this.annotationType = annotationType;
 	}
 
+	@Override
 	public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
 		if (this.field != null) {

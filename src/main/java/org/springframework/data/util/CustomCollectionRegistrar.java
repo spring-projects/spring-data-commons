@@ -75,7 +75,7 @@ public interface CustomCollectionRegistrar {
 
 	/**
 	 * Register all converters to convert instances of the types returned by {@link #getCollectionTypes()} and
-	 * {@link #getMapTypes()} from an to their Java-native counterparts.
+	 * {@link #getMapTypes()} to their Java-native counterparts.
 	 *
 	 * @param registry will never be {@literal null}.
 	 */

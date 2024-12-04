@@ -15,6 +15,7 @@
  */
 package org.springframework.data.geo;
 
+import java.io.Serial;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,9 +31,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  * @author Oliver Gierke
  * @since 1.8
  */
+@SuppressWarnings("unused")
 public class GeoModule extends SimpleModule {
 
-	private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	/**
 	 * Creates a new {@link GeoModule} registering mixins for common geo-spatial types.

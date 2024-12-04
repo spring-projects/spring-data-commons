@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import org.springframework.data.domain.Window;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -29,6 +28,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 
 /**
@@ -48,6 +50,8 @@ public interface FluentQuery<T> {
 	 * @return a new instance of {@link FluentQuery}.
 	 * @throws IllegalArgumentException if {@code sort} is {@code null}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	FluentQuery<T> sortBy(Sort sort);
 
 	/**
@@ -59,6 +63,8 @@ public interface FluentQuery<T> {
 	 * @throws UnsupportedOperationException if not supported by the underlying implementation.
 	 * @since 3.1
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	default FluentQuery<T> limit(int limit) {
 		throw new UnsupportedOperationException("Limit not supported");
 	}
@@ -72,6 +78,8 @@ public interface FluentQuery<T> {
 	 * @return a new instance of {@link FluentQuery}.
 	 * @throws IllegalArgumentException if {@code resultType} is {@code null}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	<R> FluentQuery<R> as(Class<R> resultType);
 
 	/**
@@ -81,6 +89,8 @@ public interface FluentQuery<T> {
 	 * @return a new instance of {@link FluentQuery}.
 	 * @throws IllegalArgumentException if {@code properties} is {@code null}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	default FluentQuery<T> project(String... properties) {
 		return project(Arrays.asList(properties));
 	}
@@ -92,6 +102,8 @@ public interface FluentQuery<T> {
 	 * @return a new instance of {@link FluentQuery}.
 	 * @throws IllegalArgumentException if {@code properties} is {@code null}.
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	FluentQuery<T> project(Collection<String> properties);
 
 	/**
@@ -103,22 +115,32 @@ public interface FluentQuery<T> {
 	interface FetchableFluentQuery<T> extends FluentQuery<T> {
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		FetchableFluentQuery<T> sortBy(Sort sort);
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		default FetchableFluentQuery<T> limit(int limit) {
 			throw new UnsupportedOperationException("Limit not supported");
 		}
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		<R> FetchableFluentQuery<R> as(Class<R> resultType);
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		default FetchableFluentQuery<T> project(String... properties) {
 			return project(Arrays.asList(properties));
 		}
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		FetchableFluentQuery<T> project(Collection<String> properties);
 
 		/**
@@ -169,7 +191,6 @@ public interface FluentQuery<T> {
 		 * {@code scrollPosition}.
 		 *
 		 * @param scrollPosition must not be {@literal null}.
-		 * @return
 		 * @throws IllegalArgumentException if {@code scrollPosition} is {@literal null}.
 		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
 		 * @since 3.1
@@ -185,7 +206,6 @@ public interface FluentQuery<T> {
 		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
 		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
 		 *          will be overridden by {@link Pageable#getPageSize()}.
-		 * @return
 		 */
 		Page<T> page(Pageable pageable);
 
@@ -220,22 +240,32 @@ public interface FluentQuery<T> {
 	interface ReactiveFluentQuery<T> extends FluentQuery<T> {
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		ReactiveFluentQuery<T> sortBy(Sort sort);
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		default ReactiveFluentQuery<T> limit(int limit) {
 			throw new UnsupportedOperationException("Limit not supported");
 		}
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		<R> ReactiveFluentQuery<R> as(Class<R> resultType);
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		default ReactiveFluentQuery<T> project(String... properties) {
 			return project(Arrays.asList(properties));
 		}
 
 		@Override
+		@Contract("_ -> new")
+		@CheckReturnValue
 		ReactiveFluentQuery<T> project(Collection<String> properties);
 
 		/**
@@ -255,8 +285,6 @@ public interface FluentQuery<T> {
 
 		/**
 		 * Get all matching elements.
-		 *
-		 * @return
 		 */
 		Flux<T> all();
 
@@ -265,7 +293,6 @@ public interface FluentQuery<T> {
 		 * {@code scrollPosition}.
 		 *
 		 * @param scrollPosition must not be {@literal null}.
-		 * @return
 		 * @throws IllegalArgumentException if {@code scrollPosition} is {@literal null}.
 		 * @throws UnsupportedOperationException if not supported by the underlying implementation.
 		 * @since 3.1
@@ -281,7 +308,6 @@ public interface FluentQuery<T> {
 		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
 		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
 		 *          will be overridden by {@link Pageable#getPageSize()}.
-		 * @return
 		 */
 		Mono<Page<T>> page(Pageable pageable);
 

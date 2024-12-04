@@ -34,8 +34,6 @@ public @interface AccessType {
 
 	/**
 	 * The access type to be used.
-	 *
-	 * @return
 	 */
 	Type value();
 

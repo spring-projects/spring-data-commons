@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -46,6 +47,7 @@ public class SortHandlerMethodArgumentResolver extends SortHandlerMethodArgument
 		return Sort.class.equals(parameter.getParameterType());
 	}
 
+	@NonNull
 	@Override
 	public Sort resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.querydsl;
 
+import java.io.Serial;
+
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +35,7 @@ import com.querydsl.core.types.OrderSpecifier;
  */
 public class QPageRequest extends AbstractPageRequest {
 
-	private static final long serialVersionUID = 7529171950267879273L;
+	private static final @Serial long serialVersionUID = 7529171950267879273L;
 
 	private final QSort sort;
 

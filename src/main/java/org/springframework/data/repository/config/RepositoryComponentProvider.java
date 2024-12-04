@@ -46,8 +46,9 @@ import org.springframework.util.Assert;
  */
 class RepositoryComponentProvider extends ClassPathScanningCandidateComponentProvider {
 
+	private final BeanDefinitionRegistry registry;
+
 	private boolean considerNestedRepositoryInterfaces;
-	private BeanDefinitionRegistry registry;
 
 	/**
 	 * Creates a new {@link RepositoryComponentProvider} using the given {@link TypeFilter} to include components to be

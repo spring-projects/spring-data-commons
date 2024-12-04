@@ -30,7 +30,7 @@ public interface PropertyValueProvider<P extends PersistentProperty<P>> {
 	 * Returns a value for the given {@link PersistentProperty}.
 	 *
 	 * @param property will never be {@literal null}.
-	 * @return
+	 * @return the property value. Can be {@literal null}.
 	 */
 	@Nullable
 	<T> T getPropertyValue(P property);

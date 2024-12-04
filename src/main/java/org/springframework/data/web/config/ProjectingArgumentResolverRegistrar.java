@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
-import org.springframework.lang.Nullable;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
@@ -93,13 +92,11 @@ public class ProjectingArgumentResolverRegistrar {
 			this.resolver.setBeanClassLoader(classLoader);
 		}
 
-		@Nullable
 		@Override
 		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 			return bean;
 		}
 
-		@Nullable
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.io.Serial;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -93,14 +94,14 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	 */
 	static class RepositoryAnnotationTransactionAttributeSource extends AnnotationTransactionAttributeSource {
 
-		private static final long serialVersionUID = 7229616838812819438L;
+		private static final @Serial long serialVersionUID = 7229616838812819438L;
 
 		private final RepositoryInformation repositoryInformation;
 		private final boolean enableDefaultTransactions;
 
 		/**
 		 * Create a default CustomAnnotationTransactionAttributeSource, supporting public methods that carry the
-		 * {@code Transactional} annotation or the EJB3 {@link javax.ejb.TransactionAttribute} annotation.
+		 * {@code Transactional} annotation or the EJB3 {@code  javax.ejb.TransactionAttribute} annotation.
 		 */
 		public RepositoryAnnotationTransactionAttributeSource(RepositoryInformation repositoryInformation,
 				boolean enableDefaultTransactions) {

@@ -29,6 +29,7 @@ import org.springframework.data.mapping.PersistentEntity;
  * {@link PersistentEntity}s.
  *
  * @author Oliver Gierke
+ * @see org.springframework.data.mapping.Alias
  */
 @Documented
 @Inherited
@@ -38,9 +39,7 @@ import org.springframework.data.mapping.PersistentEntity;
 public @interface TypeAlias {
 
 	/**
-	 * The type alias to be used when persisting
-	 *
-	 * @return
+	 * The type alias to be used when persisting.
 	 */
 	String value();
 }

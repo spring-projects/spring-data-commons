@@ -17,11 +17,13 @@ package org.springframework.data.repository.core.support;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
@@ -32,8 +34,6 @@ import org.springframework.data.util.NullableUtils;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -194,9 +194,12 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		@Override
 		public int hashCode() {
+
 			int result = (nullableReturn ? 1 : 0);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(nullableParameters);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(methodParameters);
+
+			result = (31 * result) + Arrays.hashCode(nullableParameters);
+			result = (31 * result) + Arrays.hashCode(methodParameters);
+
 			return result;
 		}
 

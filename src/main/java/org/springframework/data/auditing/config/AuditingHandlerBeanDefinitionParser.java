@@ -29,9 +29,9 @@ import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.config.PersistentEntitiesFactoryBean;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -69,7 +69,6 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 		return resolvedBeanName;
 	}
 
-	@NonNull
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return AuditingHandler.class;

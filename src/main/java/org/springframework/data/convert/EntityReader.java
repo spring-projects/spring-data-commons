@@ -27,7 +27,7 @@ public interface EntityReader<T, S> {
 	 *
 	 * @param type they type to convert the given source to.
 	 * @param source the source to create an object of the given type from.
-	 * @return
+	 * @return the converted object.
 	 */
 	<R extends T> R read(Class<R> type, S source);
 }

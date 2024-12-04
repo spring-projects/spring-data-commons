@@ -19,7 +19,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.support.RegisteredBean;
 
 /**
- * Extension to {@link BeanRegistrationAotContribution} that bases its contribution on a {@link RegisteredBean}. This
+ * Extension to {@link BeanRegistrationAotContribution} that bases its contribution to a {@link RegisteredBean}. This
  * interface exposes its {@link #getSource() source}.
  *
  * @author Christoph Strobl

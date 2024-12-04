@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  */
 class MethodParameters {
 
-	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
+	private final static ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final List<MethodParameter> parameters;
 
 	/**

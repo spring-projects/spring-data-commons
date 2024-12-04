@@ -53,7 +53,6 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 *
 	 * @param contexts
 	 */
-	@SuppressWarnings("unchecked")
 	public PersistentEntities(Iterable<? extends MappingContext<?, ?>> contexts) {
 
 		Assert.notNull(contexts, "MappingContexts must not be null");
@@ -208,7 +207,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 
 	/**
 	 * Returns the type the given {@link PersistentProperty} ultimately refers to. In case it's of a unique identifier
-	 * type of an entity known it'll return the entity type.
+	 * type of entity known it'll return the entity type.
 	 *
 	 * @param property must not be {@literal null}.
 	 * @return

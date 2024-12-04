@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
+import java.io.Serial;
 import java.lang.reflect.Method;
 
 import org.springframework.data.repository.core.RepositoryCreationException;
@@ -27,7 +28,7 @@ import org.springframework.data.repository.core.RepositoryCreationException;
  */
 public final class QueryCreationException extends RepositoryCreationException {
 
-	private static final long serialVersionUID = -1238456123580L;
+	private static final @Serial long serialVersionUID = -1238456123580L;
 	private static final String MESSAGE_TEMPLATE = "Could not create query for method %s; Could not find property %s on domain class %s";
 
 	private final Method method;

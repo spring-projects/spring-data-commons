@@ -15,6 +15,8 @@
  */
 package org.springframework.data.domain;
 
+import org.springframework.lang.Nullable;
+
 /**
  * {@link Pageable} implementation to represent the absence of pagination information.
  *
@@ -91,7 +93,7 @@ final class Unpaged implements Pageable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) {
 			return true;
 		}

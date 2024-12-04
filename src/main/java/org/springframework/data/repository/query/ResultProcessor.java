@@ -26,10 +26,11 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -120,6 +121,7 @@ public class ResultProcessor {
 	 * @return
 	 */
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	public <T> T processResult(@Nullable Object source) {
 		return processResult(source, NoOpConverter.INSTANCE);
 	}
@@ -133,6 +135,7 @@ public class ResultProcessor {
 	 * @return
 	 */
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	@SuppressWarnings("unchecked")
 	public <T> T processResult(@Nullable Object source, Converter<Object, Object> preparingConverter) {
 
@@ -247,7 +250,7 @@ public class ResultProcessor {
 	 * @author Oliver Gierke
 	 * @since 1.12
 	 */
-	private static enum NoOpConverter implements Converter<Object, Object> {
+	private enum NoOpConverter implements Converter<Object, Object> {
 
 		INSTANCE;
 

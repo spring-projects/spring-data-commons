@@ -20,6 +20,8 @@ import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.annotation.SimpleReflectiveProcessor;
 
 /**
+ * Extension to {@link SimpleReflectiveProcessor} to register reflective hints for invoking public methods.
+ *
  * @author Christoph Strobl
  */
 public class PublicMethodReflectiveProcessor extends SimpleReflectiveProcessor {

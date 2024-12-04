@@ -44,6 +44,7 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
@@ -151,7 +152,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return this;
 	}
 
-	protected DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
+	DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
 			RepositoryConfiguration<?> repositoryMetadata) {
 
 		RepositoryInformation repositoryInformation = resolveRepositoryInformation(repositoryMetadata);
@@ -345,6 +346,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	// the TypeContributor.contribute(:Class, :Predicate :GenerationContext) method
 	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
-		return it -> true;
+		return Predicates.isTrue();
 	}
 }

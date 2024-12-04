@@ -40,12 +40,12 @@ class DelegatingTypeScanner implements TypeScanner {
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
 
-	private Collection<String> packageNames;
-	private Collection<TypeFilter> includeFilters;
+	private final Collection<String> packageNames;
+	private final Collection<TypeFilter> includeFilters;
 
-	private Consumer<ClassNotFoundException> classNotFoundAction;
+	private final Consumer<ClassNotFoundException> classNotFoundAction;
 
-	private Lazy<Set<Class<?>>> scanResult = Lazy.of(this::collect);
+	private final Lazy<Set<Class<?>>> scanResult = Lazy.of(this::collect);
 
 	DelegatingTypeScanner(ResourceLoader resourceLoader) {
 		this(new StandardEnvironment(), resourceLoader);

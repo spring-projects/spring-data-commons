@@ -16,12 +16,14 @@
 package org.springframework.data.geo;
 
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -35,7 +37,7 @@ import org.springframework.util.StringUtils;
  */
 public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
-	private static final long serialVersionUID = 8347363491300219485L;
+	private static final @Serial long serialVersionUID = 8347363491300219485L;
 
 	private final List<? extends GeoResult<T>> results;
 	private final Distance averageDistance;
@@ -67,7 +69,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	 * @param results must not be {@literal null}.
 	 * @param averageDistance must not be {@literal null}.
 	 */
-	@PersistenceConstructor
+	@PersistenceCreator
 	public GeoResults(List<? extends GeoResult<T>> results, Distance averageDistance) {
 
 		Assert.notNull(results, "Results must not be null");
@@ -89,19 +91,20 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 	/**
 	 * Returns the actual content of the {@link GeoResults}.
 	 *
-	 * @return
+	 * @return the actual content.
 	 */
 	public List<GeoResult<T>> getContent() {
 		return Collections.unmodifiableList(results);
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Iterator<GeoResult<T>> iterator() {
 		return (Iterator<GeoResult<T>>) results.iterator();
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -120,9 +123,7 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(results);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(averageDistance);
-		return result;
+		return ObjectUtils.nullSafeHash(results, averageDistance);
 	}
 
 	@Override

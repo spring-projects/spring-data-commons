@@ -35,6 +35,7 @@ import org.springframework.data.repository.Repository;
 class DeferredRepositoryInitializationListener implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
 	private static final Log logger = LogFactory.getLog(DeferredRepositoryInitializationListener.class);
+
 	private final ListableBeanFactory beanFactory;
 
 	DeferredRepositoryInitializationListener(ListableBeanFactory beanFactory) {

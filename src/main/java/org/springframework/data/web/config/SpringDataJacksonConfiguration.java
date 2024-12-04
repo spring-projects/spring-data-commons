@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.config;
 
+import java.io.Serial;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 	 */
 	public static class PageModule extends SimpleModule {
 
-		private static final long serialVersionUID = 275254460581626332L;
+		private static final @Serial long serialVersionUID = 275254460581626332L;
 
 		private static final String UNPAGED_TYPE_NAME = "org.springframework.data.domain.Unpaged";
 		private static final Class<?> UNPAGED_TYPE;
@@ -104,7 +105,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		 */
 		static class UnpagedAsInstanceSerializer extends ToStringSerializerBase {
 
-			private static final long serialVersionUID = -1213451755610144637L;
+			private static final @Serial long serialVersionUID = -1213451755610144637L;
 
 			public UnpagedAsInstanceSerializer() {
 				super(Object.class);
@@ -142,7 +143,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 						or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
 					""";
 
-			private static final long serialVersionUID = 954857444010009875L;
+			private static final @Serial long serialVersionUID = 954857444010009875L;
 
 			private boolean warningRendered = false;
 

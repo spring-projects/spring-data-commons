@@ -15,7 +15,6 @@
  */
 package org.springframework.data.aot;
 
-import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -69,8 +68,8 @@ import org.springframework.util.ReflectionUtils;
  * @author John Blum
  * @author Christoph Strobl
  * @author Mark Paluch
- * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution
  * @since 3.0
+ * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution
  */
 class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContribution {
 
@@ -126,7 +125,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		public static final ResolvableType MANAGED_TYPES_TYPE = ResolvableType.forType(ManagedTypes.class);
 		private final List<Class<?>> sourceTypes;
 		private final RegisteredBean source;
-		private final Lazy<Method> instanceMethod = Lazy.of(this::findInstanceFactory);
+		private final Lazy<Method> instanceMethod;
 
 		private static final TypeName WILDCARD = WildcardTypeName.subtypeOf(Object.class);
 		private static final TypeName CLASS_OF_ANY = ParameterizedTypeName.get(ClassName.get(Class.class), WILDCARD);
@@ -139,6 +138,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 			this.sourceTypes = sourceTypes;
 			this.source = source;
+			this.instanceMethod = Lazy.of(() -> findInstanceFactory(source.getBeanClass()));
 		}
 
 		@Override
@@ -230,15 +230,15 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		}
 
 		@Nullable
-		private Method findInstanceFactory() {
+		private static Method findInstanceFactory(Class<?> beanClass) {
 
-			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(source.getBeanClass())) {
+			for (Method beanMethod : ReflectionUtils.getDeclaredMethods(beanClass)) {
 
 				if (!isInstanceFactory(beanMethod)) {
 					continue;
 				}
 
-				ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, source.getBeanClass());
+				ResolvableType parameterType = ResolvableType.forMethodParameter(beanMethod, 0, beanClass);
 
 				if (parameterType.isAssignableFrom(LIST_TYPE) || parameterType.isAssignableFrom(MANAGED_TYPES_TYPE)) {
 					return beanMethod;

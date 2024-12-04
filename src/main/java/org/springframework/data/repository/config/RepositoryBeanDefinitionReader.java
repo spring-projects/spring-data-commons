@@ -45,7 +45,6 @@ class RepositoryBeanDefinitionReader {
 				repositoryBaseClass(metadata, beanFactory), fragments(metadata, beanFactory));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Supplier<Collection<RepositoryFragment<?>>> fragments(RepositoryConfiguration<?> metadata,
 			ConfigurableListableBeanFactory beanFactory) {
 

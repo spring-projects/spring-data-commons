@@ -54,8 +54,7 @@ public class JMoleculesConverters {
 
 		List<Object> converters = new ArrayList<>();
 
-		Supplier<ConversionService> conversionService = (Supplier<ConversionService>) () -> DefaultConversionService
-				.getSharedInstance();
+		Supplier<ConversionService> conversionService = DefaultConversionService::getSharedInstance;
 
 		IdentifierToPrimitivesConverter toPrimitives = new IdentifierToPrimitivesConverter(conversionService);
 		PrimitivesToIdentifierConverter toIdentifier = new PrimitivesToIdentifierConverter(conversionService);

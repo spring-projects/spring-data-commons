@@ -141,7 +141,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 
 		} catch (IllegalStateException e) {
 			throw new MappingException(
-					String.format("Could not read property %s of %s", property.toString(), bean.toString()), e);
+					String.format("Could not read property %s of %s", property, bean.toString()), e);
 		}
 	}
 

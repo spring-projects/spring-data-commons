@@ -99,6 +99,7 @@ class DefaultReactiveEntityCallbacks implements ReactiveEntityCallbacks {
 
 	static class DefaultReactiveEntityCallbackInvoker implements ReactiveEntityCallbackInvoker {
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public <T> Mono<T> invokeCallback(EntityCallback<T> callback, T entity,
 				BiFunction<EntityCallback<T>, T, Object> callbackInvokerFunction) {

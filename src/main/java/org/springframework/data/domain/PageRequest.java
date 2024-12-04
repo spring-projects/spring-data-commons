@@ -15,9 +15,14 @@
  */
 package org.springframework.data.domain;
 
+import java.io.Serial;
+
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Basic Java Bean implementation of {@link Pageable}.
@@ -30,7 +35,7 @@ import org.springframework.util.Assert;
  */
 public class PageRequest extends AbstractPageRequest {
 
-	private static final long serialVersionUID = -4541509938956089562L;
+	private static final @Serial long serialVersionUID = -4541509938956089562L;
 
 	private final Sort sort;
 
@@ -103,42 +108,36 @@ public class PageRequest extends AbstractPageRequest {
 	}
 
 	@Override
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public PageRequest next() {
 		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
 	}
 
 	@Override
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public PageRequest previous() {
 		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
 	}
 
 	@Override
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public PageRequest first() {
 		return new PageRequest(0, getPageSize(), getSort());
-	}
-
-	@Override
-	public boolean equals(@Nullable Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof PageRequest that)) {
-			return false;
-		}
-
-		return super.equals(that) && sort.equals(that.sort);
 	}
 
 	/**
 	 * Creates a new {@link PageRequest} with {@code pageNumber} applied.
 	 *
-	 * @param pageNumber
+	 * @param pageNumber the page number to apply.
 	 * @return a new {@link PageRequest}.
 	 * @since 2.5
 	 */
 	@Override
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public PageRequest withPage(int pageNumber) {
 		return new PageRequest(pageNumber, getPageSize(), getSort());
 	}
@@ -151,6 +150,8 @@ public class PageRequest extends AbstractPageRequest {
 	 * @return a new {@link PageRequest}.
 	 * @since 2.5
 	 */
+	@Contract("_, _ -> new")
+	@CheckReturnValue
 	public PageRequest withSort(Direction direction, String... properties) {
 		return new PageRequest(getPageNumber(), getPageSize(), Sort.by(direction, properties));
 	}
@@ -162,13 +163,30 @@ public class PageRequest extends AbstractPageRequest {
 	 * @return a new {@link PageRequest}.
 	 * @since 2.5
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public PageRequest withSort(Sort sort) {
 		return new PageRequest(getPageNumber(), getPageSize(), sort);
 	}
 
 	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof PageRequest that)) {
+			return false;
+		}
+		if (!super.equals(o)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(sort, that.sort);
+	}
+
+	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + sort.hashCode();
+		return super.hashCode() * 31 + ObjectUtils.nullSafeHash(sort);
 	}
 
 	@Override

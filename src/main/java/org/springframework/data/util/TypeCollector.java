@@ -20,13 +20,24 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.ResolvableType;
+import org.springframework.lang.Contract;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -62,11 +73,13 @@ public class TypeCollector {
 
 	private Predicate<Field> fieldFilter = createFieldFilter();
 
+	@Contract("_ -> this")
 	public TypeCollector filterFields(Predicate<Field> filter) {
 		this.fieldFilter = filter.and(filter);
 		return this;
 	}
 
+	@Contract("_ -> this")
 	public TypeCollector filterTypes(Predicate<Class<?>> filter) {
 		this.typeFilter = this.typeFilter.and(filter);
 		return this;

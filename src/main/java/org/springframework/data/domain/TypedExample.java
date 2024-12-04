@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -49,7 +50,7 @@ class TypedExample<T> implements Example<T> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;
@@ -68,9 +69,7 @@ class TypedExample<T> implements Example<T> {
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(probe);
-		result = 31 * result + ObjectUtils.nullSafeHashCode(matcher);
-		return result;
+		return ObjectUtils.nullSafeHash(probe, matcher);
 	}
 
 	@Override

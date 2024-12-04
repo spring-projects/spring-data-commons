@@ -22,6 +22,7 @@ import java.util.function.Function;
 import org.springframework.data.convert.PropertyValueConverter.FunctionPropertyValueConverter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.MethodInvocationRecorder;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 /**
@@ -87,6 +88,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 * @param converter the {@link PropertyValueConverter converter} to apply.
 	 * @return this.
 	 */
+	@Contract("_, _, _ -> this")
 	public PropertyValueConverterRegistrar<P> registerConverter(Class<?> type, String path,
 			PropertyValueConverter<?, ?, ? extends ValueConversionContext<?>> converter) {
 

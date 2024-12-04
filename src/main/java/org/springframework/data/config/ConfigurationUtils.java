@@ -38,7 +38,7 @@ public interface ConfigurationUtils {
 	 * @return
 	 * @throws IllegalArgumentException if no {@link ResourceLoader} can be obtained from the {@link XmlReaderContext}.
 	 */
-	public static ResourceLoader getRequiredResourceLoader(XmlReaderContext context) {
+	static ResourceLoader getRequiredResourceLoader(XmlReaderContext context) {
 
 		Assert.notNull(context, "XmlReaderContext must not be null");
 
@@ -58,7 +58,7 @@ public interface ConfigurationUtils {
 	 * @return
 	 * @throws IllegalArgumentException if no {@link ClassLoader} can be obtained from the given {@link XmlReaderContext}.
 	 */
-	public static ClassLoader getRequiredClassLoader(XmlReaderContext context) {
+	static ClassLoader getRequiredClassLoader(XmlReaderContext context) {
 		return getRequiredClassLoader(getRequiredResourceLoader(context));
 	}
 
@@ -69,7 +69,7 @@ public interface ConfigurationUtils {
 	 * @return
 	 * @throws IllegalArgumentException if the given {@link ResourceLoader} does not expose a {@link ClassLoader}.
 	 */
-	public static ClassLoader getRequiredClassLoader(ResourceLoader resourceLoader) {
+	static ClassLoader getRequiredClassLoader(ResourceLoader resourceLoader) {
 
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
@@ -89,7 +89,7 @@ public interface ConfigurationUtils {
 	 * @return
 	 * @throws IllegalArgumentException if the given {@link BeanDefinition} does not contain a bean class name.
 	 */
-	public static String getRequiredBeanClassName(BeanDefinition beanDefinition) {
+	static String getRequiredBeanClassName(BeanDefinition beanDefinition) {
 
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 

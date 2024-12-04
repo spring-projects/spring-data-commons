@@ -379,12 +379,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			final List<PersistentProperty<?>> persistentProperties = new ArrayList<>();
 
 			entity.doWithAssociations((SimpleAssociationHandler) association -> {
-				if (association.getInverse() != null) {
-					persistentProperties.add(association.getInverse());
-				}
+				persistentProperties.add(association.getInverse());
 			});
 
-			entity.doWithProperties((SimplePropertyHandler) property -> persistentProperties.add(property));
+			entity.doWithProperties((SimplePropertyHandler) persistentProperties::add);
 
 			return persistentProperties;
 		}
@@ -583,9 +581,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 						// keep it a lambda to infer the correct types, preventing
 						// LambdaConversionException: Invalid receiver type class java.lang.reflect.AccessibleObject; not a subtype
 						// of implementation type interface java.lang.reflect.Member
-						.map(it -> it.getDeclaringClass());
+						.map(Member::getDeclaringClass);
 
-			}).collect(Collectors.collectingAndThen(Collectors.toSet(), it -> new ArrayList<>(it)));
+			}).collect(Collectors.collectingAndThen(Collectors.toSet(), ArrayList::new));
 
 		}
 

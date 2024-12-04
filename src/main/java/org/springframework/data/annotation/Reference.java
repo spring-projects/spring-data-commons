@@ -36,8 +36,6 @@ public @interface Reference {
 	/**
 	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
 	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
-	 *
-	 * @return
 	 */
 	@AliasFor(attribute = "to")
 	Class<?> value() default Class.class;
@@ -45,8 +43,6 @@ public @interface Reference {
 	/**
 	 * Explicitly define the target type of the reference. Used in case the annotated property is not the target type but
 	 * rather an identifier and/or if that identifier type is not uniquely identifying the target entity.
-	 *
-	 * @return
 	 */
 	@AliasFor(attribute = "value")
 	Class<?> to() default Class.class;
