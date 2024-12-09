@@ -15,14 +15,13 @@
  */
 package org.springframework.data.geo;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -67,7 +66,7 @@ public class Polygon implements Iterable<Point>, Shape {
 	 *
 	 * @param points must not be {@literal null}.
 	 */
-	@PersistenceConstructor
+	@PersistenceCreator
 	public Polygon(List<? extends Point> points) {
 
 		Assert.notNull(points, "Points must not be null");

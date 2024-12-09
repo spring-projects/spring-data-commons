@@ -142,7 +142,12 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		} catch (MappingInstantiationException o_O) {
 
-			assertThat(o_O.getConstructor()).hasValue(constructor);
+			assertThat(o_O.getEntityCreator()
+				.map(it -> (PreferredConstructor) it)
+				.map(PreferredConstructor::getConstructor))
+				.isPresent()
+				.hasValue(constructor);
+
 			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
 			assertThat(o_O.getEntityType()).hasValue(Sample.class);
 

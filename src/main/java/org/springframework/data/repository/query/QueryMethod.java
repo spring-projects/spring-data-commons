@@ -86,7 +86,7 @@ public class QueryMethod {
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.metadata = metadata;
-		this.parameters = createParameters(method, metadata.getDomainTypeInformation());
+		this.parameters = createParameters(ParametersSource.of(getMetadata(), method));
 
 		this.domainClass = Lazy.of(() -> {
 
