@@ -212,7 +212,7 @@ class EntityCallbackDiscoverer {
 				this.beanClassLoader = cbf.getBeanClassLoader();
 			}
 
-			this.retrievalMutex = cbf.getSingletonMutex();
+			this.retrievalMutex = new Object();
 		}
 
 		defaultRetriever.discoverEntityCallbacks(beanFactory);

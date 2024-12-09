@@ -18,7 +18,7 @@ package org.springframework.data.geo;
 import java.io.Serializable;
 import java.util.Locale;
 
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -43,7 +43,7 @@ public class Point implements Serializable {
 	 * @param x
 	 * @param y
 	 */
-	@PersistenceConstructor
+	@PersistenceCreator
 	public Point(double x, double y) {
 		this.x = x;
 		this.y = y;
