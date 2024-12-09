@@ -92,7 +92,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
-			ResourceLoader resourceLoader, Environment environment) {
+										   ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
@@ -117,7 +117,7 @@ public class RepositoryConfigurationDelegate {
 	 *         {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
-			@Nullable ResourceLoader resourceLoader) {
+												  @Nullable ResourceLoader resourceLoader) {
 
 		if (environment != null) {
 			return environment;
@@ -136,7 +136,7 @@ public class RepositoryConfigurationDelegate {
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
-			RepositoryConfigurationExtension extension) {
+																RepositoryConfigurationExtension extension) {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(LogMessage.format("Bootstrapping Spring Data %s repositories in %s mode.", //
@@ -222,7 +222,7 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
+									   Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
 		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
 				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -245,7 +245,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param registry must not be {@literal null}.
 	 */
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
-			BeanDefinitionRegistry registry, BootstrapMode mode) {
+													  BeanDefinitionRegistry registry, BootstrapMode mode) {
 
 		if (!DefaultListableBeanFactory.class.isInstance(registry) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
@@ -272,8 +272,10 @@ public class RepositoryConfigurationDelegate {
 
 			logger.debug("Registering deferred repository initialization listener.");
 
-			beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
-					new DeferredRepositoryInitializationListener(beanFactory));
+			if (!beanFactory.containsBean(DeferredRepositoryInitializationListener.class.getName())) {
+				beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
+						new DeferredRepositoryInitializationListener(beanFactory));
+			}
 		}
 	}
 
