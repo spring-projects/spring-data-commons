@@ -15,15 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
@@ -32,12 +23,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.AutowireCandidateResolver;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.support.*;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
@@ -56,6 +42,10 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 import org.springframework.data.util.ClassUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
+
+import java.lang.reflect.TypeVariable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Delegate for configuration integration to reuse the general way of detecting repositories. Customization is done by
@@ -95,7 +85,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
-			ResourceLoader resourceLoader, Environment environment) {
+										   ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
@@ -120,7 +110,7 @@ public class RepositoryConfigurationDelegate {
 	 *         {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
-			@Nullable ResourceLoader resourceLoader) {
+												  @Nullable ResourceLoader resourceLoader) {
 
 		if (environment != null) {
 			return environment;
@@ -139,7 +129,7 @@ public class RepositoryConfigurationDelegate {
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
-			RepositoryConfigurationExtension extension) {
+																RepositoryConfigurationExtension extension) {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(LogMessage.format("Bootstrapping Spring Data %s repositories in %s mode.", //
@@ -225,7 +215,7 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
+									   Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
 		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
 				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -248,7 +238,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param registry must not be {@literal null}.
 	 */
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
-			BeanDefinitionRegistry registry, BootstrapMode mode) {
+													  BeanDefinitionRegistry registry, BootstrapMode mode) {
 
 		if (!(registry instanceof DefaultListableBeanFactory beanFactory) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
@@ -272,8 +262,11 @@ public class RepositoryConfigurationDelegate {
 				&& !beanFactory.containsBean(DeferredRepositoryInitializationListener.class.getName())) {
 
 			logger.debug("Registering deferred repository initialization listener.");
-			beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
-					new DeferredRepositoryInitializationListener(beanFactory));
+
+			if (!beanFactory.containsBean(DeferredRepositoryInitializationListener.class.getName())) {
+				beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
+						new DeferredRepositoryInitializationListener(beanFactory));
+			}
 		}
 	}
 
