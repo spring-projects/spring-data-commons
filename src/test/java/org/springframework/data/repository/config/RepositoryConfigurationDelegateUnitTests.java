@@ -15,13 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.lang.reflect.TypeVariable;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -58,6 +51,13 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
+
+import java.lang.reflect.TypeVariable;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
