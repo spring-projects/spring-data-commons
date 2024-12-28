@@ -117,7 +117,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 	 * @param property must not be {@literal null}.
 	 * @param type can be {@literal null}.
 	 * @return
-	 * @throws MappingException in case an exception occured when accessing the property.
+	 * @throws MappingException in case an exception occurred when accessing the property.
 	 */
 	@Nullable
 	public <S> Object getProperty(PersistentProperty<?> property, Class<? extends S> type) {

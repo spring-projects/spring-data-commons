@@ -192,7 +192,7 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 		 * Describes how to read a database value into a domain object's property value.
 		 *
 		 * @param reader must not be {@literal null}.
-		 * @return the confiured {@link PropertyValueConverterRegistrar}.
+		 * @return the configured {@link PropertyValueConverterRegistrar}.
 		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public PropertyValueConverterRegistrar<P> reading(BiFunction<R, ValueConversionContext<P>, S> reader) {
