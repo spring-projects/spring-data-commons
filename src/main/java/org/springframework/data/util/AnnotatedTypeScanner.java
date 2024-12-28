@@ -44,7 +44,7 @@ import org.springframework.util.ClassUtils;
  */
 public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAware {
 
-	private final Iterable<Class<? extends Annotation>> annotationTypess;
+	private final Iterable<Class<? extends Annotation>> annotationTypes;
 	private final boolean considerInterfaces;
 
 	private @Nullable ResourceLoader resourceLoader;
@@ -83,7 +83,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	public AnnotatedTypeScanner(boolean considerInterfaces, Collection<Class<? extends Annotation>> annotationTypes) {
 
 		this.considerInterfaces = considerInterfaces;
-		this.annotationTypess = annotationTypes;
+		this.annotationTypes = annotationTypes;
 	}
 
 	@Override
@@ -146,7 +146,7 @@ public class AnnotatedTypeScanner implements ResourceLoaderAware, EnvironmentAwa
 	}
 
 	public Set<Class<?>> findTypes(Iterable<String> basePackages) {
-		return findTypes(basePackages, Streamable.of(annotationTypess).stream().map(annotation -> new AnnotationTypeFilter(annotation, true, considerInterfaces)).collect(Collectors.toSet()));
+		return findTypes(basePackages, Streamable.of(annotationTypes).stream().map(annotation -> new AnnotationTypeFilter(annotation, true, considerInterfaces)).collect(Collectors.toSet()));
 	}
 
 	/**

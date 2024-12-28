@@ -196,7 +196,7 @@ class RepositoryComponentProvider extends ClassPathScanningCandidateComponentPro
 		 */
 		private AllTypeFilter {
 
-			Assert.notNull(delegates, "TypeFilter deleages must not be null");
+			Assert.notNull(delegates, "TypeFilter delegates must not be null");
 		}
 
 		@Override

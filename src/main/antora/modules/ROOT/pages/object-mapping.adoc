@@ -223,7 +223,7 @@ It's an established pattern to rather use static factory methods to expose these
 [[mapping.general-recommendations.override.properties]]
 === Overriding Properties
 
-Java's allows a flexible design of domain classes where a subclass could define a property that is already declared with the same name in its superclass.
+Java allows a flexible design of domain classes where a subclass could define a property that is already declared with the same name in its superclass.
 Consider the following example:
 
 [source,java]
@@ -326,7 +326,7 @@ data class Person(var id: String, val name: String) {
 ----
 
 Kotlin supports parameter optionality by allowing default values to be used if a parameter is not provided.
-When Spring Data detects a constructor with parameter defaulting, then it leaves these parameters absent if the data store does not provide a value (or simply returns `null`) so Kotlin can apply parameter defaulting.Consider the following class that applies parameter defaulting for `name`
+When Spring Data detects a constructor with parameter defaulting, then it leaves these parameters absent if the data store does not provide a value (or simply returns `null`) so Kotlin can apply parameter defaulting. Consider the following class that applies parameter defaulting for `name`
 
 [source,kotlin]
 ----
