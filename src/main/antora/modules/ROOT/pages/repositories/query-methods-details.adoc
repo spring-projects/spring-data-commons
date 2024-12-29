@@ -533,7 +533,7 @@ The following example shows how to limit the query size:
 .Limiting the result size of a query with `Top` and `First`
 [source,java]
 ----
-List<User> findByLastname(Limit limit);
+List<User> findByLastname(String lastname, Limit limit);
 
 User findFirstByOrderByLastnameAsc();
 
