@@ -46,12 +46,10 @@ import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Converters to potentially wrap the execution of a repository method into a variety of wrapper types potentially being
@@ -59,10 +57,10 @@ import org.springframework.util.concurrent.ListenableFuture;
  * <ul>
  * <li>{@code java.util.concurrent.Future}</li>
  * <li>{@code java.util.concurrent.CompletableFuture}</li>
- * <li>{@code org.springframework.util.concurrent.ListenableFuture<}</li>
- * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of
- * 1.13</li>
- * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0</li>
+ * <li>{@code javaslang.collection.Seq}, {@code javaslang.collection.Map}, {@code javaslang.collection.Set} - as of 1.13
+ * via {@link CustomCollections}</li>
+ * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0 via
+ * {@link CustomCollections}</li>
  * <li>Reactive wrappers supported by {@link org.springframework.data.util.ReactiveWrappers} - as of 2.0</li>
  * </ul>
  *
@@ -74,7 +72,6 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @since 1.8
  * @see NullableWrapperConverters
  */
-@SuppressWarnings("removal")
 public abstract class QueryExecutionConverters {
 
 	private static final boolean VAVR_PRESENT = ClassUtils.isPresent("io.vavr.control.Try",
@@ -92,9 +89,7 @@ public abstract class QueryExecutionConverters {
 
 		WRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
 		UNWRAPPER_TYPES.add(WrapperType.singleValue(Future.class));
-		WRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
 		WRAPPER_TYPES.add(WrapperType.singleValue(CompletableFuture.class));
-		UNWRAPPER_TYPES.add(WrapperType.singleValue(ListenableFuture.class));
 		UNWRAPPER_TYPES.add(WrapperType.singleValue(CompletableFuture.class));
 
 		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
