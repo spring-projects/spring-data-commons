@@ -16,7 +16,6 @@
 package org.springframework.data.repository.query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -300,7 +299,7 @@ public class SpelQueryContext {
 	 */
 	static class QuotationMap {
 
-		private static final Collection<Character> QUOTING_CHARACTERS = Arrays.asList('"', '\'');
+		private static final Collection<Character> QUOTING_CHARACTERS = List.of('"', '\'');
 
 		private final List<Range<Integer>> quotedRanges = new ArrayList<>();
 
