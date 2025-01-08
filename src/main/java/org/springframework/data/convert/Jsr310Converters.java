@@ -28,7 +28,6 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -48,7 +47,7 @@ import org.springframework.lang.NonNull;
  */
 public abstract class Jsr310Converters {
 
-	private static final List<Class<?>> CLASSES = Arrays.asList(LocalDateTime.class, LocalDate.class, LocalTime.class,
+	private static final List<Class<?>> CLASSES = List.of(LocalDateTime.class, LocalDate.class, LocalTime.class,
 			Instant.class, ZoneId.class, Duration.class, Period.class);
 
 	/**
