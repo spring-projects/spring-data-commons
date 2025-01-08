@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Optional;
 
@@ -36,7 +35,6 @@ import com.google.common.base.Optional;
  * @author Mark Paluch
  * @author Maciek Opała
  */
-@SuppressWarnings("removal")
 class NullableWrapperConvertersUnitTests {
 
 	DefaultConversionService conversionService;
@@ -54,7 +52,6 @@ class NullableWrapperConvertersUnitTests {
 		assertThat(NullableWrapperConverters.supports(Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supports(java.util.Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supports(Future.class)).isFalse();
-		assertThat(NullableWrapperConverters.supports(ListenableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supports(CompletableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supports(Option.class)).isTrue();
 		assertThat(NullableWrapperConverters.supports(io.vavr.control.Option.class)).isTrue();
@@ -66,7 +63,6 @@ class NullableWrapperConvertersUnitTests {
 		assertThat(NullableWrapperConverters.supportsUnwrapping(Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(java.util.Optional.class)).isTrue();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(Future.class)).isFalse();
-		assertThat(NullableWrapperConverters.supportsUnwrapping(ListenableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(CompletableFuture.class)).isFalse();
 		assertThat(NullableWrapperConverters.supportsUnwrapping(Option.class)).isTrue();
 	}
