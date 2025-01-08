@@ -20,8 +20,6 @@ import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,8 +87,8 @@ public abstract class NullableUtils {
 	private static final Set<Class<?>> NON_NULLABLE_ANNOTATIONS = findClasses("reactor.util.lang.NonNullApi",
 			NonNullApi.class.getName());
 
-	private static final Set<String> WHEN_NULLABLE = new HashSet<>(Arrays.asList("UNKNOWN", "MAYBE", "NEVER"));
-	private static final Set<String> WHEN_NON_NULLABLE = new HashSet<>(Collections.singletonList("ALWAYS"));
+	private static final Set<String> WHEN_NULLABLE = Set.of("UNKNOWN", "MAYBE", "NEVER");
+	private static final Set<String> WHEN_NON_NULLABLE = Set.of("ALWAYS");
 
 	private NullableUtils() {}
 
