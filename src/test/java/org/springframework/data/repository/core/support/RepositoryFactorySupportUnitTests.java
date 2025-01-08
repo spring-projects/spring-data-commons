@@ -346,14 +346,6 @@ class RepositoryFactorySupportUnitTests {
 	}
 
 	@Test // DATACMNS-714
-	void wrapsExecutionResultIntoListenableFutureIfConfigured() throws Exception {
-
-		var reference = new User();
-
-		expect(prepareConvertingRepository(reference).findOneByLastname("Foo"), reference);
-	}
-
-	@Test // DATACMNS-714
 	void wrapsExecutionResultIntoCompletableFutureWithEntityCollectionIfConfigured() throws Exception {
 
 		var reference = singletonList(new User());
@@ -605,7 +597,6 @@ class RepositoryFactorySupportUnitTests {
 
 	}
 
-	@SuppressWarnings("removal")
 	interface ConvertingRepository extends Repository<Object, Long> {
 
 		Set<String> convertListToStringSet();
@@ -624,10 +615,6 @@ class RepositoryFactorySupportUnitTests {
 		// DATACMNS-714
 		@Async
 		CompletableFuture<List<User>> readAllByFirstname(String firstname);
-
-		// DATACMNS-714
-		@Async
-		CompletableFuture<User> findOneByLastname(String lastname);
 
 		// DATACMNS-714
 		@Async
