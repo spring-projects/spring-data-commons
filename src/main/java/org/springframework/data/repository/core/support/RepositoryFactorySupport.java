@@ -94,7 +94,6 @@ import org.springframework.util.ObjectUtils;
  * @author John Blum
  * @author Johannes Englmeier
  */
-@SuppressWarnings("removal")
 public abstract class RepositoryFactorySupport
 		implements BeanClassLoaderAware, BeanFactoryAware, EnvironmentAware, EnvironmentCapable {
 
