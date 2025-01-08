@@ -1,3 +1,7 @@
+ifndef::support-qbe-collection[]
+:support-qbe-collection: true
+endif::[]
+
 [[query-by-example]]
 = Query by Example
 
@@ -36,6 +40,9 @@ Query by Example is well suited for several use cases:
 Query by Example also has several limitations:
 
 * No support for nested or grouped property constraints, such as `firstname = ?0 or (firstname = ?1 and lastname = ?2)`.
+ifeval::[{support-qbe-collection} != true]
+* No support for matching collections or maps.
+endif::[]
 * Store-specific support on string matching.
 Depending on your databases, String matching can support starts/contains/ends/regex for strings.
 * Exact matching for other property types.
