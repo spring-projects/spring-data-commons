@@ -73,8 +73,9 @@ public class AotRepositoryMethodBuilder {
 		this.metadata.methodArguments.put(parameter.name, parameter);
 	}
 
-	public void setReturnType(@Nullable TypeName returnType) {
+	public void setReturnType(@Nullable TypeName returnType, @Nullable TypeName actualReturnType) {
 		this.metadata.returnType = returnType;
+		this.metadata.actualReturnType = actualReturnType;
 	}
 
 	public void customize(RepositoryMethodCustomizer customizer) {
@@ -106,6 +107,7 @@ public class AotRepositoryMethodBuilder {
 		private final AotRepositoryBuilder.GenerationMetadata generationMetadata;
 		private final Method repositoryMethod;
 		private final Map<String, ParameterSpec> methodArguments;
+		@Nullable public TypeName actualReturnType;
 		@Nullable private TypeName returnType;
 
 		public MethodGenerationMetadata(AotRepositoryBuilder.GenerationMetadata generationMetadata,
@@ -136,6 +138,11 @@ public class AotRepositoryMethodBuilder {
 		@Nullable
 		public TypeName getReturnType() {
 			return returnType;
+		}
+
+		@Nullable
+		public TypeName getActualReturnType() {
+			return actualReturnType;
 		}
 
 		@Nullable

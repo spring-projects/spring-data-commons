@@ -65,10 +65,18 @@ public class AotRepositoryDerivedMethodBuilder extends AotRepositoryMethodBuilde
 				repositoryInformation.getRepositoryInterface());
 
 		TypeName returnTypeName = TypeName.get(returnType.resolve());
+		TypeName actualReturnTypeName = null;
 		if (returnType.hasGenerics()) {
-			returnTypeName = ParameterizedTypeName.get(returnType.resolve(), returnType.resolveGenerics());
+			Class<?>[] generics = returnType.resolveGenerics();
+			returnTypeName = ParameterizedTypeName.get(returnType.resolve(), generics);
+
+			if(generics.length == 1) {
+				actualReturnTypeName = TypeName.get(generics[0]);
+			}
 		}
 
-		setReturnType(returnTypeName);
+		setReturnType(returnTypeName, actualReturnTypeName);
 	}
+
+
 }

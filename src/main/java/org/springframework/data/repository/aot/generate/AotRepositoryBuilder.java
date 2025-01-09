@@ -28,6 +28,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.ClassNameGenerator;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
@@ -98,6 +99,16 @@ public class AotRepositoryBuilder {
 			derivedMethodBuilderCustomizer.accept(derivedMethodBuilder);
 			builder.addMethod(derivedMethodBuilder.buildMethod());
 		}, it -> {
+
+			/*
+			the isBaseClassMethod(it) check seems to have some issues.
+			need to hard code it here
+			 */
+
+			if(ReflectionUtils.findMethod(CrudRepository.class, it.getName(), it.getParameterTypes()) != null) {
+				return false;
+			}
+
 			return !repositoryInformation.isBaseClassMethod(it) && !repositoryInformation.isCustomMethod(it)
 					&& !it.isDefault();
 		});
