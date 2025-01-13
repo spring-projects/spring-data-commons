@@ -37,12 +37,13 @@ class RepositoryContributorUnitTests {
 		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
 
 			@Override
-			protected void customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
+			protected Contribution customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
 				methodBuilder.customize(((repositoryInformation, metadata, builder) -> {
 					if (!metadata.returnsVoid()) {
 						builder.addStatement("return null");
 					}
 				}));
+				return Contribution.CODE;
 			}
 		};
 

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.lang.model.element.Modifier;
 
@@ -48,7 +49,7 @@ public class AotRepositoryBuilder {
 	private final GenerationMetadata generationMetadata;
 
 	private Consumer<AotRepositoryConstructorBuilder> constructorBuilderCustomizer;
-	private Consumer<AotRepositoryMethodBuilder> derivedMethodBuilderCustomizer;
+	private Function<AotRepositoryMethodBuilder, Contribution> derivedMethodBuilderCustomizer;
 	private RepositoryCustomizer customizer;
 
 	public static AotRepositoryBuilder forRepository(RepositoryInformation repositoryInformation) {
@@ -96,8 +97,10 @@ public class AotRepositoryBuilder {
 
 			AotRepositoryDerivedMethodBuilder derivedMethodBuilder = new AotRepositoryDerivedMethodBuilder(method,
 					repositoryInformation, generationMetadata);
-			derivedMethodBuilderCustomizer.accept(derivedMethodBuilder);
-			builder.addMethod(derivedMethodBuilder.buildMethod());
+			switch (derivedMethodBuilderCustomizer.apply(derivedMethodBuilder)) {
+				case CODE -> builder.addMethod(derivedMethodBuilder.buildMethod());
+				// todo other cases, not sure which ones right now
+			}
 		}, it -> {
 
 			/*
@@ -127,7 +130,7 @@ public class AotRepositoryBuilder {
 		return this;
 	}
 
-	AotRepositoryBuilder withDerivedMethodCustomizer(Consumer<AotRepositoryMethodBuilder> methodBuilder) {
+	AotRepositoryBuilder withDerivedMethodCustomizer(Function<AotRepositoryMethodBuilder, Contribution> methodBuilder) {
 		this.derivedMethodBuilderCustomizer = methodBuilder;
 		return this;
 	}

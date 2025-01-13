@@ -46,6 +46,7 @@ public class AotRepositoryMethodBuilder {
 	private final MethodGenerationMetadata metadata;
 
 	private RepositoryMethodCustomizer customizer = (info, md, builder) -> {};
+	private CodeBlocks codeBlocks;
 
 	public AotRepositoryMethodBuilder(Method method, RepositoryInformation repositoryInformation,
 			AotRepositoryBuilder.GenerationMetadata metadata) {
@@ -53,6 +54,7 @@ public class AotRepositoryMethodBuilder {
 		this.method = method;
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = new MethodGenerationMetadata(metadata, method);
+		this.codeBlocks = new CodeBlocks(metadata);
 	}
 
 	public void addParameter(String parameterName, Class<?> type) {
@@ -94,6 +96,10 @@ public class AotRepositoryMethodBuilder {
 		metadata.methodArguments.forEach((name, spec) -> builder.addParameter(spec));
 		customizer.customize(repositoryInformation, metadata, builder);
 		return builder.build();
+	}
+
+	public CodeBlocks codeBlocks() {
+		return codeBlocks;
 	}
 
 	public interface RepositoryMethodCustomizer {

@@ -83,7 +83,7 @@ public class RepositoryContributor implements AotCodeContributor {
 
 	}
 
-	protected void customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
-
+	protected Contribution customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
+		return Contribution.SKIP;
 	}
 }
