@@ -15,25 +15,37 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ParametersSource;
+import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -141,6 +153,26 @@ public class AotRepositoryMethodBuilder {
 			return repositoryMethod.getReturnType().equals(Void.TYPE);
 		}
 
+		public boolean returnsPage() {
+			return ClassUtils.isAssignable(Page.class, repositoryMethod.getReturnType());
+		}
+
+		public boolean returnsSlice() {
+			return ClassUtils.isAssignable(Slice.class, repositoryMethod.getReturnType());
+		}
+
+		public boolean returnsCollection() {
+			return ClassUtils.isAssignable(Collection.class, repositoryMethod.getReturnType());
+		}
+
+		public boolean returnsSingleValue() {
+			return !returnsPage() && !returnsSlice() && !returnsCollection();
+		}
+
+		public boolean returnsOptionalValue() {
+			return ClassUtils.isAssignable(Optional.class, repositoryMethod.getReturnType());
+		}
+
 		@Nullable
 		public TypeName getReturnType() {
 			return returnType;
@@ -189,6 +221,12 @@ public class AotRepositoryMethodBuilder {
 
 		public Map<String, FieldSpec> getFields() {
 			return generationMetadata.getFields();
+		}
+
+		@Nullable
+		public <T> T annotationValue(Class<? extends Annotation> annotation, String attribute) {
+			AnnotationAttributes values = AnnotatedElementUtils.getMergedAnnotationAttributes(this.repositoryMethod, annotation);
+			return values != null ? (T) values.get(attribute) : null;
 		}
 	}
 }

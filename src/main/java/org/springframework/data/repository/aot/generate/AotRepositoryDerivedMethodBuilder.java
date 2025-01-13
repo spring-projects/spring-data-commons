@@ -55,7 +55,9 @@ public class AotRepositoryDerivedMethodBuilder extends AotRepositoryMethodBuilde
 							resolvableParameterType.resolveGenerics());
 				}
 				addParameter(parameter.getName(), parameterType);
+				index++;
 			}
+
 		}
 	}
 
