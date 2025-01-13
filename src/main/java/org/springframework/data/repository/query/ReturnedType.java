@@ -17,9 +17,7 @@ package org.springframework.data.repository.query;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,7 +222,7 @@ public abstract class ReturnedType {
 	 */
 	private static final class ReturnedClass extends ReturnedType {
 
-		private static final Set<Class<?>> VOID_TYPES = new HashSet<>(Arrays.asList(Void.class, void.class));
+		private static final Set<Class<?>> VOID_TYPES = Set.of(Void.class, void.class);
 
 		private final Class<?> type;
 		private final boolean isDto;
