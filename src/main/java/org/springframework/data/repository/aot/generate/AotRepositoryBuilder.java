@@ -46,10 +46,10 @@ import org.springframework.util.ReflectionUtils;
 public class AotRepositoryBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final GenerationMetadata generationMetadata;
+	private final TargetAotRepositoryImplementationMetadata generationMetadata;
 
 	private Consumer<AotRepositoryConstructorBuilder> constructorBuilderCustomizer;
-	private Function<AotRepositoryMethodBuilder, Contribution> derivedMethodBuilderCustomizer;
+	private Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction;
 	private RepositoryCustomizer customizer;
 
 	public static AotRepositoryBuilder forRepository(RepositoryInformation repositoryInformation) {
@@ -59,7 +59,7 @@ public class AotRepositoryBuilder {
 	AotRepositoryBuilder(RepositoryInformation repositoryInformation) {
 
 		this.repositoryInformation = repositoryInformation;
-		this.generationMetadata = new GenerationMetadata(className());
+		this.generationMetadata = new TargetAotRepositoryImplementationMetadata(className());
 		this.generationMetadata.addField(FieldSpec
 				.builder(TypeName.get(Log.class), "logger", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
@@ -95,12 +95,14 @@ public class AotRepositoryBuilder {
 		// start with the derived ones
 		ReflectionUtils.doWithMethods(repositoryInformation.getRepositoryInterface(), method -> {
 
-			AotRepositoryDerivedMethodBuilder derivedMethodBuilder = new AotRepositoryDerivedMethodBuilder(method,
-					repositoryInformation, generationMetadata);
-			switch (derivedMethodBuilderCustomizer.apply(derivedMethodBuilder)) {
-				case CODE -> builder.addMethod(derivedMethodBuilder.buildMethod());
-				// todo other cases, not sure which ones right now
+//			AotRepositoryDerivedMethodBuilder derivedMethodBuilder = new AotRepositoryDerivedMethodBuilder(method,
+//					repositoryInformation, generationMetadata);
+			AotRepositoryMethodGenerationContext context = new AotRepositoryMethodGenerationContext(method, repositoryInformation, generationMetadata);
+			AotRepositoryMethodBuilder methodBuilder = methodContextFunction.apply(context);
+			if(methodBuilder != null) {
+				builder.addMethod(methodBuilder.buildMethod());
 			}
+
 		}, it -> {
 
 			/*
@@ -130,8 +132,8 @@ public class AotRepositoryBuilder {
 		return this;
 	}
 
-	AotRepositoryBuilder withDerivedMethodCustomizer(Function<AotRepositoryMethodBuilder, Contribution> methodBuilder) {
-		this.derivedMethodBuilderCustomizer = methodBuilder;
+	AotRepositoryBuilder withDerivedMethodFunction(Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction) {
+		this.methodContextFunction = methodContextFunction;
 		return this;
 	}
 
@@ -141,7 +143,7 @@ public class AotRepositoryBuilder {
 		return this;
 	}
 
-	GenerationMetadata getGenerationMetadata() {
+	TargetAotRepositoryImplementationMetadata getGenerationMetadata() {
 		return generationMetadata;
 	}
 
@@ -159,15 +161,15 @@ public class AotRepositoryBuilder {
 
 	public interface RepositoryCustomizer {
 
-		void customize(RepositoryInformation repositoryInformation, GenerationMetadata metadata, TypeSpec.Builder builder);
+		void customize(RepositoryInformation repositoryInformation, TargetAotRepositoryImplementationMetadata metadata, TypeSpec.Builder builder);
 	}
 
-	public class GenerationMetadata {
+	public class TargetAotRepositoryImplementationMetadata {
 
 		private ClassName className;
 		private Map<String, FieldSpec> fields = new HashMap<>();
 
-		public GenerationMetadata(ClassName className) {
+		public TargetAotRepositoryImplementationMetadata(ClassName className) {
 			this.className = className;
 		}
 

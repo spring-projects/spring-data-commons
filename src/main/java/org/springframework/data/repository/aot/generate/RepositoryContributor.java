@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.TargetAotRepositoryImplementationMetadata;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.JavaFile;
@@ -47,7 +48,7 @@ public class RepositoryContributor implements AotCodeContributor {
 		AotRepositoryBuilder builder = AotRepositoryBuilder.forRepository(repositoryInformation);
 		builder.withFileCustomizer(this::customizeFile);
 		builder.withConstructorCustomizer(this::customizeConstructor);
-		builder.withDerivedMethodCustomizer(this::customizeDerivedMethod);
+		builder.withDerivedMethodFunction(this::contributeRepositoryMethod);
 
 		JavaFile file = builder.javaFile();
 		String typeName = "%s.%s".formatted(file.packageName, file.typeSpec.name);
@@ -78,12 +79,12 @@ public class RepositoryContributor implements AotCodeContributor {
 
 	}
 
-	protected void customizeFile(RepositoryInformation information, AotRepositoryBuilder.GenerationMetadata metadata,
+	protected void customizeFile(RepositoryInformation information, TargetAotRepositoryImplementationMetadata metadata,
 			TypeSpec.Builder builder) {
 
 	}
 
-	protected Contribution customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
-		return Contribution.SKIP;
+	protected AotRepositoryMethodBuilder contributeRepositoryMethod(AotRepositoryMethodGenerationContext context) {
+		return null;
 	}
 }

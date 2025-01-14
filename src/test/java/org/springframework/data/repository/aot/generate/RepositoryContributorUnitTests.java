@@ -35,15 +35,14 @@ class RepositoryContributorUnitTests {
 
 		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
 		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
-
 			@Override
-			protected Contribution customizeDerivedMethod(AotRepositoryMethodBuilder methodBuilder) {
-				methodBuilder.customize(((repositoryInformation, metadata, builder) -> {
-					if (!metadata.returnsVoid()) {
+			protected AotRepositoryMethodBuilder contributeRepositoryMethod(AotRepositoryMethodGenerationContext context) {
+
+				return new AotRepositoryMethodBuilder(context).customize(((ctx, builder) -> {
+					if (!ctx.returnsVoid()) {
 						builder.addStatement("return null");
 					}
 				}));
-				return Contribution.CODE;
 			}
 		};
 

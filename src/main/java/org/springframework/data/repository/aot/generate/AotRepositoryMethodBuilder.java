@@ -15,37 +15,23 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Collection;
+import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.data.domain.Limit;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.query.Parameters;
-import org.springframework.data.repository.query.ParametersSource;
-import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -53,20 +39,15 @@ import org.springframework.util.StringUtils;
  */
 public class AotRepositoryMethodBuilder {
 
-	private final Method method;
-	private final RepositoryInformation repositoryInformation;
-	private final MethodGenerationMetadata metadata;
+	private final AotRepositoryMethodGenerationContext context;
 
-	private RepositoryMethodCustomizer customizer = (info, md, builder) -> {};
-	private CodeBlocks codeBlocks;
+	private RepositoryMethodCustomizer customizer = (context, body) -> {};
 
-	public AotRepositoryMethodBuilder(Method method, RepositoryInformation repositoryInformation,
-			AotRepositoryBuilder.GenerationMetadata metadata) {
+	public AotRepositoryMethodBuilder(AotRepositoryMethodGenerationContext context) {
 
-		this.method = method;
-		this.repositoryInformation = repositoryInformation;
-		this.metadata = new MethodGenerationMetadata(metadata, method);
-		this.codeBlocks = new CodeBlocks(metadata);
+		this.context = context;
+		initReturnType(context.getMethod(), context.getRepositoryInformation());
+		initParameters(context.getMethod(), context.getRepositoryInformation());
 	}
 
 	public void addParameter(String parameterName, Class<?> type) {
@@ -84,59 +65,87 @@ public class AotRepositoryMethodBuilder {
 	}
 
 	public void addParameter(ParameterSpec parameter) {
-		this.metadata.methodArguments.put(parameter.name, parameter);
+		this.context.addParameter(parameter);
 	}
 
 	public void setReturnType(@Nullable TypeName returnType, @Nullable TypeName actualReturnType) {
-		this.metadata.returnType = returnType;
-		this.metadata.actualReturnType = actualReturnType;
+		this.context.getTargetMethodMetadata().returnType = returnType;
+		this.context.getTargetMethodMetadata().actualReturnType = actualReturnType;
 	}
 
-	public void customize(RepositoryMethodCustomizer customizer) {
+	public AotRepositoryMethodBuilder customize(RepositoryMethodCustomizer customizer) {
 		this.customizer = customizer;
+		return this;
 	}
 
 	MethodSpec buildMethod() {
 
-		MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName()).addModifiers(Modifier.PUBLIC);
-		if (!metadata.returnsVoid()) {
-			builder.returns(metadata.getReturnType());
+		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
+		if (!context.returnsVoid()) {
+			builder.returns(context.getReturnType());
 		}
-		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", method.getDeclaringClass(),
-				method.getName(), StringUtils.collectionToCommaDelimitedString(
-						metadata.methodArguments.values().stream().map(it -> it.type.toString()).collect(Collectors.toList())));
-		metadata.methodArguments.forEach((name, spec) -> builder.addParameter(spec));
-		customizer.customize(repositoryInformation, metadata, builder);
+		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
+				context.getMethod().getName(),
+				StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata().methodArguments.values().stream()
+						.map(it -> it.type.toString()).collect(Collectors.toList())));
+		context.getTargetMethodMetadata().methodArguments.forEach((name, spec) -> builder.addParameter(spec));
+		customizer.customize(context, builder);
 		return builder.build();
 	}
 
-	public CodeBlocks codeBlocks() {
-		return codeBlocks;
+	private void initParameters(Method method, RepositoryInformation repositoryInformation) {
+
+		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
+		if (method.getParameterCount() > 0) {
+			int index = 0;
+			for (Parameter parameter : method.getParameters()) {
+
+				ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(new MethodParameter(method, index),
+						repositoryInterface);
+
+				TypeName parameterType = TypeName.get(resolvableParameterType.resolve());
+				if (resolvableParameterType.hasGenerics()) {
+					parameterType = ParameterizedTypeName.get(resolvableParameterType.resolve(),
+							resolvableParameterType.resolveGenerics());
+				}
+				addParameter(parameter.getName(), parameterType);
+				index++;
+			}
+
+		}
+	}
+
+	private void initReturnType(Method method, RepositoryInformation repositoryInformation) {
+
+		ResolvableType returnType = ResolvableType.forMethodReturnType(method,
+				repositoryInformation.getRepositoryInterface());
+
+		TypeName returnTypeName = TypeName.get(returnType.resolve());
+		TypeName actualReturnTypeName = null;
+		if (returnType.hasGenerics()) {
+			Class<?>[] generics = returnType.resolveGenerics();
+			returnTypeName = ParameterizedTypeName.get(returnType.resolve(), generics);
+
+			if (generics.length == 1) {
+				actualReturnTypeName = TypeName.get(generics[0]);
+			}
+		}
+
+		setReturnType(returnTypeName, actualReturnTypeName);
 	}
 
 	public interface RepositoryMethodCustomizer {
-
-		void customize(RepositoryInformation repositoryInformation, MethodGenerationMetadata metadata,
-				MethodSpec.Builder builder);
+		void customize(AotRepositoryMethodGenerationContext context, MethodSpec.Builder builder);
 	}
 
-	public static class MethodGenerationMetadata {
+	public static class TargetAotRepositoryMethodImplementationMetadata {
 
-		private final AotRepositoryBuilder.GenerationMetadata generationMetadata;
-		private final Method repositoryMethod;
 		private final Map<String, ParameterSpec> methodArguments;
 		@Nullable public TypeName actualReturnType;
 		@Nullable private TypeName returnType;
 
-		public MethodGenerationMetadata(AotRepositoryBuilder.GenerationMetadata generationMetadata,
-				Method repositoryMethod) {
-			this.generationMetadata = generationMetadata;
-			this.repositoryMethod = repositoryMethod;
+		public TargetAotRepositoryMethodImplementationMetadata() {
 			this.methodArguments = new LinkedHashMap<>();
-		}
-
-		public Method getRepositoryMethod() {
-			return repositoryMethod;
 		}
 
 		@Nullable
@@ -149,30 +158,6 @@ public class AotRepositoryMethodBuilder {
 			return null;
 		}
 
-		public boolean returnsVoid() {
-			return repositoryMethod.getReturnType().equals(Void.TYPE);
-		}
-
-		public boolean returnsPage() {
-			return ClassUtils.isAssignable(Page.class, repositoryMethod.getReturnType());
-		}
-
-		public boolean returnsSlice() {
-			return ClassUtils.isAssignable(Slice.class, repositoryMethod.getReturnType());
-		}
-
-		public boolean returnsCollection() {
-			return ClassUtils.isAssignable(Collection.class, repositoryMethod.getReturnType());
-		}
-
-		public boolean returnsSingleValue() {
-			return !returnsPage() && !returnsSlice() && !returnsCollection();
-		}
-
-		public boolean returnsOptionalValue() {
-			return ClassUtils.isAssignable(Optional.class, repositoryMethod.getReturnType());
-		}
-
 		@Nullable
 		public TypeName getReturnType() {
 			return returnType;
@@ -183,50 +168,9 @@ public class AotRepositoryMethodBuilder {
 			return actualReturnType;
 		}
 
-		@Nullable
-		public String getSortParameterName() {
-			return getParameterNameOf(Sort.class);
-		}
-
-		@Nullable
-		public String getPageableParameterName() {
-			return getParameterNameOf(Pageable.class);
-		}
-
-		@Nullable
-		public String getLimitParameterName() {
-			return getParameterNameOf(Limit.class);
-		}
-
 		public void addParameter(ParameterSpec parameterSpec) {
 			this.methodArguments.put(parameterSpec.name, parameterSpec);
 		}
 
-		@Nullable
-		public String fieldNameOf(Class<?> type) {
-			return generationMetadata.fieldNameOf(type);
-		}
-
-		public boolean hasField(String fieldName) {
-			return generationMetadata.hasField(fieldName);
-		}
-
-		public void addField(String fieldName, TypeName type, Modifier... modifiers) {
-			generationMetadata.addField(fieldName, type, modifiers);
-		}
-
-		public void addField(FieldSpec fieldSpec) {
-			generationMetadata.addField(fieldSpec);
-		}
-
-		public Map<String, FieldSpec> getFields() {
-			return generationMetadata.getFields();
-		}
-
-		@Nullable
-		public <T> T annotationValue(Class<? extends Annotation> annotation, String attribute) {
-			AnnotationAttributes values = AnnotatedElementUtils.getMergedAnnotationAttributes(this.repositoryMethod, annotation);
-			return values != null ? (T) values.get(attribute) : null;
-		}
 	}
 }
