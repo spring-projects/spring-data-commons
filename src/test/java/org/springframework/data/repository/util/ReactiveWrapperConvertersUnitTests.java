@@ -133,7 +133,6 @@ class ReactiveWrapperConvertersUnitTests {
 	}
 
 	@Test // DATACMNS-1763
-	@SuppressWarnings("deprecation")
 	void shouldMapKotlinFlow() {
 
 		var flow = FlowKt.asFlow(new String[] { "foo" });

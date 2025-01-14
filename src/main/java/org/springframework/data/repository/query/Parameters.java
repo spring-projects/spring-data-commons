@@ -78,8 +78,6 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		Assert.notNull(parametersSource, "ParametersSource must not be null");
 		Assert.notNull(parameterFactory, "Parameter factory must not be null");
 
-		// Factory nullability not enforced yet to support falling back to the deprecated
-
 		Method method = parametersSource.getMethod();
 		int parameterCount = method.getParameterCount();
 

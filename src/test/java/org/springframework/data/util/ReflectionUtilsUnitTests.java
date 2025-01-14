@@ -96,22 +96,22 @@ class ReflectionUtilsUnitTests {
 
 	@Test // DATACMNS-542
 	void detectsConstructorForCompleteMatch() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test")).hasValue(constructor);
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test")).isEqualTo(constructor);
 	}
 
 	@Test // DATACMNS-542
 	void detectsConstructorForMatchWithNulls() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, null)).hasValue(constructor);
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, null)).isEqualTo(constructor);
 	}
 
 	@Test // DATACMNS-542
 	void rejectsConstructorIfNumberOfArgumentsDontMatch() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test", "test")).isNotPresent();
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, 2, "test", "test")).isNull();
 	}
 
 	@Test // DATACMNS-542
 	void rejectsConstructorForNullForPrimitiveArgument() throws Exception {
-		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test")).isNotPresent();
+		assertThat(ReflectionUtils.findConstructor(ConstructorDetection.class, null, "test")).isNull();
 	}
 
 	@Test // DATACMNS-1154
