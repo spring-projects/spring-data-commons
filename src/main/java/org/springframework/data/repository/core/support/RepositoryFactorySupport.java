@@ -602,13 +602,16 @@ public abstract class RepositoryFactorySupport
 	@SuppressWarnings("unchecked")
 	protected final <R> R instantiateClass(Class<?> baseClass, Object... constructorArguments) {
 
-		Optional<Constructor<?>> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
+		Constructor<?> constructor = ReflectionUtils.findConstructor(baseClass, constructorArguments);
 
-		return constructor.map(it -> (R) BeanUtils.instantiateClass(it, constructorArguments))
-				.orElseThrow(() -> new IllegalStateException(String.format(
-						"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
-						baseClass, Arrays.stream(constructorArguments).map(Object::getClass).map(ClassUtils::getQualifiedName)
-								.collect(Collectors.joining(", ")))));
+		if (constructor == null) {
+			throw new IllegalStateException(String.format(
+					"No suitable constructor found on %s to match the given arguments: %s. Make sure you implement a constructor taking these",
+					baseClass, Arrays.stream(constructorArguments).map(Object::getClass).map(ClassUtils::getQualifiedName)
+							.collect(Collectors.joining(", "))));
+		}
+
+		return (R) BeanUtils.instantiateClass(constructor, constructorArguments);
 	}
 
 	private ApplicationStartup getStartup() {

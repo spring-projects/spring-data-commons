@@ -23,10 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
@@ -282,17 +283,22 @@ public final class ReflectionUtils {
 	 * @param type must not be {@literal null}.
 	 * @param constructorArguments must not be {@literal null}.
 	 * @return a {@link Constructor} that is compatible with the given arguments.
-	 * @deprecated since 3.5, return type will change to nullable instead of Optional.
 	 */
-	@Deprecated
-	public static Optional<Constructor<?>> findConstructor(Class<?> type, Object... constructorArguments) {
+	@Nullable
+	@SuppressWarnings("unchecked")
+	public static <T> Constructor<T> findConstructor(Class<T> type, Object... constructorArguments) {
 
 		Assert.notNull(type, "Target type must not be null");
 		Assert.notNull(constructorArguments, "Constructor arguments must not be null");
 
-		return Arrays.stream(type.getDeclaredConstructors())//
-				.filter(constructor -> argumentsMatch(constructor.getParameterTypes(), constructorArguments))//
-				.findFirst();
+		for (@NotNull
+		Constructor<?> declaredConstructor : type.getDeclaredConstructors()) {
+			if (argumentsMatch(declaredConstructor.getParameterTypes(), constructorArguments)) {
+				return (Constructor<T>) declaredConstructor;
+			}
+		}
+
+		return null;
 	}
 
 	/**
