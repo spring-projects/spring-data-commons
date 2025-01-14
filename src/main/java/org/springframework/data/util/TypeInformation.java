@@ -39,7 +39,6 @@ import org.springframework.util.Assert;
  * @author Johannes Englmeier
  * @author Christoph Strobl
  */
-@SuppressWarnings({ "deprecation", "rawtypes" })
 public interface TypeInformation<S> {
 
 	TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
