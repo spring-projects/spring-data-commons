@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
@@ -47,6 +50,8 @@ import org.springframework.util.ObjectUtils;
  * @since 1.12
  */
 public abstract class ReturnedType {
+
+	private static final Log logger = LogFactory.getLog(ReturnedType.class);
 
 	private static final Map<CacheKey, ReturnedType> cache = new ConcurrentReferenceHashMap<>(32);
 
@@ -296,10 +301,21 @@ public abstract class ReturnedType {
 				return Collections.emptyList();
 			}
 
-			List<String> properties = new ArrayList<>(constructor.getConstructor().getParameterCount());
+			int parameterCount = constructor.getConstructor().getParameterCount();
+			List<String> properties = new ArrayList<>(parameterCount);
 
 			for (Parameter<Object, ?> parameter : constructor.getParameters()) {
-				properties.add(parameter.getName());
+				if (parameter.getName() != null) {
+					properties.add(parameter.getName());
+				}
+			}
+
+			if (properties.isEmpty() && parameterCount > 0) {
+				if (logger.isWarnEnabled()) {
+					logger.warn(("No constructor parameter names discovered. "
+							+ "Compile the affected code with '-parameters' instead or avoid its introspection: %s")
+							.formatted(type.getName()));
+				}
 			}
 
 			return Collections.unmodifiableList(properties);
