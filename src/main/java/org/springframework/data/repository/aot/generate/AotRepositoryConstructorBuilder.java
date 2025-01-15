@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import javax.lang.model.element.Modifier;
 
 import org.springframework.core.ResolvableType;
-import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.TargetAotRepositoryImplementationMetadata;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
@@ -35,13 +34,13 @@ import org.springframework.javapoet.TypeName;
 public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final TargetAotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryImplementationMetadata metadata;
 	private final Map<String, TypeName> constructorArguments;
 
 	private ConstructorCustomizer customizer = (info, builder) -> {};
 
 	public AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
-			TargetAotRepositoryImplementationMetadata metadata) {
+			AotRepositoryImplementationMetadata metadata) {
 
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;

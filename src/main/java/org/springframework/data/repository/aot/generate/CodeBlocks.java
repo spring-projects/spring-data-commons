@@ -16,7 +16,6 @@
 package org.springframework.data.repository.aot.generate;
 
 import org.apache.commons.logging.Log;
-import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.TargetAotRepositoryImplementationMetadata;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -28,9 +27,9 @@ import org.springframework.util.StringUtils;
  */
 public class CodeBlocks {
 
-	private final TargetAotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryImplementationMetadata metadata;
 
-	public CodeBlocks(TargetAotRepositoryImplementationMetadata metadata) {
+	public CodeBlocks(AotRepositoryImplementationMetadata metadata) {
 		this.metadata = metadata;
 	}
 

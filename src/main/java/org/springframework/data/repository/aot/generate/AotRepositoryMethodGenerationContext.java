@@ -45,9 +45,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.TargetAotRepositoryImplementationMetadata;
-import org.springframework.data.repository.aot.generate.AotRepositoryMethodBuilder.TargetAotRepositoryMethodImplementationMetadata;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
@@ -62,18 +61,24 @@ public class AotRepositoryMethodGenerationContext {
 
 	private final Method method;
 	private final RepositoryInformation repositoryInformation;
-	private final TargetAotRepositoryImplementationMetadata targetTypeMetadata;
-	private final TargetAotRepositoryMethodImplementationMetadata targetMethodMetadata;
+	private final AotRepositoryImplementationMetadata targetTypeMetadata;
+	private final AotRepositoryMethodImplementationMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
+	@Nullable PartTree partTree;
 
 	public AotRepositoryMethodGenerationContext(Method method, RepositoryInformation repositoryInformation,
-			TargetAotRepositoryImplementationMetadata targetTypeMetadata) {
+			AotRepositoryImplementationMetadata targetTypeMetadata) {
 
 		this.method = method;
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
-		this.targetMethodMetadata = new TargetAotRepositoryMethodImplementationMetadata();
+		this.targetMethodMetadata = new AotRepositoryMethodImplementationMetadata();
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
+		try {
+			this.partTree = new PartTree(method.getName(), repositoryInformation.getDomainType());
+		} catch (Exception e) {
+			// not a part tree quer
+		}
 	}
 
 	public boolean hasField(String fieldName) {
@@ -100,7 +105,7 @@ public class AotRepositoryMethodGenerationContext {
 		return method;
 	}
 
-	TargetAotRepositoryImplementationMetadata getTargetTypeMetadata() {
+	AotRepositoryImplementationMetadata getTargetTypeMetadata() {
 		return targetTypeMetadata;
 	}
 
@@ -137,9 +142,21 @@ public class AotRepositoryMethodGenerationContext {
 		return ClassUtils.isAssignable(Optional.class, getMethod().getReturnType());
 	}
 
+	public boolean isCountMethod() {
+		return partTree != null ? partTree.isCountProjection() : method.getName().startsWith("count");
+	}
+
+	public boolean isExistsMethod() {
+		return partTree != null ? partTree.isExistsProjection() : method.getName().startsWith("exists");
+	}
+
+	public boolean isDeleteMethod() {
+		return partTree != null ? partTree.isDelete() : method.getName().startsWith("delete");
+	}
+
 	@Nullable
 	public TypeName getActualReturnType() {
-		return targetMethodMetadata.actualReturnType;
+		return targetMethodMetadata.getActualReturnType();
 	}
 
 	@Nullable
@@ -168,7 +185,7 @@ public class AotRepositoryMethodGenerationContext {
 		return targetMethodMetadata.getReturnType();
 	}
 
-	TargetAotRepositoryMethodImplementationMetadata getTargetMethodMetadata() {
+	AotRepositoryMethodImplementationMetadata getTargetMethodMetadata() {
 		return targetMethodMetadata;
 	}
 

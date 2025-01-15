@@ -20,7 +20,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.TargetAotRepositoryImplementationMetadata;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.JavaFile;
@@ -79,7 +78,7 @@ public class RepositoryContributor implements AotCodeContributor {
 
 	}
 
-	protected void customizeFile(RepositoryInformation information, TargetAotRepositoryImplementationMetadata metadata,
+	protected void customizeFile(RepositoryInformation information, AotRepositoryImplementationMetadata metadata,
 			TypeSpec.Builder builder) {
 
 	}

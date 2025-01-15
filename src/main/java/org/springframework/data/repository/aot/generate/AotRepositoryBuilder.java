@@ -18,9 +18,6 @@ package org.springframework.data.repository.aot.generate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -37,7 +34,6 @@ import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -47,7 +43,7 @@ import org.springframework.util.ReflectionUtils;
 public class AotRepositoryBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final TargetAotRepositoryImplementationMetadata generationMetadata;
+	private final AotRepositoryImplementationMetadata generationMetadata;
 
 	private Consumer<AotRepositoryConstructorBuilder> constructorBuilderCustomizer;
 	private Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction;
@@ -60,7 +56,7 @@ public class AotRepositoryBuilder {
 	AotRepositoryBuilder(RepositoryInformation repositoryInformation) {
 
 		this.repositoryInformation = repositoryInformation;
-		this.generationMetadata = new TargetAotRepositoryImplementationMetadata(className());
+		this.generationMetadata = new AotRepositoryImplementationMetadata(className());
 		this.generationMetadata.addField(FieldSpec
 				.builder(TypeName.get(Log.class), "logger", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
@@ -145,7 +141,7 @@ public class AotRepositoryBuilder {
 		return this;
 	}
 
-	TargetAotRepositoryImplementationMetadata getGenerationMetadata() {
+	AotRepositoryImplementationMetadata getGenerationMetadata() {
 		return generationMetadata;
 	}
 
@@ -163,58 +159,7 @@ public class AotRepositoryBuilder {
 
 	public interface RepositoryCustomizer {
 
-		void customize(RepositoryInformation repositoryInformation, TargetAotRepositoryImplementationMetadata metadata,
+		void customize(RepositoryInformation repositoryInformation, AotRepositoryImplementationMetadata metadata,
 				TypeSpec.Builder builder);
-	}
-
-	public class TargetAotRepositoryImplementationMetadata {
-
-		private ClassName className;
-		private Map<String, FieldSpec> fields = new HashMap<>();
-
-		public TargetAotRepositoryImplementationMetadata(ClassName className) {
-			this.className = className;
-		}
-
-		@Nullable
-		public String fieldNameOf(Class<?> type) {
-
-			TypeName lookup = TypeName.get(type).withoutAnnotations();
-			for (Entry<String, FieldSpec> field : fields.entrySet()) {
-				if (field.getValue().type.withoutAnnotations().equals(lookup)) {
-					return field.getKey();
-				}
-			}
-
-			return null;
-		}
-
-		public ClassName getTargetTypeName() {
-			return className;
-		}
-
-		public String getTargetTypeSimpleName() {
-			return className.simpleName();
-		}
-
-		public String getTargetTypePackageName() {
-			return className.packageName();
-		}
-
-		public boolean hasField(String fieldName) {
-			return fields.containsKey(fieldName);
-		}
-
-		public void addField(String fieldName, TypeName type, Modifier... modifiers) {
-			fields.put(fieldName, FieldSpec.builder(type, fieldName, modifiers).build());
-		}
-
-		public void addField(FieldSpec fieldSpec) {
-			fields.put(fieldSpec.name, fieldSpec);
-		}
-
-		Map<String, FieldSpec> getFields() {
-			return fields;
-		}
 	}
 }

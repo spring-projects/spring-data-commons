@@ -69,8 +69,8 @@ public class AotRepositoryMethodBuilder {
 	}
 
 	public void setReturnType(@Nullable TypeName returnType, @Nullable TypeName actualReturnType) {
-		this.context.getTargetMethodMetadata().returnType = returnType;
-		this.context.getTargetMethodMetadata().actualReturnType = actualReturnType;
+		this.context.getTargetMethodMetadata().setReturnType(returnType);
+		this.context.getTargetMethodMetadata().setActualReturnType(actualReturnType);
 	}
 
 	public AotRepositoryMethodBuilder customize(RepositoryMethodCustomizer customizer) {
@@ -86,9 +86,9 @@ public class AotRepositoryMethodBuilder {
 		}
 		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
 				context.getMethod().getName(),
-				StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata().methodArguments.values().stream()
+				StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata().getMethodArguments().values().stream()
 						.map(it -> it.type.toString()).collect(Collectors.toList())));
-		context.getTargetMethodMetadata().methodArguments.forEach((name, spec) -> builder.addParameter(spec));
+		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
 		customizer.customize(context, builder);
 		return builder.build();
 	}
@@ -136,41 +136,5 @@ public class AotRepositoryMethodBuilder {
 
 	public interface RepositoryMethodCustomizer {
 		void customize(AotRepositoryMethodGenerationContext context, MethodSpec.Builder builder);
-	}
-
-	public static class TargetAotRepositoryMethodImplementationMetadata {
-
-		private final Map<String, ParameterSpec> methodArguments;
-		@Nullable public TypeName actualReturnType;
-		@Nullable private TypeName returnType;
-
-		public TargetAotRepositoryMethodImplementationMetadata() {
-			this.methodArguments = new LinkedHashMap<>();
-		}
-
-		@Nullable
-		public String getParameterNameOf(Class<?> type) {
-			for (Entry<String, ParameterSpec> entry : methodArguments.entrySet()) {
-				if (entry.getValue().type.equals(TypeName.get(type))) {
-					return entry.getKey();
-				}
-			}
-			return null;
-		}
-
-		@Nullable
-		public TypeName getReturnType() {
-			return returnType;
-		}
-
-		@Nullable
-		public TypeName getActualReturnType() {
-			return actualReturnType;
-		}
-
-		public void addParameter(ParameterSpec parameterSpec) {
-			this.methodArguments.put(parameterSpec.name, parameterSpec);
-		}
-
 	}
 }
