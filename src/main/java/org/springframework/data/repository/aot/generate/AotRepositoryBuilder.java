@@ -29,6 +29,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.ClassNameGenerator;
+import org.springframework.aot.generate.Generated;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ClassName;
@@ -75,6 +76,7 @@ public class AotRepositoryBuilder {
 		// start creating the type
 		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
 				.addModifiers(Modifier.PUBLIC) //
+				.addAnnotation(Generated.class) //
 				.addAnnotation(Component.class) //
 				.addJavadoc("AOT generated repository implementation for {@link $T}.\n",
 						repositoryInformation.getRepositoryInterface()) //
@@ -95,11 +97,10 @@ public class AotRepositoryBuilder {
 		// start with the derived ones
 		ReflectionUtils.doWithMethods(repositoryInformation.getRepositoryInterface(), method -> {
 
-//			AotRepositoryDerivedMethodBuilder derivedMethodBuilder = new AotRepositoryDerivedMethodBuilder(method,
-//					repositoryInformation, generationMetadata);
-			AotRepositoryMethodGenerationContext context = new AotRepositoryMethodGenerationContext(method, repositoryInformation, generationMetadata);
+			AotRepositoryMethodGenerationContext context = new AotRepositoryMethodGenerationContext(method,
+					repositoryInformation, generationMetadata);
 			AotRepositoryMethodBuilder methodBuilder = methodContextFunction.apply(context);
-			if(methodBuilder != null) {
+			if (methodBuilder != null) {
 				builder.addMethod(methodBuilder.buildMethod());
 			}
 
@@ -110,7 +111,7 @@ public class AotRepositoryBuilder {
 			need to hard code it here
 			 */
 
-			if(ReflectionUtils.findMethod(CrudRepository.class, it.getName(), it.getParameterTypes()) != null) {
+			if (ReflectionUtils.findMethod(CrudRepository.class, it.getName(), it.getParameterTypes()) != null) {
 				return false;
 			}
 
@@ -132,7 +133,8 @@ public class AotRepositoryBuilder {
 		return this;
 	}
 
-	AotRepositoryBuilder withDerivedMethodFunction(Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction) {
+	AotRepositoryBuilder withDerivedMethodFunction(
+			Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction) {
 		this.methodContextFunction = methodContextFunction;
 		return this;
 	}
@@ -161,7 +163,8 @@ public class AotRepositoryBuilder {
 
 	public interface RepositoryCustomizer {
 
-		void customize(RepositoryInformation repositoryInformation, TargetAotRepositoryImplementationMetadata metadata, TypeSpec.Builder builder);
+		void customize(RepositoryInformation repositoryInformation, TargetAotRepositoryImplementationMetadata metadata,
+				TypeSpec.Builder builder);
 	}
 
 	public class TargetAotRepositoryImplementationMetadata {
