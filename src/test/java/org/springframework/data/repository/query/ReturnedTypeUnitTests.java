@@ -167,6 +167,25 @@ class ReturnedTypeUnitTests {
 		assertThat(left).isSameAs(right);
 	}
 
+	@Test // GH-3225
+	void detectsKotlinInputProperties() {
+
+		var factory = new SpelAwareProxyProjectionFactory();
+
+		var returnedType = ReturnedType.of(SomeDataClass.class, Sample.class, factory);
+
+		assertThat(returnedType.getInputProperties()).containsExactly("firstname", "lastname");
+	}
+
+	@Test // GH-3225
+	void detectsKotlinValueClassInputProperties() {
+
+		var factory = new SpelAwareProxyProjectionFactory();
+
+		var returnedType = ReturnedType.of(SomeDataClassWithValues.class, Sample.class, factory);
+		assertThat(returnedType.getInputProperties()).containsExactly("email", "firstname", "lastname");
+	}
+
 	private static ReturnedType getReturnedType(String methodName, Class<?>... parameters) throws Exception {
 		return getQueryMethod(methodName, parameters).getResultProcessor().getReturnedType();
 	}
