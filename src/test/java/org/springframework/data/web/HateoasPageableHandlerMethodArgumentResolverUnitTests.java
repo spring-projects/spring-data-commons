@@ -48,7 +48,7 @@ class HateoasPageableHandlerMethodArgumentResolverUnitTests
 
 		var parameter = new MethodParameter(Sample.class.getMethod("supportedMethod", Pageable.class), 0);
 		UriComponentsContributor resolver = new HateoasPageableHandlerMethodArgumentResolver();
-		var builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8080?page=0&size=10");
+		var builder = UriComponentsBuilder.fromUriString("http://localhost:8080?page=0&size=10");
 		resolver.enhance(builder, parameter, PageRequest.of(1, 20));
 
 		var params = builder.build().getQueryParams();
