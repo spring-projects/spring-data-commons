@@ -103,7 +103,7 @@ class Person {
   }
 
   Person withId(Long id) {
-    return new Person(id, this.firstname, this.lastame);
+    return new Person(id, this.firstname, this.lastname);
   }
 
   void setLastname(String lastname) {
