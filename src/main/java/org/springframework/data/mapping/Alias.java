@@ -104,7 +104,7 @@ public final class Alias {
 	}
 
 	/**
-	 * Returns whether the the current alias is present and has the same value as the given {@link Alias}.
+	 * Returns whether the current alias is present and has the same value as the given {@link Alias}.
 	 *
 	 * @param other the other {@link Alias}
 	 * @return {@literal true} if there's an alias value present and its equal to the one in the given {@link Alias}.

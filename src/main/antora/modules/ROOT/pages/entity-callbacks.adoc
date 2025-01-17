@@ -40,7 +40,7 @@ public interface BeforeSaveCallback<T> extends EntityCallback<T> {
 		String collection); // <3>
 }
 ----
-<1> `BeforeSaveCallback` specific method to be called before an entity is saved. Returns a potentially modifed instance.
+<1> `BeforeSaveCallback` specific method to be called before an entity is saved. Returns a potentially modified instance.
 <2> The entity right before persisting.
 <3> A number of store specific arguments like the _collection_ the entity is persisted to.
 
