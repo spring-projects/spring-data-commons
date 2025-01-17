@@ -253,7 +253,7 @@ public class Part {
 		}
 
 		/**
-		 * Returns whether the the type supports the given raw property. Default implementation checks whether the property
+		 * Returns whether the type supports the given raw property. Default implementation checks whether the property
 		 * ends with the registered keyword. Does not support the keyword if the property is a valid field as is.
 		 *
 		 * @param property
