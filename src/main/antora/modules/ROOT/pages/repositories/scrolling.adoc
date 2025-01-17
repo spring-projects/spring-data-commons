@@ -76,9 +76,9 @@ WindowIterator<User> users = WindowIterator.of(position -> repository.findFirst1
 
 [CAUTION]
 ====
-There is a difference between `ScollPosition.offset()` and `ScollPosition.offset(0L)`.
+There is a difference between `ScrollPosition.offset()` and `ScrollPosition.offset(0L)`.
 The former indicates the start of scroll operation, pointing to no specific offset whereas the latter identifies the first element (at position `0`) of the result.
-Given the _exclusive_ nature of scrolling, using `ScollPosition.offset(0)` skips the first element and translate to an offset of `1`.
+Given the _exclusive_ nature of scrolling, using `ScrollPosition.offset(0)` skips the first element and translate to an offset of `1`.
 ====
 
 [[repositories.scrolling.keyset]]
