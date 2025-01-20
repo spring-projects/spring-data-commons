@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.springframework.util.ObjectUtils;
 
@@ -40,6 +41,20 @@ class DoubleVector implements Vector {
 
 		double[] copy = new double[v.length];
 		System.arraycopy(v, 0, copy, 0, copy.length);
+
+		return new DoubleVector(copy);
+	}
+
+	/**
+	 * Copy the given numeric values and wrap within a Vector.
+	 */
+	static Vector copy(Collection<Number> v) {
+
+		double[] copy = new double[v.size()];
+		int i = 0;
+		for (Number number : v) {
+			copy[i++] = number.doubleValue();
+		}
 
 		return new DoubleVector(copy);
 	}

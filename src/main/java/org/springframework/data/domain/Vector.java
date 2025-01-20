@@ -18,6 +18,7 @@ package org.springframework.data.domain;
 import java.util.Collection;
 
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 /**
  * A vector is a fixed-length array of non-null numeric values. Vectors are represent a point in a multidimensional
@@ -66,20 +67,6 @@ public interface Vector {
 
 	/**
 	 * Creates a new {@link Vector} from the given number {@code values}. Vector values are duplicated to avoid capturing
-	 * a mutable array instance and to prevent mutability.
-	 *
-	 * @param values number vector values.
-	 * @return the {@link Vector} for the given vector values.
-	 */
-	static Vector of(Number... values) {
-
-		Assert.notNull(values, "Vector values must not be null");
-
-		return NumberVector.copy(values);
-	}
-
-	/**
-	 * Creates a new {@link Vector} from the given number {@code values}. Vector values are duplicated to avoid capturing
 	 * a mutable collection instance and to prevent mutability.
 	 *
 	 * @param values number vector values.
@@ -88,6 +75,16 @@ public interface Vector {
 	static Vector of(Collection<Number> values) {
 
 		Assert.notNull(values, "Vector values must not be null");
+
+		Class<?> cet = CollectionUtils.findCommonElementType(values);
+
+		if (cet == Double.class) {
+			return DoubleVector.copy(values);
+		}
+
+		if (cet == Float.class) {
+			return FloatVector.copy(values);
+		}
 
 		return NumberVector.copy(values);
 	}

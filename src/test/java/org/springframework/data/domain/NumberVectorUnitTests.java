@@ -17,6 +17,8 @@ package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,22 +28,22 @@ import org.junit.jupiter.api.Test;
  */
 class NumberVectorUnitTests {
 
-	Number[] values = new Number[] { 1.1, 2.2, 3.3, 4.4, 5.5 };
-	Number[] floats = new Number[] { (float) 1.1d, (float) 2.2d, (float) 3.3d, (float) 4.4d, (float) 5.5d };
+	Number[] values = new Number[] { 1.1, 2.2, 3.3, 4.4, 5.5, 6.6f };
+	Number[] floats = new Number[] { (float) 1.1d, (float) 2.2d, (float) 3.3d, (float) 4.4d, (float) 5.5, 6.6 };
 
 	@Test // GH-3193
 	void shouldCreateVector() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
-		assertThat(vector.size()).isEqualTo(5);
-		assertThat(vector.getType()).isEqualTo(Double.class);
+		assertThat(vector.size()).isEqualTo(6);
+		assertThat(vector.getType()).isEqualTo(Number.class);
 	}
 
 	@Test // GH-3193
 	void shouldCopyVectorValues() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
 		assertThat(vector.getSource()).isNotSameAs(vector).isEqualTo(values);
 	}
@@ -49,18 +51,18 @@ class NumberVectorUnitTests {
 	@Test // GH-3193
 	void shouldRenderToString() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
-		assertThat(vector).hasToString("N[1.1, 2.2, 3.3, 4.4, 5.5]");
+		assertThat(vector).hasToString("N[1.1, 2.2, 3.3, 4.4, 5.5, 6.6]");
 	}
 
 	@Test // GH-3193
 	void shouldCompareVector() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
-		assertThat(vector).isEqualTo(Vector.of(values));
-		assertThat(vector).hasSameHashCodeAs(Vector.of(values));
+		assertThat(vector).isEqualTo(Vector.of(Arrays.asList(values)));
+		assertThat(vector).hasSameHashCodeAs(Vector.of(Arrays.asList(values)));
 	}
 
 	@Test // GH-3193
@@ -74,7 +76,7 @@ class NumberVectorUnitTests {
 	@Test // GH-3193
 	void shouldCreateFloatArray() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
 		float[] values = new float[this.floats.length];
 		for (int i = 0; i < values.length; i++) {
@@ -87,7 +89,7 @@ class NumberVectorUnitTests {
 	@Test // GH-3193
 	void shouldCreateDoubleArray() {
 
-		Vector vector = Vector.of(values);
+		Vector vector = Vector.of(Arrays.asList(values));
 
 		double[] values = new double[this.values.length];
 		for (int i = 0; i < values.length; i++) {

@@ -16,6 +16,7 @@
 package org.springframework.data.domain;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.springframework.util.ObjectUtils;
 
@@ -40,6 +41,20 @@ class FloatVector implements Vector {
 
 		float[] copy = new float[v.length];
 		System.arraycopy(v, 0, copy, 0, copy.length);
+
+		return new FloatVector(copy);
+	}
+
+	/**
+	 * Copy the given numeric values and wrap within a Vector.
+	 */
+	static Vector copy(Collection<Number> v) {
+
+		float[] copy = new float[v.size()];
+		int i = 0;
+		for (Number number : v) {
+			copy[i++] = number.floatValue();
+		}
 
 		return new FloatVector(copy);
 	}
