@@ -48,7 +48,7 @@ class FloatVector implements Vector {
 	/**
 	 * Copy the given numeric values and wrap within a Vector.
 	 */
-	static Vector copy(Collection<Number> v) {
+	static Vector copy(Collection<? extends Number> v) {
 
 		float[] copy = new float[v.size()];
 		int i = 0;

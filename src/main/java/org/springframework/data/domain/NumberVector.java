@@ -48,7 +48,7 @@ class NumberVector implements Vector {
 	/**
 	 * Copy the given {@link Number} and wrap it within a Vector.
 	 */
-	static Vector copy(Collection<Number> numbers) {
+	static Vector copy(Collection<? extends Number> numbers) {
 
 		Number[] copy = new Number[numbers.size()];
 

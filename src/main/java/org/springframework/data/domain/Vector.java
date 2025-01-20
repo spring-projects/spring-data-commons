@@ -72,7 +72,7 @@ public interface Vector {
 	 * @param values number vector values.
 	 * @return the {@link Vector} for the given vector values.
 	 */
-	static Vector of(Collection<Number> values) {
+	static Vector of(Collection<? extends Number> values) {
 
 		Assert.notNull(values, "Vector values must not be null");
 
