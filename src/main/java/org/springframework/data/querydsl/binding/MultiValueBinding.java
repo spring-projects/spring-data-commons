@@ -38,7 +38,7 @@ public interface MultiValueBinding<T extends Path<? extends S>, S> {
 	 *
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null} or empty.
-	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall
+	 * @return can be {@link Optional#empty()}, in which case the binding will not be incorporated in the overall
 	 *         {@link Predicate}.
 	 */
 	Optional<Predicate> bind(T path, Collection<? extends S> value);
