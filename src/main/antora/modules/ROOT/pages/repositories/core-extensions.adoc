@@ -9,6 +9,9 @@ Currently, most of the integration is targeted towards Spring MVC.
 
 http://www.querydsl.com/[Querydsl] is a framework that enables the construction of statically typed SQL-like queries through its fluent API.
 
+NOTE: Querydsl maintenance has slowed down to a point where the community has forked the project under OpenFeign at https://github.com/OpenFeign/querydsl (groupId `io.github.openfeign.querydsl`).
+Spring Data supports the fork on a best-effort basis.
+
 Several Spring Data modules offer integration with Querydsl through `QuerydslPredicateExecutor`, as the following example shows:
 
 .QuerydslPredicateExecutor interface
