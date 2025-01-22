@@ -33,7 +33,9 @@ package org.springframework.data.repository.aot.generate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.lang.model.element.Modifier;
@@ -112,6 +114,16 @@ public class AotRepositoryMethodGenerationContext {
 	@Nullable
 	public String getParameterNameOf(Class<?> type) {
 		return targetMethodMetadata.getParameterNameOf(type);
+	}
+
+	public String getParameterNameOfPosition(int position) {
+
+		ArrayList<Entry<String, ParameterSpec>> entries = new ArrayList<>(
+				targetMethodMetadata.getMethodArguments().entrySet());
+		if (position < entries.size()) {
+			return entries.get(position).getKey();
+		}
+		return null;
 	}
 
 	public void addParameter(ParameterSpec parameter) {
