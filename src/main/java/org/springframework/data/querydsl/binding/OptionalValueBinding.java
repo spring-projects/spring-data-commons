@@ -33,12 +33,12 @@ public interface OptionalValueBinding<T extends Path<? extends S>, S> {
 
 	/**
 	 * Returns the predicate to be applied to the given {@link Path} for the given value. The given value will be the
-	 * first the first one provided for the given path and converted into the expected type.
+	 * first one provided for the given path and converted into the expected type.
 	 *
 	 * @param path {@link Path} to the property. Will not be {@literal null}.
 	 * @param value the value that should be bound. Will not be {@literal null}.
-	 * @return can be {@literal null}, in which case the binding will not be incorporated in the overall {@link Predicate}
-	 *         .
+	 * @return can be {@link Optional#empty()}, in which case the binding will not be incorporated in the overall
+	 *         {@link Predicate} .
 	 */
 	Optional<Predicate> bind(T path, Optional<? extends S> value);
 }
