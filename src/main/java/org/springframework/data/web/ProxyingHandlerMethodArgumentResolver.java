@@ -46,7 +46,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
-	private static final List<String> IGNORED_PACKAGES = Arrays.asList("java", "org.springframework");
+	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
