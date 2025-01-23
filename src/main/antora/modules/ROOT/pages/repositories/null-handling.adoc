@@ -1,7 +1,7 @@
 [[repositories.nullability]]
 = Null Handling of Repository Methods
 
-As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8's `Optional` to indicate the potential absence of a value.
+Repository CRUD methods that return an individual aggregate instances can use `Optional` to indicate the potential absence of a value.
 Besides that, Spring Data supports returning the following wrapper types on query methods:
 
 * `com.google.common.base.Optional`
@@ -16,7 +16,74 @@ See "`xref:repositories/query-return-types-reference.adoc[Repository query retur
 [[repositories.nullability.annotations]]
 == Nullability Annotations
 
+=== JSpecify
+
+As on Spring Framework 7 and Spring Data 4, you can express nullability constraints for repository methods by using https://jspecify.dev/docs/start-here/[JSpecify].
+JSpecify is well integrated into IntelliJ and Eclipse to provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
+
+* https://jspecify.dev/docs/api/org/jspecify/annotations/NullMarked.html[`@NullMarked`]: Used on the module-, package- and class-level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.
+* https://jspecify.dev/docs/api/org/jspecify/annotations/NonNull.html[`@NonNull`]: Used on a type level for parameter or return values that must not be `null` (not needed value where `@NullMarked` applies).
+* https://jspecify.dev/docs/api/org/jspecify/annotations/Nullable.html[`@Nullable`]: Used on the type level for parameter or return values that can be `null`.
+* https://jspecify.dev/docs/api/org/jspecify/annotations/NullUnmarked.html[`@NullUnmarked`]: Used on the package-, class-, and method-level to roll back nullness declaration and opt-out from a previous `@NullMarked`.
+Nullness changes to unspecified in such a case.
+
+.`@NullMarked` at the package level via a `package-info.java` file
+[source,java,subs="verbatim,quotes",chomp="-packages",fold="none"]
+----
+@NullMarked
+package org.springframework.core;
+
+import org.jspecify.annotations.NullMarked;
+----
+
+In the various Java files belonging to the package, nullable type usages are defined explicitly with
+https://jspecify.dev/docs/api/org/jspecify/annotations/Nullable.html[`@Nullable`].
+It is recommended that this annotation is specified just before the related type.
+
+For example, for a field:
+
+[source,java,subs="verbatim,quotes"]
+----
+private @Nullable String fileEncoding;
+----
+
+Or for method parameters and return value:
+
+[source,java,subs="verbatim,quotes"]
+----
+public static @Nullable String buildMessage(@Nullable String message,
+                                            @Nullable Throwable cause) {
+    // ...
+}
+----
+
+When overriding a method, nullness annotations are not inherited from the superclass method.
+That means those nullness annotations should be repeated if you just want to override the implementation and keep the same API nullness.
+
+With arrays and varargs, you need to be able to differentiate the nullness of the elements from the nullness of the array itself.
+Pay attention to the syntax
+https://docs.oracle.com/javase/specs/jls/se17/html/jls-9.html#jls-9.7.4[defined by the Java specification] which may be initially surprising:
+
+- `@Nullable Object[] array` means individual elements can be null but the array itself can't.
+- `Object @Nullable [] array` means individual elements can't be null but the array itself can.
+- `@Nullable Object @Nullable [] array` means both individual elements and the array can be null.
+
+The Java specifications also enforces that annotations defined with `@Target(ElementType.TYPE_USE)` like JSpecify
+`@Nullable` should be specified after the last `.` with inner or fully qualified types:
+
+- `Cache.@Nullable ValueWrapper`
+- `jakarta.validation.@Nullable Validator`
+
+https://jspecify.dev/docs/api/org/jspecify/annotations/NonNull.html[`@NonNull`] and
+https://jspecify.dev/docs/api/org/jspecify/annotations/NullUnmarked.html[`@NullUnmarked`] should rarely be needed for typical use cases.
+
+=== Spring Framework Nullability and JSR-305 Annotations
+
 You can express nullability constraints for repository methods by using {spring-framework-docs}/core/null-safety.html[Spring Framework's nullability annotations].
+
+NOTE: As on Spring Framework 7, Spring's nullability annotations are deprecated in favor of JSpecify.
+Consult the framework documentation on {spring-framework-docs}/core/null-safety.html[Migrating from Spring null-safety annotations to JSpecify] for more information.
+
 They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
 
 * {spring-framework-javadoc}/org/springframework/lang/NonNullApi.html[`@NonNullApi`]: Used on the package level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.
@@ -59,6 +126,7 @@ interface UserRepository extends Repository<User, Long> {
   Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
 }
 ----
+
 <1> The repository resides in a package (or sub-package) for which we have defined non-null behavior.
 <2> Throws an `EmptyResultDataAccessException` when the query does not produce a result.
 Throws an `IllegalArgumentException` when the `emailAddress` handed to the method is `null`.
@@ -85,6 +153,7 @@ interface UserRepository : Repository<User, String> {
   fun findByFirstname(firstname: String?): User? <2>
 }
 ----
+
 <1> The method defines both the parameter and the result as non-nullable (the Kotlin default).
 The Kotlin compiler rejects method invocations that pass `null` to the method.
 If the query yields an empty result, an `EmptyResultDataAccessException` is thrown.

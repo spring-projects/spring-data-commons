@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NullMarked;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
@@ -59,6 +60,11 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 	 * @return {@literal true} if the {@code type} is supported by this interceptor.
 	 */
 	public static boolean supports(Class<?> type) {
+
+		if (type.getPackage() != null
+				&& type.getPackage().isAnnotationPresent(NullMarked.class)) {
+			return true;
+		}
 
 		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(type)
 				|| NullableUtils.isNonNull(type, ElementType.METHOD)
