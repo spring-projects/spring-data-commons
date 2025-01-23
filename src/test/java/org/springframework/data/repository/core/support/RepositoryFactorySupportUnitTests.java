@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -120,7 +121,7 @@ class RepositoryFactorySupportUnitTests {
 		factory.getRepository(ObjectRepository.class);
 
 		verify(listener, times(1)).onCreation(any(MyRepositoryQuery.class));
-		verify(otherListener, times(3)).onCreation(any(RepositoryQuery.class));
+		verify(otherListener, times(4)).onCreation(any(RepositoryQuery.class));
 	}
 
 	@Test // DATACMNS-1538
@@ -252,7 +253,8 @@ class RepositoryFactorySupportUnitTests {
 	@Test // GH-3090
 	void capturesRepositoryMetadata() {
 
-		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {}
+		record Metadata(RepositoryMethodContext context, MethodInvocation methodInvocation) {
+		}
 
 		when(factory.queryOne.execute(any(Object[].class)))
 				.then(invocation -> new Metadata(RepositoryMethodContextHolder.getContext(),
@@ -409,6 +411,20 @@ class RepositoryFactorySupportUnitTests {
 				() -> repository.findByClass(null)) //
 				.isInstanceOf(IllegalArgumentException.class) //
 				.hasMessageContaining("must not be null");
+
+	}
+
+	@Test // GH-3100
+	void considersRequiredParameterThroughJspecify() {
+
+		var repository = factory.getRepository(ObjectRepository.class);
+
+		assertThatNoException().isThrownBy(() -> repository.findByFoo(null));
+
+		assertThatThrownBy( //
+				() -> repository.findByNonNullFoo(null)) //
+				.isInstanceOf(IllegalArgumentException.class) //
+				.hasMessageContaining("must not be null");
 	}
 
 	@Test // DATACMNS-1154
@@ -540,8 +556,10 @@ class RepositoryFactorySupportUnitTests {
 		@Nullable
 		Object findByClass(Class<?> clazz);
 
-		@Nullable
-		Object findByFoo();
+		@org.jspecify.annotations.Nullable
+		Object findByFoo(@org.jspecify.annotations.Nullable Object foo);
+
+		Object findByNonNullFoo(@NonNull Object foo);
 
 		@Nullable
 		Object save(Object entity);

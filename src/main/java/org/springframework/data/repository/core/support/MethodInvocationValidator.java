@@ -23,10 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NullMarked;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.Nullness;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.util.KotlinReflectionUtils;
@@ -47,6 +49,7 @@ import org.springframework.util.ObjectUtils;
  * @see ReflectionUtils#isNullable(MethodParameter)
  * @see NullableUtils
  */
+@SuppressWarnings("deprecation")
 public class MethodInvocationValidator implements MethodInterceptor {
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
@@ -59,6 +62,11 @@ public class MethodInvocationValidator implements MethodInterceptor {
 	 * @return {@literal true} if the {@code repositoryInterface} is supported by this interceptor.
 	 */
 	public static boolean supports(Class<?> repositoryInterface) {
+
+		if (repositoryInterface.getPackage() != null
+				&& repositoryInterface.getPackage().isAnnotationPresent(NullMarked.class)) {
+			return true;
+		}
 
 		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
 				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
@@ -153,7 +161,13 @@ public class MethodInvocationValidator implements MethodInterceptor {
 
 		private static boolean isNullableParameter(MethodParameter parameter) {
 
-			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
+			Nullness nullness = Nullness.forMethodParameter(parameter);
+
+			if (nullness == Nullness.NON_NULL) {
+				return false;
+			}
+
+			return nullness == Nullness.NULLABLE || requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
 					|| (KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
 							&& ReflectionUtils.isNullable(parameter));
 		}
