@@ -67,8 +67,8 @@ public class RepositoryContributor implements AotCodeContributor {
 		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 
 		// register it in spring.factories
-		String registration = "%s=%s".formatted(repositoryInformation.getRepositoryInterface().getName(), typeName);
-		generationContext.getGeneratedFiles().addResourceFile("META-INF/spring.factories", registration);
+//		String registration = "%s=%s".formatted(repositoryInformation.getRepositoryInterface().getName(), typeName);
+//		generationContext.getGeneratedFiles().addResourceFile("META-INF/spring.factories", registration);
 	}
 
 	/**

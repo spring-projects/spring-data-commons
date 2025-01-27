@@ -73,7 +73,6 @@ public class AotRepositoryBuilder {
 		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
 				.addModifiers(Modifier.PUBLIC) //
 				.addAnnotation(Generated.class) //
-				.addAnnotation(Component.class) //
 				.addJavadoc("AOT generated repository implementation for {@link $T}.\n",
 						repositoryInformation.getRepositoryInterface()) //
 				.addJavadoc("\n") //
