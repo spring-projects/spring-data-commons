@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import java.util.function.Function;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -86,6 +87,8 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private boolean lazyInit = false;
 	private @Nullable EvaluationContextProvider evaluationContextProvider;
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
+	private @Nullable Function<BeanFactory, Object> aotImplementationFunction;
+
 	private @Nullable Lazy<T> repository;
 	private @Nullable RepositoryMetadata repositoryMetadata;
 
@@ -239,6 +242,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
+	public void setAotImplementationFunction(@Nullable Function<BeanFactory, Object> aotImplementationFunction) {
+		this.aotImplementationFunction = aotImplementationFunction;
+	}
+
+	@Nullable
+	protected Function<BeanFactory, Object> getAotImplementationFunction() {
+		return aotImplementationFunction;
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
@@ -318,6 +330,10 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		if (this.environment != null) {
 			this.factory.setEnvironment(this.environment);
 		}
+
+        if(this.aotImplementationFunction != null) {
+            this.factory.setAotImplementation(aotImplementationFunction.apply(beanFactory));
+        }
 
 		if (repositoryBaseClass != null) {
 			this.factory.setRepositoryBaseClass(repositoryBaseClass);

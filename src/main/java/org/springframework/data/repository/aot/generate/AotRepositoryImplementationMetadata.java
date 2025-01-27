@@ -16,6 +16,7 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -32,7 +33,8 @@ import org.springframework.lang.Nullable;
 class AotRepositoryImplementationMetadata {
 
 	private ClassName className;
-	private Map<String, FieldSpec> fields = new HashMap<>();
+	private Map<String, FieldSpec> fields = new HashMap<>(3);
+	private final Map<String, TypeName> constructorArguments = new LinkedHashMap<>(3);
 
 	public AotRepositoryImplementationMetadata(ClassName className) {
 		this.className = className;
@@ -77,5 +79,13 @@ class AotRepositoryImplementationMetadata {
 
 	Map<String, FieldSpec> getFields() {
 		return fields;
+	}
+
+	public Map<String, TypeName> getConstructorArguments() {
+		return constructorArguments;
+	}
+
+	public void addConstructorArgument(String parameterName, TypeName type) {
+		this.constructorArguments.put(parameterName, type);
 	}
 }

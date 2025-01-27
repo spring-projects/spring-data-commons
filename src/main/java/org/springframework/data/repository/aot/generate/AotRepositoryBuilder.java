@@ -18,6 +18,7 @@ package org.springframework.data.repository.aot.generate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -154,6 +155,10 @@ public class AotRepositoryBuilder {
 
 	private String typeName() {
 		return "%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName());
+	}
+
+	Map<String, TypeName> getAutowireFields() {
+		return generationMetadata.getConstructorArguments();
 	}
 
 	public interface RepositoryCustomizer {

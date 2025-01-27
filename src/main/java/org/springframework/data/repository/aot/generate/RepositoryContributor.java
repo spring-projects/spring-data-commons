@@ -23,28 +23,26 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.JavaFile;
+import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 
 /**
  * @author Christoph Strobl
  */
-public class RepositoryContributor implements AotCodeContributor {
+public class RepositoryContributor {
 
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
 
-	private AotRepositoryContext repositoryContext;
+	private final AotRepositoryBuilder builder;
 
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
-		this.repositoryContext = repositoryContext;
+		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation());
 	}
 
-	@Override
 	public void contribute(GenerationContext generationContext) {
 
-		//TODO: do we need - generationContext.withName("spring-data");
-		RepositoryInformation repositoryInformation = repositoryContext.getRepositoryInformation();
+		// TODO: do we need - generationContext.withName("spring-data");
 
-		AotRepositoryBuilder builder = AotRepositoryBuilder.forRepository(repositoryInformation);
 		builder.withFileCustomizer(this::customizeFile);
 		builder.withConstructorCustomizer(this::customizeConstructor);
 		builder.withDerivedMethodFunction(this::contributeRepositoryMethod);
@@ -64,11 +62,16 @@ public class RepositoryContributor implements AotCodeContributor {
 		generationContext.getGeneratedFiles().addSourceFile(file);
 
 		// generate native runtime hints - needed cause we're using the repository proxy
-		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName),
+				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+	}
 
-		// register it in spring.factories
-//		String registration = "%s=%s".formatted(repositoryInformation.getRepositoryInterface().getName(), typeName);
-//		generationContext.getGeneratedFiles().addResourceFile("META-INF/spring.factories", registration);
+	public String getContributedTypeName() {
+		return builder.getGenerationMetadata().getTargetTypeName().toString();
+	}
+
+	public java.util.Map<String, TypeName> requiredArgs() {
+		return builder.getAutowireFields();
 	}
 
 	/**

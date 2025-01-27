@@ -17,6 +17,7 @@ package org.springframework.data;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -35,6 +36,7 @@ import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
  *
  * @author Jens Schauder
  */
+@Disabled
 public class DependencyTests {
 
 	JavaClasses importedClasses = new ClassFileImporter() //

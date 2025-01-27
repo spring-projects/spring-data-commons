@@ -22,9 +22,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
@@ -34,25 +37,34 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragmentsDecorator;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
+import org.springframework.javapoet.CodeBlock;
+import org.springframework.javapoet.CodeBlock.Builder;
+import org.springframework.javapoet.TypeName;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link BeanRegistrationAotContribution} used to contribute repository registrations.
@@ -63,10 +75,11 @@ import org.springframework.util.ClassUtils;
 public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution {
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
+	private @Nullable RepositoryContributor repositoryContributor;
 
 	private @Nullable AotRepositoryContext repositoryContext;
 
-	private @Nullable BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
+	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor> moduleContribution;
 
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
@@ -106,7 +119,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return getRepositoryRegistrationAotProcessor().getBeanFactory();
 	}
 
-	protected Optional<BiConsumer<AotRepositoryContext, GenerationContext>> getModuleContribution() {
+	protected Optional<BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor>> getModuleContribution() {
 		return Optional.ofNullable(this.moduleContribution);
 	}
 
@@ -207,7 +220,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @return this.
 	 */
 	public RepositoryRegistrationAotContribution withModuleContribution(
-			@Nullable BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution) {
+			@Nullable BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor> moduleContribution) {
 		this.moduleContribution = moduleContribution;
 		return this;
 	}
@@ -219,7 +232,56 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				"RepositoryContext cannot be null. Make sure to initialize this class with forBean(…).");
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
-		getModuleContribution().ifPresent(it -> it.accept(getRepositoryContext(), generationContext));
+		if (getModuleContribution().isPresent() && this.repositoryContributor == null) {
+			this.repositoryContributor = getModuleContribution().get().apply(getRepositoryContext(), generationContext);
+			if (this.repositoryContributor != null) {
+				this.repositoryContributor.contribute(generationContext);
+			}
+		}
+	}
+
+	@Override
+	public BeanRegistrationCodeFragments customizeBeanRegistrationCodeFragments(GenerationContext generationContext,
+			BeanRegistrationCodeFragments codeFragments) {
+
+		return new BeanRegistrationCodeFragmentsDecorator(codeFragments) {
+
+			@Override
+			public CodeBlock generateSetBeanDefinitionPropertiesCode(GenerationContext generationContext,
+					BeanRegistrationCode beanRegistrationCode, RootBeanDefinition beanDefinition,
+					Predicate<String> attributeFilter) {
+
+				if (repositoryContributor == null) { // no aot implementation -> go on as as
+
+					return super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode, beanDefinition,
+							attributeFilter);
+				}
+
+				Builder builder = CodeBlock.builder();
+				// bring in properties as usual
+				builder.add(super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode,
+						beanDefinition, attributeFilter));
+
+				builder.add(
+						"beanDefinition.getPropertyValues().addPropertyValue(\"aotImplementationFunction\", new $T<$T, $T>() {\n",
+						Function.class, BeanFactory.class, Object.class);
+				builder.indent();
+				builder.add("public $T apply(BeanFactory beanFactory) {\n", Object.class);
+				builder.indent();
+				for (Entry<String, TypeName> entry : repositoryContributor.requiredArgs().entrySet()) {
+					builder.addStatement("$T $L = beanFactory.getBean($T.class)", entry.getValue(), entry.getKey(),
+							entry.getValue());
+				}
+				builder.addStatement("return new $L($L)", repositoryContributor.getContributedTypeName(),
+						StringUtils.collectionToDelimitedString(repositoryContributor.requiredArgs().keySet(), ", "));
+				builder.unindent();
+				builder.add("}\n");
+				builder.unindent();
+				builder.add("});\n");
+
+				return builder.build();
+			}
+		};
 	}
 
 	private void contributeRepositoryInfo(AotRepositoryContext repositoryContext, GenerationContext contribution) {

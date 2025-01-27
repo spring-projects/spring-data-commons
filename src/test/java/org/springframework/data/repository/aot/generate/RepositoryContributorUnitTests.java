@@ -54,10 +54,6 @@ class RepositoryContributorUnitTests {
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains(expectedTypeName);
-
-			ResourceFile springFactories = compiled.getResourceFiles().get("META-INF/spring.factories");
-			assertThat(springFactories).isNotNull();
-			springFactories.assertThat().contains("example.UserRepository=%s".formatted(expectedTypeName));
 		});
 
 		new CodeContributionAssert(generationContext).contributesReflectionFor(expectedTypeName);

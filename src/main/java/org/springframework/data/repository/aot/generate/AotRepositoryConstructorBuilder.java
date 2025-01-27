@@ -15,9 +15,7 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
@@ -35,17 +33,14 @@ public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
 	private final AotRepositoryImplementationMetadata metadata;
-	private final Map<String, TypeName> constructorArguments;
 
 	private ConstructorCustomizer customizer = (info, builder) -> {};
 
-	public AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
+	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
 			AotRepositoryImplementationMetadata metadata) {
 
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;
-		this.constructorArguments = new LinkedHashMap<>(3);
-		// addParameter("delegate", getDefaultStoreRepositoryImplementationType(repositoryInformation));
 	}
 
 	public void addParameter(String parameterName, Class<?> type) {
@@ -60,7 +55,7 @@ public class AotRepositoryConstructorBuilder {
 
 	public void addParameter(String parameterName, TypeName type) {
 
-		this.constructorArguments.put(parameterName, type);
+		this.metadata.addConstructorArgument(parameterName, type);
 		this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
 	}
 
@@ -71,7 +66,7 @@ public class AotRepositoryConstructorBuilder {
 	MethodSpec buildConstructor() {
 
 		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
-		for (Entry<String, TypeName> parameter : constructorArguments.entrySet()) {
+		for (Entry<String, TypeName> parameter : this.metadata.getConstructorArguments().entrySet()) {
 			builder.addParameter(parameter.getValue(), parameter.getKey()).addStatement("this.$N = $N", parameter.getKey(),
 					parameter.getKey());
 		}
