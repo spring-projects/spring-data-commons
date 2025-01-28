@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ class DoubleVector implements Vector {
 
 	private final double[] v;
 
-	public DoubleVector(double[] v) {
+	DoubleVector(double[] v) {
 		this.v = v;
 	}
 
@@ -39,16 +39,21 @@ class DoubleVector implements Vector {
 	 */
 	static Vector copy(double[] v) {
 
-		double[] copy = new double[v.length];
-		System.arraycopy(v, 0, copy, 0, copy.length);
+		if (v.length == 0) {
+			return new DoubleVector(new double[0]);
+		}
 
-		return new DoubleVector(copy);
+		return new DoubleVector(Arrays.copyOf(v, v.length));
 	}
 
 	/**
 	 * Copy the given numeric values and wrap within a Vector.
 	 */
 	static Vector copy(Collection<? extends Number> v) {
+
+		if (v.isEmpty()) {
+			return new DoubleVector(new double[0]);
+		}
 
 		double[] copy = new double[v.size()];
 		int i = 0;
@@ -87,11 +92,7 @@ class DoubleVector implements Vector {
 
 	@Override
 	public double[] toDoubleArray() {
-
-		double[] copy = new double[this.v.length];
-		System.arraycopy(this.v, 0, copy, 0, copy.length);
-
-		return copy;
+		return Arrays.copyOf(this.v, this.v.length);
 	}
 
 	@Override

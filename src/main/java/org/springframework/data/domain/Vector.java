@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,9 @@ public interface Vector {
 	static Vector of(Collection<? extends Number> values) {
 
 		Assert.notNull(values, "Vector values must not be null");
+		if(values.isEmpty()) {
+			return NumberVector.copy(new Number[0]);
+		}
 
 		Class<?> cet = CollectionUtils.findCommonElementType(values);
 
