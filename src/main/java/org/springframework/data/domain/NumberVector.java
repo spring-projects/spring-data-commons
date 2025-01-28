@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.domain;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -30,7 +31,9 @@ class NumberVector implements Vector {
 
 	private final Number[] v;
 
-	public NumberVector(Number[] v) {
+	NumberVector(Number[] v) {
+
+		Assert.noNullElements(v, "Vector [v] must not contain null elements");
 		this.v = v;
 	}
 
@@ -39,41 +42,39 @@ class NumberVector implements Vector {
 	 */
 	static Vector copy(Number[] v) {
 
-		Number[] copy = new Number[v.length];
-		System.arraycopy(v, 0, copy, 0, copy.length);
+		if (v.length == 0) {
+			return new NumberVector(new Number[0]);
+		}
 
-		return new NumberVector(copy);
+		return new NumberVector(Arrays.copyOf(v, v.length));
 	}
 
 	/**
 	 * Copy the given {@link Number} and wrap it within a Vector.
 	 */
-	static Vector copy(Collection<? extends Number> numbers) {
+	static Vector copy(Collection<? extends Number> v) {
 
-		Number[] copy = new Number[numbers.size()];
-
-		int i = 0;
-		for (Number number : numbers) {
-			copy[i++] = number;
+		if (v.isEmpty()) {
+			return new NumberVector(new Number[0]);
 		}
 
-		return new NumberVector(copy);
+		return new NumberVector(v.toArray(Number[]::new));
 	}
 
 	@Override
 	public Class<? extends Number> getType() {
 
-		Class<?> candidate = null;
-		for (Object val : v) {
-			if (val != null) {
-				if (candidate == null) {
-					candidate = val.getClass();
-				} else if (candidate != val.getClass()) {
-					return Number.class;
-				}
+		if (this.v.length == 0) {
+			return Number.class;
+		}
+
+		Class<? extends Number> candidate = this.v[0].getClass();
+		for (int i = 1; i < this.v.length; i++) {
+			if (candidate != this.v[i].getClass()) {
+				return Number.class;
 			}
 		}
-		return (Class<? extends Number>) candidate;
+		return candidate;
 	}
 
 	@Override

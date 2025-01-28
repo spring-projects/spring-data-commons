@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package org.springframework.data.domain;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,11 +28,39 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link NumberVector}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class NumberVectorUnitTests {
 
 	Number[] values = new Number[] { 1.1, 2.2, 3.3, 4.4, 5.5, 6.6f };
 	Number[] floats = new Number[] { (float) 1.1d, (float) 2.2d, (float) 3.3d, (float) 4.4d, (float) 5.5, 6.6 };
+
+	@Test // GH-3193
+	void shouldErrorOnNullElements() {
+
+		List<Long> source = new ArrayList<>(3);
+		source.add(1L);
+		source.add(null);
+		source.add(3L);
+
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> NumberVector.copy(source));
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> NumberVector.copy(new Number[] { 1L, null, 3L }));
+	}
+
+	@Test // GH-3193
+	void shouldAcceptEmptySource() {
+
+		Vector vector = NumberVector.copy(List.of());
+
+		assertThat(vector.size()).isEqualTo(0);
+		assertThat(vector.getType()).isEqualTo(Number.class);
+
+		vector = NumberVector.copy(new Number[] {});
+
+		assertThat(vector.size()).isEqualTo(0);
+		assertThat(vector.getType()).isEqualTo(Number.class);
+	}
 
 	@Test // GH-3193
 	void shouldCreateVector() {
@@ -46,6 +77,17 @@ class NumberVectorUnitTests {
 		Vector vector = Vector.of(Arrays.asList(values));
 
 		assertThat(vector.getSource()).isNotSameAs(vector).isEqualTo(values);
+	}
+
+	@Test // GH-3193
+	void shouldFigureOutCommonType() {
+
+		assertThat(NumberVector.copy(List.of()).getType()).isEqualTo(Number.class);
+		assertThat(NumberVector.copy(List.of(1)).getType()).isEqualTo(Integer.class);
+		assertThat(NumberVector.copy(List.of(1L, 2L)).getType()).isEqualTo(Long.class);
+		assertThat(NumberVector.copy(List.of(1F, 2F)).getType()).isEqualTo(Float.class);
+		assertThat(NumberVector.copy(List.of(1D, 2D)).getType()).isEqualTo(Double.class);
+		assertThat(NumberVector.copy(List.of(1D, 2F, 3F)).getType()).isEqualTo(Number.class);
 	}
 
 	@Test // GH-3193
@@ -66,7 +108,7 @@ class NumberVectorUnitTests {
 	}
 
 	@Test // GH-3193
-	void sourceShouldReturnSource() {
+	void sourceShouldReturnSource() { // this one is questionable
 
 		Vector vector = new NumberVector(values);
 
