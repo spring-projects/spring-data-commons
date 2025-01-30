@@ -90,63 +90,63 @@ abstract class BytecodeUtil {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false);
 		}
 
-		if (in.equals(Boolean.TYPE) && out.equals(Boolean.class)) {
+		else if (in.equals(Boolean.TYPE) && out.equals(Boolean.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
 		}
 
-		if (in.equals(Byte.class) && out.equals(Byte.TYPE)) {
+		else if (in.equals(Byte.class) && out.equals(Byte.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false);
 		}
 
-		if (in.equals(Byte.TYPE) && out.equals(Byte.class)) {
+		else if (in.equals(Byte.TYPE) && out.equals(Byte.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
 		}
 
-		if (in.equals(Character.class) && out.equals(Character.TYPE)) {
+		else if (in.equals(Character.class) && out.equals(Character.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C", false);
 		}
 
-		if (in.equals(Character.TYPE) && out.equals(Character.class)) {
+		else if (in.equals(Character.TYPE) && out.equals(Character.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
 		}
 
-		if (in.equals(Double.class) && out.equals(Double.TYPE)) {
+		else if (in.equals(Double.class) && out.equals(Double.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
 		}
 
-		if (in.equals(Double.TYPE) && out.equals(Double.class)) {
+		else if (in.equals(Double.TYPE) && out.equals(Double.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
 		}
 
-		if (in.equals(Float.class) && out.equals(Float.TYPE)) {
+		else if (in.equals(Float.class) && out.equals(Float.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F", false);
 		}
 
-		if (in.equals(Float.TYPE) && out.equals(Float.class)) {
+		else if (in.equals(Float.TYPE) && out.equals(Float.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
 		}
 
-		if (in.equals(Integer.class) && out.equals(Integer.TYPE)) {
+		else if (in.equals(Integer.class) && out.equals(Integer.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false);
 		}
 
-		if (in.equals(Integer.TYPE) && out.equals(Integer.class)) {
+		else if (in.equals(Integer.TYPE) && out.equals(Integer.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
 		}
 
-		if (in.equals(Long.class) && out.equals(Long.TYPE)) {
+		else if (in.equals(Long.class) && out.equals(Long.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
 		}
 
-		if (in.equals(Long.TYPE) && out.equals(Long.class)) {
+		else if (in.equals(Long.TYPE) && out.equals(Long.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
 		}
 
-		if (in.equals(Short.class) && out.equals(Short.TYPE)) {
+		else if (in.equals(Short.class) && out.equals(Short.TYPE)) {
 			visitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S", false);
 		}
 
-		if (in.equals(Short.TYPE) && out.equals(Short.class)) {
+		else if (in.equals(Short.TYPE) && out.equals(Short.class)) {
 			visitor.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
 		}
 	}
@@ -267,19 +267,19 @@ abstract class BytecodeUtil {
 				mv.visitInsn(Opcodes.ICONST_0);
 			}
 
-			if (parameterType == Long.TYPE) {
+			else if (parameterType == Long.TYPE) {
 				mv.visitInsn(Opcodes.LCONST_0);
 			}
 
-			if (parameterType == Double.TYPE) {
+			else if (parameterType == Double.TYPE) {
 				mv.visitInsn(Opcodes.DCONST_0);
 			}
 
-			if (parameterType == Float.TYPE) {
+			else if (parameterType == Float.TYPE) {
 				mv.visitInsn(Opcodes.FCONST_0);
 			}
 
-			if (parameterType == Character.TYPE || parameterType == Byte.TYPE) {
+			else if (parameterType == Character.TYPE || parameterType == Byte.TYPE) {
 				mv.visitIntInsn(Opcodes.BIPUSH, 0);
 			}
 		} else {
