@@ -24,11 +24,26 @@ import org.springframework.util.ObjectUtils;
  * {@link Vector} implementation based on {@code double} array.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.5
  */
 class DoubleVector implements Vector {
 
-	private final double[] v;
+	static final DoubleVector EMPTY = new DoubleVector(new double[0]) {
+
+		@Override
+		public float[] toFloatArray() {
+			return FloatVector.EMPTY.v;
+		}
+
+		@Override
+		public double[] toDoubleArray() {
+			return this.v;
+		}
+
+	};
+
+	final double[] v;
 
 	DoubleVector(double[] v) {
 		this.v = v;
@@ -40,7 +55,7 @@ class DoubleVector implements Vector {
 	static Vector copy(double[] v) {
 
 		if (v.length == 0) {
-			return new DoubleVector(new double[0]);
+			return EMPTY;
 		}
 
 		return new DoubleVector(Arrays.copyOf(v, v.length));
@@ -52,7 +67,7 @@ class DoubleVector implements Vector {
 	static Vector copy(Collection<? extends Number> v) {
 
 		if (v.isEmpty()) {
-			return new DoubleVector(new double[0]);
+			return EMPTY;
 		}
 
 		double[] copy = new double[v.size()];
@@ -101,9 +116,11 @@ class DoubleVector implements Vector {
 		if (this == o) {
 			return true;
 		}
+
 		if (!(o instanceof DoubleVector that)) {
 			return false;
 		}
+
 		return ObjectUtils.nullSafeEquals(v, that.v);
 	}
 

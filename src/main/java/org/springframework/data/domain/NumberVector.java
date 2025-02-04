@@ -25,9 +25,24 @@ import org.springframework.util.ObjectUtils;
  * {@link Vector} implementation based on {@link Number} array.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.5
  */
 class NumberVector implements Vector {
+
+	static final NumberVector EMPTY = new NumberVector(new Number[0]) {
+
+		@Override
+		public float[] toFloatArray() {
+			return FloatVector.EMPTY.v;
+		}
+
+		@Override
+		public double[] toDoubleArray() {
+			return DoubleVector.EMPTY.v;
+		}
+
+	};
 
 	private final Number[] v;
 
@@ -43,7 +58,7 @@ class NumberVector implements Vector {
 	static Vector copy(Number[] v) {
 
 		if (v.length == 0) {
-			return new NumberVector(new Number[0]);
+			return EMPTY;
 		}
 
 		return new NumberVector(Arrays.copyOf(v, v.length));
@@ -55,7 +70,7 @@ class NumberVector implements Vector {
 	static Vector copy(Collection<? extends Number> v) {
 
 		if (v.isEmpty()) {
-			return new NumberVector(new Number[0]);
+			return EMPTY;
 		}
 
 		return new NumberVector(v.toArray(Number[]::new));
@@ -74,6 +89,7 @@ class NumberVector implements Vector {
 				return Number.class;
 			}
 		}
+
 		return candidate;
 	}
 
@@ -115,9 +131,11 @@ class NumberVector implements Vector {
 		if (this == o) {
 			return true;
 		}
+
 		if (!(o instanceof NumberVector that)) {
 			return false;
 		}
+
 		return ObjectUtils.nullSafeEquals(v, that.v);
 	}
 

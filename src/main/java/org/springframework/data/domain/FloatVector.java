@@ -24,11 +24,26 @@ import org.springframework.util.ObjectUtils;
  * {@link Vector} implementation based on {@code float} array.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.5
  */
 class FloatVector implements Vector {
 
-	private final float[] v;
+	static final FloatVector EMPTY = new FloatVector(new float[0]) {
+
+		@Override
+		public float[] toFloatArray() {
+			return this.v;
+		}
+
+		@Override
+		public double[] toDoubleArray() {
+			return DoubleVector.EMPTY.v;
+		}
+
+	};
+
+	final float[] v;
 
 	FloatVector(float[] v) {
 		this.v = v;
@@ -40,7 +55,7 @@ class FloatVector implements Vector {
 	static Vector copy(float[] v) {
 
 		if (v.length == 0) {
-			return new FloatVector(new float[0]);
+			return EMPTY;
 		}
 
 		return new FloatVector(Arrays.copyOf(v, v.length));
@@ -52,7 +67,7 @@ class FloatVector implements Vector {
 	static Vector copy(Collection<? extends Number> v) {
 
 		if (v.isEmpty()) {
-			return new FloatVector(new float[0]);
+			return EMPTY;
 		}
 
 		float[] copy = new float[v.size()];
@@ -101,9 +116,11 @@ class FloatVector implements Vector {
 		if (this == o) {
 			return true;
 		}
+
 		if (!(o instanceof FloatVector that)) {
 			return false;
 		}
+
 		return ObjectUtils.nullSafeEquals(v, that.v);
 	}
 

@@ -75,8 +75,9 @@ public interface Vector {
 	static Vector of(Collection<? extends Number> values) {
 
 		Assert.notNull(values, "Vector values must not be null");
-		if(values.isEmpty()) {
-			return NumberVector.copy(new Number[0]);
+
+		if (values.isEmpty()) {
+			return NumberVector.EMPTY;
 		}
 
 		Class<?> cet = CollectionUtils.findCommonElementType(values);
@@ -152,6 +153,8 @@ public interface Vector {
 	 * <p>
 	 * Conversion to {@code float} can incorporate loss of precision or result in values with a slight offset due to data
 	 * type conversion if the source is not a {@code float} array.
+	 * <p>
+	 * Note that Vectors using quantization or binary representations may not be convertible to a {@code float} array.
 	 *
 	 * @return a new {@code float} array representing the vector point.
 	 */
@@ -163,6 +166,8 @@ public interface Vector {
 	 * <p>
 	 * Conversion to {@code double} can incorporate loss of precision or result in values with a slight offset due to data
 	 * type conversion if the source is not a {@code double} array.
+	 * <p>
+	 * Note that Vectors using quantization or binary representations may not be convertible to a {@code double} array.
 	 *
 	 * @return a new {@code double} array representing the vector point.
 	 */
