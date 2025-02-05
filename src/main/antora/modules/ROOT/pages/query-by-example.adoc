@@ -207,7 +207,7 @@ You do so by invoking the various methods of the `FetchableFluentQuery` in the s
 `sortBy` lets you specify an ordering for your result.
 `as` lets you specify the type to which you want the result to be transformed.
 `project` limits the queried attributes.
-`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `stream`, `count`, and `exists` define what kind of result you get and how the query behaves when more than the expected number of results are available.
+`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `slice`, `stream`, `count`, and `exists` define what kind of result you get and how the query behaves when more than the expected number of results are available.
 
 
 .Use the fluent API to get the last of potentially many results, ordered by lastname.

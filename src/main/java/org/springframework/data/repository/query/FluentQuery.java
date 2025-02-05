@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query;
 
-import org.springframework.data.domain.Window;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,12 +22,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
 import org.springframework.lang.Nullable;
 
 /**
@@ -41,7 +43,7 @@ import org.springframework.lang.Nullable;
 public interface FluentQuery<T> {
 
 	/**
-	 * Define the sort order.
+	 * Define the sort order. Multiple calls will add {@link Sort#and(Sort) Sort} specifications.
 	 *
 	 * @param sort the {@link Sort} specification to sort the results by, may be {@link Sort#unsorted()}, must not be
 	 *          {@literal null}.
@@ -190,6 +192,19 @@ public interface FluentQuery<T> {
 		Page<T> page(Pageable pageable);
 
 		/**
+		 * Get a slice of matching elements for {@link Pageable}.
+		 *
+		 * @param pageable the pageable to request a sliced result, can be {@link Pageable#unpaged()}, must not be
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort}.
+		 *          Any potentially specified {@link #limit(int)} will be overridden by {@link Pageable#getPageSize()}.
+		 * @return
+		 * @since 3.5
+		 */
+		default Slice<T> slice(Pageable pageable) {
+			return page(pageable);
+		}
+
+		/**
 		 * Stream all matching elements.
 		 *
 		 * @return a {@link Stream} wrapping cursors that need to be closed.
@@ -284,6 +299,19 @@ public interface FluentQuery<T> {
 		 * @return
 		 */
 		Mono<Page<T>> page(Pageable pageable);
+
+		/**
+		 * Get a slice of matching elements for {@link Pageable}.
+		 *
+		 * @param pageable the pageable to request a sliced result, can be {@link Pageable#unpaged()}, must not be
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort}.
+		 *          Any potentially specified {@link #limit(int)} will be overridden by {@link Pageable#getPageSize()}.
+		 * @return
+		 * @since 3.5
+		 */
+		default Mono<Slice<T>> slice(Pageable pageable) {
+			return page(pageable).map(Function.identity());
+		}
 
 		/**
 		 * Get the number of matching elements.
