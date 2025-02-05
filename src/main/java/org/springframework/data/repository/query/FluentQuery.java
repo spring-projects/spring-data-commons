@@ -184,9 +184,8 @@ public interface FluentQuery<T> {
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
 		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
-		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
-		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
-		 *          will be overridden by {@link Pageable#getPageSize()}.
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort}.
+		 *          Any potentially specified {@link #limit(int)} will be overridden by {@link Pageable#getPageSize()}.
 		 * @return
 		 */
 		Page<T> page(Pageable pageable);
@@ -293,9 +292,8 @@ public interface FluentQuery<T> {
 		 * Get a page of matching elements for {@link Pageable}.
 		 *
 		 * @param pageable the pageable to request a paged result, can be {@link Pageable#unpaged()}, must not be
-		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort} if
-		 *          the {@link Sort} object is not {@link Sort#isUnsorted()}. Any potentially specified {@link #limit(int)}
-		 *          will be overridden by {@link Pageable#getPageSize()}.
+		 *          {@literal null}. The given {@link Pageable} will override any previously specified {@link Sort sort}.
+		 *          Any potentially specified {@link #limit(int)} will be overridden by {@link Pageable#getPageSize()}.
 		 * @return
 		 */
 		Mono<Page<T>> page(Pageable pageable);
