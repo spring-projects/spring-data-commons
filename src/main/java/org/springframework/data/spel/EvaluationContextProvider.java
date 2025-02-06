@@ -15,9 +15,10 @@
  */
 package org.springframework.data.spel;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 
 /**
  * Provides a way to access a centrally defined potentially shared {@link StandardEvaluationContext}.

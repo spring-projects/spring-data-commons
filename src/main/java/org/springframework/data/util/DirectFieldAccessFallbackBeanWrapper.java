@@ -19,10 +19,11 @@ import static org.springframework.util.ReflectionUtils.*;
 
 import java.lang.reflect.Field;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.beans.NotWritablePropertyException;
-import org.springframework.lang.Nullable;
 
 /**
  * Custom extension of {@link BeanWrapperImpl} that falls back to direct field access in case the object or type being
@@ -42,8 +43,7 @@ public class DirectFieldAccessFallbackBeanWrapper extends BeanWrapperImpl {
 	}
 
 	@Override
-	@Nullable
-	public Object getPropertyValue(String propertyName) {
+	public @Nullable Object getPropertyValue(String propertyName) {
 
 		try {
 			return super.getPropertyValue(propertyName);

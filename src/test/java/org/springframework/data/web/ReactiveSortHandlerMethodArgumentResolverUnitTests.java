@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 import static org.springframework.data.web.SortDefaultUnitTests.*;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +27,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault.SortDefaults;
-import org.springframework.lang.Nullable;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.util.StringUtils;

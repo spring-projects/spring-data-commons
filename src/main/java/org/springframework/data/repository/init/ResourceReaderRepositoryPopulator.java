@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -32,7 +33,6 @@ import org.springframework.data.repository.support.DefaultRepositoryInvokerFacto
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

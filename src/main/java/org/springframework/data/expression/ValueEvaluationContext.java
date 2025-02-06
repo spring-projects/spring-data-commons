@@ -17,7 +17,6 @@ package org.springframework.data.expression;
 
 import org.springframework.core.env.Environment;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.lang.Nullable;
 
 /**
  * Expressions are executed in an evaluation context. It is in this context that references are resolved when
@@ -36,24 +35,22 @@ public interface ValueEvaluationContext {
 	 * @param evaluationContext
 	 * @return a new {@link ValueEvaluationContext} for the given environment and evaluation context.
 	 */
-	static ValueEvaluationContext of(@Nullable Environment environment, EvaluationContext evaluationContext) {
+	static ValueEvaluationContext of(Environment environment, EvaluationContext evaluationContext) {
 		return new DefaultValueEvaluationContext(environment, evaluationContext);
 	}
 
 	/**
 	 * Returns the {@link Environment} if provided.
 	 *
-	 * @return the {@link Environment} or {@literal null}.
+	 * @return the {@link Environment}.
 	 */
-	@Nullable
 	Environment getEnvironment();
 
 	/**
 	 * Returns the {@link EvaluationContext} if provided.
 	 *
-	 * @return the {@link EvaluationContext} or {@literal null} if not set.
+	 * @return the {@link EvaluationContext}.
 	 */
-	@Nullable
 	EvaluationContext getEvaluationContext();
 
 	/**
@@ -62,7 +59,10 @@ public interface ValueEvaluationContext {
 	 *
 	 * @return the {@link EvaluationContext}.
 	 * @since 3.4
+	 * @deprecated since 4.0, EvaluationContext is always provided.
 	 */
+	@Deprecated
+	@SuppressWarnings("ConstantValue")
 	default EvaluationContext getRequiredEvaluationContext() {
 
 		EvaluationContext evaluationContext = getEvaluationContext();

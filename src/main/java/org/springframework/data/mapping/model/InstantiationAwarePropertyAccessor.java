@@ -17,12 +17,13 @@ package org.springframework.data.mapping.model;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -106,9 +107,8 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 		this.bean = (T) instantiator.createInstance(owner, new ParameterValueProvider() {
 
 			@Override
-			@Nullable
-			@SuppressWarnings("null")
-			public Object getParameterValue(Parameter parameter) {
+			@SuppressWarnings("NullAway")
+			public @Nullable Object getParameterValue(Parameter parameter) {
 
 				return property.getName().equals(parameter.getName()) //
 						? value

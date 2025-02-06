@@ -1,5 +1,5 @@
 /**
  * Base package for the mapping subsystem.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.mapping;

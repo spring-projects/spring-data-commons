@@ -18,9 +18,10 @@ package org.springframework.data.mapping;
 import java.lang.annotation.Annotation;
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.annotation.Immutable;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -170,8 +171,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return {@literal null} if no property found with given annotation type.
 	 * @since 1.8
 	 */
-	@Nullable
-	default P getPersistentProperty(Class<? extends Annotation> annotationType) {
+	default @Nullable P getPersistentProperty(Class<? extends Annotation> annotationType) {
 
 		Iterator<P> it = getPersistentProperties(annotationType).iterator();
 		return it.hasNext() ? it.next() : null;
@@ -279,8 +279,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @return {@literal null} if not found.
 	 * @since 1.8
 	 */
-	@Nullable
-	<A extends Annotation> A findAnnotation(Class<A> annotationType);
+	<A extends Annotation> @Nullable A findAnnotation(Class<A> annotationType);
 
 	/**
 	 * Returns the required annotation of the given type on the {@link PersistentEntity}.

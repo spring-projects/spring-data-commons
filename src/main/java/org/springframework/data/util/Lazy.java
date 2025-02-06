@@ -19,7 +19,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -42,12 +43,12 @@ public class Lazy<T> implements Supplier<T> {
 	private static final Lazy<?> EMPTY = new Lazy<>(() -> null, null, true);
 	static final String UNRESOLVED = "[Unresolved]";
 
-	private final Supplier<? extends T> supplier;
+	private final Supplier<? extends @Nullable T> supplier;
 
 	private @Nullable T value;
 	private volatile boolean resolved;
 
-	private Lazy(Supplier<? extends T> supplier) {
+	private Lazy(Supplier<? extends @Nullable T> supplier) {
 		this(supplier, null, false);
 	}
 
@@ -58,7 +59,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param value can be {@literal null}.
 	 * @param resolved whether the value handed into the constructor represents a resolved value.
 	 */
-	private Lazy(Supplier<? extends T> supplier, @Nullable T value, boolean resolved) {
+	private Lazy(Supplier<? extends @Nullable T> supplier, @Nullable T value, boolean resolved) {
 
 		this.supplier = supplier;
 		this.value = value;
@@ -72,7 +73,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param supplier the {@link Supplier} to create the object lazily.
 	 * @return a {@code Lazy} wrapping the given {@link Supplier}.
 	 */
-	public static <T> Lazy<T> of(Supplier<? extends T> supplier) {
+	public static <T> Lazy<T> of(Supplier<? extends @Nullable T> supplier) {
 		return new Lazy<>(supplier);
 	}
 
@@ -199,7 +200,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @return the value, if present, otherwise the result produced by the supplying function.
 	 */
 	@Nullable
-	public T orElseGet(Supplier<? extends T> supplier) {
+	public T orElseGet(Supplier<? extends @Nullable T> supplier) {
 
 		Assert.notNull(supplier, "Default value supplier must not be null");
 

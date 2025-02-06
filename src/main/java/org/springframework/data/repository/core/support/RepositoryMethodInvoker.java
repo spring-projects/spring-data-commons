@@ -26,7 +26,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
+
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
@@ -36,7 +38,6 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.ReactiveWrappers;
-import org.springframework.lang.Nullable;
 
 /**
  * Invoker for repository methods. Used to invoke query methods and fragment methods. This invoker considers Kotlin
@@ -77,7 +78,7 @@ abstract class RepositoryMethodInvoker {
 
 					Object result = invokable.invoke(args);
 
-					if (returnedType == Unit.class) {
+					if (returnedType == Unit.class && result != null) {
 
 						if (result instanceof Mono<?> m) {
 							return m.then();
@@ -87,7 +88,7 @@ abstract class RepositoryMethodInvoker {
 						return flux.then();
 					}
 
-					if (returnedType != Flow.class) {
+					if (returnedType != Flow.class && result != null) {
 
 						if (result instanceof Mono<?> m) {
 							return m;
@@ -152,15 +153,13 @@ abstract class RepositoryMethodInvoker {
 	 * @return
 	 * @throws Exception
 	 */
-	@Nullable
-	public Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
-			throws Exception {
+	public @Nullable Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
+			@Nullable Object[] args) throws Exception {
 		return doInvoke(repositoryInterface, multicaster, args);
 	}
 
-	@Nullable
-	private Object doInvoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args)
-			throws Exception {
+	private @Nullable Object doInvoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
+			@Nullable Object[] args) throws Exception {
 
 		RepositoryMethodInvocationCaptor invocationResultCaptor = RepositoryMethodInvocationCaptor
 				.captureInvocationOn(repositoryInterface);
@@ -195,7 +194,7 @@ abstract class RepositoryMethodInvoker {
 	interface Invokable {
 
 		@Nullable
-		Object invoke(Object[] args) throws Exception;
+		Object invoke(@Nullable Object[] args) throws Exception;
 	}
 
 	/**
@@ -212,7 +211,9 @@ abstract class RepositoryMethodInvoker {
 	 */
 	class ReactiveInvocationListenerDecorator {
 
-		Publisher<Object> decorate(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, Object[] args,
+		@SuppressWarnings("unchecked")
+		Publisher<Object> decorate(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
+				@Nullable Object[] args,
 				Object result) {
 
 			if (result instanceof Mono) {
@@ -361,11 +362,12 @@ abstract class RepositoryMethodInvoker {
 
 		private final Class<?> repositoryInterface;
 		private long startTime;
-		private @Nullable Long endTime;
+		private final @Nullable Long endTime;
 		private final State state;
 		private final @Nullable Throwable error;
 
-		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, Long endTime, State state,
+		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, @Nullable Long endTime,
+				State state,
 				@Nullable Throwable exception) {
 
 			this.repositoryInterface = repositoryInterface;

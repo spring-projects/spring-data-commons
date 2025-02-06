@@ -55,9 +55,11 @@ class RepositoryBeanDefinitionReader {
 
 					List<RepositoryFragment<?>> fragments = new ArrayList<>(1);
 
-					// TODO: Implemented accepts an Object, not a class.
 					fragments.add(RepositoryFragment.implemented(forName(it.getClassName(), beanFactory)));
-					fragments.add(RepositoryFragment.structural(forName(it.getInterfaceName(), beanFactory)));
+
+					if (it.getInterfaceName() != null) {
+						fragments.add(RepositoryFragment.structural(forName(it.getInterfaceName(), beanFactory)));
+					}
 
 					return fragments.stream();
 				}).collect(Collectors.toList());
@@ -72,10 +74,7 @@ class RepositoryBeanDefinitionReader {
 			ConfigurableListableBeanFactory beanFactory) {
 
 		return Lazy.of(() -> (Class<?>) metadata.getRepositoryBaseClassName().map(it -> forName(it.toString(), beanFactory))
-				.orElseGet(() -> {
-					// TODO: retrieve the default without loading the actual RepositoryBeanFactory
-					return Object.class;
-				}));
+				.orElse(Object.class));
 	}
 
 	private static Supplier<org.springframework.data.repository.core.RepositoryMetadata> metadataSupplier(

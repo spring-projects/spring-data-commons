@@ -34,8 +34,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 
 /**
  * Helper class to register JSR-310 specific {@link Converter} implementations.

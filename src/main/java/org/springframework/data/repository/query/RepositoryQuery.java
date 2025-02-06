@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for a query abstraction.

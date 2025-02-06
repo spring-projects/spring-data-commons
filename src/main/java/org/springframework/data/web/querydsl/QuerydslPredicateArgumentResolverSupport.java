@@ -18,6 +18,8 @@ package org.springframework.data.web.querydsl;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -29,7 +31,6 @@ import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -107,8 +108,7 @@ public abstract class QuerydslPredicateArgumentResolverSupport {
 		return predicateBuilder.getPredicate(domainType, queryParameters, bindings);
 	}
 
-	@Nullable
-	static Object potentiallyConvertMethodParameterValue(MethodParameter parameter, Predicate predicate) {
+	static @Nullable Object potentiallyConvertMethodParameterValue(MethodParameter parameter, Predicate predicate) {
 
 		if (!parameter.isOptional()) {
 			return predicate;

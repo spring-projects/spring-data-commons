@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 
 import org.springframework.core.ReactiveAdapter;
@@ -38,8 +40,6 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.util.ReactiveWrappers.ReactiveLibrary;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -166,7 +166,7 @@ public abstract class ReactiveWrapperConverters {
 	 * @param targetWrapperType must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "DataFlowIssue" })
+	@SuppressWarnings({ "unchecked" })
 	public static <T> T toWrapper(Object reactiveObject, Class<? extends T> targetWrapperType) {
 
 		Assert.notNull(reactiveObject, "Reactive source object must not be null");
@@ -176,7 +176,13 @@ public abstract class ReactiveWrapperConverters {
 			return (T) reactiveObject;
 		}
 
-		return GENERIC_CONVERSION_SERVICE.convert(reactiveObject, targetWrapperType);
+		T convert = GENERIC_CONVERSION_SERVICE.convert(reactiveObject, targetWrapperType);
+
+		if (convert == null) {
+			throw new IllegalStateException("Wait, what?");
+		}
+
+		return convert;
 	}
 
 	/**
@@ -260,7 +266,7 @@ public abstract class ReactiveWrapperConverters {
 
 		@Override
 		public Mono<?> map(Object wrapper, Function<Object, Object> function) {
-			return ((Mono<?>) wrapper).map(function::apply);
+			return ((Mono<?>) wrapper).map(function);
 		}
 	}
 
@@ -529,13 +535,13 @@ public abstract class ReactiveWrapperConverters {
 			return source -> {
 
 				Publisher<?> publisher = source instanceof Publisher ? (Publisher<?>) source
-						: RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(Publisher.class, source).toPublisher(source);
-
-				ReactiveAdapter adapter = RegistryHolder.REACTIVE_ADAPTER_REGISTRY.getAdapter(targetType);
+						: RegistryHolder.getAdapter(Publisher.class, source).toPublisher(source);
+				ReactiveAdapter adapter = RegistryHolder.getAdapter(targetType);
 
 				return (T) adapter.fromPublisher(publisher);
 			};
 		}
+
 	}
 
 	/**
@@ -555,6 +561,40 @@ public abstract class ReactiveWrapperConverters {
 			} else {
 				REACTIVE_ADAPTER_REGISTRY = null;
 			}
+		}
+
+		static ReactiveAdapterRegistry getReactiveAdapterRegistry() {
+
+			if (REACTIVE_ADAPTER_REGISTRY == null) {
+				throw new IllegalStateException(
+						"ReactiveAdapterRegistry not available. Make sure to have Project Reactor on your classpath!");
+			}
+
+			return REACTIVE_ADAPTER_REGISTRY;
+		}
+
+		public static ReactiveAdapter getAdapter(Class<?> reactiveType, Object source) {
+
+			ReactiveAdapter adapter = getReactiveAdapterRegistry().getAdapter(reactiveType, source);
+
+			if (adapter == null) {
+				throw new IllegalArgumentException("Cannot convert Reactive Type '%s' (%s) to Publisher"
+						.formatted(reactiveType.getName(), source.getClass().getName()));
+			}
+
+			return adapter;
+		}
+
+		public static ReactiveAdapter getAdapter(Class<?> reactiveType) {
+
+			ReactiveAdapter adapter = getReactiveAdapterRegistry().getAdapter(reactiveType);
+
+			if (adapter == null) {
+				throw new IllegalArgumentException(
+						"No ReactiveAdapter for '%s' conversion registered.".formatted(reactiveType.getName()));
+			}
+
+			return adapter;
 		}
 	}
 }

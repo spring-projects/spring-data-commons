@@ -22,6 +22,8 @@ import java.util.function.BiConsumer;
 
 import javax.lang.model.element.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.AccessControl;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
@@ -41,7 +43,6 @@ import org.springframework.javapoet.MethodSpec.Builder;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.WildcardTypeName;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;

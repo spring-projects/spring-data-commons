@@ -17,10 +17,10 @@ package org.springframework.data.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.convert.PropertyValueConverterFactoryUnitTests.Person;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * Unit tests for {@link ValueConverterRegistry}.

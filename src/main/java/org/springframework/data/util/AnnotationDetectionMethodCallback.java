@@ -18,8 +18,9 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -68,8 +69,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	/**
 	 * @return the method
 	 */
-	@Nullable
-	public Method getMethod() {
+	public @Nullable Method getMethod() {
 		return foundMethod;
 	}
 
@@ -93,8 +93,7 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	/**
 	 * @return the annotation
 	 */
-	@Nullable
-	public A getAnnotation() {
+	public @Nullable A getAnnotation() {
 		return annotation;
 	}
 
@@ -136,9 +135,8 @@ public class AnnotationDetectionMethodCallback<A extends Annotation> implements 
 	 * @return
 	 * @since 2.7
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T> T invoke(@Nullable Object target, Object... args) {
+	public <T> @Nullable T invoke(@Nullable Object target, Object... args) {
 
 		Method method = this.foundMethod;
 

@@ -18,12 +18,13 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.lang.NonNull;
 
 /**
  * SPI to implement store specific extension to the repository bean definition registration process.

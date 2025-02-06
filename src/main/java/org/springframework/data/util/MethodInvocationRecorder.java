@@ -18,19 +18,20 @@ package org.springframework.data.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -48,17 +49,17 @@ public class MethodInvocationRecorder {
 
 	public static PropertyNameDetectionStrategy DEFAULT = DefaultPropertyNameDetectionStrategy.INSTANCE;
 
-	private final Optional<RecordingMethodInterceptor> interceptor;
+	private final @Nullable RecordingMethodInterceptor interceptor;
 
 	/**
 	 * Creates a new {@link MethodInvocationRecorder}. For ad-hoc instantation prefer the static
 	 * {@link #forProxyOf(Class)}.
 	 */
 	private MethodInvocationRecorder() {
-		this(Optional.empty());
+		this(null);
 	}
 
-	private MethodInvocationRecorder(Optional<RecordingMethodInterceptor> interceptor) {
+	private MethodInvocationRecorder(@Nullable RecordingMethodInterceptor interceptor) {
 		this.interceptor = interceptor;
 	}
 
@@ -99,11 +100,16 @@ public class MethodInvocationRecorder {
 
 		T proxy = (T) proxyFactory.getProxy(type.getClassLoader());
 
-		return new Recorded<>(proxy, new MethodInvocationRecorder(Optional.ofNullable(interceptor)));
+		return new Recorded<>(proxy, new MethodInvocationRecorder(interceptor));
 	}
 
-	private Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
-		return interceptor.flatMap(it -> it.getPropertyPath(strategies));
+	private @Nullable String getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
+
+		if (interceptor != null) {
+			return interceptor.getPropertyPath(strategies);
+		}
+
+		return null;
 	}
 
 	private class RecordingMethodInterceptor implements org.aopalliance.intercept.MethodInterceptor {
@@ -112,9 +118,10 @@ public class MethodInvocationRecorder {
 
 		@Override
 		@SuppressWarnings("null")
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
+			@Nullable
 			Object[] arguments = invocation.getArguments();
 
 			if (ReflectionUtils.isObjectMethod(method)) {
@@ -131,7 +138,10 @@ public class MethodInvocationRecorder {
 				InvocationInformation information = registerInvocation(method, clazz);
 
 				Collection<Object> collection = CollectionFactory.createCollection(rawType, 1);
-				collection.add(information.getCurrentInstance());
+
+				if (information.getCurrentInstance() != null) {
+					collection.add(information.getCurrentInstance());
+				}
 
 				return collection;
 			}
@@ -142,7 +152,10 @@ public class MethodInvocationRecorder {
 				InvocationInformation information = registerInvocation(method, clazz);
 
 				Map<Object, Object> map = CollectionFactory.createMap(rawType, 1);
-				map.put("_key_", information.getCurrentInstance());
+
+				if (information.getCurrentInstance() != null) {
+					map.put("_key_", information.getCurrentInstance());
+				}
 
 				return map;
 			}
@@ -150,7 +163,7 @@ public class MethodInvocationRecorder {
 			return registerInvocation(method, rawType).getCurrentInstance();
 		}
 
-		private Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
+		private @Nullable String getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 			return this.information.getPropertyPath(strategies);
 		}
 
@@ -183,36 +196,36 @@ public class MethodInvocationRecorder {
 			return recorded.currentInstance;
 		}
 
-		Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
+		@Nullable
+		String getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 
 			Method invokedMethod = this.invokedMethod;
 
 			if (invokedMethod == null) {
-				return Optional.empty();
+				return null;
 			}
 
 			String propertyName = getPropertyName(invokedMethod, strategies);
 			Optional<String> next = recorded.getPropertyPath(strategies);
 
 			return Optionals.firstNonEmpty(() -> next.map(it -> propertyName.concat(".").concat(it)), //
-					() -> Optional.of(propertyName));
+					() -> Optional.of(propertyName)).orElse(null);
 		}
 
 		private static String getPropertyName(Method invokedMethod, List<PropertyNameDetectionStrategy> strategies) {
 
 			return strategies.stream() //
-					.map(it -> it.getPropertyName(invokedMethod)) //
+					.flatMap(it -> Stream.ofNullable(it.getPropertyName(invokedMethod))) //
 					.findFirst() //
-					.orElseThrow(() -> new IllegalArgumentException(
-							String.format("No property name found for method %s", invokedMethod)));
+					.orElseThrow(
+							() -> new IllegalArgumentException(String.format("No property name found for method %s", invokedMethod)));
 		}
 
 		public Recorded<?> getRecorded() {
 			return this.recorded;
 		}
 
-		@Nullable
-		public Method getInvokedMethod() {
+		public @Nullable Method getInvokedMethod() {
 			return this.invokedMethod;
 		}
 
@@ -299,14 +312,14 @@ public class MethodInvocationRecorder {
 
 			MethodInvocationRecorder recorder = this.recorder;
 
-			return recorder == null ? Optional.empty() : recorder.getPropertyPath(Arrays.asList(strategy));
+			return Optional.ofNullable(recorder == null ? null : recorder.getPropertyPath(List.of(strategy)));
 		}
 
 		public Optional<String> getPropertyPath(List<PropertyNameDetectionStrategy> strategies) {
 
 			MethodInvocationRecorder recorder = this.recorder;
 
-			return recorder == null ? Optional.empty() : recorder.getPropertyPath(strategies);
+			return Optional.ofNullable(recorder == null ? null : recorder.getPropertyPath(strategies));
 		}
 
 		/**

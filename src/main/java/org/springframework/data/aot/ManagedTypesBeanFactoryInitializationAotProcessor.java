@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -48,9 +48,9 @@ public class ManagedTypesBeanFactoryInitializationAotProcessor implements BeanFa
 	private static final Log logger = LogFactory.getLog(ManagedTypesBeanFactoryInitializationAotProcessor.class);
 
 	@Override
-	@Nullable
 	@Contract("_ -> null")
-	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
+	public @Nullable BeanFactoryInitializationAotContribution processAheadOfTime(
+			ConfigurableListableBeanFactory beanFactory) {
 
 		processManagedTypes(beanFactory);
 		return null;
@@ -82,12 +82,15 @@ public class ManagedTypesBeanFactoryInitializationAotProcessor implements BeanFa
 				}
 
 				Object value = potentiallyWrapToIterable(supplier.get());
+				String beanClassName = beanDefinition.getBeanClassName();
 
-				BeanDefinition beanDefinitionReplacement = newManagedTypeBeanDefinition(beanDefinition.getBeanClassName(),
-						value);
+				if (beanClassName != null) {
 
-				registry.removeBeanDefinition(beanName);
-				registry.registerBeanDefinition(beanName, beanDefinitionReplacement);
+					BeanDefinition beanDefinitionReplacement = newManagedTypeBeanDefinition(beanClassName, value);
+
+					registry.removeBeanDefinition(beanName);
+					registry.registerBeanDefinition(beanName, beanDefinitionReplacement);
+				}
 			}
 		}
 	}

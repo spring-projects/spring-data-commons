@@ -17,12 +17,13 @@ package org.springframework.data.repository.config;
 
 import java.util.Arrays;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.data.repository.init.Jackson2RepositoryPopulatorFactoryBean;
 import org.springframework.data.repository.init.UnmarshallerRepositoryPopulatorFactoryBean;
-import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 
 import org.w3c.dom.Element;

@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.util.Lazy;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -153,9 +154,8 @@ class MethodParameters {
 					orElseGet(super::getParameterName));
 		}
 
-		@Nullable
 		@Override
-		public String getParameterName() {
+		public @Nullable String getParameterName() {
 			return name.orElse(null);
 		}
 	}

@@ -17,10 +17,11 @@ package org.springframework.data.util;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -60,8 +61,7 @@ public abstract class BeanLookup {
 	 * @param beanFactory must not be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	private static <T> T lookupBean(Class<T> type, ListableBeanFactory beanFactory) {
+	private static <T> @Nullable T lookupBean(Class<T> type, ListableBeanFactory beanFactory) {
 
 		Map<String, T> names = beanFactory.getBeansOfType(type, false, false);
 

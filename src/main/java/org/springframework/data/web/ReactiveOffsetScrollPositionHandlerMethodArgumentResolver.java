@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.web.reactive.BindingContext;
@@ -40,7 +42,7 @@ public class ReactiveOffsetScrollPositionHandlerMethodArgumentResolver
 	}
 
 	@Override
-	public Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
+	public @Nullable Object resolveArgumentValue(MethodParameter parameter, BindingContext bindingContext,
 			ServerWebExchange exchange) {
 
 		List<String> offsetParameter = exchange.getRequest().getQueryParams().get(getOffsetParameter(parameter));

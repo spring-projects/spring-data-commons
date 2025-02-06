@@ -1,5 +1,5 @@
 /**
  * Service provider interfaces to extend the query execution mechanism.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.spel.spi;

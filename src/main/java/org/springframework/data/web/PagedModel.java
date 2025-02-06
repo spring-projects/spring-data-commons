@@ -18,8 +18,9 @@ package org.springframework.data.web;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -56,9 +57,8 @@ public class PagedModel<T> {
 		return page.getContent();
 	}
 
-	@Nullable
 	@JsonProperty("page")
-	public PageMetadata getMetadata() {
+	public @Nullable PageMetadata getMetadata() {
 		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(),
 				page.getTotalPages());
 	}

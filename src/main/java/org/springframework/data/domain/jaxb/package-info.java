@@ -10,7 +10,7 @@
 		@XmlJavaTypeAdapter(value = org.springframework.data.domain.jaxb.PageableAdapter.class, type = Pageable.class),
 		@XmlJavaTypeAdapter(value = org.springframework.data.domain.jaxb.SortAdapter.class, type = Sort.class),
 		@XmlJavaTypeAdapter(value = org.springframework.data.domain.jaxb.PageAdapter.class, type = Page.class) })
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.domain.jaxb;
 
 import jakarta.xml.bind.annotation.XmlNs;

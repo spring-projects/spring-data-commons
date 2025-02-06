@@ -22,9 +22,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -608,7 +609,7 @@ public interface ExampleMatcher {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	class PropertySpecifier {
+	static class PropertySpecifier {
 
 		private final String path;
 		private final @Nullable StringMatcher stringMatcher;
@@ -692,16 +693,14 @@ public interface ExampleMatcher {
 		 *
 		 * @return can be {@literal null}.
 		 */
-		@Nullable
-		public StringMatcher getStringMatcher() {
+		public @Nullable StringMatcher getStringMatcher() {
 			return stringMatcher;
 		}
 
 		/**
 		 * @return {@literal null} if not set.
 		 */
-		@Nullable
-		public Boolean getIgnoreCase() {
+		public @Nullable Boolean getIgnoreCase() {
 			return ignoreCase;
 		}
 
@@ -711,7 +710,7 @@ public interface ExampleMatcher {
 		 * @return never {@literal null}.
 		 */
 		public PropertyValueTransformer getPropertyValueTransformer() {
-			return valueTransformer == null ? NoOpPropertyValueTransformer.INSTANCE : valueTransformer;
+			return valueTransformer;
 		}
 
 		/**
@@ -772,7 +771,7 @@ public interface ExampleMatcher {
 		private final Map<String, PropertySpecifier> propertySpecifiers;
 
 		PropertySpecifiers() {
-			this. propertySpecifiers = new LinkedHashMap<>();
+			this.propertySpecifiers = new LinkedHashMap<>();
 		}
 
 		PropertySpecifiers(PropertySpecifiers propertySpecifiers) {
@@ -789,8 +788,19 @@ public interface ExampleMatcher {
 			return propertySpecifiers.containsKey(path);
 		}
 
-		public PropertySpecifier getForPath(String path) {
+		public @Nullable PropertySpecifier getForPath(String path) {
 			return propertySpecifiers.get(path);
+		}
+
+		public PropertySpecifier getRequiredForPath(String path) {
+
+			PropertySpecifier specifier = getForPath(path);
+
+			if (specifier == null) {
+				throw new IllegalArgumentException("No PropertySpecifier found for path '%s'".formatted(path));
+			}
+
+			return specifier;
 		}
 
 		public boolean hasValues() {

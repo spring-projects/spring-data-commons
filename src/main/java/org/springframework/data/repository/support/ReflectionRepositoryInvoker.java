@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
@@ -32,7 +34,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -194,9 +195,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return result;
 	}
 
-	@Nullable
 	@Contract("null, _ -> null")
-	private Object convert(@Nullable Object value, MethodParameter parameter) {
+	private @Nullable Object convert(@Nullable Object value, MethodParameter parameter) {
 
 		if (value == null) {
 			return value;
@@ -216,13 +216,12 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param arguments
 	 * @return
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	private <T> T invoke(Method method, Object... arguments) {
+	private <T> @Nullable T invoke(Method method, @Nullable Object... arguments) {
 		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
 	}
 
-	private <T> T invokeForNonNullResult(Method method, Object... arguments) {
+	private <T> T invokeForNonNullResult(Method method, @Nullable Object... arguments) {
 
 		T result = invoke(method, arguments);
 
@@ -304,8 +303,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	private static Object unwrapSingleElement(@Nullable List<? extends Object> source) {
+	private static @Nullable Object unwrapSingleElement(@Nullable List<? extends Object> source) {
 		return source == null ? null : source.size() == 1 ? source.get(0) : source;
 	}
 }

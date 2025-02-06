@@ -19,7 +19,7 @@ import java.io.Serial;
 import java.util.List;
 import java.util.function.Function;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Default implementation of {@link Slice}.

@@ -15,9 +15,10 @@
  */
 package org.springframework.data.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.AccessOptions.GetOptions;
 import org.springframework.data.mapping.AccessOptions.SetOptions;
-import org.springframework.lang.Nullable;
 
 /**
  * Extension of {@link PersistentPropertyAccessor} that is also able to obtain and set values for

@@ -24,6 +24,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -37,8 +40,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.config.ConfigurationUtils;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -333,9 +334,8 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	 *          configured as String instead of a Class instance.
 	 * @return the bean name generator or {@literal null} if not configured.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	private static BeanNameGenerator getConfiguredBeanNameGenerator(AnnotationMetadata metadata,
+	private static @Nullable BeanNameGenerator getConfiguredBeanNameGenerator(AnnotationMetadata metadata,
 		Class<? extends Annotation> annotation, ClassLoader beanClassLoader) {
 
 		Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(annotation.getName());

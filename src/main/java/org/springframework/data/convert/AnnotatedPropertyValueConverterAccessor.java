@@ -15,8 +15,9 @@
  */
 package org.springframework.data.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.util.Assert;
 class AnnotatedPropertyValueConverterAccessor {
 
 	private final String name;
-	private final ValueConverter annotation;
+	private final @Nullable ValueConverter annotation;
 
 	public AnnotatedPropertyValueConverterAccessor(PersistentProperty<?> property) {
 
@@ -45,9 +46,8 @@ class AnnotatedPropertyValueConverterAccessor {
 	 * @return {@literal null} if none defined. Check {@link #hasValueConverter()} to check if the annotation is present
 	 *         at all.
 	 */
-	@Nullable
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
+	public @Nullable Class<? extends PropertyValueConverter<?, ?, ? extends ValueConversionContext<? extends PersistentProperty<?>>>> getValueConverterType() {
 		return annotation != null ? (Class) annotation.value() : null;
 	}
 

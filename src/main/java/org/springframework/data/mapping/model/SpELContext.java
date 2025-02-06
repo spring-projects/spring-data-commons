@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.spel.EvaluationContextProvider;
@@ -23,7 +25,6 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

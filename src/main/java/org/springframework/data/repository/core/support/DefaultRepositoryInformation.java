@@ -20,11 +20,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -79,9 +80,8 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 		return cacheAndReturn(method, baseComposition.findMethod(method).orElse(method));
 	}
 
-	@Nullable
 	@Contract("_, null -> null; _, !null -> !null")
-	private Method cacheAndReturn(Method key, @Nullable Method value) {
+	private @Nullable Method cacheAndReturn(Method key, @Nullable Method value) {
 
 		if (value != null) {
 			ReflectionUtils.makeAccessible(value);

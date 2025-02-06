@@ -29,6 +29,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
@@ -37,7 +39,6 @@ import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -266,8 +267,7 @@ public class RepositoryComposition {
 	/**
 	 * Invoke a method on the repository by routing the invocation to the appropriate {@link RepositoryFragment}.
 	 */
-	@Nullable
-	public Object invoke(Method method, Object... args) throws Throwable {
+	public @Nullable Object invoke(Method method, Object... args) throws Throwable {
 		return invoke(NoOpRepositoryInvocationMulticaster.INSTANCE, method, args);
 	}
 
@@ -361,8 +361,8 @@ public class RepositoryComposition {
 	public BiFunction<Method, Object[], Object[]> getArgumentConverter() {
 		return this.argumentConverter;
 	}
-	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
+	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
 
@@ -426,6 +426,11 @@ public class RepositoryComposition {
 			return new RepositoryFragments(new ArrayList<>(fragments));
 		}
 
+		@Override
+		public boolean isEmpty() {
+			return this.fragments.isEmpty();
+		}
+
 		/**
 		 * Create new {@link RepositoryFragments} from the current content appending {@link RepositoryFragment}.
 		 *
@@ -455,6 +460,10 @@ public class RepositoryComposition {
 
 			Assert.notNull(fragments, "RepositoryFragments must not be null");
 
+			if (fragments.isEmpty()) {
+				return this;
+			}
+
 			return concat(stream(), fragments.stream());
 		}
 
@@ -477,8 +486,9 @@ public class RepositoryComposition {
 		/**
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 */
-		@Nullable
-		public Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
+		@Deprecated(forRemoval = true)
+		@SuppressWarnings("NullAway")
+		public @Nullable Object invoke(Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
 			return invoke(null, NoOpRepositoryInvocationMulticaster.INSTANCE, invokedMethod, methodToCall, args);
 		}
 
@@ -486,8 +496,8 @@ public class RepositoryComposition {
 		 * Invoke {@link Method} by resolving the fragment that implements a suitable method.
 		 */
 		@Nullable
-		Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster listener, Method invokedMethod,
-				Method methodToCall, Object[] args) throws Throwable {
+		Object invoke(@Nullable Class<?> repositoryInterface, RepositoryInvocationMulticaster listener,
+				Method invokedMethod, Method methodToCall, Object[] args) throws Throwable {
 
 			RepositoryFragment<?> fragment = fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 			Optional<?> optional = fragment.getImplementation();
@@ -505,6 +515,8 @@ public class RepositoryComposition {
 				invocationMetadataCache.put(invokedMethod, repositoryMethodInvoker);
 			}
 
+			Assert.notNull(repositoryInterface, "Repository interface must not be null");
+
 			return repositoryMethodInvoker.invoke(repositoryInterface, listener, args);
 		}
 
@@ -516,8 +528,7 @@ public class RepositoryComposition {
 					.orElseThrow(() -> new IllegalArgumentException(String.format("No fragment found for method %s", key)));
 		}
 
-		@Nullable
-		private static Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
+		private static @Nullable Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
 				Supplier<Stream<Method>> methodStreamSupplier) {
 
 			for (MethodLookup.MethodPredicate methodPredicate : lookup.getLookups()) {

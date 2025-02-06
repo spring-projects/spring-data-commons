@@ -29,14 +29,16 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.lang.Contract;
 import org.springframework.lang.NonNullApi;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
 /**
@@ -49,7 +51,7 @@ import org.springframework.util.MultiValueMap;
  * package rule. Subpackages do not inherit nullability rules and must be annotated themself.
  *
  * <pre class="code">
- * &#64;org.springframework.lang.NonNullApi
+ * &#64;org.jspecify.annotations.NullMarked
  * package com.example;
  * </pre>
  *
@@ -250,26 +252,28 @@ public abstract class NullableUtils {
 
 		if (annotation.annotationType().getName().equals(metaAnnotationName)) {
 
-			Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
-
+			Map<String, @Nullable Object> attributes = AnnotationUtils.getAnnotationAttributes(annotation);
 			return !attributes.isEmpty() && filter.test((T) attributes.get(attribute));
 		}
 
-		MultiValueMap<String, Object> attributes = AnnotatedElementUtils
+		MultiValueMap<String, @Nullable Object> attributes = AnnotatedElementUtils
 				.getAllAnnotationAttributes(annotation.annotationType(), metaAnnotationName);
 
-		if (attributes == null || attributes.isEmpty()) {
+		if (CollectionUtils.isEmpty(attributes)) {
 			return false;
 		}
 
-		List<Object> elementTypes = attributes.get(attribute);
+		List<@Nullable Object> elementTypes = attributes.get(attribute);
 
-		for (Object value : elementTypes) {
+		if (elementTypes != null) {
+			for (Object value : elementTypes) {
 
-			if (filter.test((T) value)) {
-				return true;
+				if (filter.test((T) value)) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 

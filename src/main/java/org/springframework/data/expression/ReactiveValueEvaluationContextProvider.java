@@ -17,8 +17,9 @@ package org.springframework.data.expression;
 
 import reactor.core.publisher.Mono;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.lang.Nullable;
 
 /**
  * Reactive extension to {@link ValueEvaluationContext} for obtaining a {@link ValueEvaluationContext} that participates

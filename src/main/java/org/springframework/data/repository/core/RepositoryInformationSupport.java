@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.repository.Repository;
@@ -28,7 +30,6 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

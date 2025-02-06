@@ -18,7 +18,8 @@ package org.springframework.data.mapping;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 
 /**
@@ -87,6 +88,7 @@ public final class Alias {
 	 * @param other must not be {@literal null}.
 	 * @return {@literal true} if this value is present but different from the {@code other} value.
 	 */
+	@SuppressWarnings("NullAway")
 	public boolean isPresentButDifferent(Alias other) {
 
 		Assert.notNull(other, "Other alias must not be null");
@@ -100,8 +102,9 @@ public final class Alias {
 	 * @param that the other value, may be {@literal null}.
 	 * @return {@literal true} if this alias has a value and it equals to {@code that}.
 	 */
+	@SuppressWarnings("NullAway")
 	public boolean hasValue(Object that) {
-		return value != null && value.equals(that);
+		return isPresent() && value.equals(that);
 	}
 
 	/**
@@ -110,6 +113,7 @@ public final class Alias {
 	 * @param other the other {@link Alias}
 	 * @return {@literal true} if there's an alias value present and its equal to the one in the given {@link Alias}.
 	 */
+	@SuppressWarnings("NullAway")
 	public boolean hasSamePresentValueAs(Alias other) {
 		return isPresent() && value.equals(other.value);
 	}
@@ -185,6 +189,7 @@ public final class Alias {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public String toString() {
 		return isPresent() ? value.toString() : "NONE";
 	}

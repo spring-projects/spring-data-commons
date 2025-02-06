@@ -17,11 +17,12 @@ package org.springframework.data.domain.jaxb;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
 import org.springframework.lang.Contract;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 /**
  * {@link XmlAdapter} to convert {@link Sort} instances into {@link SortDto} instances and vice versa.
@@ -32,10 +33,9 @@ public class SortAdapter extends XmlAdapter<SortDto, Sort> {
 
 	public static final SortAdapter INSTANCE = new SortAdapter();
 
-	@Nullable
 	@Contract("null -> null; !null -> !null")
 	@Override
-	public SortDto marshal(@Nullable Sort source) {
+	public @Nullable SortDto marshal(@Nullable Sort source) {
 
 		if (source == null) {
 			return null;

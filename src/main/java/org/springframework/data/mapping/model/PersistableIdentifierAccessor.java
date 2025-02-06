@@ -15,10 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.TargetAwareIdentifierAccessor;
-import org.springframework.lang.Nullable;
 
 /**
  * {@link IdentifierAccessor} that invokes {@link Persistable#getId()}.

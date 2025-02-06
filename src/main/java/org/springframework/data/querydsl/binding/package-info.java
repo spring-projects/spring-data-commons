@@ -1,5 +1,5 @@
 /**
  * Base classes to implement CDI support for repositories.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.querydsl.binding;

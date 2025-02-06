@@ -25,8 +25,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
-import org.springframework.lang.Nullable;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.HeuristicCompletionException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -102,7 +102,9 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		this.transactionManagers = asList(transactionManagers);
 	}
 
-	public MultiTransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
+	@SuppressWarnings("NullAway")
+	@Override
+	public TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
 
 		MultiTransactionStatus mts = new MultiTransactionStatus(transactionManagers.get(0));
 
@@ -145,6 +147,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		return mts;
 	}
 
+	@Override
 	public void commit(TransactionStatus status) throws TransactionException {
 
 		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
@@ -189,6 +192,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		}
 	}
 
+	@Override
 	public void rollback(TransactionStatus status) throws TransactionException {
 
 		Exception rollbackException = null;

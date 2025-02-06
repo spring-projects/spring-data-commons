@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
@@ -56,7 +58,6 @@ import org.springframework.data.mapping.model.KotlinCopyMethod.KotlinCopyByPrope
 import org.springframework.data.mapping.model.KotlinValueUtils.ValueBoxing;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentLruCache;
@@ -84,7 +85,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	private volatile Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> propertyAccessorClasses = new HashMap<>(
 			32);
 
-	private final ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
+	private final ConcurrentLruCache<PersistentProperty<?>, Function<@Nullable Object, @Nullable Object>> wrapperCache = new ConcurrentLruCache<>(
 			256, KotlinValueBoxingAdapter::getWrapper);
 
 	@Override
@@ -834,7 +835,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 			for (PersistentProperty<?> property : persistentProperties) {
 
-				mv.visitLabel(propertyStackMap.get(property.getName()).label);
+				PropertyStackAddress propertyStackAddress = propertyStackMap.get(property.getName());
+				if (propertyStackAddress == null) {
+					throw new IllegalStateException(
+							"No PropertyStackAddress found for property %s".formatted(property.getName()));
+				}
+				mv.visitLabel(propertyStackAddress.label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
 				if (property.getGetter() != null || property.getField() != null) {
@@ -996,7 +1002,15 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitLookupSwitchInsn(dfltLabel, hashes, switchJumpLabels);
 
 			for (PersistentProperty<?> property : persistentProperties) {
-				mv.visitLabel(propertyStackMap.get(property.getName()).label);
+
+				PropertyStackAddress propertyStackAddress = propertyStackMap.get(property.getName());
+
+				if (propertyStackAddress == null) {
+					throw new IllegalStateException(
+							"No PropertyStackAddress found for property %s".formatted(property.getName()));
+				}
+
+				mv.visitLabel(propertyStackAddress.label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
 				if (supportsMutation(property)) {
@@ -1439,8 +1453,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * @param <T>
 	 * @since 3.2
 	 */
-	record KotlinValueBoxingAdapter<T> (PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
-			ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache)
+	record KotlinValueBoxingAdapter<T>(PersistentEntity<?, ?> entity, PersistentPropertyAccessor<T> delegate,
+			ConcurrentLruCache<PersistentProperty<?>, Function<@Nullable Object, @Nullable Object>> wrapperCache)
 			implements
 				PersistentPropertyAccessor<T> {
 
@@ -1457,7 +1471,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 *         {@link Function#identity()} if wrapping is not necessary.
 		 * @see KotlinValueUtils#getCopyValueHierarchy(KParameter)
 		 */
-		static Function<Object, Object> getWrapper(PersistentProperty<?> property) {
+		static Function<@Nullable Object, @Nullable Object> getWrapper(PersistentProperty<?> property) {
 
 			Optional<KotlinCopyMethod> kotlinCopyMethod = KotlinCopyMethod.findCopyMethod(property.getOwner().getType())
 					.filter(it -> it.supportsProperty(property));
@@ -1486,7 +1500,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 
 		@Override
-		public Object getProperty(PersistentProperty<?> property) {
+		public @Nullable Object getProperty(PersistentProperty<?> property) {
 			return delegate.getProperty(property);
 		}
 

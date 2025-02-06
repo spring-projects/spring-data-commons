@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +39,6 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
@@ -54,7 +55,7 @@ public class SlicedResourcesAssembler<T>
 		implements RepresentationModelAssembler<Slice<T>, SlicedModel<EntityModel<T>>> {
 
 	private final HateoasPageableHandlerMethodArgumentResolver pageableResolver;
-	private final Optional<UriComponents> baseUri;
+	private final @Nullable UriComponents baseUri;
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	private boolean forceFirstRel = false;
@@ -70,11 +71,11 @@ public class SlicedResourcesAssembler<T>
 	 */
 	public SlicedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
 			@Nullable UriComponents baseUri) {
-		this(resolver, Optional.ofNullable(baseUri), null);
+		this(resolver, baseUri, null);
 	}
 
 	private SlicedResourcesAssembler(@Nullable HateoasPageableHandlerMethodArgumentResolver resolver,
-			@Nullable Optional<UriComponents> baseUri, @Nullable MethodParameter parameter) {
+			@Nullable UriComponents baseUri, @Nullable MethodParameter parameter) {
 
 		this.pageableResolver = resolver == null ? new HateoasPageableHandlerMethodArgumentResolver() : resolver;
 		this.baseUri = baseUri;
@@ -131,7 +132,7 @@ public class SlicedResourcesAssembler<T>
 	 */
 	public <R extends RepresentationModel<?>> SlicedModel<R> toModel(Slice<T> slice,
 			RepresentationModelAssembler<T, R> assembler) {
-		return createModel(slice, assembler, Optional.empty());
+		return createModel(slice, assembler, null);
 	}
 
 	/**
@@ -146,7 +147,7 @@ public class SlicedResourcesAssembler<T>
 	 */
 	public <R extends RepresentationModel<?>> SlicedModel<R> toModel(Slice<T> slice,
 			RepresentationModelAssembler<T, R> assembler, Link link) {
-		return createModel(slice, assembler, Optional.of(link));
+		return createModel(slice, assembler, link);
 	}
 
 	/**
@@ -157,7 +158,7 @@ public class SlicedResourcesAssembler<T>
 	 * @return
 	 */
 	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type) {
-		return toEmptyModel(slice, type, Optional.empty());
+		return toEmptyModel(slice, type, (Link) null);
 	}
 
 	/**
@@ -168,11 +169,7 @@ public class SlicedResourcesAssembler<T>
 	 * @param link must not be {@literal null}.
 	 * @return
 	 */
-	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, Link link) {
-		return toEmptyModel(slice, type, Optional.of(link));
-	}
-
-	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, Optional<Link> link) {
+	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, @Nullable Link link) {
 
 		Assert.notNull(slice, "Slice must not be null");
 		Assert.isTrue(!slice.hasContent(), "Slice must not have any content");
@@ -185,6 +182,12 @@ public class SlicedResourcesAssembler<T>
 		List<EmbeddedWrapper> embedded = Collections.singletonList(wrapper);
 
 		return addPaginationLinks(SlicedModel.of(embedded, metadata), slice, link);
+
+	}
+
+	@Deprecated
+	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, Optional<Link> link) {
+		return toEmptyModel(slice, type, link.orElse(null));
 	}
 
 	/**
@@ -205,7 +208,7 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	private <S, R extends RepresentationModel<?>> SlicedModel<R> createModel(Slice<S> slice,
-			RepresentationModelAssembler<S, R> assembler, Optional<Link> link) {
+			RepresentationModelAssembler<S, R> assembler, @Nullable Link link) {
 		Assert.notNull(slice, "Slice must not be null");
 		Assert.notNull(assembler, "ResourceAssembler must not be null");
 
@@ -220,7 +223,8 @@ public class SlicedResourcesAssembler<T>
 		return addPaginationLinks(resource, slice, link);
 	}
 
-	private <R> SlicedModel<R> addPaginationLinks(SlicedModel<R> resources, Slice<?> slice, Optional<Link> link) {
+	private <R> SlicedModel<R> addPaginationLinks(SlicedModel<R> resources, Slice<?> slice, @Nullable Link link) {
+
 		UriTemplate base = getUriTemplate(link);
 
 		boolean isNavigable = slice.hasPrevious() || slice.hasNext();
@@ -230,8 +234,7 @@ public class SlicedResourcesAssembler<T>
 					createLink(base, PageRequest.of(0, slice.getSize(), slice.getSort()), IanaLinkRelations.FIRST));
 		}
 
-		Link selfLink = link.map(Link::withSelfRel)
-				.orElseGet(() -> createLink(base, slice.getPageable(), IanaLinkRelations.SELF));
+		Link selfLink = link != null ? link.withSelfRel() : createLink(base, slice.getPageable(), IanaLinkRelations.SELF);
 
 		resources.add(selfLink);
 
@@ -252,8 +255,8 @@ public class SlicedResourcesAssembler<T>
 	 *
 	 * @return
 	 */
-	private UriTemplate getUriTemplate(Optional<Link> baseLink) {
-		return UriTemplate.of(baseLink.map(Link::getHref).orElseGet(this::baseUriOrCurrentRequest));
+	private UriTemplate getUriTemplate(@Nullable Link baseLink) {
+		return UriTemplate.of(baseLink != null ? baseLink.getHref() : baseUriOrCurrentRequest());
 	}
 
 	/**
@@ -266,6 +269,7 @@ public class SlicedResourcesAssembler<T>
 	 * @return
 	 */
 	private Link createLink(UriTemplate base, Pageable pageable, LinkRelation relation) {
+
 		UriComponentsBuilder builder = fromUri(base.expand());
 		pageableResolver.enhance(builder, parameter, pageable);
 
@@ -279,6 +283,7 @@ public class SlicedResourcesAssembler<T>
 	 * @return
 	 */
 	private SliceMetadata asSliceMetadata(Slice<?> slice) {
+
 		Assert.notNull(slice, "Slice must not be null");
 
 		int number = pageableResolver.isOneIndexedParameters() ? slice.getNumber() + 1 : slice.getNumber();
@@ -287,7 +292,7 @@ public class SlicedResourcesAssembler<T>
 	}
 
 	private String baseUriOrCurrentRequest() {
-		return baseUri.map(Object::toString).orElseGet(SlicedResourcesAssembler::currentRequest);
+		return baseUri != null ? baseUri.toString() : SlicedResourcesAssembler.currentRequest();
 	}
 
 	private static String currentRequest() {

@@ -17,10 +17,11 @@ package org.springframework.data.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -59,8 +60,7 @@ public class QTypeContributor {
 		}
 	}
 
-	@Nullable
-	private static Class<?> getEntityPathType(@Nullable ClassLoader classLoader) throws ClassNotFoundException {
+	private @Nullable static Class<?> getEntityPathType(@Nullable ClassLoader classLoader) throws ClassNotFoundException {
 
 		String entityPathClassName = "com.querydsl.core.types.EntityPath";
 		if (!ClassUtils.isPresent(entityPathClassName, classLoader)) {

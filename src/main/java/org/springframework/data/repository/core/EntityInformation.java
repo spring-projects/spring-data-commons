@@ -15,7 +15,8 @@
  */
 package org.springframework.data.repository.core;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 
 /**

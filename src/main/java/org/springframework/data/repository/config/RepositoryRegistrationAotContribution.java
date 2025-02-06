@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
@@ -48,7 +50,6 @@ import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -63,25 +64,9 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
 
-	/**
-	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
-	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
-	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
-	 *          which this contribution was created.
-	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
-	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
-	 * @see RepositoryRegistrationAotProcessor
-	 */
-	public static RepositoryRegistrationAotContribution fromProcessor(
-			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+	private @Nullable AotRepositoryContext repositoryContext;
 
-		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
-	}
-
-	private AotRepositoryContext repositoryContext;
-
-	private BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
+	private @Nullable BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
 
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
@@ -100,6 +85,21 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		Assert.notNull(repositoryRegistrationAotProcessor, "RepositoryRegistrationAotProcessor must not be null");
 
 		this.repositoryRegistrationAotProcessor = repositoryRegistrationAotProcessor;
+	}
+
+	/**
+	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
+	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
+	 *
+	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
+	 *          which this contribution was created.
+	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
+	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
+	 * @see RepositoryRegistrationAotProcessor
+	 */
+	public static RepositoryRegistrationAotContribution fromProcessor(
+			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
 	}
 
 	protected ConfigurableListableBeanFactory getBeanFactory() {
@@ -146,6 +146,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		RepositoryConfiguration<?> repositoryMetadata = getRepositoryRegistrationAotProcessor()
 				.getRepositoryMetadata(repositoryBean);
+
+		Assert.state(repositoryMetadata != null, "The RepositoryConfiguration for the repository must not be null");
 
 		this.repositoryContext = buildAotRepositoryContext(repositoryBean, repositoryMetadata);
 
@@ -212,6 +214,9 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	@Override
 	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
+
+		Assert.state(this.repositoryContext != null,
+				"RepositoryContext cannot be null. Make sure to initialize this class with forBean(…).");
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
 		getModuleContribution().ifPresent(it -> it.accept(getRepositoryContext(), generationContext));

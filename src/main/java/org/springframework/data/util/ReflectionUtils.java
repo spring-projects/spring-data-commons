@@ -28,12 +28,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils.FieldFilter;
@@ -168,8 +168,7 @@ public final class ReflectionUtils {
 	 * @param filter must not be {@literal null}.
 	 * @return the field matching the filter or {@literal null} in case no field could be found.
 	 */
-	@Nullable
-	public static Field findField(Class<?> type, FieldFilter filter) {
+	public @Nullable static Field findField(Class<?> type, FieldFilter filter) {
 
 		return findField(type, new DescribedFieldFilter() {
 
@@ -195,8 +194,7 @@ public final class ReflectionUtils {
 	 * @return the field matching the given {@link DescribedFieldFilter} or {@literal null} if none found.
 	 * @throws IllegalStateException in case more than one matching field is found
 	 */
-	@Nullable
-	public static Field findField(Class<?> type, DescribedFieldFilter filter) {
+	public @Nullable static Field findField(Class<?> type, DescribedFieldFilter filter) {
 		return findField(type, filter, true);
 	}
 
@@ -210,8 +208,7 @@ public final class ReflectionUtils {
 	 * @return the field matching the given {@link DescribedFieldFilter} or {@literal null} if none found.
 	 * @throws IllegalStateException if enforceUniqueness is true and more than one matching field is found
 	 */
-	@Nullable
-	public static Field findField(Class<?> type, DescribedFieldFilter filter, boolean enforceUniqueness) {
+	public @Nullable static Field findField(Class<?> type, DescribedFieldFilter filter, boolean enforceUniqueness) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(filter, "Filter must not be null");
@@ -284,9 +281,8 @@ public final class ReflectionUtils {
 	 * @param constructorArguments must not be {@literal null}.
 	 * @return a {@link Constructor} that is compatible with the given arguments.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	public static <T> Constructor<T> findConstructor(Class<T> type, Object... constructorArguments) {
+	public static <T> @Nullable Constructor<T> findConstructor(Class<T> type, Object... constructorArguments) {
 
 		Assert.notNull(type, "Target type must not be null");
 		Assert.notNull(constructorArguments, "Constructor arguments must not be null");
@@ -391,8 +387,7 @@ public final class ReflectionUtils {
 	 * @return the required method.
 	 * @since 3.5
 	 */
-	@Nullable
-	public static Method findMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
+	public static @Nullable Method findMethod(Class<?> type, String name, ResolvableType... parameterTypes) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.hasText(name, "Name must not be null or empty");

@@ -15,11 +15,12 @@
  */
 package org.springframework.data.web;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.BindingContext;

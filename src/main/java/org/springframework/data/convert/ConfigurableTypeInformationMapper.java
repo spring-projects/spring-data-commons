@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -71,9 +72,8 @@ public class ConfigurableTypeInformationMapper implements TypeInformationMapper 
 		return typeToAlias.getOrDefault(type, Alias.NONE);
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> resolveTypeFrom(Alias alias) {
+	public @Nullable TypeInformation<?> resolveTypeFrom(Alias alias) {
 		return aliasToType.get(alias);
 	}
 }

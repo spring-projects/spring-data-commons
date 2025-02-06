@@ -19,11 +19,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -69,9 +70,8 @@ public class QuerydslPredicateArgumentResolver extends QuerydslPredicateArgument
 		super(factory, conversionService);
 	}
 
-	@Nullable
 	@Override
-	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+	public @Nullable Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		MultiValueMap<String, String> queryParameters = getQueryParameters(webRequest);

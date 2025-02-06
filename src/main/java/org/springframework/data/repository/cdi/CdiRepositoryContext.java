@@ -20,6 +20,8 @@ import jakarta.enterprise.inject.UnsatisfiedResolutionException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
@@ -34,7 +36,6 @@ import org.springframework.data.repository.config.ImplementationLookupConfigurat
 import org.springframework.data.repository.config.RepositoryFragmentConfiguration;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -151,8 +152,7 @@ public class CdiRepositoryContext {
 		return beanDefinition.map(bd -> new RepositoryFragmentConfiguration(fragmentInterfaceName, bd));
 	}
 
-	@Nullable
-	private Class<?> loadBeanClass(AbstractBeanDefinition definition) {
+	private @Nullable Class<?> loadBeanClass(AbstractBeanDefinition definition) {
 
 		String beanClassName = definition.getBeanClassName();
 

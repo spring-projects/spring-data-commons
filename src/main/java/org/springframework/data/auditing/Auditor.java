@@ -17,7 +17,8 @@ package org.springframework.data.auditing;
 
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.ObjectUtils;
 
 /**

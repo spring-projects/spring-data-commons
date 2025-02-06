@@ -38,6 +38,7 @@ record PlaceholderExpression(String expression) implements ValueExpression {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public String evaluate(ValueEvaluationContext context) {
 
 		Environment environment = context.getEnvironment();
