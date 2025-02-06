@@ -20,7 +20,6 @@ import java.io.Serial;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 

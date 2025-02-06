@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
@@ -33,7 +35,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 
 /**
  * Fluent interface to define and run a query along with projection and sorting and. Instances of {@link FluentQuery}

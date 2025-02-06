@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +74,6 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.sample.User;
-import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;

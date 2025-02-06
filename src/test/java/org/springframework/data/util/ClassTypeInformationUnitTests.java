@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.aopalliance.aop.Advice;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.SpringProxy;
@@ -35,7 +36,6 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopConfigException;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.Person;
-import org.springframework.lang.Nullable;
 
 /**
  * Unit tests for {@link ClassTypeInformation}.

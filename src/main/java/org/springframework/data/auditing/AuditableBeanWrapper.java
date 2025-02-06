@@ -18,8 +18,9 @@ package org.springframework.data.auditing;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 
 /**
  * Interface to abstract the ways setting the auditing information can be implemented.

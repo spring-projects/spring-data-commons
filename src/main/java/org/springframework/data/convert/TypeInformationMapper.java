@@ -15,9 +15,10 @@
  */
 package org.springframework.data.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * Interface to abstract the mapping from a type alias to the actual type.

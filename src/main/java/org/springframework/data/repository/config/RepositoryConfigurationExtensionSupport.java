@@ -15,8 +15,7 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.GENERATED_BEAN_NAME_SEPARATOR;
-import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.generateBeanName;
+import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -28,6 +27,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -38,7 +39,6 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

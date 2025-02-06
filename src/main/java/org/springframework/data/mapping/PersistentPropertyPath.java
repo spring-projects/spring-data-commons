@@ -15,9 +15,10 @@
  */
 package org.springframework.data.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 
 /**
  * Abstraction of a path of {@link PersistentProperty}s.

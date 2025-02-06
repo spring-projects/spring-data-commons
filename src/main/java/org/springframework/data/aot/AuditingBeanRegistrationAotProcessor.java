@@ -15,6 +15,8 @@
  */
 package org.springframework.data.aot;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
@@ -26,7 +28,6 @@ import org.springframework.core.DecoratingProxy;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.data.util.ReactiveWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**

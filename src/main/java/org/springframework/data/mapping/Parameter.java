@@ -18,11 +18,12 @@ package org.springframework.data.mapping;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -81,8 +82,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		this.hasExpression = Lazy.of(() -> StringUtils.hasText(getValueExpression()));
 	}
 
-	@Nullable
-	private static String getValue(MergedAnnotations annotations) {
+	private static @Nullable String getValue(MergedAnnotations annotations) {
 
 		return annotations.get(Value.class) //
 				.getValue("value", String.class) //
@@ -96,8 +96,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 * @return the name of the parameter.
 	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
-	@Nullable
-	public String getName() {
+	public @Nullable String getName() {
 		return name;
 	}
 
@@ -184,7 +183,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 * @return the expression to be used when looking up a source data structure.
 	 * @since 3.3
 	 */
-	@SuppressWarnings("DataFlowIssue")
+	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
 	public String getRequiredValueExpression() {
 
 		if (!hasValueExpression()) {

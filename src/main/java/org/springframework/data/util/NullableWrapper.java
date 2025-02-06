@@ -15,8 +15,9 @@
  */
 package org.springframework.data.util;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.Nullable;
 
 /**
  * Simple value object to wrap a nullable delegate. Used to be able to write {@link Converter} implementations that
@@ -57,8 +58,7 @@ public class NullableWrapper {
 	 *
 	 * @return the value can be {@literal null}.
 	 */
-	@Nullable
-	public Object getValue() {
+	public @Nullable Object getValue() {
 		return value;
 	}
 }

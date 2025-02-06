@@ -28,11 +28,12 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.ObjectUtils;
@@ -110,9 +111,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		});
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getProperty(String name) {
+	public @Nullable TypeInformation<?> getProperty(String name) {
 
 		var separatorIndex = name.indexOf('.');
 
@@ -138,14 +138,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return isCollectionLike.get();
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getComponentType() {
+	public @Nullable TypeInformation<?> getComponentType() {
 		return componentType.orElse(null);
 	}
 
-	@Nullable
-	protected TypeInformation<?> doGetComponentType() {
+	protected @Nullable TypeInformation<?> doGetComponentType() {
 
 		if (resolvableType.isArray()) {
 			return TypeInformation.of(resolvableType.getComponentType());
@@ -179,14 +177,12 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return isMap.get();
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getMapValueType() {
+	public @Nullable TypeInformation<?> getMapValueType() {
 		return valueType.orElse(null);
 	}
 
-	@Nullable
-	protected TypeInformation<?> doGetMapValueType() {
+	protected @Nullable TypeInformation<?> doGetMapValueType() {
 
 		return isMap() //
 				? getTypeArgument(CustomCollections.getMapBaseType(getType()), 1)
@@ -209,9 +205,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()));
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getActualType() {
+	public @Nullable TypeInformation<?> getActualType() {
 
 		if (isMap()) {
 			return getMapValueType();
@@ -246,9 +241,8 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getSuperTypeInformation(Class<?> superType) {
+	public @Nullable TypeInformation<?> getSuperTypeInformation(Class<?> superType) {
 
 		Class<?> rawType = getType();
 

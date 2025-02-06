@@ -1,5 +1,5 @@
 /**
  * Spring Data web configuration.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.web.config;

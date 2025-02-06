@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -42,7 +44,6 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -56,7 +57,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		extends AbstractPersistentProperty<P> {
 
 	private static final String SPRING_DATA_PACKAGE = "org.springframework.data";
-	private static final Class<? extends Annotation> IDENTITY_TYPE = loadIdentityType();
+	private static final @Nullable Class<? extends Annotation> IDENTITY_TYPE = loadIdentityType();
 
 	private final @Nullable String value;
 	private final Map<Class<? extends Annotation>, Optional<? extends Annotation>> annotationCache = new ConcurrentHashMap<>();
@@ -116,6 +117,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @param property
 	 * @throws MappingException in case we find an ambiguous mapping on the accessor methods
 	 */
+	@SuppressWarnings("NullAway")
 	private void populateAnnotationCache(Property property) {
 
 		Optionals.toStream(property.getGetter(), property.getSetter()).forEach(it -> {
@@ -123,7 +125,6 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 			for (Annotation annotation : it.getAnnotations()) {
 
 				Class<? extends Annotation> annotationType = annotation.annotationType();
-
 				Annotation mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(it, annotationType);
 
 				validateAnnotation(mergedAnnotation,
@@ -131,7 +132,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 								+ "multiple times on accessor methods of property %s in class %s",
 						annotationType.getSimpleName(), getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.ofNullable(mergedAnnotation));
 			}
 		});
 
@@ -146,7 +147,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 						"Ambiguous mapping; Annotation %s configured " + "on field %s and one of its accessor methods in class %s",
 						annotationType.getSimpleName(), it.getName(), getOwner().getType().getSimpleName());
 
-				annotationCache.put(annotationType, Optional.of(mergedAnnotation));
+				annotationCache.put(annotationType, Optional.ofNullable(mergedAnnotation));
 			}
 		});
 	}
@@ -179,9 +180,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 *
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getSpelExpression()
 	 */
-	@Nullable
 	@Override
-	public String getSpelExpression() {
+	public @Nullable String getSpelExpression() {
 		return value;
 	}
 
@@ -228,8 +228,7 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 * @return {@literal null} if annotation type not found on property.
 	 */
 	@Override
-	@Nullable
-	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+	public @Nullable <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 
 		Assert.notNull(annotationType, "Annotation type must not be null");
 
@@ -254,9 +253,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		});
 	}
 
-	@Nullable
 	@Override
-	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+	public @Nullable <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 
 		A annotation = findAnnotation(annotationType);
 
@@ -279,9 +277,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 		return usePropertyAccess.get();
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getAssociationTargetTypeInformation() {
+	public @Nullable TypeInformation<?> getAssociationTargetTypeInformation() {
 		return associationTargetType.getNullable();
 	}
 
@@ -312,9 +309,8 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	 *
 	 * @return can be {@literal null}.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	private static Class<? extends Annotation> loadIdentityType() {
+	private static @Nullable Class<? extends Annotation> loadIdentityType() {
 
 		return (Class<? extends Annotation>) ClassUtils.loadIfPresent("org.jmolecules.ddd.annotation.Identity",
 				AbstractPersistentProperty.class.getClassLoader());

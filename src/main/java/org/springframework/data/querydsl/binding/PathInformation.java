@@ -17,9 +17,10 @@ package org.springframework.data.querydsl.binding;
 
 import java.beans.PropertyDescriptor;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.lang.Nullable;
 
 import com.querydsl.core.types.Path;
 

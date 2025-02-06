@@ -17,6 +17,8 @@ package org.springframework.data.auditing.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -45,7 +47,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	private static final String AUDITOR_AWARE_REF = "auditor-aware-ref";
 
 	private final String mappingContextBeanName;
-	private String resolvedBeanName;
+	private @Nullable String resolvedBeanName;
 
 	/**
 	 * Creates a new {@link AuditingHandlerBeanDefinitionParser} to point to a {@link MappingContext} with the given bean
@@ -65,7 +67,7 @@ public class AuditingHandlerBeanDefinitionParser extends AbstractSingleBeanDefin
 	 *
 	 * @return the resolvedBeanName
 	 */
-	public String getResolvedBeanName() {
+	public @Nullable String getResolvedBeanName() {
 		return resolvedBeanName;
 	}
 

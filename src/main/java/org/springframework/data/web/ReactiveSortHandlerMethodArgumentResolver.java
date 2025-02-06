@@ -17,9 +17,10 @@ package org.springframework.data.web;
 
 import java.util.List;
 
+import org.jspecify.annotations.NonNull;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;

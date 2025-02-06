@@ -25,25 +25,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.Nullness;
 import org.springframework.core.ParameterNameDiscoverer;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
  * Interceptor enforcing required return value and method parameter constraints declared on repository query methods.
- * Supports Kotlin nullness markers and JSR-305 Non-null annotations. Originally implemented via
+ * Supports Kotlin nullness markers, JSpecify, and JSR-305 Non-null annotations. Originally implemented via
  * {@link org.springframework.data.repository.core.support.MethodInvocationValidator}.
  *
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Christoph Strobl
  * @since 3.5
- * @see org.springframework.lang.NonNull
+ * @see org.jspecify.annotations.NonNull
  * @see ReflectionUtils#isNullable(MethodParameter)
  * @see NullableUtils
  * @link <a href="https://www.thedictionaryofobscuresorrows.com/word/nullness">Nullness</a>
@@ -71,9 +72,8 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 				|| NullableUtils.isNonNull(type, ElementType.PARAMETER);
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 		MethodNullness nullness = nullabilityCache.get(method);
@@ -181,9 +181,15 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
 		private static boolean isNullableParameter(MethodParameter parameter) {
 
-			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
+			Nullness nullness = Nullness.forMethodParameter(parameter);
+
+			if (nullness == Nullness.NON_NULL) {
+				return false;
+			}
+
+			return nullness == Nullness.NULLABLE || requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
 					|| (KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
-							&& (ReflectionUtils.isNullable(parameter) || allowNullableReturn(parameter.getMethod())));
+							&& ReflectionUtils.isNullable(parameter));
 		}
 
 		/**

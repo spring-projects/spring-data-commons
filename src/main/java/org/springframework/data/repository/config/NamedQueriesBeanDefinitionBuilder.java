@@ -15,11 +15,12 @@
  */
 package org.springframework.data.repository.config;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -32,7 +33,7 @@ import org.springframework.util.StringUtils;
 public class NamedQueriesBeanDefinitionBuilder {
 
 	private final String defaultLocation;
-	private String locations;
+	private @Nullable String locations;
 
 	/**
 	 * Creates a new {@link NamedQueriesBeanDefinitionBuilder} using the given default location.

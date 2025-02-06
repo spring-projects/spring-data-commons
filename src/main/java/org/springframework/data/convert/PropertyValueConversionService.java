@@ -15,8 +15,9 @@
  */
 package org.springframework.data.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -74,8 +75,8 @@ public class PropertyValueConversionService {
 	 * @param <VCC> value conversion context type.
 	 * @return the value to be used in the domain model. Can be {@code null}.
 	 */
-	@Nullable
-	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> Object read(@Nullable Object value,
+	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> @Nullable Object read(
+			@Nullable Object value,
 			P property, VCC context) {
 
 		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions
@@ -95,8 +96,8 @@ public class PropertyValueConversionService {
 	 * @param <VCC> value conversion context type.
 	 * @return the value to be written to the data store. Can be {@code null}.
 	 */
-	@Nullable
-	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> Object write(@Nullable Object value,
+	public <P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> @Nullable Object write(
+			@Nullable Object value,
 			P property, VCC context) {
 
 		PropertyValueConverter<Object, Object, ValueConversionContext<P>> converter = conversions

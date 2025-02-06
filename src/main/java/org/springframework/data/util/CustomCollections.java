@@ -48,6 +48,9 @@ import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalConverter;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -55,8 +58,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.lang.Contract;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -290,7 +291,9 @@ public class CustomCollections {
 
 				return candidate;
 			};
+
 		}
+
 	}
 
 	static class VavrCollections implements CustomCollectionRegistrar {
@@ -355,10 +358,9 @@ public class CustomCollections {
 						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
 			}
 
-			@Nullable
-			@Contract("null -> null; !null -> !null")
+			@Contract("null, _, _ -> null; !null, _, _ -> !null")
 			@Override
-			public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+			public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 				if (source == null) {
 					return null;
@@ -378,6 +380,7 @@ public class CustomCollections {
 
 				throw new IllegalArgumentException("Unsupported Vavr collection " + source.getClass());
 			}
+
 		}
 
 		private enum JavaToVavrCollectionConverter implements ConditionalGenericConverter {
@@ -395,9 +398,9 @@ public class CustomCollections {
 				CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 			}
 
-			@NonNull
+
 			@Override
-			public java.util.Set<ConvertiblePair> getConvertibleTypes() {
+			public java.util.@NonNull Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
 			}
 
@@ -418,9 +421,10 @@ public class CustomCollections {
 				return true;
 			}
 
-			@Nullable
+			@Contract("null, _, _ -> null; !null, _, _ -> !null")
 			@Override
-			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
+			public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor,
+					TypeDescriptor targetDescriptor) {
 
 				var targetType = targetDescriptor.getType();
 
@@ -453,7 +457,9 @@ public class CustomCollections {
 
 				return source;
 			}
+
 		}
+
 	}
 
 	static class EclipseCollections implements CustomCollectionRegistrar {
@@ -508,10 +514,9 @@ public class CustomCollections {
 						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
 			}
 
-			@Nullable
 			@Contract("null -> null; !null -> !null")
 			@Override
-			public Object convert(@Nullable Object source) {
+			public @Nullable Object convert(@Nullable Object source) {
 
 				if (source instanceof ImmutableList) {
 					return ((ImmutableList<?>) source).toList();
@@ -531,6 +536,7 @@ public class CustomCollections {
 
 				return source;
 			}
+
 		}
 
 		enum JavaToEclipseConverter implements ConditionalGenericConverter {
@@ -559,9 +565,8 @@ public class CustomCollections {
 				CONVERTIBLE_PAIRS = Collections.unmodifiableSet(pairs);
 			}
 
-			@NonNull
 			@Override
-			public Set<ConvertiblePair> getConvertibleTypes() {
+			public @NonNull Set<ConvertiblePair> getConvertibleTypes() {
 				return CONVERTIBLE_PAIRS;
 			}
 
@@ -583,10 +588,10 @@ public class CustomCollections {
 				return true;
 			}
 
-			@Nullable
-			@Contract("null -> null; !null -> !null")
+			@Contract("null, _, _ -> null; !null, _ , _ -> !null")
 			@Override
-			public Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor, TypeDescriptor targetDescriptor) {
+			public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceDescriptor,
+					TypeDescriptor targetDescriptor) {
 
 				var targetType = targetDescriptor.getType();
 
@@ -640,5 +645,7 @@ public class CustomCollections {
 				return source;
 			}
 		}
+
 	}
+
 }

@@ -1,5 +1,5 @@
 /**
  * Support for repository initialization using XML and JSON.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.repository.init;

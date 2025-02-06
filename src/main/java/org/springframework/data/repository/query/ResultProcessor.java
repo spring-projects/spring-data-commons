@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -31,7 +33,6 @@ import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -120,9 +121,8 @@ public class ResultProcessor {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
 	@Contract("null -> null; !null -> !null")
-	public <T> T processResult(@Nullable Object source) {
+	public <T> @Nullable T processResult(@Nullable Object source) {
 		return processResult(source, NoOpConverter.INSTANCE);
 	}
 
@@ -134,10 +134,9 @@ public class ResultProcessor {
 	 * @param preparingConverter must not be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	@Contract("null -> null; !null -> !null")
+	@Contract("null, _ -> null; !null, _ -> !null")
 	@SuppressWarnings("unchecked")
-	public <T> T processResult(@Nullable Object source, Converter<Object, Object> preparingConverter) {
+	public <T> @Nullable T processResult(@Nullable Object source, Converter<Object, Object> preparingConverter) {
 
 		if (source == null || type.isInstance(source) || !type.isProjecting()) {
 			return (T) source;
@@ -237,9 +236,8 @@ public class ResultProcessor {
 			});
 		}
 
-		@Nullable
 		@Override
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 			return delegate.convert(source);
 		}
 	}
@@ -295,9 +293,8 @@ public class ResultProcessor {
 			return new ProjectingConverter(type, factory, conversionService);
 		}
 
-		@Nullable
 		@Override
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 
 			Class<?> targetType = type.getReturnedType();
 

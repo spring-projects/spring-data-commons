@@ -15,6 +15,8 @@
  */
 package org.springframework.data.web.aot;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -22,7 +24,6 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**

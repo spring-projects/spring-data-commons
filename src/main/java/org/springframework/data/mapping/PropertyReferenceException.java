@@ -22,10 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.PropertyMatches;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -121,8 +122,7 @@ public class PropertyReferenceException extends RuntimeException {
 	 *
 	 * @return
 	 */
-	@Nullable
-	public PropertyPath getBaseProperty() {
+	public @Nullable PropertyPath getBaseProperty() {
 		return alreadyResolvedPath.isEmpty() ? null : alreadyResolvedPath.get(alreadyResolvedPath.size() - 1);
 	}
 

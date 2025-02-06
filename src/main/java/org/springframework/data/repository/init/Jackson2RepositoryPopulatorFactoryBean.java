@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.init;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

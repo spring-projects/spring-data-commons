@@ -18,7 +18,7 @@ package org.springframework.data.domain;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for auditable entities. Allows storing and retrieving creation and modification information. The changing

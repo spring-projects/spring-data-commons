@@ -17,9 +17,10 @@ package org.springframework.data.mapping.model;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.support.IsNewStrategy;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

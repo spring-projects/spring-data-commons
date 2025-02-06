@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -132,7 +134,7 @@ class DefaultAotContext implements AotContext {
 		}
 
 		@Override
-		public Class<?> resolveType() {
+		public @Nullable Class<?> resolveType() {
 			return factory.getType(beanName, false);
 		}
 	}

@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -47,7 +49,6 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -67,7 +68,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	private final Map<String, EvaluationContextExtensionInformation> extensionInformationCache = new ConcurrentHashMap<>();
 	private final Lazy<? extends Collection<? extends ExtensionIdAware>> extensions;
 
-	private ListableBeanFactory beanFactory;
+	private @Nullable ListableBeanFactory beanFactory;
 
 	ExtensionAwareEvaluationContextProvider() {
 		this(Collections.emptyList());
@@ -95,8 +96,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		this(Lazy.of(extensions));
 	}
 
-	public ExtensionAwareEvaluationContextProvider(
-			Lazy<? extends Collection<? extends ExtensionIdAware>> extensions) {
+	public ExtensionAwareEvaluationContextProvider(Lazy<? extends Collection<? extends ExtensionIdAware>> extensions) {
 		this.extensions = extensions;
 	}
 
@@ -273,9 +273,8 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 			// noop
 		}
 
-		@Nullable
 		@Override
-		public Class<?>[] getSpecificTargetClasses() {
+		public Class<?> @Nullable [] getSpecificTargetClasses() {
 			return null;
 		}
 
@@ -323,16 +322,11 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	 * @author Oliver Gierke
 	 * @since 1.9
 	 */
-	private static class FunctionMethodExecutor implements MethodExecutor {
-
-		private final Function function;
-
-		public FunctionMethodExecutor(Function function) {
-			this.function = function;
-		}
+	private record FunctionMethodExecutor(Function function) implements MethodExecutor {
 
 		@Override
-		public TypedValue execute(EvaluationContext context, Object target, Object... arguments) throws AccessException {
+		public TypedValue execute(EvaluationContext context, Object target, @Nullable Object... arguments)
+				throws AccessException {
 
 			try {
 				return new TypedValue(function.invoke(arguments));
@@ -354,7 +348,6 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 	private static class EvaluationContextExtensionAdapter {
 
 		private final EvaluationContextExtension extension;
-
 		private final Functions functions = new Functions();
 		private final Map<String, Object> properties;
 
@@ -420,5 +413,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		public String toString() {
 			return String.format("EvaluationContextExtensionAdapter for '%s'", getExtensionId());
 		}
+
 	}
+
 }

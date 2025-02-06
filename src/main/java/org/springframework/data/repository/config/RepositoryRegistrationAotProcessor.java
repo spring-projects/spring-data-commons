@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.annotation.Reflective;
@@ -43,7 +45,6 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.util.TypeContributor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -70,15 +71,14 @@ import org.springframework.util.StringUtils;
  */
 public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {
 
-	private ConfigurableListableBeanFactory beanFactory;
+	private @Nullable ConfigurableListableBeanFactory beanFactory;
 
 	private final Log logger = LogFactory.getLog(getClass());
 
-	private Map<String, RepositoryConfiguration<?>> configMap;
+	private @Nullable Map<String, RepositoryConfiguration<?>> configMap;
 
-	@Nullable
 	@Override
-	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
+	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
 		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
 
@@ -140,6 +140,9 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 	}
 
 	protected ConfigurableListableBeanFactory getBeanFactory() {
+
+		Assert.state(this.beanFactory != null, "BeanFactory must not be null");
+
 		return this.beanFactory;
 	}
 
@@ -155,8 +158,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		return map != null ? map : Collections.emptyMap();
 	}
 
-	@Nullable
-	protected RepositoryConfiguration<?> getRepositoryMetadata(RegisteredBean bean) {
+	protected @Nullable RepositoryConfiguration<?> getRepositoryMetadata(RegisteredBean bean) {
 		return getConfigMap().get(nullSafeBeanName(bean));
 	}
 

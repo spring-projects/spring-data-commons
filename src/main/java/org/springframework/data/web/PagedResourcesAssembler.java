@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +39,6 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;

@@ -26,14 +26,15 @@ import java.util.Map.Entry;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -63,9 +64,8 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		this.conversionService = conversionService;
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 		TypeInformation<?> type = TypeInformation.fromReturnTypeOf(method);
@@ -91,8 +91,7 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		return result;
 	}
 
-	@Nullable
-	protected Object potentiallyConvertResult(TypeInformation<?> type, @Nullable Object result) {
+	protected @Nullable Object potentiallyConvertResult(TypeInformation<?> type, @Nullable Object result) {
 
 		if (result == null) {
 			return null;
@@ -162,9 +161,8 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		return result;
 	}
 
-	@Nullable
 	@Contract("null, _ -> null")
-	private Object getProjection(@Nullable Object result, Class<?> returnType) {
+	private @Nullable Object getProjection(@Nullable Object result, Class<?> returnType) {
 		return (result == null) || ClassUtils.isAssignable(returnType, result.getClass()) ? result
 				: factory.createProjection(returnType, result);
 	}

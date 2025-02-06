@@ -18,8 +18,9 @@ package org.springframework.data.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -67,8 +68,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 *
 	 * @return the field
 	 */
-	@Nullable
-	public Field getField() {
+	public @Nullable Field getField() {
 		return field;
 	}
 
@@ -94,8 +94,7 @@ public class AnnotationDetectionFieldCallback implements FieldCallback {
 	 *
 	 * @return
 	 */
-	@Nullable
-	public Class<?> getType() {
+	public @Nullable Class<?> getType() {
 
 		Field field = this.field;
 

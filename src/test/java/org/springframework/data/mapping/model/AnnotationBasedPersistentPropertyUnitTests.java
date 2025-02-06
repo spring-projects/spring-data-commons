@@ -32,6 +32,7 @@ import org.jmolecules.ddd.annotation.Identity;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**

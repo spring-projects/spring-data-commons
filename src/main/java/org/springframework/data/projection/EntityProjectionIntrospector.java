@@ -22,13 +22,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.EntityProjection.ProjectionType;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

@@ -24,13 +24,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -115,7 +116,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setCreatedBy(@Nullable Object value) {
+		public @Nullable Object setCreatedBy(@Nullable Object value) {
 
 			auditable.setCreatedBy(value);
 			return value;
@@ -130,7 +131,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setLastModifiedBy(Object value) {
+		public @Nullable Object setLastModifiedBy(@Nullable Object value) {
 
 			auditable.setLastModifiedBy(value);
 
@@ -267,7 +268,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setCreatedBy(@Nullable Object value) {
+		public @Nullable Object setCreatedBy(@Nullable Object value) {
 			return setField(metadata.getCreatedByField(), value);
 		}
 
@@ -277,7 +278,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		}
 
 		@Override
-		public Object setLastModifiedBy(@Nullable Object value) {
+		public @Nullable Object setLastModifiedBy(@Nullable Object value) {
 			return setField(metadata.getLastModifiedByField(), value);
 		}
 

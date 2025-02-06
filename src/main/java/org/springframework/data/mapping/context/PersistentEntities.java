@@ -27,12 +27,13 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -189,8 +190,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * @return
 	 * @since 2.1
 	 */
-	@Nullable
-	public PersistentEntity<?, ?> getEntityUltimatelyReferredToBy(PersistentProperty<?> property) {
+	public @Nullable PersistentEntity<?, ?> getEntityUltimatelyReferredToBy(PersistentProperty<?> property) {
 
 		TypeInformation<?> propertyType = property.getTypeInformation().getActualType();
 
@@ -231,8 +231,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * @throws IllegalStateException if the entity cannot be detected uniquely as multiple ones might share the same
 	 *           identifier.
 	 */
-	@Nullable
-	private PersistentEntity<?, ?> getEntityIdentifiedBy(TypeInformation<?> type) {
+	private @Nullable PersistentEntity<?, ?> getEntityIdentifiedBy(TypeInformation<?> type) {
 
 		Collection<PersistentEntity<?, ?>> entities = new ArrayList<>();
 		for (MappingContext<?, ? extends PersistentProperty<?>> context : contexts) {

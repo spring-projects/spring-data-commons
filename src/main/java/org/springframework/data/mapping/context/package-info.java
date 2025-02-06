@@ -1,5 +1,5 @@
 /**
  * Mapping context API and implementation base classes.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.mapping.context;

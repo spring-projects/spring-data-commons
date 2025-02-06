@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.parsing.ReaderContext;
@@ -30,7 +32,6 @@ import org.springframework.core.type.filter.AspectJTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import org.w3c.dom.Element;
@@ -101,7 +102,8 @@ public class TypeFilterParser {
 			try {
 				filters.add(createTypeFilter(childElement, classLoader));
 			} catch (RuntimeException e) {
-				readerContext.error(e.getMessage(), readerContext.extractSource(element), e.getCause());
+				readerContext.error("Failed creating type filter: " + e.getMessage(), readerContext.extractSource(element),
+						e.getCause());
 			}
 		}
 

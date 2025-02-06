@@ -15,6 +15,8 @@
  */
 package org.springframework.data.expression;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -44,14 +46,14 @@ record ExpressionExpression(Expression expression, ExpressionDependencies depend
 	}
 
 	@Override
-	public Object evaluate(ValueEvaluationContext context) {
+	public @Nullable Object evaluate(ValueEvaluationContext context) {
 
 		EvaluationContext evaluationContext = context.getEvaluationContext();
 		return evaluationContext != null ? expression.getValue(evaluationContext) : expression.getValue();
 	}
 
 	@Override
-	public Class<?> getValueType(ValueEvaluationContext context) {
+	public @Nullable Class<?> getValueType(ValueEvaluationContext context) {
 
 		EvaluationContext evaluationContext = context.getEvaluationContext();
 		return evaluationContext != null ? expression.getValueType(evaluationContext) : expression.getValueType();

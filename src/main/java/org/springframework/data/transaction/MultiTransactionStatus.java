@@ -65,7 +65,8 @@ class MultiTransactionStatus implements TransactionStatus {
 		return newSynchonization;
 	}
 
-	public void registerTransactionManager(TransactionDefinition definition, PlatformTransactionManager transactionManager) {
+	public void registerTransactionManager(TransactionDefinition definition,
+			PlatformTransactionManager transactionManager) {
 		getTransactionStatuses().put(transactionManager, transactionManager.getTransaction(definition));
 	}
 
@@ -83,28 +84,34 @@ class MultiTransactionStatus implements TransactionStatus {
 		transactionManager.rollback(getTransactionStatus(transactionManager));
 	}
 
+	@Override
 	public boolean isRollbackOnly() {
 		return getMainTransactionStatus().isRollbackOnly();
 	}
 
+	@Override
 	public boolean isCompleted() {
 		return getMainTransactionStatus().isCompleted();
 	}
 
+	@Override
 	public boolean isNewTransaction() {
 		return getMainTransactionStatus().isNewTransaction();
 	}
 
+	@Override
 	public boolean hasSavepoint() {
 		return getMainTransactionStatus().hasSavepoint();
 	}
 
+	@Override
 	public void setRollbackOnly() {
 		for (TransactionStatus ts : transactionStatuses.values()) {
 			ts.setRollbackOnly();
 		}
 	}
 
+	@Override
 	public Object createSavepoint() throws TransactionException {
 
 		SavePoints savePoints = new SavePoints();
@@ -115,15 +122,18 @@ class MultiTransactionStatus implements TransactionStatus {
 		return savePoints;
 	}
 
+	@Override
 	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
 		SavePoints savePoints = (SavePoints) savepoint;
 		savePoints.rollback();
 	}
 
+	@Override
 	public void releaseSavepoint(Object savepoint) throws TransactionException {
 		((SavePoints) savepoint).release();
 	}
 
+	@Override
 	public void flush() {
 		for (TransactionStatus transactionStatus : transactionStatuses.values()) {
 			transactionStatus.flush();
@@ -131,11 +141,21 @@ class MultiTransactionStatus implements TransactionStatus {
 	}
 
 	private TransactionStatus getMainTransactionStatus() {
-		return transactionStatuses.get(mainTransactionManager);
+
+		TransactionStatus status = transactionStatuses.get(mainTransactionManager);
+
+		Assert.state(status != null, "No TransactionStatus for main transaction manager found");
+
+		return status;
 	}
 
 	private TransactionStatus getTransactionStatus(PlatformTransactionManager transactionManager) {
-		return this.getTransactionStatuses().get(transactionManager);
+
+		TransactionStatus status = getTransactionStatuses().get(transactionManager);
+
+		Assert.state(status != null, "No TransactionStatus for transaction manager %s found".formatted(transactionManager));
+
+		return status;
 	}
 
 	private static class SavePoints {
@@ -160,7 +180,12 @@ class MultiTransactionStatus implements TransactionStatus {
 		}
 
 		private Object savepointFor(TransactionStatus transactionStatus) {
-			return savepoints.get(transactionStatus);
+
+			Object savepoint = savepoints.get(transactionStatus);
+
+			Assert.state(savepoint != null, "No SavePoint for transaction status %s found".formatted(transactionStatus));
+
+			return savepoint;
 		}
 
 		public void release() {

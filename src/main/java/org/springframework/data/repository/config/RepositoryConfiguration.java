@@ -17,11 +17,12 @@ package org.springframework.data.repository.config;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 
 /**
  * Configuration information for a single repository instance.

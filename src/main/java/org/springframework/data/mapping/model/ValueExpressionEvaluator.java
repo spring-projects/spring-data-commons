@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping.model;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * SPI for components that can evaluate Value expressions.
@@ -31,6 +31,5 @@ public interface ValueExpressionEvaluator {
 	 * @param expression
 	 * @return
 	 */
-	@Nullable
-	<T> T evaluate(String expression);
+	<T> @Nullable T evaluate(String expression);
 }

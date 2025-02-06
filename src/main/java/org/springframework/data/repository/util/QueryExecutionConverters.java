@@ -28,6 +28,8 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -46,7 +48,6 @@ import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -104,7 +105,7 @@ public abstract class QueryExecutionConverters {
 
 		CustomCollections.getCustomTypes().stream().map(WrapperType::multiValue).forEach(WRAPPER_TYPES::add);
 
-		CustomCollections.getPaginationReturnTypes().forEach(ALLOWED_PAGEABLE_TYPES::add);
+		ALLOWED_PAGEABLE_TYPES.addAll(CustomCollections.getPaginationReturnTypes());
 
 		if (VAVR_PRESENT) {
 
@@ -210,9 +211,8 @@ public abstract class QueryExecutionConverters {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
 	@Contract("null -> null")
-	public static Object unwrap(@Nullable Object source) {
+	public static @Nullable Object unwrap(@Nullable Object source) {
 
 		source = NullableWrapperConverters.unwrap(source);
 
@@ -276,8 +276,7 @@ public abstract class QueryExecutionConverters {
 	 * @param returnType must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	@Nullable
-	public static ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
+	public static @Nullable ExecutionAdapter getExecutionAdapter(Class<?> returnType) {
 
 		Assert.notNull(returnType, "Return type must not be null");
 
@@ -285,10 +284,12 @@ public abstract class QueryExecutionConverters {
 	}
 
 	public interface ThrowingSupplier {
+		@Nullable
 		Object get() throws Throwable;
 	}
 
 	public interface ExecutionAdapter {
+		@Nullable
 		Object apply(ThrowingSupplier supplier) throws Throwable;
 	}
 
@@ -303,19 +304,6 @@ public abstract class QueryExecutionConverters {
 		private final Object nullValue;
 		private final Iterable<Class<?>> wrapperTypes;
 
-		/**
-		 * Creates a new {@link AbstractWrapperTypeConverter} using the given {@link ConversionService} and wrapper type.
-		 *
-		 * @param nullValue must not be {@literal null}.
-		 */
-		AbstractWrapperTypeConverter(Object nullValue) {
-
-			Assert.notNull(nullValue, "Null value must not be null");
-
-			this.nullValue = nullValue;
-			this.wrapperTypes = Collections.singleton(nullValue.getClass());
-		}
-
 		AbstractWrapperTypeConverter(Object nullValue, Iterable<Class<?>> wrapperTypes) {
 			this.nullValue = nullValue;
 			this.wrapperTypes = wrapperTypes;
@@ -329,10 +317,10 @@ public abstract class QueryExecutionConverters {
 					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
-		@Nullable
-		@Contract("null -> null")
+		@Contract("null, _, _ -> null")
 		@Override
-		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public final @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType,
+				TypeDescriptor targetType) {
 
 			if (source == null) {
 				return null;
@@ -341,7 +329,6 @@ public abstract class QueryExecutionConverters {
 			NullableWrapper wrapper = (NullableWrapper) source;
 			Object value = wrapper.getValue();
 
-			// TODO: Add Recursive conversion once we move to Spring 4
 			return value == null ? nullValue : wrap(value);
 		}
 
@@ -412,10 +399,9 @@ public abstract class QueryExecutionConverters {
 			});
 		}
 
-		@SuppressWarnings("unchecked")
-		@Nullable
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
-		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 			Streamable<Object> streamable = source == null //
 					? Streamable.empty() //

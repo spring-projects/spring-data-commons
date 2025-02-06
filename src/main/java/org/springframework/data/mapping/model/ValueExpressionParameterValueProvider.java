@@ -15,10 +15,11 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

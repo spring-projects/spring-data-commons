@@ -25,12 +25,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -178,9 +179,8 @@ public abstract class NullableWrapperConverters {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
 	@Contract("null -> null")
-	public static Object unwrap(@Nullable Object source) {
+	public static @Nullable Object unwrap(@Nullable Object source) {
 
 		if (source == null || !supports(source.getClass())) {
 			return source;
@@ -253,9 +253,9 @@ public abstract class NullableWrapperConverters {
 					.stream().collect(StreamUtils.toUnmodifiableSet());
 		}
 
-		@Nullable
 		@Override
-		public final Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public final @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType,
+				TypeDescriptor targetType) {
 
 			if (source == null) {
 				return null;
@@ -378,9 +378,8 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		@Nullable
 		@Override
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 			return source instanceof Optional ? ((Optional<?>) source).orNull() : source;
 		}
 	}
@@ -394,9 +393,8 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		@Nullable
 		@Override
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 			return source instanceof java.util.Optional ? ((java.util.Optional<?>) source).orElse(null) : source;
 		}
 	}
@@ -414,16 +412,14 @@ public abstract class NullableWrapperConverters {
 
 		private final Function0<Object> alternative = new AbstractFunction0<>() {
 
-			@Nullable
 			@Override
-			public Option<Object> apply() {
+			public @Nullable Option<Object> apply() {
 				return null;
 			}
 		};
 
-		@Nullable
 		@Override
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
 		}
 	}
@@ -438,10 +434,9 @@ public abstract class NullableWrapperConverters {
 
 		INSTANCE;
 
-		@Nullable
 		@Override
 		@SuppressWarnings("unchecked")
-		public Object convert(Object source) {
+		public @Nullable Object convert(Object source) {
 
 			if (source instanceof io.vavr.control.Option) {
 				return ((io.vavr.control.Option<Object>) source).getOrElse(() -> null);

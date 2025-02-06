@@ -2,7 +2,7 @@ package org.springframework.data.util;
 
 import java.util.function.Consumer;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A simple {@link Consumer} that captures the instance handed into it.
@@ -12,14 +12,14 @@ import org.springframework.lang.Nullable;
  */
 class Sink<T> implements Consumer<T> {
 
-	private T value;
+	private @Nullable T value;
 
 	/**
 	 * Returns the value captured.
 	 *
 	 * @return
 	 */
-	public T getValue() {
+	public @Nullable T getValue() {
 		return value;
 	}
 

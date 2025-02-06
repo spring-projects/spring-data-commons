@@ -22,9 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.util.ParameterTypes;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -77,7 +78,7 @@ public class Function {
 	 * @return
 	 * @throws Exception
 	 */
-	public Object invoke(Object[] arguments) throws Exception {
+	public @Nullable Object invoke(@Nullable Object[] arguments) throws Exception {
 
 		if (method.getParameterCount() == arguments.length) {
 			return method.invoke(target, arguments);
@@ -88,15 +89,15 @@ public class Function {
 
 		if (tailType.isArray()) {
 
-			List<Object> argumentsToUse = new ArrayList<>(types.length);
+			List<@Nullable Object> argumentsToUse = new ArrayList<>(types.length);
 
 			// Add all arguments up until the last one
-			for (int i = 0; i < types.length - 1; i++) {
-				argumentsToUse.add(arguments[i]);
-			}
+			argumentsToUse.addAll(Arrays.asList(arguments).subList(0, types.length - 1));
 
 			// Gather all other arguments into an array of the tail type
-			Object[] varargs = (Object[]) Array.newInstance(tailType.getComponentType(), arguments.length - types.length + 1);
+			@Nullable
+			Object[] varargs = (@Nullable Object[]) Array.newInstance(tailType.getComponentType(),
+					arguments.length - types.length + 1);
 			int count = 0;
 
 			for (int i = types.length - 1; i < arguments.length; i++) {
@@ -105,10 +106,12 @@ public class Function {
 
 			argumentsToUse.add(varargs);
 
-			return method.invoke(target, argumentsToUse.size() == 1 ? argumentsToUse.get(0) : argumentsToUse.toArray());
+			return method.invoke(target,
+					argumentsToUse.size() == 1 ? new @Nullable Object[] { argumentsToUse.get(0) } : argumentsToUse.toArray());
 		}
 
-		throw new IllegalStateException(String.format("Could not invoke method %s for arguments %s", method, arguments));
+		throw new IllegalStateException(
+				String.format("Could not invoke method %s for arguments %s", method, Arrays.toString(arguments)));
 	}
 
 	/**

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -53,7 +54,6 @@ import org.springframework.data.repository.core.support.AbstractRepositoryMetada
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.util.ClassUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
 
@@ -316,8 +316,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param configuration must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	@Nullable
-	private ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration<?> configuration) {
+	private @Nullable ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration<?> configuration) {
 
 		String interfaceName = configuration.getRepositoryInterface();
 		ClassLoader classLoader = resourceLoader.getClassLoader() == null

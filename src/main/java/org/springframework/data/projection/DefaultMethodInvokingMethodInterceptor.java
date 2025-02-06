@@ -27,8 +27,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.ProxyMethodInvocation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -59,9 +60,8 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		return atomicBoolean.get();
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 

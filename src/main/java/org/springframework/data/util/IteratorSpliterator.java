@@ -21,7 +21,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A Spliterator using a given Iterator for element operations. The spliterator implements {@code trySplit} to permit
@@ -46,9 +46,8 @@ class IteratorSpliterator<T> implements Spliterator<T> {
 		this.est = Long.MAX_VALUE;
 	}
 
-	@Nullable
 	@Override
-	public Spliterator<T> trySplit() {
+	public @Nullable Spliterator<T> trySplit() {
 		/*
 		 * Split into arrays of arithmetically increasing batch
 		 * sizes.  This will only improve parallel performance if
@@ -110,9 +109,8 @@ class IteratorSpliterator<T> implements Spliterator<T> {
 		return 0;
 	}
 
-	@Nullable
 	@Override
-	public Comparator<? super T> getComparator() {
+	public @Nullable Comparator<? super T> getComparator() {
 		if (hasCharacteristics(Spliterator.SORTED)) {
 			return null;
 		}

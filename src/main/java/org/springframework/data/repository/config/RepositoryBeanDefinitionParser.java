@@ -17,6 +17,8 @@ package org.springframework.data.repository.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.*;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.ReaderContext;
@@ -27,7 +29,6 @@ import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.config.ConfigurationUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import org.w3c.dom.Element;
@@ -84,6 +85,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 		return null;
 	}
 
+	@SuppressWarnings("NullAway")
 	private void handleError(Exception e, Element source, ReaderContext reader) {
 		reader.error(e.getMessage(), reader.extractSource(source), e);
 	}

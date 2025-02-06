@@ -17,7 +17,7 @@ package org.springframework.data.mapping;
 
 import java.io.Serial;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Jon Brisbin

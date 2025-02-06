@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
@@ -30,8 +33,6 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.Contract;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -73,9 +74,8 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 		return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 	}
 
-	@Nullable
 	@Override
-	public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+	public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return getConverter(targetType).map(it -> it.convert(source, sourceType, targetType)).orElse(null);
 	}
 
@@ -137,10 +137,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 		}
 
-		@Nullable
-		@Contract("null -> null")
+		@Contract("null, _, _ -> null")
 		@Override
-		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 			if (source == null || !StringUtils.hasText(source.toString())) {
 				return null;
@@ -209,10 +208,9 @@ public class DomainClassConverter<T extends ConversionService & ConverterRegistr
 			return Collections.singleton(new ConvertiblePair(Object.class, Object.class));
 		}
 
-		@Nullable
-		@Contract("null -> null")
+		@Contract("null, _, _ -> null")
 		@Override
-		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+		public @Nullable Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 			if (source == null || !StringUtils.hasText(source.toString())) {
 				return null;

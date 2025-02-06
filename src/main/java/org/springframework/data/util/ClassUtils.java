@@ -17,7 +17,7 @@ package org.springframework.data.util;
 
 import java.util.function.Consumer;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility class to work with classes.
@@ -65,8 +65,7 @@ public abstract class ClassUtils {
 	 * @param classLoader the class loader to use (can be {@literal null}, which indicates the default class loader).
 	 * @return the {@link Class} or {@literal null} in case the class can't be loaded for any reason.
 	 */
-	@Nullable
-	public static Class<?> loadIfPresent(String name, @Nullable ClassLoader classLoader) {
+	public static @Nullable Class<?> loadIfPresent(String name, @Nullable ClassLoader classLoader) {
 
 		try {
 			return org.springframework.util.ClassUtils.forName(name, classLoader);

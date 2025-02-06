@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -39,7 +40,6 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.util.Pair;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
@@ -129,15 +129,14 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 			ResolvableType typeArgument = ResolvableType.forClass(QueryCreationListener.class, listener.getClass())
 					.getGeneric(0);
 
-			if (typeArgument != null && typeArgument.isAssignableFrom(ResolvableType.forClass(query.getClass()))) {
+			if (typeArgument.isAssignableFrom(ResolvableType.forClass(query.getClass()))) {
 				listener.onCreation(query);
 			}
 		}
 	}
 
 	@Override
-	@Nullable
-	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 		MethodParameter returnType = returnTypeMap.computeIfAbsent(method, it -> new MethodParameter(it, -1));
@@ -153,8 +152,8 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 				.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), returnType));
 	}
 
-	@Nullable
-	private Object doInvoke(MethodInvocation invocation) throws Throwable {
+	@SuppressWarnings("NullAway")
+	private @Nullable Object doInvoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 

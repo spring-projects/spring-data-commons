@@ -15,7 +15,7 @@
  */
 package org.springframework.data.projection;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A factory to create projecting instances for other objects usually used to allow easy creation of representation
@@ -43,8 +43,7 @@ public interface ProjectionFactory {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	default <T> T createNullableProjection(Class<T> projectionType, @Nullable Object source) {
+	default <T> @Nullable T createNullableProjection(Class<T> projectionType, @Nullable Object source) {
 		return source == null ? null : createProjection(projectionType, source);
 	}
 

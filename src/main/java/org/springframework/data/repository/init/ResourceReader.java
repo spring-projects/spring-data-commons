@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.init;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Oliver Gierke

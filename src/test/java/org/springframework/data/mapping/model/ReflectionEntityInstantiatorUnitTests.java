@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.mapping.model.ReflectionEntityInstantiator.*;
 
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -129,7 +129,7 @@ class ReflectionEntityInstantiatorUnitTests<P extends PersistentProperty<P>> {
 		} catch (MappingInstantiationException o_O) {
 
 			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
-			assertThat(o_O.getEntityType()).hasValue(Sample.class);
+			assertThat(o_O.getEntityType()).isEqualTo(Sample.class);
 
 			assertThat(o_O.getMessage()).contains(Sample.class.getName());
 			assertThat(o_O.getMessage()).contains(Long.class.getName());

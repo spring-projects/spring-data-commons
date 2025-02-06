@@ -17,8 +17,9 @@ package org.springframework.data.aot;
 
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.javapoet.TypeSpec.Builder;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for a component allowing the access of identifier values.

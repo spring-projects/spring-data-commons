@@ -25,12 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -71,7 +72,13 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				if (wither != null) {
 
 					ReflectionUtils.makeAccessible(wither);
-					this.bean = (T) ReflectionUtils.invokeMethod(wither, bean, value);
+					T newBean = (T) ReflectionUtils.invokeMethod(wither, bean, value);
+
+					if (newBean == null) {
+						throw new IllegalStateException("Wither method '%s' returned null".formatted(wither));
+					}
+
+					this.bean = newBean;
 					return;
 				}
 
@@ -82,7 +89,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 				}
 
 				throw new UnsupportedOperationException(
-						String.format("Cannot set immutable property %s.%s ", property.getOwner().getName(), property.getName()));
+						String.format("Cannot set immutable property '%s.%s'", property.getOwner().getName(), property.getName()));
 			}
 
 			if (!property.usePropertyAccess()) {
@@ -100,7 +107,8 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 			ReflectionUtils.invokeMethod(setter, bean, value);
 
 		} catch (IllegalStateException e) {
-			throw new MappingException("Could not set object property", e);
+			throw new MappingException(
+					"Could not set object property '%s.%s'".formatted(property.getOwner().getName(), property.getName()), e);
 		}
 	}
 
@@ -140,8 +148,7 @@ class BeanWrapper<T> implements PersistentPropertyAccessor<T> {
 			return ReflectionUtils.invokeMethod(getter, bean);
 
 		} catch (IllegalStateException e) {
-			throw new MappingException(
-					String.format("Could not read property %s of %s", property, bean.toString()), e);
+			throw new MappingException(String.format("Could not read property %s of %s", property, bean.toString()), e);
 		}
 	}
 

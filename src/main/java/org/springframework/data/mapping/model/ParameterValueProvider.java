@@ -15,9 +15,10 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.
@@ -32,6 +33,5 @@ public interface ParameterValueProvider<P extends PersistentProperty<P>> {
 	 * @param parameter must not be {@literal null}.
 	 * @return the property value. Can be {@literal null}.
 	 */
-	@Nullable
-	<T> T getParameterValue(Parameter<T, P> parameter);
+	<T> @Nullable T getParameterValue(Parameter<T, P> parameter);
 }

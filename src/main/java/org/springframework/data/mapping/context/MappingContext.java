@@ -18,6 +18,8 @@ package org.springframework.data.mapping.context;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -25,7 +27,6 @@ import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * This interface defines the overall context including all known PersistentEntity instances and methods to obtain

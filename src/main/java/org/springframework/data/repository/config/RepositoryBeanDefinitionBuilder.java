@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -47,7 +48,6 @@ import org.springframework.data.config.ParsingUtils;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsFactoryBean;
 import org.springframework.data.util.Optionals;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -149,6 +149,7 @@ class RepositoryBeanDefinitionBuilder {
 
 	// TODO: merge that with the one that creates the BD
 	// TODO: Add support for fragments discovered from spring.factories
+	@SuppressWarnings("NullAway")
 	RepositoryConfigurationAdapter<?> buildMetadata(RepositoryConfiguration<?> configuration) {
 
 		ImplementationDetectionConfiguration config = configuration
@@ -165,6 +166,7 @@ class RepositoryBeanDefinitionBuilder {
 			Optional<AbstractBeanDefinition> beanDefinition = implementationDetector.detectCustomImplementation(lookup);
 
 			if (beanDefinition.isPresent()) {
+
 				repositoryFragmentConfigurationStream = new ArrayList<>(1);
 
 				List<String> interfaceNames = fragmentMetadata.getFragmentInterfaces(configuration.getRepositoryInterface())

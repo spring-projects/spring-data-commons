@@ -49,7 +49,7 @@ public class ValueEvaluationUnitTests {
 		StandardEnvironment environment = new StandardEnvironment();
 		environment.getPropertySources().addFirst(propertySource);
 
-		record MyRecord(String foo, @org.springframework.lang.Nullable String bar) {
+		record MyRecord(String foo, @org.jspecify.annotations.Nullable String bar) {
 
 		}
 

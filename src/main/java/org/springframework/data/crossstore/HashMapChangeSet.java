@@ -19,8 +19,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
-import org.springframework.lang.Nullable;
 
 /**
  * Simple ChangeSet implementation backed by a HashMap.
@@ -56,14 +57,12 @@ public class HashMapChangeSet implements ChangeSet {
 	}
 
 	@Override
-	@Nullable
-	public Object removeProperty(String k) {
+	public @Nullable Object removeProperty(String k) {
 		return this.values.remove(k);
 	}
 
 	@Override
-	@Nullable
-	public <T> T get(String key, Class<T> requiredClass, ConversionService conversionService) {
+	public <T> @Nullable T get(String key, Class<T> requiredClass, ConversionService conversionService) {
 
 		Object value = values.get(key);
 

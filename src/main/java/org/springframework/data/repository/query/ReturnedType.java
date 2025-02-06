@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -31,8 +33,6 @@ import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -129,8 +129,7 @@ public abstract class ReturnedType {
 	 *
 	 * @return
 	 */
-	@Nullable
-	public abstract Class<?> getTypeToRead();
+	public abstract @Nullable Class<?> getTypeToRead();
 
 	/**
 	 * Returns the properties required to be used to populate the result.
@@ -208,9 +207,8 @@ public abstract class ReturnedType {
 			return !information.getType().isAssignableFrom(domainType);
 		}
 
-		@Nullable
 		@Override
-		public Class<?> getTypeToRead() {
+		public @Nullable Class<?> getTypeToRead() {
 			return isProjecting() && information.isClosed() ? null : domainType;
 		}
 

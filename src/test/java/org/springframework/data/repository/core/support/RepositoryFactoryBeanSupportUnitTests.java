@@ -20,11 +20,11 @@ import static org.mockito.Mockito.*;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
