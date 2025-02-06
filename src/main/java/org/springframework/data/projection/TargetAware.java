@@ -15,9 +15,10 @@
  */
 package org.springframework.data.projection;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.RawTargetAccess;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

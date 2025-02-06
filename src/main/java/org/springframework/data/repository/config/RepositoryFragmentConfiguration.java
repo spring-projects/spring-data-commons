@@ -18,9 +18,10 @@ package org.springframework.data.repository.config;
 import java.beans.Introspector;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.data.config.ConfigurationUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;

@@ -23,12 +23,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -172,8 +173,7 @@ public class PartTree implements Streamable<OrPart> {
 	 * @return {@literal null} if not restricted.
 	 * @since 1.9
 	 */
-	@Nullable
-	public Integer getMaxResults() {
+	public @Nullable Integer getMaxResults() {
 		return subject.getMaxResults().orElse(null);
 	}
 

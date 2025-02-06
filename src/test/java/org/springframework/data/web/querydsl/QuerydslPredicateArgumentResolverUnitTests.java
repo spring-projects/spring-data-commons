@@ -24,8 +24,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -42,7 +44,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.ServletWebRequest;

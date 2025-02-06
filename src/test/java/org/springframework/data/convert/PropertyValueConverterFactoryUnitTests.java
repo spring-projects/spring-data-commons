@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * Unit tests for {@link PropertyValueConverterFactory}.

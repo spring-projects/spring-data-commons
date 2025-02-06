@@ -15,9 +15,10 @@
  */
 package org.springframework.data.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * The {@link ValueConversionContext} provides access to the store-specific {@link PersistentProperty} and allows to
@@ -50,8 +51,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see PersistentProperty#getTypeInformation()
 	 * @see #write(Object, TypeInformation)
 	 */
-	@Nullable
-	default Object write(@Nullable Object value) {
+	default @Nullable Object write(@Nullable Object value) {
 		return write(value, getProperty().getTypeInformation());
 	}
 
@@ -65,8 +65,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see #write(Object, TypeInformation)
 	 * @see TypeInformation
 	 */
-	@Nullable
-	default <T> T write(@Nullable Object value, Class<T> target) {
+	default <T> @Nullable T write(@Nullable Object value, Class<T> target) {
 		return write(value, TypeInformation.of(target));
 	}
 
@@ -79,8 +78,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @throws IllegalStateException if value cannot be written as an instance of {@link TypeInformation type}.
 	 * @see TypeInformation
 	 */
-	@Nullable
-	default <T> T write(@Nullable Object value, TypeInformation<T> target) {
+	default <T> @Nullable T write(@Nullable Object value, TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);
@@ -100,8 +98,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see PersistentProperty#getTypeInformation()
 	 * @see #read(Object, TypeInformation)
 	 */
-	@Nullable
-	default Object read(@Nullable Object value) {
+	default @Nullable Object read(@Nullable Object value) {
 		return read(value, getProperty().getTypeInformation());
 	}
 
@@ -115,8 +112,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @see #read(Object, TypeInformation)
 	 * @see TypeInformation
 	 */
-	@Nullable
-	default <T> T read(@Nullable Object value, Class<T> target) {
+	default <T> @Nullable T read(@Nullable Object value, Class<T> target) {
 		return read(value, TypeInformation.of(target));
 	}
 
@@ -129,8 +125,7 @@ public interface ValueConversionContext<P extends PersistentProperty<P>> {
 	 * @throws IllegalStateException if value cannot be read as an instance of {@link TypeInformation type}.
 	 * @see TypeInformation
 	 */
-	@Nullable
-	default <T> T read(@Nullable Object value, TypeInformation<T> target) {
+	default <T> @Nullable T read(@Nullable Object value, TypeInformation<T> target) {
 
 		if (value == null || target.getType().isInstance(value)) {
 			return target.getType().cast(value);

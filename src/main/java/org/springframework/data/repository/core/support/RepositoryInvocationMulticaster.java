@@ -18,8 +18,9 @@ package org.springframework.data.repository.core.support;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
-import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
 
 /**
  * Interface to be implemented by repository method listeners. Listeners are notified with the called {@link Method},
@@ -37,7 +38,7 @@ interface RepositoryInvocationMulticaster {
 	 * @param args
 	 * @param result
 	 */
-	void notifyListeners(Method method, Object[] args, RepositoryMethodInvocation result);
+	void notifyListeners(Method method, @Nullable Object[] args, RepositoryMethodInvocation result);
 
 	/**
 	 * {@link RepositoryInvocationMulticaster} that does nothing upon invocation.
@@ -49,14 +50,14 @@ interface RepositoryInvocationMulticaster {
 		INSTANCE;
 
 		@Override
-		public void notifyListeners(Method method, Object[] args, RepositoryMethodInvocation result) {
+		public void notifyListeners(Method method, @Nullable Object[] args, RepositoryMethodInvocation result) {
 
 		}
 	}
 
 	/**
 	 * {@link RepositoryInvocationMulticaster} implementation that notifies {@link RepositoryMethodInvocationListener}
-	 * upon {@link #notifyListeners(Method, Object[], RepositoryMethodInvocationResult)}.
+	 * upon {@link #notifyListeners(Method, Object[], RepositoryMethodInvocation)}.
 	 *
 	 * @author Mark Paluch
 	 */
@@ -70,7 +71,7 @@ interface RepositoryInvocationMulticaster {
 		}
 
 		@Override
-		public void notifyListeners(Method method, Object[] args, RepositoryMethodInvocation result) {
+		public void notifyListeners(Method method, @Nullable Object[] args, RepositoryMethodInvocation result) {
 
 			for (RepositoryMethodInvocationListener methodInvocationListener : methodInvocationListeners) {
 				methodInvocationListener.afterInvocation(result);

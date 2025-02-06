@@ -15,7 +15,7 @@
  */
 package org.springframework.data.mapping;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Value object to capture {@link Association}s.
@@ -44,8 +44,7 @@ public class Association<P extends PersistentProperty<P>> {
 		return inverse;
 	}
 
-	@Nullable
-	public P getObverse() {
+	public @Nullable P getObverse() {
 		return obverse;
 	}
 }

@@ -17,11 +17,12 @@ package org.springframework.data.repository.query;
 
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.Nullable;
 
 /**
  * Interface to access method parameters. Allows dedicated access to parameters of special types

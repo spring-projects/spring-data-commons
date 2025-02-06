@@ -18,6 +18,8 @@ package org.springframework.data.repository.query;
 import java.io.Serial;
 import java.lang.reflect.Method;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.core.RepositoryCreationException;
 
 /**
@@ -60,8 +62,8 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public static QueryCreationException invalidProperty(QueryMethod method, String propertyName) {
 
-		return new QueryCreationException(String.format(MESSAGE_TEMPLATE, method, propertyName, method.getDomainClass()
-				.getName()), method);
+		return new QueryCreationException(
+				String.format(MESSAGE_TEMPLATE, method, propertyName, method.getDomainClass().getName()), method);
 	}
 
 	/**
@@ -84,6 +86,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 * @param cause
 	 * @return
 	 */
+	@SuppressWarnings("NullAway")
 	public static QueryCreationException create(QueryMethod method, Throwable cause) {
 		return new QueryCreationException(cause.getMessage(), cause, method.getMetadata().getRepositoryInterface(),
 				method.getMethod());
@@ -97,7 +100,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 * @return
 	 * @since 2.5
 	 */
-	public static QueryCreationException create(String message, Throwable cause, Class<?> repositoryInterface,
+	public static QueryCreationException create(@Nullable String message, Throwable cause, Class<?> repositoryInterface,
 			Method method) {
 		return new QueryCreationException(String.format("Could not create query for %s; Reason: %s", method, message),
 				cause, repositoryInterface, method);

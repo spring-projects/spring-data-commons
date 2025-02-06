@@ -17,6 +17,8 @@ package org.springframework.data.web.config;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +39,6 @@ import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

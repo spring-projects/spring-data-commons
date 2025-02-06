@@ -20,12 +20,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -182,9 +183,8 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 		return new DefaultPersistentPropertyPath<>(properties.subList(base.getLength(), getLength()));
 	}
 
-	@Nullable
 	@Override
-	public PersistentPropertyPath<P> getParentPath() {
+	public @Nullable PersistentPropertyPath<P> getParentPath() {
 
 		int size = properties.size();
 
@@ -243,7 +243,6 @@ class DefaultPersistentPropertyPath<P extends PersistentProperty<P>> implements 
 	}
 
 	@Override
-	@Nullable
 	public String toString() {
 		return toDotPath();
 	}

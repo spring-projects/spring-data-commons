@@ -30,10 +30,11 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.lang.Nullable;
 
 /**
  * Reflection utility methods specific to Kotlin reflection. Requires Kotlin classes to be present to avoid linkage
@@ -90,8 +91,7 @@ public final class KotlinReflectionUtils {
 	 * @param method the method to look up.
 	 * @return the {@link KFunction} or {@code null} if the method cannot be looked up.
 	 */
-	@Nullable
-	public static KFunction<?> findKotlinFunction(Method method) {
+	public static @Nullable KFunction<?> findKotlinFunction(Method method) {
 
 		KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(method);
 

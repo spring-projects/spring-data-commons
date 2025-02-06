@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
@@ -31,7 +33,6 @@ import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 
 /**
  * A reactive {@link EvaluationContextProvider} that assembles an {@link EvaluationContext} from a list of
@@ -72,12 +73,12 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 	}
 
 	@Override
-	public EvaluationContext getEvaluationContext(Object rootObject) {
+	public EvaluationContext getEvaluationContext(@Nullable Object rootObject) {
 		return evaluationContextProvider.getEvaluationContext(rootObject);
 	}
 
 	@Override
-	public EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	public EvaluationContext getEvaluationContext(@Nullable Object rootObject, ExpressionDependencies dependencies) {
 		return evaluationContextProvider.getEvaluationContext(rootObject, dependencies);
 	}
 
@@ -117,13 +118,14 @@ public class ReactiveExtensionAwareEvaluationContextProvider implements Reactive
 			if (it instanceof ReactiveEvaluationContextExtension extension) {
 
 				ResolvableType actualType = getExtensionType(it);
+				Class rawClass = actualType.getRawClass();
 
-				if (actualType.equals(ResolvableType.NONE) || actualType.isAssignableFrom(GENERIC_EXTENSION_TYPE)) {
+				if (actualType.equals(ResolvableType.NONE) || actualType.isAssignableFrom(GENERIC_EXTENSION_TYPE)
+						|| rawClass == null) {
 					return extension.getExtension();
 				}
 
-				EvaluationContextExtensionInformation information = evaluationContextProvider
-						.getOrCreateInformation((Class) actualType.getRawClass());
+				EvaluationContextExtensionInformation information = evaluationContextProvider.getOrCreateInformation(rawClass);
 
 				if (extensionFilter.test(information)) {
 					return extension.getExtension();

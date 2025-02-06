@@ -19,7 +19,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -81,8 +82,7 @@ public interface RepositoryMethodInvocationListener {
 			return method;
 		}
 
-		@Nullable
-		public RepositoryMethodInvocationResult getResult() {
+		public @Nullable RepositoryMethodInvocationResult getResult() {
 			return result;
 		}
 

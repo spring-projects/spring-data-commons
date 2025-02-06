@@ -17,10 +17,11 @@ package org.springframework.data.geo;
 
 import java.io.Serial;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**

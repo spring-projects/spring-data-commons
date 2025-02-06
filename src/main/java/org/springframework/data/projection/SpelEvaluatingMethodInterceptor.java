@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +36,6 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -128,9 +128,8 @@ class SpelEvaluatingMethodInterceptor implements MethodInterceptor {
 		return Collections.unmodifiableMap(expressions);
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Expression expression = expressions.get(invocation.getMethod().hashCode());
 

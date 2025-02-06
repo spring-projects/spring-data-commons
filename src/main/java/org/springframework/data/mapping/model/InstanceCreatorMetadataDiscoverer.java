@@ -28,6 +28,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -40,7 +42,6 @@ import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * Discoverer for factory methods and persistence constructors.

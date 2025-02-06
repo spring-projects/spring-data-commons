@@ -20,13 +20,14 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 
 /**
  * Utility methods to obtain a {@link MethodParameter} of type {@link Pageable} with the same {@link Qualifier}.
@@ -49,8 +50,7 @@ class PageableMethodParameterUtils {
 	 * @param parameter must not be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	@Nullable
-	static MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
+	static @Nullable MethodParameter findMatchingPageableParameter(MethodParameter parameter) {
 
 		Method method = parameter.getMethod();
 
@@ -95,9 +95,8 @@ class PageableMethodParameterUtils {
 		throw new IllegalStateException(PARAMETER_AMBIGUITY);
 	}
 
-	@Nullable
 	@Contract("_, null -> null")
-	private static MethodParameter returnIfQualifiersMatch(MethodParameter pageableParameter,
+	private static @Nullable MethodParameter returnIfQualifiersMatch(MethodParameter pageableParameter,
 			@Nullable Qualifier assemblerQualifier) {
 
 		if (assemblerQualifier == null) {

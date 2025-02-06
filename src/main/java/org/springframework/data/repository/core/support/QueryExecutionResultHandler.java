@@ -15,11 +15,14 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.KotlinDetector;
@@ -32,7 +35,6 @@ import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 
 /**
  * Simple domain service to convert query results into a dedicated type.
@@ -45,7 +47,7 @@ class QueryExecutionResultHandler {
 
 	private static final TypeDescriptor WRAPPER_TYPE = TypeDescriptor.valueOf(NullableWrapper.class);
 
-	private static final Class<?> FLOW_TYPE = loadIfPresent("kotlinx.coroutines.flow.Flow");
+	private static final @Nullable Class<?> FLOW_TYPE = loadIfPresent("kotlinx.coroutines.flow.Flow");
 
 	private final GenericConversionService conversionService;
 
@@ -61,9 +63,8 @@ class QueryExecutionResultHandler {
 		this.conversionService = conversionService;
 	}
 
-	@Nullable
 	@SuppressWarnings("unchecked")
-	public static <T> Class<T> loadIfPresent(String type) {
+	public @Nullable static <T> Class<T> loadIfPresent(String type) {
 
 		try {
 			return (Class<T>) org.springframework.util.ClassUtils.forName(type,
@@ -231,16 +232,15 @@ class QueryExecutionResultHandler {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	private static Object unwrapOptional(@Nullable Object source) {
+	private static @Nullable Object unwrapOptional(@Nullable Object source) {
 
 		if (source == null) {
 			return null;
 		}
 
-		return Optional.class.isInstance(source) //
-				? Optional.class.cast(source).orElse(null) //
+		return source instanceof Optional<?> op//
+				? op.orElse(null) //
 				: source;
 	}
 
@@ -255,8 +255,9 @@ class QueryExecutionResultHandler {
 
 		Class<?> targetType = methodParameter.getParameterType();
 
-		if (source != null && ReactiveWrappers.KOTLIN_COROUTINES_PRESENT
-				&& KotlinDetector.isSuspendingFunction(methodParameter.getMethod())) {
+		Method method = methodParameter.getMethod();
+		if (source != null && method != null && ReactiveWrappers.KOTLIN_COROUTINES_PRESENT
+				&& KotlinDetector.isSuspendingFunction(method)) {
 
 			// Spring's AOP invoker handles Publisher to Flow conversion, so we have to exempt these from post-processing.
 			if (FLOW_TYPE != null && FLOW_TYPE.isAssignableFrom(targetType)) {
@@ -275,7 +276,7 @@ class QueryExecutionResultHandler {
 	static class ReturnTypeDescriptor {
 
 		private final MethodParameter methodParameter;
-		private final TypeDescriptor typeDescriptor;
+		private final @Nullable TypeDescriptor typeDescriptor;
 		private final @Nullable TypeDescriptor nestedTypeDescriptor;
 
 		private ReturnTypeDescriptor(MethodParameter methodParameter) {
@@ -308,14 +309,11 @@ class QueryExecutionResultHandler {
 			// optimizing for nesting level 0 and 1 (Optional<T>, List<T>)
 			// nesting level 2 (Optional<List<T>>) uses the slow path.
 
-			switch (nestingLevel) {
-				case 0:
-					return typeDescriptor;
-				case 1:
-					return nestedTypeDescriptor;
-				default:
-					return TypeDescriptor.nested(this.methodParameter, nestingLevel);
-			}
+			return switch (nestingLevel) {
+				case 0 -> typeDescriptor;
+				case 1 -> nestedTypeDescriptor;
+				default -> TypeDescriptor.nested(this.methodParameter, nestingLevel);
+			};
 		}
 	}
 }

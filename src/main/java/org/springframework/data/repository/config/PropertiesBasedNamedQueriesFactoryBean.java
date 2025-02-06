@@ -18,11 +18,12 @@ package org.springframework.data.repository.config;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.support.PropertiesLoaderSupport;
 import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
-import org.springframework.lang.Nullable;
 
 /**
  * Factory bean to create {@link PropertiesBasedNamedQueries}.
@@ -66,8 +67,7 @@ public class PropertiesBasedNamedQueriesFactoryBean extends PropertiesLoaderSupp
 	}
 
 	@Override
-	@Nullable
-	public PropertiesBasedNamedQueries getObject() throws IOException {
+	public @Nullable PropertiesBasedNamedQueries getObject() throws IOException {
 		if (this.singleton) {
 			return this.singletonInstance;
 		} else {

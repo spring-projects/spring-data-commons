@@ -19,8 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QUser;
@@ -30,7 +32,6 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.lang.Nullable;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 

@@ -18,7 +18,8 @@ package org.springframework.data.geo;
 import java.io.Serial;
 import java.io.Serializable;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 

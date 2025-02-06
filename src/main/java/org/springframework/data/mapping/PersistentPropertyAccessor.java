@@ -15,8 +15,9 @@
  */
 package org.springframework.data.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
-import org.springframework.lang.Nullable;
 
 /**
  * Domain service to allow accessing and setting {@link PersistentProperty}s of an entity. Usually obtained through

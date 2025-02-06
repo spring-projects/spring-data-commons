@@ -20,7 +20,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractAuditable {
 

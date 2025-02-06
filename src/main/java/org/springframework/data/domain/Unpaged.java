@@ -15,7 +15,7 @@
  */
 package org.springframework.data.domain;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@link Pageable} implementation to represent the absence of pagination information.

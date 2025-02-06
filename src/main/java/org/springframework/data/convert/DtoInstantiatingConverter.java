@@ -15,6 +15,8 @@
  */
 package org.springframework.data.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
@@ -28,7 +30,6 @@ import org.springframework.data.mapping.model.EntityInstantiator;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -81,9 +82,8 @@ public class DtoInstantiatingConverter implements Converter<Object, Object> {
 		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
 			@Override
-			@Nullable
 			@SuppressWarnings({ "rawtypes" })
-			public Object getParameterValue(Parameter parameter) {
+			public @Nullable Object getParameterValue(Parameter parameter) {
 
 				String name = parameter.getName();
 

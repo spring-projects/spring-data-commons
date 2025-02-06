@@ -17,6 +17,8 @@ package org.springframework.data.querydsl.aot;
 
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -25,7 +27,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
 import org.springframework.data.util.ReactiveWrappers;
-import org.springframework.lang.Nullable;
 
 import com.querydsl.core.types.Predicate;
 

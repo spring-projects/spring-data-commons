@@ -15,9 +15,10 @@
  */
 package org.springframework.data.expression;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationException;
-import org.springframework.lang.Nullable;
 
 /**
  * An expression capable of evaluating itself against context objects. Encapsulates the details of a previously parsed

@@ -22,13 +22,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Metric;
 import org.springframework.data.geo.Metrics;
 import org.springframework.format.Formatter;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -59,9 +60,8 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 	}
 
 	@Contract("null -> null; !null -> !null")
-	@Nullable
 	@Override
-	public final Distance convert(@Nullable String source) {
+	public final @Nullable Distance convert(@Nullable String source) {
 		return source == null ? null : doConvert(source.trim().toLowerCase(Locale.US));
 	}
 

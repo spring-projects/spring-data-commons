@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -60,12 +61,12 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 		INSTANCE;
 
 		@Override
-		public Object read(Object value, ValueConversionContext context) {
+		public @Nullable Object read(Object value, ValueConversionContext context) {
 			return null;
 		}
 
 		@Override
-		public Object write(Object value, ValueConversionContext context) {
+		public @Nullable Object write(Object value, ValueConversionContext context) {
 			return null;
 		}
 	}
@@ -88,8 +89,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 * @return the configured {@link PropertyValueConverterFactory}; can be {@literal null}.
 	 * @see PropertyValueConverterFactory
 	 */
-	@Nullable
-	public PropertyValueConverterFactory getConverterFactory() {
+	public @Nullable PropertyValueConverterFactory getConverterFactory() {
 		return converterFactory;
 	}
 
@@ -122,8 +122,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	 * @return the configured {@link ValueConverterRegistry}; can be {@literal null}.
 	 * @see ValueConverterRegistry
 	 */
-	@Nullable
-	public ValueConverterRegistry<?> getValueConverterRegistry() {
+	public @Nullable ValueConverterRegistry<?> getValueConverterRegistry() {
 		return valueConverterRegistry;
 	}
 
@@ -163,8 +162,7 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 	}
 
 	@SuppressWarnings("unchecked")
-	@Nullable
-	private <DV, SV, P extends PersistentProperty<P>, D extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, D> doGetConverter(
+	private <DV, SV, P extends PersistentProperty<P>, D extends ValueConversionContext<P>> @Nullable PropertyValueConverter<DV, SV, D> doGetConverter(
 			PersistentProperty<?> property) {
 
 		PropertyValueConverter<?, ?, ?> converter = converterCache.get(property);

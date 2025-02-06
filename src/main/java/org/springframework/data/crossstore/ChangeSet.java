@@ -17,8 +17,9 @@ package org.springframework.data.crossstore;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
-import org.springframework.lang.Nullable;
 
 /**
  * Interface representing the set of changes in an entity.
@@ -28,8 +29,7 @@ import org.springframework.lang.Nullable;
  */
 public interface ChangeSet {
 
-	@Nullable
-	<T> T get(String key, Class<T> requiredClass, ConversionService cs);
+	<T> @Nullable T get(String key, Class<T> requiredClass, ConversionService cs);
 
 	void set(String key, Object o);
 

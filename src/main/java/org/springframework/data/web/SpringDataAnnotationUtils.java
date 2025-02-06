@@ -20,14 +20,13 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Helper class to ease sharing code between legacy {@link PageableHandlerMethodArgumentResolverSupport} and
@@ -91,8 +90,7 @@ abstract class SpringDataAnnotationUtils {
 	 * @return the qualifier value if {@code @Qualifier} is present.
 	 * @since 2.5
 	 */
-	@Nullable
-	public static String getQualifier(@Nullable MethodParameter parameter) {
+	public static @Nullable String getQualifier(@Nullable MethodParameter parameter) {
 
 		if (parameter == null) {
 			return null;
@@ -142,8 +140,7 @@ abstract class SpringDataAnnotationUtils {
 	 * @param annotations must not be {@literal null}.
 	 * @return
 	 */
-	@Nullable
-	private static Qualifier findAnnotation(Annotation[] annotations) {
+	private static @Nullable Qualifier findAnnotation(Annotation[] annotations) {
 
 		for (Annotation annotation : annotations) {
 			if (annotation instanceof Qualifier q) {

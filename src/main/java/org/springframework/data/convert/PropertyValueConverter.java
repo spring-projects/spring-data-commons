@@ -17,8 +17,9 @@ package org.springframework.data.convert;
 
 import java.util.function.BiFunction;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * {@link PropertyValueConverter} provides a symmetric way of converting certain properties from domain to
@@ -87,8 +88,7 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 	 *          never {@literal null}.
 	 * @return the converted value. Can be {@literal null}.
 	 */
-	@Nullable
-	default SV writeNull(C context) {
+	default @Nullable SV writeNull(C context) {
 		return null;
 	}
 
@@ -102,15 +102,13 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 
 		INSTANCE;
 
-		@Nullable
 		@Override
-		public Object read(@Nullable Object value, ValueConversionContext context) {
+		public @Nullable Object read(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 
-		@Nullable
 		@Override
-		public Object write(@Nullable Object value, ValueConversionContext context) {
+		public @Nullable Object write(@Nullable Object value, ValueConversionContext context) {
 			return value;
 		}
 	}
@@ -133,25 +131,23 @@ public interface PropertyValueConverter<DV, SV, C extends ValueConversionContext
 			this.reader = reader;
 		}
 
-		@Nullable
 		@Override
-		public SV write(@Nullable DV value, ValueConversionContext<P> context) {
+		public @Nullable SV write(@Nullable DV value, ValueConversionContext<P> context) {
 			return writer.apply(value, context);
 		}
 
 		@Override
-		public SV writeNull(ValueConversionContext<P> context) {
+		public @Nullable SV writeNull(ValueConversionContext<P> context) {
 			return writer.apply(null, context);
 		}
 
-		@Nullable
 		@Override
-		public DV read(@Nullable SV value, ValueConversionContext<P> context) {
+		public @Nullable DV read(@Nullable SV value, ValueConversionContext<P> context) {
 			return reader.apply(value, context);
 		}
 
 		@Override
-		public DV readNull(ValueConversionContext<P> context) {
+		public @Nullable DV readNull(ValueConversionContext<P> context) {
 			return reader.apply(null, context);
 		}
 	}

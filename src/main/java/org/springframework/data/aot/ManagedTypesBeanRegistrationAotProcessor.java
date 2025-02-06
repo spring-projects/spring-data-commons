@@ -21,6 +21,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
@@ -34,7 +36,6 @@ import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -61,7 +62,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	}
 
 	@Override
-	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
+	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
 		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
 			return null;

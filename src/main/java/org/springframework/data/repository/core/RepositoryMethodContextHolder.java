@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.core;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.NamedThreadLocal;
-import org.springframework.lang.Nullable;
 
 /**
  * Associates a given {@link RepositoryMethodContext} with the current execution thread.
@@ -48,8 +49,7 @@ public class RepositoryMethodContextHolder {
 	 * @return the old metadata, which may be {@code null} if none was bound
 	 * @see #getContext()
 	 */
-	@Nullable
-	public static RepositoryMethodContext setContext(@Nullable RepositoryMethodContext context) {
+	public static @Nullable RepositoryMethodContext setContext(@Nullable RepositoryMethodContext context) {
 
 		RepositoryMethodContext old = currentMethod.get();
 		if (context != null) {

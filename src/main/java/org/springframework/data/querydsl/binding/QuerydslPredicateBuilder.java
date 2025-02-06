@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.Property;
@@ -31,7 +33,6 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -189,8 +190,7 @@ public class QuerydslPredicateBuilder {
 		return target;
 	}
 
-	@Nullable
-	private Object getValue(TypeDescriptor targetType, Object value) {
+	private @Nullable Object getValue(TypeDescriptor targetType, Object value) {
 
 		if (ClassUtils.isAssignableValue(targetType.getType(), value)) {
 			return value;

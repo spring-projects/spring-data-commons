@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -27,7 +28,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -68,7 +68,7 @@ public abstract class ReactiveRepositoryFactorySupport extends RepositoryFactory
 	 * @since 3.4
 	 */
 	@Override
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(QueryLookupStrategy.@Nullable Key key,
 			ValueExpressionDelegate valueExpressionDelegate) {
 		return Optional.empty();
 	}

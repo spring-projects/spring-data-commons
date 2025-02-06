@@ -15,9 +15,10 @@
  */
 package org.springframework.data.expression;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.lang.Nullable;
 
 /**
  * SPI to provide to access a centrally defined potentially shared {@link ValueEvaluationContext}.

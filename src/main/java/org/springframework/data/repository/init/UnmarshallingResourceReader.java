@@ -19,8 +19,9 @@ import java.io.IOException;
 
 import javax.xml.transform.stream.StreamSource;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.Assert;
 

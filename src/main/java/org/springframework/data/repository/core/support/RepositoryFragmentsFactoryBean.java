@@ -18,13 +18,15 @@ package org.springframework.data.repository.core.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -40,7 +42,7 @@ public class RepositoryFragmentsFactoryBean<T>
 
 	private final List<String> fragmentBeanNames;
 
-	private BeanFactory beanFactory;
+	private @Nullable BeanFactory beanFactory;
 	private RepositoryFragments repositoryFragments = RepositoryFragments.empty();
 
 	/**
@@ -64,6 +66,8 @@ public class RepositoryFragmentsFactoryBean<T>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void afterPropertiesSet() {
 
+		Assert.notNull(beanFactory, "BeanFactory must not be null");
+
 		List<RepositoryFragment<?>> fragments = (List) fragmentBeanNames.stream() //
 				.map(it -> beanFactory.getBean(it, RepositoryFragment.class)) //
 				.collect(Collectors.toList());
@@ -71,15 +75,14 @@ public class RepositoryFragmentsFactoryBean<T>
 		this.repositoryFragments = RepositoryFragments.from(fragments);
 	}
 
-	@NonNull
 	@Override
-	public RepositoryFragments getObject() throws Exception {
+	public @NonNull RepositoryFragments getObject() {
 		return this.repositoryFragments;
 	}
 
-	@NonNull
 	@Override
-	public Class<?> getObjectType() {
+	public @NonNull Class<?> getObjectType() {
 		return RepositoryComposition.class;
 	}
+
 }

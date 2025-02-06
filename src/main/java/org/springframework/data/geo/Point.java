@@ -19,8 +19,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 

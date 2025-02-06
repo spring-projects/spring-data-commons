@@ -1,5 +1,5 @@
 /**
  * Support for reactive repositories.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.repository.reactive;

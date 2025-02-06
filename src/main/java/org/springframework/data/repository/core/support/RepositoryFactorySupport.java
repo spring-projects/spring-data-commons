@@ -31,6 +31,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
@@ -76,7 +77,6 @@ import org.springframework.data.util.NullnessMethodInvocationValidator;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -113,19 +113,18 @@ public abstract class RepositoryFactorySupport
 
 	private @Nullable Class<?> repositoryBaseClass;
 	private boolean exposeMetadata;
-	private @Nullable QueryLookupStrategy.Key queryLookupStrategyKey;
+	private QueryLookupStrategy.@Nullable Key queryLookupStrategyKey;
 	private final List<QueryCreationListener<?>> queryPostProcessors;
 	private final List<RepositoryMethodInvocationListener> methodInvocationListeners;
 	private NamedQueries namedQueries;
-	private ClassLoader classLoader;
+	private @Nullable ClassLoader classLoader;
 	private EvaluationContextProvider evaluationContextProvider;
-	private BeanFactory beanFactory;
-	private Environment environment;
+	private @Nullable BeanFactory beanFactory;
+	private @Nullable Environment environment;
 	private Lazy<ProjectionFactory> projectionFactory;
 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
-	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
 
 		this.repositoryInformationCache = new HashMap<>(8);
@@ -169,7 +168,7 @@ public abstract class RepositoryFactorySupport
 	 *
 	 * @param key
 	 */
-	public void setQueryLookupStrategyKey(Key key) {
+	public void setQueryLookupStrategyKey(@Nullable Key key) {
 		this.queryLookupStrategyKey = key;
 	}
 
@@ -440,11 +439,18 @@ public abstract class RepositoryFactorySupport
 	 * @param beanFactory will never be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
+	protected ProjectionFactory getProjectionFactory(@Nullable ClassLoader classLoader,
+			@Nullable BeanFactory beanFactory) {
 
 		SpelAwareProxyProjectionFactory factory = new SpelAwareProxyProjectionFactory(EXPRESSION_PARSER);
-		factory.setBeanClassLoader(classLoader);
-		factory.setBeanFactory(beanFactory);
+
+		if (classLoader != null) {
+			factory.setBeanClassLoader(classLoader);
+		}
+
+		if (beanFactory != null) {
+			factory.setBeanFactory(beanFactory);
+		}
 
 		return factory;
 	}
@@ -671,9 +677,8 @@ public abstract class RepositoryFactorySupport
 					: new DefaultRepositoryInvocationMulticaster(methodInvocationListeners);
 		}
 
-		@Nullable
 		@Override
-		public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+		public @Nullable Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
 			Object[] arguments = invocation.getArguments();
@@ -702,9 +707,8 @@ public abstract class RepositoryFactorySupport
 			this.repositoryMetadata = repositoryMetadata;
 		}
 
-		@Nullable
 		@Override
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 			RepositoryMethodContext oldMetadata = null;
 

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;

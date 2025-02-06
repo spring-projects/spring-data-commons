@@ -25,6 +25,8 @@ import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.AfterDomainEventPublication;
@@ -32,7 +34,6 @@ import org.springframework.data.domain.DomainEvents;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.AnnotationDetectionMethodCallback;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
@@ -103,8 +104,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		}
 
 		@Override
-		@Nullable
-		public Object invoke(MethodInvocation invocation) throws Throwable {
+		public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Object result = invocation.proceed();
 
@@ -168,8 +168,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @return an {@link EventPublishingMethod} for the given type or {@literal null} in case the given type does not
 		 *         expose an event publishing method.
 		 */
-		@Nullable
-		public static EventPublishingMethod of(Class<?> type) {
+		public static @Nullable EventPublishingMethod of(Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null");
 
@@ -231,8 +230,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 *
 		 * @return
 		 */
-		@Nullable
-		private EventPublishingMethod orNull() {
+		private @Nullable EventPublishingMethod orNull() {
 			return this == EventPublishingMethod.NONE ? null : this;
 		}
 
@@ -272,8 +270,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 		 * @param clearing must not be {@literal null}.
 		 * @return
 		 */
-		@Nullable
-		private static Method getClearingMethod(AnnotationDetectionMethodCallback<?> clearing) {
+		private static @Nullable Method getClearingMethod(AnnotationDetectionMethodCallback<?> clearing) {
 
 			if (!clearing.hasFoundAnnotation()) {
 				return null;
@@ -314,9 +311,8 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	 * @param source can be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
-	private static Iterable<Object> asIterable(@Nullable Object source, @Nullable Method method) {
+	private static @Nullable Iterable<Object> asIterable(@Nullable Object source, @Nullable Method method) {
 
 		return method != null && method.getName().startsWith("saveAll")
 				? (Iterable<Object>) source

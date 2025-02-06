@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.AccessOptions.GetOptions;
@@ -36,7 +38,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPathAccessor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -65,9 +66,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 		return delegate.getBean();
 	}
 
-	@Nullable
 	@Override
-	public Object getProperty(PersistentProperty<?> property) {
+	public @Nullable Object getProperty(PersistentProperty<?> property) {
 		return delegate.getProperty(property);
 	}
 
@@ -214,7 +214,8 @@ class SimplePersistentPropertyPathAccessor<T> implements PersistentPropertyPathA
 
 		PersistentPropertyPath<? extends PersistentProperty<?>> parentPath = path.getParentPath();
 
-		throw new MappingException(String.format(nullIntermediateMessage, parentPath.getLeafProperty(), path.toDotPath(),
+		throw new MappingException(String.format(nullIntermediateMessage,
+				parentPath != null ? parentPath.getLeafProperty() : path.getLeafProperty(), path.toDotPath(),
 				getBean().getClass().getName()));
 	}
 

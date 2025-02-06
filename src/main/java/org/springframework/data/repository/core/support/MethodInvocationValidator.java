@@ -28,7 +28,7 @@ import org.springframework.data.util.NullnessMethodInvocationValidator;
  * @author Johannes Englmeier
  * @author Christoph Strobl
  * @since 2.0
- * @see org.springframework.lang.NonNull
+ * @see org.jspecify.annotations.NonNull
  * @see org.springframework.data.util.ReflectionUtils#isNullable(org.springframework.core.MethodParameter)
  * @see org.springframework.data.util.NullableUtils
  */
@@ -37,5 +37,5 @@ public class MethodInvocationValidator extends NullnessMethodInvocationValidator
 	@Override
 	protected RuntimeException returnValueIsNull(Method method) {
 		return new EmptyResultDataAccessException("Result must not be null", 1);
-    }
+	}
 }

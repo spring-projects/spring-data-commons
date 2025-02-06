@@ -15,8 +15,9 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 
 /**
  * SPI for components to provide values for as {@link PersistentProperty}.

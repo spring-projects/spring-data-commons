@@ -20,12 +20,12 @@ import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -53,9 +53,8 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 		this.target = new DirectFieldAccessFallbackBeanWrapper(target);
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		if (ReflectionUtils.isObjectMethod(invocation.getMethod())) {
 			return invocation.proceed();

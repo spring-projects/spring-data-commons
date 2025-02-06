@@ -15,6 +15,8 @@
  */
 package org.springframework.data.mapping.model;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.expression.ValueEvaluationContextProvider;
@@ -23,7 +25,6 @@ import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentLruCache;
 
@@ -97,7 +98,7 @@ public class CachingValueExpressionEvaluatorFactory implements ValueEvaluationCo
 		return new ValueExpressionEvaluator() {
 			@SuppressWarnings("unchecked")
 			@Override
-			public <T> T evaluate(String expression) {
+			public <T> @Nullable T evaluate(String expression) {
 				ValueExpression valueExpression = expressionCache.get(expression);
 				return (T) valueExpression.evaluate(getEvaluationContext(source, valueExpression.getExpressionDependencies()));
 			}

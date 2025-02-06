@@ -19,6 +19,8 @@ import java.io.Serial;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -26,7 +28,6 @@ import org.springframework.core.BridgeMethodResolver;
 import org.springframework.dao.support.PersistenceExceptionTranslationInterceptor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.ProxyUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
@@ -115,8 +116,8 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 		}
 
 		@Override
-		@Nullable
-		protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
+		protected @Nullable TransactionAttribute computeTransactionAttribute(Method method,
+				@Nullable Class<?> targetClass) {
 
 			// Don't allow no-public methods as required.
 			if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {

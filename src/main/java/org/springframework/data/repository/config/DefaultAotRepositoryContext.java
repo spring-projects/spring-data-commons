@@ -16,9 +16,12 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -36,16 +39,17 @@ import org.springframework.data.util.TypeUtils;
  * @see AotRepositoryContext
  * @since 3.0
  */
+@SuppressWarnings("NullAway") // TODO
 class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 	private final AotContext aotContext;
 	private final Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
 	private final Lazy<Set<Class<?>>> managedTypes = Lazy.of(this::discoverTypes);
 
-	private RepositoryInformation repositoryInformation;
-	private Set<String> basePackages;
-	private Set<Class<? extends Annotation>> identifyingAnnotations;
-	private String beanName;
+	private @Nullable RepositoryInformation repositoryInformation;
+	private @Nullable Set<String> basePackages;
+	private @Nullable Set<Class<? extends Annotation>> identifyingAnnotations;
+	private @Nullable String beanName;
 
 	public DefaultAotRepositoryContext(AotContext aotContext) {
 		this.aotContext = aotContext;
@@ -62,7 +66,7 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 	@Override
 	public Set<String> getBasePackages() {
-		return basePackages;
+		return basePackages == null ? Collections.emptySet() : basePackages;
 	}
 
 	public void setBasePackages(Set<String> basePackages) {
@@ -80,7 +84,7 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 	@Override
 	public Set<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return identifyingAnnotations;
+		return identifyingAnnotations == null ? Collections.emptySet() : identifyingAnnotations;
 	}
 
 	public void setIdentifyingAnnotations(Set<Class<? extends Annotation>> identifyingAnnotations) {
@@ -122,18 +126,24 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 				.flatMap(type -> TypeUtils.resolveUsedAnnotations(type).stream())
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 
-		annotations.addAll(TypeUtils.resolveUsedAnnotations(repositoryInformation.getRepositoryInterface()));
+		if (repositoryInformation != null) {
+			annotations.addAll(TypeUtils.resolveUsedAnnotations(repositoryInformation.getRepositoryInterface()));
+		}
 
 		return annotations;
 	}
 
 	protected Set<Class<?>> discoverTypes() {
 
-		Set<Class<?>> types = new LinkedHashSet<>(TypeCollector.inspect(repositoryInformation.getDomainType()).list());
+		Set<Class<?>> types = new LinkedHashSet<>();
 
-		repositoryInformation.getQueryMethods()
-				.flatMap(it -> TypeUtils.resolveTypesInSignature(repositoryInformation.getRepositoryInterface(), it).stream())
-				.flatMap(it -> TypeCollector.inspect(it).list().stream()).forEach(types::add);
+		if (repositoryInformation != null) {
+			types.addAll(TypeCollector.inspect(repositoryInformation.getDomainType()).list());
+
+			repositoryInformation.getQueryMethods()
+					.flatMap(it -> TypeUtils.resolveTypesInSignature(repositoryInformation.getRepositoryInterface(), it).stream())
+					.flatMap(it -> TypeCollector.inspect(it).list().stream()).forEach(types::add);
+		}
 
 		if (!getIdentifyingAnnotations().isEmpty()) {
 

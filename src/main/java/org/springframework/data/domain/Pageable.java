@@ -130,7 +130,7 @@ public interface Pageable {
 	 *
 	 * @return the {@link Pageable} requesting the next {@link Page}.
 	 */
-	@Contract("_ -> new")
+	@Contract("-> new")
 	@CheckReturnValue
 	Pageable next();
 
@@ -139,7 +139,7 @@ public interface Pageable {
 	 *
 	 * @return the previous {@link Pageable} or the first {@link Pageable} if the current one already is the first one.
 	 */
-	@Contract("_ -> new")
+	@Contract("-> new")
 	@CheckReturnValue
 	Pageable previousOrFirst();
 
@@ -148,7 +148,7 @@ public interface Pageable {
 	 *
 	 * @return the {@link Pageable} requesting the first page.
 	 */
-	@Contract("_ -> new")
+	@Contract("-> new")
 	@CheckReturnValue
 	Pageable first();
 

@@ -27,12 +27,13 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -251,8 +252,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @param property name of the property that should be sorted.
 	 * @return the sort {@link Order} or {@literal null} if the property is not sorted by.
 	 */
-	@Nullable
-	public Order getOrderFor(String property) {
+	public @Nullable Order getOrderFor(String property) {
 
 		for (Order order : this) {
 			if (order.getProperty().equals(property)) {

@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -41,7 +43,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.Contract;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -195,7 +196,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		}
 
 		@Override
-		public Object setCreatedBy(Object value) {
+		public @Nullable Object setCreatedBy(@Nullable Object value) {
 			return setProperty(metadata.createdByPaths, value);
 		}
 
@@ -205,7 +206,7 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		}
 
 		@Override
-		public Object setLastModifiedBy(@Nullable Object value) {
+		public @Nullable Object setLastModifiedBy(@Nullable Object value) {
 			return setProperty(metadata.lastModifiedByPaths, value);
 		}
 

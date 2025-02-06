@@ -18,6 +18,8 @@ package org.springframework.data.convert;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.ObjectUtils;
 
@@ -68,7 +70,7 @@ public class SimplePropertyValueConverterRegistry<P extends PersistentProperty<P
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S, T> PropertyValueConverter<S, T, ? extends ValueConversionContext<P>> getConverter(Class<?> type,
+	public <S, T> @Nullable PropertyValueConverter<S, T, ? extends ValueConversionContext<P>> getConverter(Class<?> type,
 			String path) {
 
 		return (PropertyValueConverter<S, T, ? extends ValueConversionContext<P>>) converterRegistrationMap

@@ -22,8 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.AccessOptions.SetOptions.SetNulls;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.util.Assert;
  * @author Oliver Drotbohm
  * @since 2.3
  */
+@SuppressWarnings("NullAway")
 public class AccessOptions {
 
 	/**
@@ -64,10 +66,11 @@ public class AccessOptions {
 
 		private static final GetOptions DEFAULT = new GetOptions(new HashMap<>(), GetNulls.REJECT);
 
-		private final Map<PersistentProperty<?>, Function<Object, Object>> handlers;
+		private final Map<PersistentProperty<?>, Function<@Nullable Object, @Nullable Object>> handlers;
 		private final GetNulls nullValues;
 
-		public GetOptions(Map<PersistentProperty<?>, Function<Object, Object>> handlers, GetNulls nullValues) {
+		public GetOptions(Map<PersistentProperty<?>, Function<@Nullable Object, @Nullable Object>> handlers,
+				GetNulls nullValues) {
 
 			this.handlers = handlers;
 			this.nullValues = nullValues;
@@ -110,12 +113,13 @@ public class AccessOptions {
 		 * @param handler must not be {@literal null}.
 		 * @return
 		 */
-		public GetOptions registerHandler(PersistentProperty<?> property, Function<Object, Object> handler) {
+		public GetOptions registerHandler(PersistentProperty<?> property,
+				Function<@Nullable Object, @Nullable Object> handler) {
 
 			Assert.notNull(property, "Property must not be null");
 			Assert.notNull(handler, "Handler must not be null");
 
-			Map<PersistentProperty<?>, Function<Object, Object>> newHandlers = new HashMap<>(handlers);
+			Map<PersistentProperty<?>, Function<@Nullable Object, @Nullable Object>> newHandlers = new HashMap<>(handlers);
 			newHandlers.put(property, handler);
 
 			return new GetOptions(newHandlers, nullValues);
@@ -130,7 +134,7 @@ public class AccessOptions {
 		 */
 		@SuppressWarnings("unchecked")
 		public GetOptions registerCollectionHandler(PersistentProperty<?> property,
-				Function<? super Collection<?>, Object> handler) {
+				Function<? super Collection<?>, @Nullable Object> handler) {
 			return registerHandler(property, Collection.class, (Function<Object, Object>) handler);
 		}
 
@@ -142,7 +146,8 @@ public class AccessOptions {
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		public GetOptions registerListHandler(PersistentProperty<?> property, Function<? super List<?>, Object> handler) {
+		public GetOptions registerListHandler(PersistentProperty<?> property,
+				Function<? super List<?>, @Nullable Object> handler) {
 			return registerHandler(property, List.class, (Function<Object, Object>) handler);
 		}
 
@@ -154,7 +159,8 @@ public class AccessOptions {
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		public GetOptions registerSetHandler(PersistentProperty<?> property, Function<? super Set<?>, Object> handler) {
+		public GetOptions registerSetHandler(PersistentProperty<?> property,
+				Function<? super Set<?>, @Nullable Object> handler) {
 			return registerHandler(property, Set.class, (Function<Object, Object>) handler);
 		}
 
@@ -166,7 +172,8 @@ public class AccessOptions {
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
-		public GetOptions registerMapHandler(PersistentProperty<?> property, Function<? super Map<?, ?>, Object> handler) {
+		public GetOptions registerMapHandler(PersistentProperty<?> property,
+				Function<? super Map<?, ?>, @Nullable Object> handler) {
 			return registerHandler(property, Map.class, (Function<Object, Object>) handler);
 		}
 
@@ -201,7 +208,7 @@ public class AccessOptions {
 		@Nullable
 		Object postProcess(PersistentProperty<?> property, @Nullable Object value) {
 
-			Function<Object, Object> handler = handlers.get(property);
+			Function<@Nullable Object, @Nullable Object> handler = handlers.get(property);
 
 			return handler == null ? value : handler.apply(value);
 		}

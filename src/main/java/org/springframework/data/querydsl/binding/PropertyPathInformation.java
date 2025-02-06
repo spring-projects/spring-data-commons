@@ -18,11 +18,12 @@ package org.springframework.data.querydsl.binding;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -85,9 +86,8 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return path.getLeafProperty().getSegment();
 	}
 
-	@Nullable
 	@Override
-	public PropertyDescriptor getLeafPropertyDescriptor() {
+	public @Nullable PropertyDescriptor getLeafPropertyDescriptor() {
 		return BeanUtils.getPropertyDescriptor(getLeafParentType(), getLeafProperty());
 	}
 
@@ -101,7 +101,7 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return reifyPath(resolver, path, null);
 	}
 
-	@SuppressWarnings("ConstantConditions")
+	@SuppressWarnings({ "ConstantConditions", "NullAway" })
 	private static Path<?> reifyPath(EntityPathResolver resolver, PropertyPath path, @Nullable Path<?> base) {
 
 		if (base instanceof CollectionPathBase) {
@@ -111,7 +111,17 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		Path<?> entityPath = base != null ? base : resolver.createPath(path.getOwningType().getType());
 
 		Field field = ReflectionUtils.findField(entityPath.getClass(), path.getSegment());
+		if (field == null) {
+			throw new IllegalArgumentException("Unable to find field describing property  '%s' in '%s'"
+					.formatted(path.getSegment(), entityPath.getClass().getName()));
+		}
+
 		Object value = ReflectionUtils.getField(field, entityPath);
+
+		if (value == null) {
+			throw new IllegalArgumentException(
+					"Model describing '%s' in '%s' returned null".formatted(path.getSegment(), entityPath.getClass().getName()));
+		}
 
 		if (path.hasNext()) {
 			return reifyPath(resolver, path.next(), (Path<?>) value);

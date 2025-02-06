@@ -17,6 +17,8 @@ package org.springframework.data.support;
 
 import java.util.Collection;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.PropertySpecifier;
 
@@ -63,7 +65,7 @@ public class ExampleMatcherAccessor {
 	 * @param path Dot-Path to property.
 	 * @return {@literal null} when no {@link ExampleMatcher.PropertySpecifier} defined for path.
 	 */
-	public ExampleMatcher.PropertySpecifier getPropertySpecifier(String path) {
+	public ExampleMatcher.@Nullable PropertySpecifier getPropertySpecifier(String path) {
 		return matcher.getPropertySpecifiers().getForPath(path);
 	}
 
@@ -80,6 +82,7 @@ public class ExampleMatcherAccessor {
 	 * @param path
 	 * @return never {@literal null}.
 	 */
+	@SuppressWarnings("NullAway")
 	public ExampleMatcher.StringMatcher getStringMatcherForPath(String path) {
 
 		if (!hasPropertySpecifier(path)) {
@@ -131,6 +134,7 @@ public class ExampleMatcherAccessor {
 	 * @param path
 	 * @return never {@literal null}.
 	 */
+	@SuppressWarnings("NullAway")
 	public boolean isIgnoreCaseForPath(String path) {
 
 		if (!hasPropertySpecifier(path)) {
@@ -150,6 +154,7 @@ public class ExampleMatcherAccessor {
 	 * @param path
 	 * @return never {@literal null}.
 	 */
+	@SuppressWarnings("NullAway")
 	public ExampleMatcher.PropertyValueTransformer getValueTransformerForPath(String path) {
 
 		if (!hasPropertySpecifier(path)) {
