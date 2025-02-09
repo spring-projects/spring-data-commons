@@ -24,6 +24,7 @@ import org.junit.Test
  * @author Tjeu Kayim
  * @author Yoann de Martino
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 class KPropertyPathTests {
 
@@ -41,6 +42,14 @@ class KPropertyPathTests {
 		val property = (Book::author / Author::name).toDotPath()
 
 		assertThat(property).isEqualTo("author.name")
+	}
+
+	@Test // DATACMNS-3010
+	fun `Convert from Iterable nested KProperty to field name`() {
+
+		val property = (User::addresses / Address::street).toDotPath()
+
+		assertThat(property).isEqualTo("addresses.street")
 	}
 
 	@Test // DATACMNS-1835
@@ -106,4 +115,8 @@ class KPropertyPathTests {
 
 	class Book(val title: String, val author: Author)
 	class Author(val name: String)
+
+    class User(val addresses: List<Address>)
+
+    class Address(val street: String)
 }
