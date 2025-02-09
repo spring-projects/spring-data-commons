@@ -15,7 +15,6 @@
  */
 package org.springframework.data.aot;
 
-import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;

@@ -18,7 +18,6 @@ package org.springframework.data.repository.config;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.config.BeanDefinition;
