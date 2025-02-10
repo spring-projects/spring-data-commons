@@ -44,12 +44,20 @@ class KPropertyPathTests {
 		assertThat(property).isEqualTo("author.name")
 	}
 
-	@Test // DATACMNS-3010
+	@Test // GH-3010
 	fun `Convert from Iterable nested KProperty to field name`() {
 
-		val property = (User::addresses / Address::street).toDotPath()
+		val property = (Author::books / Book::title).toDotPath()
 
-		assertThat(property).isEqualTo("addresses.street")
+		assertThat(property).isEqualTo("books.title")
+	}
+
+	@Test // GH-3010
+	fun `Convert from Iterable nested Iterable Property to field name`() {
+
+		val property = (Author::books / Book::author / Author::name).toDotPath()
+
+		assertThat(property).isEqualTo("books.author.name")
 	}
 
 	@Test // DATACMNS-1835
@@ -74,6 +82,18 @@ class KPropertyPathTests {
 	}
 
 	@Test // DATACMNS-1835
+	fun `Convert triple nested KProperty to property path using toDotPath`() {
+
+		class Entity(val book: Book)
+		class AnotherEntity(val entity: Entity)
+
+		val property =
+			(AnotherEntity::entity / Entity::book / Book::author / Author::name).toDotPath()
+
+		assertThat(property).isEqualTo("entity.book.author.name")
+	}
+
+	@Test // DATACMNS-1835
 	fun `Convert simple KProperty to property path using toDotPath`() {
 
 		class AnotherEntity(val entity: String)
@@ -92,18 +112,6 @@ class KPropertyPathTests {
 	}
 
 	@Test // DATACMNS-1835
-	fun `Convert triple nested KProperty to property path using toDotPath`() {
-
-		class Entity(val book: Book)
-		class AnotherEntity(val entity: Entity)
-
-		val property =
-			(AnotherEntity::entity / Entity::book / Book::author / Author::name).toDotPath()
-
-		assertThat(property).isEqualTo("entity.book.author.name")
-	}
-
-	@Test // DATACMNS-1835
 	fun `Convert nullable KProperty to field name`() {
 
 		class Cat(val name: String?)
@@ -114,9 +122,6 @@ class KPropertyPathTests {
 	}
 
 	class Book(val title: String, val author: Author)
-	class Author(val name: String)
+	class Author(val name: String, val books: List<Book>)
 
-    class User(val addresses: List<Address>)
-
-    class Address(val street: String)
 }

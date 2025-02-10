@@ -34,9 +34,10 @@ private class KPropertyPath<T, U>(
 /**
  * Abstraction of a property path that consists of parent [KProperty],
  * and child property [KProperty], where parent [parent] has an [Iterable]
- * of children, so it represents 1-M mapping, not 1-1, like [KPropertyPath]
+ * of children, so it represents 1-M mapping.
  *
  * @author Mikhail Polivakha
+ * @since 3.5
  */
 internal class KIterablePropertyPath<T, U>(
 	val parent: KProperty<Iterable<U?>?>,
@@ -52,8 +53,8 @@ internal fun asString(property: KProperty<*>): String {
 	return when (property) {
 		is KPropertyPath<*, *> ->
 			"${asString(property.parent)}.${property.child.name}"
-        is KIterablePropertyPath<*, *> ->
-            "${asString(property.parent)}.${property.child.name}"
+		is KIterablePropertyPath<*, *> ->
+			"${asString(property.parent)}.${property.child.name}"
 		else -> property.name
 	}
 }
@@ -81,21 +82,15 @@ operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
  * Note, that this function is different from [div] above in the
  * way that it represents a division operator overloading for
  * child references, where parent to child reference relation is 1-M, not 1-1.
- * It implies that parent has an [Iterable] or any liner [Collection] of children.
+ * It implies that parent defines a [Collection] of children.
  **
- * For example, referring to the field "addresses.street":
+ * For example, referring to the field "books.title":
  * ```
- * User::addresses / Author::street contains "Austin"
- * ```
- *
- * And the entities may look like this:
- * ```
- * class User(val addresses: List<Address>)
- *
- * class Address(val street: String)
+ * Author::books / Book::title contains "Bartleby"
  * ```
  * @author Mikhail Polivakha
+ * @since 3.5
  */
 @JvmName("divIterable")
-operator fun <T, U> KProperty<Iterable<T?>?>.div(other: KProperty1<T, U>): KProperty<U> =
+operator fun <T, U> KProperty<Collection<T?>?>.div(other: KProperty1<T, U>): KProperty<U> =
 	KIterablePropertyPath(this, other)
