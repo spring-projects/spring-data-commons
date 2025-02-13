@@ -348,7 +348,7 @@ For more information, see the https://github.com/spring-projects/spring-data-exa
 [[core.web.type-safe]]
 == Querydsl Web Support
 
-For those stores that have http://www.querydsl.com/[QueryDSL] integration, you can derive queries from the attributes contained in a `Request` query string.
+For those stores that have http://www.querydsl.com/[Querydsl] integration, you can derive queries from the attributes contained in a `Request` query string.
 
 Consider the following query string:
 
