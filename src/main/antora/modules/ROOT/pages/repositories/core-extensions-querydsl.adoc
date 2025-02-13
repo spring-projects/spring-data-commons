@@ -1,0 +1,50 @@
+[[core.extensions.querydsl]]
+= Querydsl Extension
+
+http://www.querydsl.com/[Querydsl] is a framework that enables the construction of statically typed SQL-like queries through its fluent API.
+
+NOTE: Querydsl maintenance has slowed down to a point where the community has forked the project under OpenFeign at https://github.com/OpenFeign/querydsl (groupId `io.github.openfeign.querydsl`).
+Spring Data supports the fork on a best-effort basis.
+
+Several Spring Data modules offer integration with Querydsl through `QuerydslPredicateExecutor`, as the following example shows:
+
+.QuerydslPredicateExecutor interface
+[source,java]
+----
+public interface QuerydslPredicateExecutor<T> {
+
+  Optional<T> findById(Predicate predicate);  <1>
+
+  Iterable<T> findAll(Predicate predicate);   <2>
+
+  long count(Predicate predicate);            <3>
+
+  boolean exists(Predicate predicate);        <4>
+
+  // … more functionality omitted.
+}
+----
+
+<1> Finds and returns a single entity matching the `Predicate`.
+<2> Finds and returns all entities matching the `Predicate`.
+<3> Returns the number of entities matching the `Predicate`.
+<4> Returns whether an entity that matches the `Predicate` exists.
+
+To use the Querydsl support, extend `QuerydslPredicateExecutor` on your repository interface, as the following example shows:
+
+.Querydsl integration on repositories
+[source,java]
+----
+interface UserRepository extends CrudRepository<User, Long>, QuerydslPredicateExecutor<User> {
+}
+----
+
+The preceding example lets you write type-safe queries by using Querydsl `Predicate` instances, as the following example shows:
+
+[source,java]
+----
+Predicate predicate = user.firstname.equalsIgnoreCase("dave")
+	.and(user.lastname.startsWithIgnoreCase("mathews"));
+
+userRepository.findAll(predicate);
+----
