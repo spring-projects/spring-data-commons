@@ -67,7 +67,7 @@ interface UserRepository extends CrudRepository<User, Long>, CustomizedUserRepos
 Extending the fragment interface with your repository interface combines the CRUD and custom functionality and makes it available to clients.
 
 Spring Data repositories are implemented by using fragments that form a repository composition.
-Fragments are the base repository, functional aspects (such as xref:repositories/core-extensions.adoc#core.extensions.querydsl[QueryDsl]), and custom interfaces along with their implementations.
+Fragments are the base repository, functional aspects (such as xref:repositories/core-extensions.adoc#core.extensions.querydsl[Querydsl]), and custom interfaces along with their implementations.
 Each time you add an interface to your repository interface, you enhance the composition by adding a fragment.
 The base repository and repository aspect implementations are provided by each Spring Data module.
 
