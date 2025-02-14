@@ -16,6 +16,7 @@
 package org.springframework.data.projection;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import kotlin.reflect.KFunction;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
@@ -44,6 +48,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Johannes Englmeier
+ * @author Yanming Zhou
  * @since 1.10
  */
 class ProjectingMethodInterceptor implements MethodInterceptor {
@@ -64,11 +69,13 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 	@Override
 	public Object invoke(@SuppressWarnings("null") @NonNull MethodInvocation invocation) throws Throwable {
 
-		TypeInformation<?> type = TypeInformation.fromReturnTypeOf(invocation.getMethod());
+		Method method = invocation.getMethod();
+		TypeInformation<?> type = TypeInformation.fromReturnTypeOf(method);
 		TypeInformation<?> resultType = type;
 		TypeInformation<?> typeToReturn = type;
 
 		Object result = delegate.invoke(invocation);
+
 		boolean applyWrapper = false;
 
 		if (NullableWrapperConverters.supports(type.getType())
@@ -81,6 +88,14 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		if (applyWrapper) {
 			return conversionService.convert(new NullableWrapper(result), typeToReturn.getType());
+		}
+
+		if (result == null) {
+			KFunction<?> function = KotlinDetector.isKotlinType(method.getDeclaringClass()) ?
+					KotlinReflectionUtils.findKotlinFunction(method) : null;
+			if (function != null && !function.getReturnType().isMarkedNullable()) {
+				throw new IllegalArgumentException("Kotlin function '%s' requires non-null return value".formatted(method.toString()));
+			}
 		}
 
 		return result;
