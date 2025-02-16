@@ -45,10 +45,9 @@ public class TypeCollector {
 
 	private static final Log logger = LogFactory.getLog(TypeCollector.class);
 
-	static final Set<String> EXCLUDED_DOMAINS = new HashSet<>(
-			Arrays.asList("java", "sun.", "jdk.", "reactor.", "kotlinx.", "kotlin.", "org.springframework.core.",
+	static final Set<String> EXCLUDED_DOMAINS = Set.of("java", "sun.", "jdk.", "reactor.", "kotlinx.", "kotlin.", "org.springframework.core.",
 					"org.springframework.data.mapping.", "org.springframework.data.repository.", "org.springframework.boot.",
-					"org.springframework.context.", "org.springframework.beans."));
+					"org.springframework.context.", "org.springframework.beans.");
 
 	private final Predicate<Class<?>> excludedDomainsFilter = type -> {
 		String packageName = type.getPackageName() + ".";
