@@ -15,13 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.lang.reflect.TypeVariable;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -59,11 +52,19 @@ import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
 
+import java.lang.reflect.TypeVariable;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author xeounxzxu
  * @soundtrack Richard Spaven - Tribute (Whole Other*)
  */
 @ExtendWith(MockitoExtension.class)
@@ -109,7 +110,16 @@ class RepositoryConfigurationDelegateUnitTests {
 		var beanFactory = assertLazyRepositoryBeanSetup(DeferredConfig.class);
 
 		assertThat(beanFactory.getBeanNamesForType(DeferredRepositoryInitializationListener.class)).isNotEmpty();
+	}
 
+	@Test
+	void registersMultiDeferredRepositoryInitializationListener() {
+
+		var beanFactory = assertLazyRepositoryBeanSetup(DeferredConfig.class, OtherDeferredConfig.class);
+
+		assertThat(beanFactory.getBeanNamesForType(DeferredRepositoryInitializationListener.class)).isNotEmpty();
+		assertThat(beanFactory.getBeanNamesForType(AddressRepository.class)).isNotEmpty();
+		assertThat(beanFactory.getBeanNamesForType(ProductRepository.class)).isNotEmpty();
 	}
 
 	@Test // DATACMNS-1832
@@ -276,9 +286,9 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(it.getGeneric(1).resolve()).isEqualTo(Person.class);
 	}
 
-	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?> configClass) {
+	private static ListableBeanFactory assertLazyRepositoryBeanSetup(Class<?>... componentClasses) {
 
-		var context = new AnnotationConfigApplicationContext(configClass);
+		var context = new AnnotationConfigApplicationContext(componentClasses);
 
 		assertThat(context.getDefaultListableBeanFactory().getAutowireCandidateResolver())
 				.isInstanceOf(LazyRepositoryInjectionPointResolver.class);
@@ -308,6 +318,12 @@ class RepositoryConfigurationDelegateUnitTests {
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
 			bootstrapMode = BootstrapMode.DEFERRED)
 	static class DeferredConfig {}
+
+	@ComponentScan(basePackageClasses = ProductRepository.class)
+	@EnableRepositories(basePackageClasses = ProductRepository.class,
+			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = AddressRepository.class),
+			bootstrapMode = BootstrapMode.DEFERRED)
+	static class OtherDeferredConfig {}
 
 	@EnableRepositories(basePackageClasses = MyOtherRepository.class,
 			includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = MyOtherRepository.class),
