@@ -19,8 +19,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.expression.EvaluationContext;
 
 /**
- * Expressions are executed in an evaluation context. It is in this context that references are resolved when
- * encountered during expression evaluation.
+ * Expressions are executed using an evaluation context. This context is used to resolve references during (SpEL,
+ * property placeholder) expression evaluation.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
@@ -31,8 +31,8 @@ public interface ValueEvaluationContext {
 	/**
 	 * Returns a new {@link ValueEvaluationContext}.
 	 *
-	 * @param environment
-	 * @param evaluationContext
+	 * @param environment must not be {@literal null}.
+	 * @param evaluationContext must not be {@literal null}.
 	 * @return a new {@link ValueEvaluationContext} for the given environment and evaluation context.
 	 */
 	static ValueEvaluationContext of(Environment environment, EvaluationContext evaluationContext) {
@@ -40,14 +40,14 @@ public interface ValueEvaluationContext {
 	}
 
 	/**
-	 * Returns the {@link Environment} if provided.
+	 * Returns the {@link Environment}.
 	 *
 	 * @return the {@link Environment}.
 	 */
 	Environment getEnvironment();
 
 	/**
-	 * Returns the {@link EvaluationContext} if provided.
+	 * Returns the {@link EvaluationContext}.
 	 *
 	 * @return the {@link EvaluationContext}.
 	 */
