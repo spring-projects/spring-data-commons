@@ -179,7 +179,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @return the bean name generated for the given {@link BeanDefinition}
 	 */
 	public static String registerWithSourceAndGeneratedBeanName(AbstractBeanDefinition bean,
-			BeanDefinitionRegistry registry, Object source) {
+			BeanDefinitionRegistry registry, @Nullable Object source) {
 
 		bean.setSource(source);
 
@@ -200,7 +200,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @since 2.1
 	 */
 	public static void registerIfNotAlreadyRegistered(Supplier<AbstractBeanDefinition> supplier,
-			BeanDefinitionRegistry registry, String beanName, Object source) {
+			BeanDefinitionRegistry registry, String beanName, @Nullable Object source) {
 
 		if (registry.containsBeanDefinition(beanName)) {
 			return;
@@ -223,7 +223,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 * @since 2.1
 	 */
 	public static void registerLazyIfNotAlreadyRegistered(Supplier<AbstractBeanDefinition> supplier,
-			BeanDefinitionRegistry registry, String beanName, Object source) {
+			BeanDefinitionRegistry registry, String beanName, @Nullable Object source) {
 
 		if (registry.containsBeanDefinition(beanName)) {
 			return;
@@ -246,7 +246,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	 */
 	public static boolean hasBean(Class<?> type, BeanDefinitionRegistry registry) {
 
-		String name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
+		String name = type.getName().concat(GENERATED_BEAN_NAME_SEPARATOR).concat("0");
 		return registry.containsBeanDefinition(name);
 	}
 
