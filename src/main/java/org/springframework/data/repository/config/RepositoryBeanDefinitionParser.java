@@ -100,7 +100,7 @@ public class RepositoryBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	protected static boolean hasBean(Class<?> type, BeanDefinitionRegistry registry) {
 
-		String name = String.format("%s%s0", type.getName(), GENERATED_BEAN_NAME_SEPARATOR);
+		String name = type.getName().concat(GENERATED_BEAN_NAME_SEPARATOR).concat("0");
 		return registry.containsBeanDefinition(name);
 	}
 }
