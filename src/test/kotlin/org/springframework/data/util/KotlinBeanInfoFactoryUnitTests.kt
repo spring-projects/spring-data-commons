@@ -58,6 +58,16 @@ class KotlinBeanInfoFactoryUnitTests {
 		assertThat(pds).hasSize(1).extracting("name").contains("value")
 	}
 
+	@Test // GH-3249
+	internal fun considersBooleanGetAndIsGetters() {
+
+		val isAndGet = BeanUtils.getPropertyDescriptors(KClassWithIsGetter::class.java)
+		assertThat(isAndGet[0].readMethod.name).isEqualTo("isFromOuterSpace")
+
+		val getOnly = BeanUtils.getPropertyDescriptors(KClassWithGetGetter::class.java)
+		assertThat(getOnly[0].readMethod.name).isEqualTo("getFromOuterSpace")
+	}
+
 	@Test
 	internal fun determinesInlineClassConsumerProperties() {
 
@@ -200,4 +210,29 @@ class KotlinBeanInfoFactoryUnitTests {
 	class User : AbstractAuditable() {
 		var name: String? = null
 	}
+
+	open class KClassWithGetGetter() {
+
+		private var fromOuterSpace: Boolean = false
+
+		open fun getFromOuterSpace() = fromOuterSpace
+
+		open fun setFromOuterSpace(newValue: Boolean) {
+			this.fromOuterSpace = newValue
+		}
+	}
+
+	open class KClassWithIsGetter() {
+
+		private var fromOuterSpace: Boolean = false
+
+		open fun isFromOuterSpace() = fromOuterSpace
+
+		open fun getFromOuterSpace() = fromOuterSpace
+
+		open fun setFromOuterSpace(newValue: Boolean) {
+			this.fromOuterSpace = newValue
+		}
+	}
+
 }

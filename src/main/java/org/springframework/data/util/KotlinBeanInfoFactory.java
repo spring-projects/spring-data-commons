@@ -94,18 +94,9 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 
 			if (member instanceof KProperty<?> property) {
 
-				Method getter = ReflectJvmMapping.getJavaGetter(property);
 				Method setter = property instanceof KMutableProperty<?> kmp ? ReflectJvmMapping.getJavaSetter(kmp) : null;
-
-				if (getter == null) {
-					Type javaType = ReflectJvmMapping.getJavaType(property.getReturnType());
-					getter = ReflectionUtils.findMethod(beanClass,
-							javaType == Boolean.TYPE ? "is" : "get" + StringUtils.capitalize(property.getName()));
-				}
-
-				if (getter != null) {
-					getter = ClassUtils.getMostSpecificMethod(getter, beanClass);
-				}
+				Type javaType = ReflectJvmMapping.getJavaType(property.getReturnType());
+				Method getter = findGetter(beanClass, property, javaType);
 
 				if (getter != null && (Modifier.isStatic(getter.getModifiers()) || getter.getParameterCount() != 0)) {
 					continue;
@@ -121,6 +112,21 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 				descriptors.put(property.getName(), new PropertyDescriptor(property.getName(), getter, setter));
 			}
 		}
+	}
+
+	private static @Nullable Method findGetter(Class<?> beanClass, KProperty<?> property, Type javaType) {
+
+		Method getter = ReflectJvmMapping.getJavaGetter(property);
+
+		if (getter == null && javaType == Boolean.TYPE) {
+			getter = ReflectionUtils.findMethod(beanClass, "is" + StringUtils.capitalize(property.getName()));
+		}
+
+		if (getter == null) {
+			getter = ReflectionUtils.findMethod(beanClass, "get" + StringUtils.capitalize(property.getName()));
+		}
+
+		return getter != null ? ClassUtils.getMostSpecificMethod(getter, beanClass) : null;
 	}
 
 	private static void collectBasicJavaProperties(Class<?> beanClass, Map<String, PropertyDescriptor> descriptors)
@@ -204,5 +210,7 @@ public class KotlinBeanInfoFactory implements BeanInfoFactory, Ordered {
 		public Method getWriteMethod() {
 			return this.writeMethod;
 		}
+
 	}
+
 }
