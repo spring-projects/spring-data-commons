@@ -342,6 +342,7 @@ class ProxyProjectionFactoryUnitTests {
 		assertThat(excerpt.getBirthdate()).contains(LocalDateTime.of(1967, 1, 9, 0, 0));
 	}
 
+
 	interface Contact {}
 
 	interface CustomerWithLocalDateTime {
