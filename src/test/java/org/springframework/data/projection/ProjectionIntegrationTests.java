@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import org.springframework.lang.Nullable;
 
 /**
  * Integration tests for projections.
@@ -44,6 +45,6 @@ class ProjectionIntegrationTests {
 	}
 
 	interface SampleProjection {
-		String getName();
+		@Nullable String getName();
 	}
 }

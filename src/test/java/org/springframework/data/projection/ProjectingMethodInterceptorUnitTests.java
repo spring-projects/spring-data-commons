@@ -43,7 +43,6 @@ import org.springframework.core.convert.support.DefaultConversionService;
  * @author Saulo Medeiros de Araujo
  * @author Mark Paluch
  * @author Christoph Strobl
- * @author Yanming Zhou
  */
 @ExtendWith(MockitoExtension.class)
 class ProjectingMethodInterceptorUnitTests {
@@ -203,30 +202,6 @@ class ProjectingMethodInterceptorUnitTests {
 
 		var collection = (Collection<HelperEnum>) result;
 		assertThat(collection).containsOnly(HelperEnum.Helpful);
-	}
-
-	@Test
-	void throwExceptionIfKotlinProjectionRequiresNonNullWithNullResult() throws Throwable {
-
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
-				conversionService);
-
-		when(invocation.getMethod()).thenReturn(Person.class.getMethod("getName"));
-		when(interceptor.invoke(invocation)).thenReturn(null);
-
-		assertThatIllegalArgumentException().isThrownBy(() -> methodInterceptor.invoke(invocation));
-	}
-
-	@Test
-	void returnsNullIfKotlinProjectionDoesNotRequiresNonNullWithNullResult() throws Throwable {
-
-		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(new ProxyProjectionFactory(), interceptor,
-				conversionService);
-
-		when(invocation.getMethod()).thenReturn(Person.class.getMethod("getAge"));
-		when(interceptor.invoke(invocation)).thenReturn(null);
-
-		assertThat(methodInterceptor.invoke(invocation)).isNull();
 	}
 
 	/**

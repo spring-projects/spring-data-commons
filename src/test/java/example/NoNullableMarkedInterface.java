@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.springframework.data.projection
+package example;
 
 /**
- * @author Yanming Zhou
+ * @author Christoph Strobl
  */
-interface Person {
-	val name: String
-	val age: Int?
+public interface NoNullableMarkedInterface {
+
+    String getFirstname();
+    String getLastname();
 }

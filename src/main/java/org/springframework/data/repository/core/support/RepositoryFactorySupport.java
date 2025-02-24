@@ -73,6 +73,7 @@ import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.NullabilityMethodInvocationValidator;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -334,7 +335,7 @@ public abstract class RepositoryFactorySupport
 	 * @return the implemented repository interface.
 	 * @since 2.0
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
 
 		if (logger.isDebugEnabled()) {
@@ -399,7 +400,7 @@ public abstract class RepositoryFactorySupport
 		result.setTarget(target);
 		result.setInterfaces(repositoryInterface, Repository.class, TransactionalProxy.class);
 
-		if (MethodInvocationValidator.supports(repositoryInterface)) {
+		if (NullabilityMethodInvocationValidator.supports(repositoryInterface)) {
 			if (logger.isTraceEnabled()) {
 				logger.trace(LogMessage.format("Register MethodInvocationValidator for %s…", repositoryInterface.getName()));
 			}

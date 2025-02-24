@@ -15,26 +15,8 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.core.KotlinDetector;
-import org.springframework.core.MethodParameter;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.data.util.NullableUtils;
-import org.springframework.data.util.ReflectionUtils;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
-import org.springframework.util.ObjectUtils;
+import org.springframework.data.util.NullabilityMethodInvocationValidator;
 
 /**
  * Interceptor enforcing required return value and method parameter constraints declared on repository query methods.
@@ -42,169 +24,17 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Christoph Strobl
  * @since 2.0
  * @see org.springframework.lang.NonNull
- * @see ReflectionUtils#isNullable(MethodParameter)
- * @see NullableUtils
+ * @see org.springframework.data.util.ReflectionUtils#isNullable(org.springframework.core.MethodParameter)
+ * @see org.springframework.data.util.NullableUtils
+ * @deprecated use {@link NullabilityMethodInvocationValidator} instead.
  */
-public class MethodInvocationValidator implements MethodInterceptor {
+@Deprecated // TODO: do we want to remove this with next major
+public class MethodInvocationValidator extends NullabilityMethodInvocationValidator {
 
-	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-	private final Map<Method, Nullability> nullabilityCache = new ConcurrentHashMap<>(16);
-
-	/**
-	 * Returns {@literal true} if the {@code repositoryInterface} is supported by this interceptor.
-	 *
-	 * @param repositoryInterface the interface class.
-	 * @return {@literal true} if the {@code repositoryInterface} is supported by this interceptor.
-	 */
-	public static boolean supports(Class<?> repositoryInterface) {
-
-		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(repositoryInterface)
-				|| NullableUtils.isNonNull(repositoryInterface, ElementType.METHOD)
-				|| NullableUtils.isNonNull(repositoryInterface, ElementType.PARAMETER);
-	}
-
-	@Nullable
-	@Override
-	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
-
-		Method method = invocation.getMethod();
-		Nullability nullability = nullabilityCache.get(method);
-
-		if (nullability == null) {
-
-			nullability = Nullability.of(method, discoverer);
-			nullabilityCache.put(method, nullability);
-		}
-
-		Object[] arguments = invocation.getArguments();
-
-		for (int i = 0; i < method.getParameterCount(); i++) {
-
-			if (nullability.isNullableParameter(i)) {
-				continue;
-			}
-
-			if ((arguments.length < i) || (arguments[i] == null)) {
-				throw new IllegalArgumentException(
-						String.format("Parameter %s in %s.%s must not be null", nullability.getMethodParameterName(i),
-								ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
-			}
-		}
-
-		Object result = invocation.proceed();
-
-		if ((result == null) && !nullability.isNullableReturn()) {
-			throw new EmptyResultDataAccessException("Result must not be null", 1);
-		}
-
-		return result;
-	}
-
-	static final class Nullability {
-
-		private final boolean nullableReturn;
-		private final boolean[] nullableParameters;
-		private final MethodParameter[] methodParameters;
-
-		private Nullability(boolean nullableReturn, boolean[] nullableParameters, MethodParameter[] methodParameters) {
-			this.nullableReturn = nullableReturn;
-			this.nullableParameters = nullableParameters;
-			this.methodParameters = methodParameters;
-		}
-
-		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
-
-			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
-			boolean[] nullableParameters = new boolean[method.getParameterCount()];
-			MethodParameter[] methodParameters = new MethodParameter[method.getParameterCount()];
-
-			for (int i = 0; i < method.getParameterCount(); i++) {
-
-				MethodParameter parameter = new MethodParameter(method, i);
-				parameter.initParameterNameDiscovery(discoverer);
-				nullableParameters[i] = isNullableParameter(parameter);
-				methodParameters[i] = parameter;
-			}
-
-			return new Nullability(nullableReturn, nullableParameters, methodParameters);
-		}
-
-		String getMethodParameterName(int index) {
-
-			String parameterName = methodParameters[index].getParameterName();
-
-			if (parameterName == null) {
-				parameterName = String.format("of type %s at index %d",
-						ClassUtils.getShortName(methodParameters[index].getParameterType()), index);
-			}
-
-			return parameterName;
-		}
-
-		boolean isNullableReturn() {
-			return nullableReturn;
-		}
-
-		boolean isNullableParameter(int index) {
-			return nullableParameters[index];
-		}
-
-		private static boolean isNullableParameter(MethodParameter parameter) {
-
-			return requiresNoValue(parameter) || NullableUtils.isExplicitNullable(parameter)
-					|| (KotlinReflectionUtils.isSupportedKotlinClass(parameter.getDeclaringClass())
-							&& ReflectionUtils.isNullable(parameter));
-		}
-
-		private static boolean requiresNoValue(MethodParameter parameter) {
-			return ReflectionUtils.isVoid(parameter.getParameterType());
-		}
-
-		public boolean[] getNullableParameters() {
-			return this.nullableParameters;
-		}
-
-		public MethodParameter[] getMethodParameters() {
-			return this.methodParameters;
-		}
-
-		@Override
-		public boolean equals(@Nullable Object o) {
-
-			if (this == o) {
-				return true;
-			}
-
-			if (!(o instanceof Nullability that)) {
-				return false;
-			}
-
-			if (nullableReturn != that.nullableReturn) {
-				return false;
-			}
-
-			if (!ObjectUtils.nullSafeEquals(nullableParameters, that.nullableParameters)) {
-				return false;
-			}
-
-			return ObjectUtils.nullSafeEquals(methodParameters, that.methodParameters);
-		}
-
-		@Override
-		public int hashCode() {
-			int result = (nullableReturn ? 1 : 0);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(nullableParameters);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(methodParameters);
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return "MethodInvocationValidator.Nullability(nullableReturn=" + this.isNullableReturn() + ", nullableParameters="
-					+ java.util.Arrays.toString(this.getNullableParameters()) + ", methodParameters="
-					+ java.util.Arrays.deepToString(this.getMethodParameters()) + ")";
-		}
-	}
+    public MethodInvocationValidator() {
+        super((invocation) -> new EmptyResultDataAccessException("Result must not be null", 1));
+    }
 }

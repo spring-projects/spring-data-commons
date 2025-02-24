@@ -24,13 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import kotlin.reflect.KFunction;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.CollectionFactory;
-import org.springframework.core.KotlinDetector;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.TypeInformation;
@@ -88,14 +85,6 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		if (applyWrapper) {
 			return conversionService.convert(new NullableWrapper(result), typeToReturn.getType());
-		}
-
-		if (result == null) {
-			KFunction<?> function = KotlinDetector.isKotlinType(method.getDeclaringClass()) ?
-					KotlinReflectionUtils.findKotlinFunction(method) : null;
-			if (function != null && !function.getReturnType().isMarkedNullable()) {
-				throw new IllegalArgumentException("Kotlin function '%s' requires non-null return value".formatted(method.toString()));
-			}
 		}
 
 		return result;
