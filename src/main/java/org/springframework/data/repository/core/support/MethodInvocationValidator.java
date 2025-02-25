@@ -15,8 +15,10 @@
  */
 package org.springframework.data.repository.core.support;
 
+import java.lang.reflect.Method;
+
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.util.NullabilityMethodInvocationValidator;
+import org.springframework.data.util.NullnessMethodInvocationValidator;
 
 /**
  * Interceptor enforcing required return value and method parameter constraints declared on repository query methods.
@@ -29,12 +31,11 @@ import org.springframework.data.util.NullabilityMethodInvocationValidator;
  * @see org.springframework.lang.NonNull
  * @see org.springframework.data.util.ReflectionUtils#isNullable(org.springframework.core.MethodParameter)
  * @see org.springframework.data.util.NullableUtils
- * @deprecated use {@link NullabilityMethodInvocationValidator} instead.
  */
-@Deprecated // TODO: do we want to remove this with next major
-public class MethodInvocationValidator extends NullabilityMethodInvocationValidator {
+public class MethodInvocationValidator extends NullnessMethodInvocationValidator {
 
-    public MethodInvocationValidator() {
-        super((invocation) -> new EmptyResultDataAccessException("Result must not be null", 1));
+	@Override
+	protected RuntimeException returnValueIsNull(Method method) {
+		return new EmptyResultDataAccessException("Result must not be null", 1);
     }
 }

@@ -15,15 +15,16 @@
  */
 package org.springframework.data.util;
 
+import kotlin.reflect.KFunction;
+
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
-import kotlin.reflect.KFunction;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
@@ -34,8 +35,8 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Interceptor enforcing required return value and method parameter constraints declared on repository query methods.
- * Supports Kotlin nullability markers and JSR-305 Non-null annotations.
- * Originally implemented via {@link org.springframework.data.repository.core.support.MethodInvocationValidator}.
+ * Supports Kotlin nullness markers and JSR-305 Non-null annotations. Originally implemented via
+ * {@link org.springframework.data.repository.core.support.MethodInvocationValidator}.
  *
  * @author Mark Paluch
  * @author Johannes Englmeier
@@ -44,23 +45,12 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.lang.NonNull
  * @see ReflectionUtils#isNullable(MethodParameter)
  * @see NullableUtils
+ * @link <a href="https://www.thedictionaryofobscuresorrows.com/word/nullness">Nullness</a>
  */
-public class NullabilityMethodInvocationValidator implements MethodInterceptor {
+public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
 	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-	private final Map<Method, Nullability> nullabilityCache = new ConcurrentHashMap<>(16);
-	private final Function<MethodInvocation, RuntimeException> errorFunction;
-
-	public NullabilityMethodInvocationValidator() {
-		this((invocation) ->  new NullPointerException("Method marked non nullable used with null value. If this is by design consider providing additional metadata using @Nullable annotations."));
-	}
-
-	/**
-	 * @param errorFunction custom function creating the error in case of failure.
-	 */
-	protected NullabilityMethodInvocationValidator(Function<MethodInvocation, RuntimeException> errorFunction) {
-		this.errorFunction = errorFunction;
-	}
+	private final Map<Method, MethodNullness> nullabilityCache = new ConcurrentHashMap<>(16);
 
 	/**
 	 * Returns {@literal true} if the {@code type} is supported by this interceptor.
@@ -80,51 +70,73 @@ public class NullabilityMethodInvocationValidator implements MethodInterceptor {
 	public Object invoke(@SuppressWarnings("null") MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
-		Nullability nullability = nullabilityCache.get(method);
+		MethodNullness nullness = nullabilityCache.get(method);
 
-		if (nullability == null) {
+		if (nullness == null) {
 
-			nullability = Nullability.of(method, discoverer);
-			nullabilityCache.put(method, nullability);
+			nullness = MethodNullness.of(method, discoverer);
+			nullabilityCache.put(method, nullness);
 		}
 
 		Object[] arguments = invocation.getArguments();
 
 		for (int i = 0; i < method.getParameterCount(); i++) {
 
-			if (nullability.isNullableParameter(i)) {
+			if (nullness.isNullableParameter(i)) {
 				continue;
 			}
 
 			if ((arguments.length < i) || (arguments[i] == null)) {
-				throw new IllegalArgumentException(
-						String.format("Parameter %s in %s.%s must not be null", nullability.getMethodParameterName(i),
-								ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
+				throw argumentIsNull(method, nullness.getMethodParameterName(i));
 			}
 		}
 
 		Object result = invocation.proceed();
 
-		if ((result == null) && !nullability.isNullableReturn()) {
-			throw errorFunction.apply(invocation);
+		if ((result == null) && !nullness.isNullableReturn()) {
+			throw returnValueIsNull(method);
 		}
 
 		return result;
 	}
 
-	static final class Nullability {
+	/**
+	 * Template method to construct a {@link RuntimeException} indicating failure to provide a non-{@literal null} value
+	 * for a method parameter.
+	 *
+	 * @param method
+	 * @param parameterName
+	 * @return
+	 */
+	protected RuntimeException argumentIsNull(Method method, String parameterName) {
+		return new IllegalArgumentException(String.format("Parameter %s in %s.%s must not be null", parameterName,
+				ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
+	}
+
+	/**
+	 * Template method to construct a {@link RuntimeException} indicating failure to return a non-{@literal null} return
+	 * value.
+	 *
+	 * @param method
+	 * @return
+	 */
+	protected RuntimeException returnValueIsNull(Method method) {
+		return new NullPointerException("Return value is null but must not be null");
+	}
+
+	static final class MethodNullness {
 
 		private final boolean nullableReturn;
 		private final boolean[] nullableParameters;
 		private final MethodParameter[] methodParameters;
 
-		private Nullability(boolean nullableReturn, boolean[] nullableParameters, MethodParameter[] methodParameters) {
+		private MethodNullness(boolean nullableReturn, boolean[] nullableParameters, MethodParameter[] methodParameters) {
 			this.nullableReturn = nullableReturn;
 			this.nullableParameters = nullableParameters;
 			this.methodParameters = methodParameters;
 		}
 
-		static Nullability of(Method method, ParameterNameDiscoverer discoverer) {
+		static MethodNullness of(Method method, ParameterNameDiscoverer discoverer) {
 
 			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
 			boolean[] nullableParameters = new boolean[method.getParameterCount()];
@@ -138,7 +150,7 @@ public class NullabilityMethodInvocationValidator implements MethodInterceptor {
 				methodParameters[i] = parameter;
 			}
 
-			return new Nullability(nullableReturn, nullableParameters, methodParameters);
+			return new MethodNullness(nullableReturn, nullableParameters, methodParameters);
 		}
 
 		String getMethodParameterName(int index) {
@@ -203,7 +215,7 @@ public class NullabilityMethodInvocationValidator implements MethodInterceptor {
 				return true;
 			}
 
-			if (!(o instanceof Nullability that)) {
+			if (!(o instanceof MethodNullness that)) {
 				return false;
 			}
 
