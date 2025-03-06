@@ -33,6 +33,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.lang.Contract;
 import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
@@ -100,10 +101,21 @@ public abstract class NullableUtils {
 	 *
 	 * @param method the method to inspect.
 	 * @param elementType the element type.
-	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
+	 * @return {@literal false} if {@link ElementType} allows {@literal null} values by default. {@literal true} if the
+	 *         methods return type is a {@link Class#isPrimitive() primitive} and {@literal false} if the method is
+	 *         {@literal void}.
 	 * @see #isNonNull(Annotation, ElementType)
 	 */
 	public static boolean isNonNull(Method method, ElementType elementType) {
+
+		Class<?> returnType = method.getReturnType();
+
+		if (ReflectionUtils.isVoid(returnType)) {
+			return false;
+		} else if (returnType.isPrimitive()) {
+			return true;
+		}
+
 		return isNonNull(method.getDeclaringClass(), elementType) || isNonNull((AnnotatedElement) method, elementType);
 	}
 
@@ -114,10 +126,16 @@ public abstract class NullableUtils {
 	 *
 	 * @param type the class to inspect.
 	 * @param elementType the element type.
-	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
+	 * @return {@literal false} if {@link ElementType} allows {@literal null} values. {@literal true} the given
+	 *         {@literal type} is a {@link Class#isPrimitive() primitive}.
 	 * @see #isNonNull(Annotation, ElementType)
 	 */
 	public static boolean isNonNull(Class<?> type, ElementType elementType) {
+
+		if (type.isPrimitive()) {
+			return true;
+		}
+
 		return isNonNull(type.getPackage(), elementType) || isNonNull((AnnotatedElement) type, elementType);
 	}
 
@@ -126,11 +144,17 @@ public abstract class NullableUtils {
 	 * This method determines default {@code javax.annotation.Nonnull nullability} rules from the annotated element
 	 *
 	 * @param element the scope of declaration, may be a {@link Package}, {@link Class}, or
-	 *          {@link java.lang.reflect.Method}.
+	 *          {@link java.lang.reflect.Method}. Can be {@literal null}.
 	 * @param elementType the element type.
-	 * @return {@literal true} if {@link ElementType} allows {@literal null} values by default.
+	 * @return {@literal false} if {@link ElementType} allows {@literal null} values by default or if the given
+	 *         {@link AnnotatedElement} is {@literal null}.
 	 */
-	public static boolean isNonNull(AnnotatedElement element, ElementType elementType) {
+	@Contract("null, _ -> false")
+	public static boolean isNonNull(@Nullable AnnotatedElement element, ElementType elementType) {
+
+		if (element == null) {
+			return false;
+		}
 
 		for (Annotation annotation : element.getAnnotations()) {
 
@@ -157,8 +181,7 @@ public abstract class NullableUtils {
 			return true;
 		}
 
-		if (!MergedAnnotations.from(annotation.annotationType()).isPresent(annotationClass)
-				|| !isNonNull(annotation)) {
+		if (!MergedAnnotations.from(annotation.annotationType()).isPresent(annotationClass) || !isNonNull(annotation)) {
 			return false;
 		}
 

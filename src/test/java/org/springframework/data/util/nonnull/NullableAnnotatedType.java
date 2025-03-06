@@ -34,4 +34,8 @@ public interface NullableAnnotatedType {
 
 	@javax.annotation.Nonnull(when = When.MAYBE)
 	String jsr305NullableReturnWhen();
+
+	boolean primitiveReturn();
+
+	void noReturnActually();
 }
