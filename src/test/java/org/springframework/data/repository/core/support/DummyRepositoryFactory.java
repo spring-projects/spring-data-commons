@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
@@ -103,7 +104,7 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 		var fragments = super.getRepositoryFragments(metadata);
 
 		return QuerydslPredicateExecutor.class.isAssignableFrom(metadata.getRepositoryInterface()) //
-				? fragments.append(RepositoryFragments.just(querydsl)) //
+				? fragments.append(RepositoryFragments.just(querydsl, new Object())) //
 				: fragments;
 	}
 

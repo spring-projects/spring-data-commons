@@ -107,7 +107,7 @@ public abstract class RepositoryFactorySupport
 		CONVERSION_SERVICE.removeConvertible(Object.class, Object.class);
 	}
 
-	private final Map<RepositoryInformationCacheKey, RepositoryInformation> repositoryInformationCache;
+	private final Map<RepositoryInformationCacheKey, RepositoryStub> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
 	private @Nullable Class<?> repositoryBaseClass;
@@ -127,7 +127,7 @@ public abstract class RepositoryFactorySupport
 	@SuppressWarnings("null")
 	public RepositoryFactorySupport() {
 
-		this.repositoryInformationCache = new HashMap<>(16);
+		this.repositoryInformationCache = new HashMap<>(8);
 		this.postProcessors = new ArrayList<>();
 
 		this.namedQueries = PropertiesBasedNamedQueries.EMPTY;
@@ -292,16 +292,6 @@ public abstract class RepositoryFactorySupport
 	}
 
 	/**
-	 * Creates {@link RepositoryComposition} based on {@link RepositoryMetadata} for repository-specific method handling.
-	 *
-	 * @param metadata the repository metadata to use.
-	 * @return repository composition.
-	 */
-	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata) {
-		return RepositoryComposition.fromMetadata(metadata);
-	}
-
-	/**
 	 * Returns a repository instance for the given interface.
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
@@ -359,8 +349,9 @@ public abstract class RepositoryFactorySupport
 				repositoryInterface);
 		repositoryCompositionStep.tag("fragment.count", String.valueOf(fragments.size()));
 
-		RepositoryComposition composition = getRepositoryComposition(metadata, fragments);
-		RepositoryInformation information = getRepositoryInformation(metadata, composition);
+		RepositoryStub stub = getRepositoryStub(metadata, fragments);
+		RepositoryComposition composition = stub.composition();
+		RepositoryInformation information = stub.information();
 
 		repositoryCompositionStep.tag("fragments", () -> {
 
@@ -490,47 +481,35 @@ public abstract class RepositoryFactorySupport
 	 * @return will never be {@literal null}.
 	 */
 	protected RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata, RepositoryFragments fragments) {
-		return getRepositoryInformation(metadata, getRepositoryComposition(metadata, fragments));
+		return getRepositoryStub(metadata, fragments).information();
 	}
 
 	/**
-	 * Returns the {@link RepositoryComposition} for the given {@link RepositoryMetadata} and extra
-	 * {@link RepositoryFragments}.
-	 *
-	 * @param metadata must not be {@literal null}.
-	 * @param fragments must not be {@literal null}.
-	 * @return will never be {@literal null}.
-	 */
-	private RepositoryComposition getRepositoryComposition(RepositoryMetadata metadata, RepositoryFragments fragments) {
-
-		Assert.notNull(metadata, "RepositoryMetadata must not be null");
-		Assert.notNull(fragments, "RepositoryFragments must not be null");
-
-		RepositoryComposition composition = getRepositoryComposition(metadata);
-		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
-
-		return composition.append(fragments).append(repositoryAspects);
-	}
-
-	/**
-	 * Returns the {@link RepositoryInformation} for the given repository interface.
+	 * Returns the cached {@link RepositoryStub} for the given repository and composition. {@link RepositoryMetadata} is a
+	 * strong cache key while {@link RepositoryFragments} contributes a light-weight caching component by using only the
+	 * fragments hash code. In a typical Spring scenario, that shouldn't impose issues as one repository factory produces
+	 * only a single repository instance for one repository interface. Things might be different when using various
+	 * fragments for the same repository interface.
 	 *
 	 * @param metadata
-	 * @param composition
+	 * @param fragments
 	 * @return
 	 */
-	private RepositoryInformation getRepositoryInformation(RepositoryMetadata metadata,
-			RepositoryComposition composition) {
+	private RepositoryStub getRepositoryStub(RepositoryMetadata metadata, RepositoryFragments fragments) {
 
-		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, composition);
+		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, fragments);
 
 		synchronized (repositoryInformationCache) {
 
 			return repositoryInformationCache.computeIfAbsent(cacheKey, key -> {
 
-			Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
+			RepositoryComposition composition = RepositoryComposition.fromMetadata(metadata);
+				RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
+				composition = composition.append(fragments).append(repositoryAspects);
 
-				return new DefaultRepositoryInformation(metadata, baseClass, composition);
+				Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
+
+				return new RepositoryStub(new DefaultRepositoryInformation(metadata, baseClass, composition), composition);
 			});
 		}
 	}
@@ -812,6 +791,18 @@ public abstract class RepositoryFactorySupport
 	}
 
 	/**
+	 * Repository stub holding {@link RepositoryInformation} and {@link RepositoryComposition}.
+	 *
+	 * @param information
+	 * @param composition
+	 * @author Mark Paluch
+	 * @since 3.4.4
+	 */
+	record RepositoryStub(RepositoryInformation information, RepositoryComposition composition) {
+
+	}
+
+	/**
 	 * Simple value object to build up keys to cache {@link RepositoryInformation} instances.
 	 *
 	 * @author Oliver Gierke
@@ -820,31 +811,26 @@ public abstract class RepositoryFactorySupport
 	private static final class RepositoryInformationCacheKey {
 
 		private final String repositoryInterfaceName;
-		private final long compositionHash;
+		private final long fragmentsHash;
 
 		/**
-		 * Creates a new {@link RepositoryInformationCacheKey} for the given {@link RepositoryMetadata} and composition.
+		 * Creates a new {@link RepositoryInformationCacheKey} for the given {@link RepositoryMetadata} and fragments.
 		 *
 		 * @param metadata must not be {@literal null}.
-		 * @param composition must not be {@literal null}.
+		 * @param fragments must not be {@literal null}.
 		 */
-		public RepositoryInformationCacheKey(RepositoryMetadata metadata, RepositoryComposition composition) {
+		public RepositoryInformationCacheKey(RepositoryMetadata metadata, RepositoryFragments fragments) {
 
 			this.repositoryInterfaceName = metadata.getRepositoryInterface().getName();
-			this.compositionHash = composition.hashCode();
-		}
-
-		public RepositoryInformationCacheKey(String repositoryInterfaceName, long compositionHash) {
-			this.repositoryInterfaceName = repositoryInterfaceName;
-			this.compositionHash = compositionHash;
+			this.fragmentsHash = fragments.getFragments().hashCode();
 		}
 
 		public String getRepositoryInterfaceName() {
 			return this.repositoryInterfaceName;
 		}
 
-		public long getCompositionHash() {
-			return this.compositionHash;
+		public long getFragmentsHash() {
+			return this.fragmentsHash;
 		}
 
 		@Override
@@ -855,7 +841,7 @@ public abstract class RepositoryFactorySupport
 			if (!(o instanceof RepositoryInformationCacheKey that)) {
 				return false;
 			}
-			if (compositionHash != that.compositionHash) {
+			if (fragmentsHash != that.fragmentsHash) {
 				return false;
 			}
 			return ObjectUtils.nullSafeEquals(repositoryInterfaceName, that.repositoryInterfaceName);
@@ -864,14 +850,14 @@ public abstract class RepositoryFactorySupport
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(repositoryInterfaceName);
-			result = 31 * result + (int) (compositionHash ^ (compositionHash >>> 32));
+			result = 31 * result + Long.hashCode(fragmentsHash);
 			return result;
 		}
 
 		@Override
 		public String toString() {
 			return "RepositoryFactorySupport.RepositoryInformationCacheKey(repositoryInterfaceName="
-					+ this.getRepositoryInterfaceName() + ", compositionHash=" + this.getCompositionHash() + ")";
+					+ this.getRepositoryInterfaceName() + ", fragmentsHash=" + this.getFragmentsHash() + ")";
 		}
 	}
 
