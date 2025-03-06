@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -293,6 +294,26 @@ class RepositoryFactorySupportUnitTests {
 		assertThat(metadata.methodInvocation().getMethod().getName()).isEqualTo("findMetadataByLastname");
 	}
 
+	@Test
+	void cachesRepositoryInformation() {
+
+		var repository1 = factory.getRepository(ObjectAndQuerydslRepository.class, backingRepo);
+		var repository2 = factory.getRepository(ObjectAndQuerydslRepository.class, backingRepo);
+		repository1.findByFoo();
+		repository2.deleteAll();
+
+		for (int i = 0; i < 10; i++) {
+			RepositoryFragments fragments = RepositoryFragments.just(backingRepo);
+			RepositoryMetadata metadata = factory.getRepositoryMetadata(ObjectAndQuerydslRepository.class);
+			factory.getRepositoryInformation(metadata, fragments);
+		}
+
+		Map<Object, RepositoryInformation> cache = (Map) ReflectionTestUtils.getField(factory,
+				"repositoryInformationCache");
+
+		assertThat(cache).hasSize(1);
+	}
+
 	@Test // DATACMNS-509, DATACMNS-1764
 	void convertsWithSameElementType() {
 
@@ -543,6 +564,10 @@ class RepositoryFactorySupportUnitTests {
 	}
 
 	interface SimpleRepository extends Repository<Object, Serializable> {}
+
+	interface ObjectAndQuerydslRepository extends ObjectRepository, QuerydslPredicateExecutor<Object> {
+
+	}
 
 	interface ObjectRepository extends Repository<Object, Object>, ObjectRepositoryCustom {
 

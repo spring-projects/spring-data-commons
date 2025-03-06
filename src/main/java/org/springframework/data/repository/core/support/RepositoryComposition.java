@@ -541,6 +541,10 @@ public class RepositoryComposition {
 			return null;
 		}
 
+		List<RepositoryFragment<?>> getFragments() {
+			return fragments;
+		}
+
 		/**
 		 * Returns the number of {@link RepositoryFragment fragments} available.
 		 *
@@ -585,5 +589,6 @@ public class RepositoryComposition {
 			result = (31 * result) + ObjectUtils.nullSafeHashCode(fragments);
 			return result;
 		}
+
 	}
 }
