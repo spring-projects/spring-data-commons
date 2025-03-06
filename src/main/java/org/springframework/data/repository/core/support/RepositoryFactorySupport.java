@@ -110,7 +110,7 @@ public abstract class RepositoryFactorySupport
 		CONVERSION_SERVICE.removeConvertible(Object.class, Object.class);
 	}
 
-	private final Map<RepositoryInformationCacheKey, RepositorySub> repositoryInformationCache;
+	private final Map<RepositoryInformationCacheKey, RepositoryStub> repositoryInformationCache;
 	private final List<RepositoryProxyPostProcessor> postProcessors;
 
 	private @Nullable Class<?> repositoryBaseClass;
@@ -352,7 +352,7 @@ public abstract class RepositoryFactorySupport
 				repositoryInterface);
 		repositoryCompositionStep.tag("fragment.count", String.valueOf(fragments.size()));
 
-		RepositorySub stub = getRepositoryStub(metadata, fragments);
+		RepositoryStub stub = getRepositoryStub(metadata, fragments);
 		RepositoryComposition composition = stub.composition();
 		RepositoryInformation information = stub.information();
 
@@ -488,7 +488,7 @@ public abstract class RepositoryFactorySupport
 	}
 
 	/**
-	 * Returns the cached {@link RepositorySub} for the given repository and composition. {@link RepositoryMetadata} is a
+	 * Returns the cached {@link RepositoryStub} for the given repository and composition. {@link RepositoryMetadata} is a
 	 * strong cache key while {@link RepositoryFragments} contributes a light-weight caching component by using only the
 	 * fragments hash code. In a typical Spring scenario, that shouldn't impose issues as one repository factory produces
 	 * only a single repository instance for one repository interface. Things might be different when using various
@@ -498,7 +498,7 @@ public abstract class RepositoryFactorySupport
 	 * @param fragments
 	 * @return
 	 */
-	private RepositorySub getRepositoryStub(RepositoryMetadata metadata, RepositoryFragments fragments) {
+	private RepositoryStub getRepositoryStub(RepositoryMetadata metadata, RepositoryFragments fragments) {
 
 		RepositoryInformationCacheKey cacheKey = new RepositoryInformationCacheKey(metadata, fragments);
 
@@ -512,7 +512,7 @@ public abstract class RepositoryFactorySupport
 
 				Class<?> baseClass = repositoryBaseClass != null ? repositoryBaseClass : getRepositoryBaseClass(metadata);
 
-				return new RepositorySub(new DefaultRepositoryInformation(metadata, baseClass, composition), composition);
+				return new RepositoryStub(new DefaultRepositoryInformation(metadata, baseClass, composition), composition);
 			});
 		}
 	}
@@ -803,7 +803,7 @@ public abstract class RepositoryFactorySupport
 	 * @author Mark Paluch
 	 * @since 3.4.4
 	 */
-	record RepositorySub(RepositoryInformation information, RepositoryComposition composition) {
+	record RepositoryStub(RepositoryInformation information, RepositoryComposition composition) {
 
 	}
 
