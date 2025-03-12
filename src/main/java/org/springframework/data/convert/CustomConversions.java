@@ -185,9 +185,36 @@ public class CustomConversions {
 	 */
 	public boolean hasValueConverter(PersistentProperty<?> property) {
 
-		PropertyValueConversions propertyValueConversions = getPropertyValueConversions();
+		PropertyValueConversions pvc = getPropertyValueConversions();
 
-		return propertyValueConversions != null && propertyValueConversions.hasValueConverter(property);
+		return pvc != null && pvc.hasValueConverter(property);
+	}
+
+	/**
+	 * Returns the required {@link PropertyValueConverter} for the given {@link PersistentProperty} or throws
+	 * {@link IllegalStateException} if no converter is available. This is a convenience method for
+	 * {@code getPropertyValueConversions().getValueConverter(…)} enforcing non-null constraints.
+	 * <p>
+	 * Prior to calling this method you should verify a converter is available using
+	 * {@link #hasValueConverter(PersistentProperty)}.
+	 *
+	 * @param property {@link PersistentProperty} to evaluate; must not be {@literal null}.
+	 * @return the required {@link PropertyValueConverter}
+	 * @throws IllegalStateException if no converter is available.
+	 * @since 4.0
+	 * @see #hasValueConverter(PersistentProperty)
+	 */
+	public <DV, SV, P extends PersistentProperty<P>, VCC extends ValueConversionContext<P>> PropertyValueConverter<DV, SV, VCC> getRequiredValueConverter(
+			P property) {
+
+		PropertyValueConversions pvc = getPropertyValueConversions();
+		PropertyValueConverter<DV, SV, VCC> converter = pvc != null ? pvc.getValueConverter(property) : null;
+
+		if (converter == null) {
+			throw new IllegalStateException("No value converter registered for property %s".formatted(property.getName()));
+		}
+
+		return converter;
 	}
 
 	/**
