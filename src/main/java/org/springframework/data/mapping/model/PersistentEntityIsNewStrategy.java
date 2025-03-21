@@ -41,18 +41,21 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 	 * Creates a new {@link PersistentEntityIsNewStrategy} for the given entity.
 	 *
 	 * @param entity must not be {@literal null}.
+	 * @param idOnly {@code true} if should consider only the ID property of the {@link PersistentEntity}, {@code false}
+	 *               if other properties such as {@link PersistentEntity#getVersionProperty() version} shall be
+	 *               considered.
 	 */
 	private PersistentEntityIsNewStrategy(PersistentEntity<?, ?> entity, boolean idOnly) {
 
 		Assert.notNull(entity, "PersistentEntity must not be null");
 
-		this.valueLookup = entity.hasVersionProperty() && !idOnly //
-				? source -> entity.getPropertyAccessor(source).getProperty(entity.getRequiredVersionProperty())
-				: source -> entity.getIdentifierAccessor(source).getIdentifier();
-
-		this.valueType = entity.hasVersionProperty() && !idOnly //
-				? entity.getRequiredVersionProperty().getType() //
-				: entity.hasIdProperty() ? entity.getRequiredIdProperty().getType() : null;
+		if (entity.hasVersionProperty() && !idOnly) {
+			this.valueLookup = source -> entity.getPropertyAccessor(source).getProperty(entity.getRequiredVersionProperty());
+			this.valueType = entity.getRequiredVersionProperty().getType();
+		} else {
+			this.valueLookup = source -> entity.getIdentifierAccessor(source).getIdentifier();
+			this.valueType = entity.hasIdProperty() ? entity.getRequiredIdProperty().getType() : null;
+		}
 
 		Class<?> type = valueType;
 
@@ -60,8 +63,9 @@ class PersistentEntityIsNewStrategy implements IsNewStrategy {
 
 			if (!ClassUtils.isAssignable(Number.class, type)) {
 
-				throw new IllegalArgumentException(String
-						.format("Only numeric primitives are supported as identifier / version field types; Got: %s", valueType));
+				throw new IllegalArgumentException(
+						String.format("Only numeric primitives are supported as identifier / version field types; Got: %s",
+								valueType));
 			}
 		}
 	}

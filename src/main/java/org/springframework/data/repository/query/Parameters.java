@@ -38,6 +38,8 @@ import org.springframework.util.Assert;
 /**
  * Abstracts method parameters that have to be bound to query parameters or applied to the query independently.
  *
+ * @param <T> The exact type of {@link Parameter} inside {@link Parameters}
+ * @param <S> The exact type of {@link Parameters} to be used. Generified to allow for recursive generics.
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Johannes Englmeier

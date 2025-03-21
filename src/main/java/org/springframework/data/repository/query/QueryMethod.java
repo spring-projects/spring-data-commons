@@ -86,7 +86,7 @@ public class QueryMethod {
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.metadata = metadata;
-		this.parameters = createParameters(method, metadata.getDomainTypeInformation());
+		this.parameters = createParameters(ParametersSource.of(getMetadata(), method));
 
 		this.domainClass = Lazy.of(() -> {
 
@@ -316,11 +316,11 @@ public class QueryMethod {
 		return resultProcessor;
 	}
 
-	RepositoryMetadata getMetadata() {
+	public RepositoryMetadata getMetadata() {
 		return metadata;
 	}
 
-	Method getMethod() {
+	public Method getMethod() {
 		return method;
 	}
 
@@ -329,7 +329,7 @@ public class QueryMethod {
 		return method.toString();
 	}
 
-	private static Class<? extends Object> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
+	private static Class<?> potentiallyUnwrapReturnTypeFor(RepositoryMetadata metadata, Method method) {
 
 		TypeInformation<?> returnType = metadata.getReturnType(method);
 		if (QueryExecutionConverters.supports(returnType.getType())
