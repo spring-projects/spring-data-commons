@@ -16,7 +16,6 @@
 package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +27,6 @@ import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -105,7 +103,7 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 		return baseComposition.getMethod(method) != null;
 	}
 
-
+	@Override
 	protected boolean isQueryMethodCandidate(Method method) {
 
 		// FIXME - that should be simplified
@@ -114,14 +112,18 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 			return queryMethodCandidate;
 		}
 
-		return queryMethodCandidate && !getFragments().stream().anyMatch(fragment -> {
-			if(fragment.getImplementation().isPresent()) {
-				if(ClassUtils.hasMethod(fragment.getImplementation().get().getClass(), method.getName(), method.getParameterTypes())) {
-					return true;
-				}
-			}
+		if (!queryMethodCandidate) {
 			return false;
-		});
+		}
+
+		for (RepositoryFragment<?> fragment : getFragments()) {
+
+			if (fragment.getImplementation().isPresent() && fragment.hasMethod(method)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override

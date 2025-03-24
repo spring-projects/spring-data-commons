@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import java.util.function.Function;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -32,9 +31,11 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.NamedQueries;
@@ -45,6 +46,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
@@ -77,18 +79,18 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private @Nullable Key queryLookupStrategyKey;
 	private @Nullable Class<?> repositoryBaseClass;
 	private @Nullable Object customImplementation;
-	private RepositoryFragments repositoryFragments = RepositoryFragments.empty();
+	private final List<RepositoryFragmentsFunction> fragments = new ArrayList<>();
 	private NamedQueries namedQueries = PropertiesBasedNamedQueries.EMPTY;
 	private @Nullable MappingContext<?, ?> mappingContext;
 	private @Nullable ClassLoader classLoader;
 	private @Nullable ApplicationEventPublisher publisher;
 	private @Nullable BeanFactory beanFactory;
 	private @Nullable Environment environment;
-	private boolean lazyInit = false;
+	private boolean lazyInit = Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING); // use lazy-init in AOT processing
 	private @Nullable EvaluationContextProvider evaluationContextProvider;
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
-	private @Nullable Function<BeanFactory, Object> aotImplementationFunction;
 
+	private RepositoryFragments cachedFragments = RepositoryFragments.empty();
 	private @Nullable Lazy<T> repository;
 	private @Nullable RepositoryMetadata repositoryMetadata;
 
@@ -146,12 +148,24 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
-	 * Setter to inject repository fragments.
+	 * Setter to inject repository fragments. This method is additive and will add another {@link RepositoryFragments} to
+	 * the already existing list of {@link RepositoryFragmentsFunction}.
 	 *
 	 * @param repositoryFragments
 	 */
 	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
-		this.repositoryFragments = repositoryFragments;
+		setRepositoryFragments(RepositoryFragmentsFunction.just(repositoryFragments));
+	}
+
+	/**
+	 * Setter to inject repository fragments. This method is additive and will add another {@link RepositoryFragments} to
+	 * the already existing list of {@link RepositoryFragmentsFunction}.
+	 *
+	 * @param fragmentsFunction
+	 * @since 4.0
+	 */
+	public void setRepositoryFragments(RepositoryFragmentsFunction fragmentsFunction) {
+		this.fragments.add(fragmentsFunction);
 	}
 
 	/**
@@ -242,15 +256,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
-	public void setAotImplementationFunction(@Nullable Function<BeanFactory, Object> aotImplementationFunction) {
-		this.aotImplementationFunction = aotImplementationFunction;
-	}
-
-	@Nullable
-	protected Function<BeanFactory, Object> getAotImplementationFunction() {
-		return aotImplementationFunction;
-	}
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
@@ -260,11 +265,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	@Override
 	public RepositoryInformation getRepositoryInformation() {
-
-		RepositoryFragments fragments = customImplementation != null ? RepositoryFragments.just(customImplementation)
-				: RepositoryFragments.empty();
-
-		return getRequiredFactory().getRepositoryInformation(getRequiredRepositoryMetadata(), fragments);
+		return getRequiredFactory().getRepositoryInformation(getRequiredRepositoryMetadata(), cachedFragments);
 	}
 
 	@Override
@@ -310,7 +311,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	public void afterPropertiesSet() {
 
-
 		this.factory = createRepositoryFactory();
 		this.factory.setExposeMetadata(exposeMetadata);
 		this.factory.setQueryLookupStrategyKey(queryLookupStrategyKey);
@@ -331,23 +331,18 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			this.factory.setEnvironment(this.environment);
 		}
 
-        if(this.aotImplementationFunction != null) {
-            this.factory.setAotImplementation(aotImplementationFunction.apply(beanFactory));
-        }
-
 		if (repositoryBaseClass != null) {
 			this.factory.setRepositoryBaseClass(repositoryBaseClass);
 		}
 
 		this.repositoryFactoryCustomizers.forEach(customizer -> customizer.customize(this.factory));
 
-		RepositoryFragments customImplementationFragment = customImplementation != null ? //
-				RepositoryFragments.just(customImplementation) : RepositoryFragments.empty();
+		RepositoryMetadata metadata = this.factory.getRepositoryMetadata(repositoryInterface);
+		RepositoryFragments repositoryFragments = getRepositoryFragments(metadata);
 
-		RepositoryFragments repositoryFragmentsToUse = repositoryFragments.append(customImplementationFragment);
-
-		this.repositoryMetadata = this.factory.getRepositoryMetadata(repositoryInterface);
-		this.repository = Lazy.of(() -> getRequiredFactory().getRepository(repositoryInterface, repositoryFragmentsToUse));
+		this.cachedFragments = repositoryFragments;
+		this.repositoryMetadata = metadata;
+		this.repository = Lazy.of(() -> getRequiredFactory().getRepository(repositoryInterface, repositoryFragments));
 
 		// Make sure the aggregate root type is present in the MappingContext (e.g. for auditing)
 
@@ -366,5 +361,105 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @return the repository factory.
 	 */
 	protected abstract RepositoryFactorySupport createRepositoryFactory();
+
+	private RepositoryFragments getRepositoryFragments(RepositoryMetadata repositoryMetadata) {
+
+		RepositoryFactorySupport factory = getRequiredFactory();
+		ValueExpressionDelegate valueExpressionDelegate = factory.getValueExpressionDelegate();
+		List<RepositoryFragmentsFunction> functions = new ArrayList<>(this.fragments);
+
+		if (customImplementation != null) {
+			functions.add(0, RepositoryFragmentsFunction.just(RepositoryFragments.just(customImplementation)));
+		}
+
+		FragmentCreationContext creationContext = new DefaultFragmentCreationContext(repositoryMetadata,
+				valueExpressionDelegate, factory.getProjectionFactory());
+
+		RepositoryFragments fragments = RepositoryFragments.empty();
+		for (RepositoryFragmentsFunction function : functions) {
+			fragments = fragments.append(function.getRepositoryFragments(this.beanFactory,
+					creationContext));
+		}
+
+		return fragments;
+	}
+
+	/**
+	 * Functional interface to obtain {@link RepositoryFragments} for a given {@link BeanFactory} (can be
+	 * {@literal null}), {@link EntityInformation} and {@link ValueExpressionDelegate}.
+	 * <p>
+	 * This interface is used within the Framework and should not be used in application code.
+	 *
+	 * @since 4.0
+	 */
+	public interface RepositoryFragmentsFunction {
+
+		/**
+		 * Return {@link RepositoryFragments} for a given {@link BeanFactory} (can be {@literal null}),
+		 * {@link EntityInformation} and {@link ValueExpressionDelegate}.
+		 *
+		 * @param beanFactory can be {@literal null}.
+		 * @param context the creation context.
+		 * @return the repository fragments to use.
+		 */
+		RepositoryFragments getRepositoryFragments(@Nullable BeanFactory beanFactory,
+				FragmentCreationContext context);
+
+		/**
+		 * Factory method to create {@link RepositoryFragmentsFunction} for a resolved {@link RepositoryFragments} object.
+		 *
+		 * @param fragments the fragments to use.
+		 * @return a supplier {@link RepositoryFragmentsFunction} returning just {@code fragments}.
+		 */
+		static RepositoryFragmentsFunction just(RepositoryFragments fragments) {
+			return (bf, context) -> fragments;
+		}
+
+	}
+
+	/**
+	 * Creation context for a Repository Fragment.
+	 *
+	 * @since 4.0
+	 */
+	public interface FragmentCreationContext {
+
+		/**
+		 * @return the repository metadata in use.
+		 */
+		RepositoryMetadata getRepositoryMetadata();
+
+		/**
+		 * @return delegate for Value Expression parsing and evaluation.
+		 */
+		ValueExpressionDelegate getValueExpressionDelegate();
+
+		/**
+		 * @return the projection factory to use.
+		 */
+		ProjectionFactory getProjectionFactory();
+
+	}
+
+	private record DefaultFragmentCreationContext(RepositoryMetadata repositoryMetadata,
+			ValueExpressionDelegate valueExpressionDelegate,
+			ProjectionFactory projectionFactory) implements FragmentCreationContext {
+
+		@Override
+		public RepositoryMetadata getRepositoryMetadata() {
+			return repositoryMetadata;
+		}
+
+		@Override
+		public ValueExpressionDelegate getValueExpressionDelegate() {
+			return valueExpressionDelegate();
+		}
+
+		@Override
+		public ProjectionFactory getProjectionFactory() {
+			return projectionFactory();
+		}
+
+	}
 
 }

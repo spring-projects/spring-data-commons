@@ -15,19 +15,22 @@
  */
 package org.springframework.data.repository.core;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.QueryAnnotation;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
@@ -57,7 +60,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	}
 
 	@Override
-	public Streamable<Method> getQueryMethods() {
+	public List<Method> getQueryMethods() {
 		return queryMethods.get().methods;
 	}
 
@@ -113,7 +116,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 
 	@Override
 	public boolean isQueryMethod(Method method) {
-		return getQueryMethods().stream().anyMatch(it -> it.equals(method));
+		return queryMethods.get().isQueryMethod(method);
 	}
 
 	@Override
@@ -144,7 +147,14 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	 * @return
 	 */
 	protected boolean isQueryAnnotationPresentOn(Method method) {
-		return AnnotationUtils.findAnnotation(method, QueryAnnotation.class) != null;
+
+		Annotation[] annotations = method.getAnnotations();
+
+		if (annotations.length == 0) {
+			return false;
+		}
+
+		return MergedAnnotations.from(annotations).isPresent(QueryAnnotation.class);
 	}
 
 	/**
@@ -154,9 +164,24 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	 * @return
 	 */
 	protected boolean isQueryMethodCandidate(Method method) {
-		return !method.isBridge() && !method.isDefault() //
-				&& !Modifier.isStatic(method.getModifiers()) //
-				&& (isQueryAnnotationPresentOn(method) || !isCustomMethod(method) && !isBaseClassMethod(method));
+
+		if (method.isBridge() || method.isDefault() || Modifier.isStatic(method.getModifiers())) {
+			return false;
+		}
+
+		if (isCustomMethod(method)) {
+			return false;
+		}
+
+		if (isQueryAnnotationPresentOn(method)) {
+			return true;
+		}
+
+		if (isBaseClassMethod(method)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	private RepositoryMetadata getMetadata() {
@@ -166,21 +191,27 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	private DefaultQueryMethods calculateQueryMethods() {
 
 		Class<?> repositoryInterface = getRepositoryInterface();
+		Method[] methods = repositoryInterface.getMethods();
+		List<Method> queryMethods = new ArrayList<>(methods.length);
+		for (Method method : methods) {
 
-		return new DefaultQueryMethods(Streamable.of(Arrays.stream(repositoryInterface.getMethods())
-				.map(it -> ClassUtils.getMostSpecificMethod(it, repositoryInterface)) //
-				.filter(this::isQueryMethodCandidate) //
-				.toList()), calculateHasCustomMethod(repositoryInterface));
+			Method msm = ClassUtils.getMostSpecificMethod(method, repositoryInterface);
+			if (isQueryMethodCandidate(method)) {
+				queryMethods.add(msm);
+			}
+		}
+
+		return new DefaultQueryMethods(queryMethods, calculateHasCustomMethod(repositoryInterface, methods));
 	}
 
-	private boolean calculateHasCustomMethod(Class<?> repositoryInterface) {
+	private boolean calculateHasCustomMethod(Class<?> repositoryInterface, Method[] methods) {
 
 		// No detection required if no typing interface was configured
 		if (isGenericRepositoryInterface(repositoryInterface)) {
 			return false;
 		}
 
-		for (Method method : repositoryInterface.getMethods()) {
+		for (Method method : methods) {
 			if (isCustomMethod(method) && !isBaseClassMethod(method)) {
 				return true;
 			}
@@ -217,14 +248,20 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	 */
 	private static class DefaultQueryMethods {
 
-		private final Streamable<Method> methods;
+		private final List<Method> methods;
+		private final Set<Method> methodSet;
 		private final boolean hasCustomMethod, hasQueryMethod;
 
-		DefaultQueryMethods(Streamable<Method> methods, boolean hasCustomMethod) {
+		DefaultQueryMethods(List<Method> methods, boolean hasCustomMethod) {
 
-			this.methods = methods;
+			this.methods = Collections.unmodifiableList(methods);
+			this.methodSet = new HashSet<>(methods);
 			this.hasCustomMethod = hasCustomMethod;
 			this.hasQueryMethod = !methods.isEmpty();
+		}
+
+		public boolean isQueryMethod(Method method) {
+			return methodSet.contains(method);
 		}
 	}
 }

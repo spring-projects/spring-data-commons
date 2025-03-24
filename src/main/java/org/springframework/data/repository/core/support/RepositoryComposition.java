@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,6 +105,7 @@ public class RepositoryComposition {
 	private final Map<Method, Method> methodCache = new ConcurrentHashMap<>();
 	private final RepositoryFragments fragments;
 	private final MethodLookup methodLookup;
+	private final List<MethodLookup.MethodPredicate> lookups;
 	private final BiFunction<Method, Object[], Object[]> argumentConverter;
 	private final @Nullable RepositoryMetadata metadata;
 
@@ -115,6 +115,7 @@ public class RepositoryComposition {
 		this.metadata = metadata;
 		this.fragments = fragments;
 		this.methodLookup = methodLookup;
+		this.lookups = methodLookup.getLookups();
 		this.argumentConverter = argumentConverter;
 	}
 
@@ -308,7 +309,7 @@ public class RepositoryComposition {
 	Method getMethod(Method method) {
 
 		return methodCache.computeIfAbsent(method,
-				key -> RepositoryFragments.findMethod(InvokedMethod.of(key), methodLookup, fragments::methods));
+				key -> RepositoryFragments.findMethod(InvokedMethod.of(key), lookups, fragments));
 	}
 
 	/**
@@ -371,7 +372,6 @@ public class RepositoryComposition {
 		private final List<RepositoryFragment<?>> fragments;
 
 		private RepositoryFragments(List<RepositoryFragment<?>> fragments) {
-
 			this.fragments = fragments;
 		}
 
@@ -528,17 +528,16 @@ public class RepositoryComposition {
 					.orElseThrow(() -> new IllegalArgumentException(String.format("No fragment found for method %s", key)));
 		}
 
-		private static @Nullable Method findMethod(InvokedMethod invokedMethod, MethodLookup lookup,
-				Supplier<Stream<Method>> methodStreamSupplier) {
+		private static @Nullable Method findMethod(InvokedMethod invokedMethod, List<MethodLookup.MethodPredicate> lookups,
+				RepositoryFragments fragments) {
 
-			for (MethodLookup.MethodPredicate methodPredicate : lookup.getLookups()) {
-
-				Optional<Method> resolvedMethod = methodStreamSupplier.get()
-						.filter(it -> methodPredicate.test(invokedMethod, it)) //
-						.findFirst();
-
-				if (resolvedMethod.isPresent()) {
-					return resolvedMethod.get();
+			for (RepositoryFragment<?> fragment : fragments) {
+				for (Method candidate : fragment.findMethods(invokedMethod.getName())) {
+					for (MethodLookup.MethodPredicate methodPredicate : lookups) {
+						if (methodPredicate.test(invokedMethod, candidate)) {
+							return candidate;
+						}
+					}
 				}
 			}
 
