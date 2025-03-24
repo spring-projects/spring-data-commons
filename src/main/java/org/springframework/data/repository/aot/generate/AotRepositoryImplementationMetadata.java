@@ -30,7 +30,7 @@ import org.springframework.lang.Nullable;
 /**
  * @author Christoph Strobl
  */
-class AotRepositoryImplementationMetadata {
+public class AotRepositoryImplementationMetadata {
 
 	private ClassName className;
 	private Map<String, FieldSpec> fields = new HashMap<>(3);

@@ -122,7 +122,6 @@ public abstract class RepositoryFactorySupport
 	private @Nullable BeanFactory beanFactory;
 	private @Nullable Environment environment;
 	private Lazy<ProjectionFactory> projectionFactory;
-	private @Nullable Object aotImplementation;
 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -266,10 +265,6 @@ public abstract class RepositoryFactorySupport
 
 		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null");
 		this.postProcessors.add(processor);
-	}
-
-	public void setAotImplementation(@Nullable Object aotImplementation) {
-		this.aotImplementation = aotImplementation;
 	}
 
 	/**
@@ -417,8 +412,7 @@ public abstract class RepositoryFactorySupport
 		}
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
-				new ValueExpressionDelegate(
-						new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider), VALUE_PARSER));
+				getValueExpressionDelegate());
 		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
@@ -435,6 +429,11 @@ public abstract class RepositoryFactorySupport
 		}
 
 		return repository;
+	}
+
+	ValueExpressionDelegate getValueExpressionDelegate() {
+		return new ValueExpressionDelegate(
+				new QueryMethodValueEvaluationContextAccessor(getEnvironment(), evaluationContextProvider), VALUE_PARSER);
 	}
 
 	/**
@@ -503,10 +502,6 @@ public abstract class RepositoryFactorySupport
 
 				RepositoryComposition composition = RepositoryComposition.fromMetadata(metadata);
 				RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
-
-                if(aotImplementation != null) {
-                    repositoryAspects = RepositoryFragments.just(aotImplementation).append(repositoryAspects);
-                }
 
 				composition = composition.append(fragments).append(repositoryAspects);
 

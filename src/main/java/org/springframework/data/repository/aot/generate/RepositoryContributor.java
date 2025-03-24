@@ -39,6 +39,14 @@ public class RepositoryContributor {
 		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation());
 	}
 
+	public String getContributedTypeName() {
+		return builder.getGenerationMetadata().getTargetTypeName().toString();
+	}
+
+	public java.util.Map<String, TypeName> requiredArgs() {
+		return builder.getAutowireFields();
+	}
+
 	public void contribute(GenerationContext generationContext) {
 
 		// TODO: do we need - generationContext.withName("spring-data");
@@ -64,14 +72,6 @@ public class RepositoryContributor {
 		// generate native runtime hints - needed cause we're using the repository proxy
 		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName),
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
-	}
-
-	public String getContributedTypeName() {
-		return builder.getGenerationMetadata().getTargetTypeName().toString();
-	}
-
-	public java.util.Map<String, TypeName> requiredArgs() {
-		return builder.getAutowireFields();
 	}
 
 	/**
