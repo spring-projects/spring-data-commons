@@ -336,7 +336,7 @@ data class Person(var id: String, val name: String = "unknown")
 Every time the `name` parameter is either not part of the result or its value is `null`, then the `name` defaults to `unknown`.
 
 NOTE: Delegated properties are not supported with Spring Data. The mapping metadata filters delegated properties for Kotlin Data classes.
-In all other cases you can exclude synthetic fields for delegated properties by annotating the property with `@delegate:org.springframework.data.annotation.Transient`.
+In all other cases you can exclude synthetic fields for delegated properties by annotating the property with {spring-data-commons-javadoc-base}/org/springframework/data/annotation/Transient.html[`@Transient`].
 
 [[property-population-of-kotlin-data-classes]]
 === Property population of Kotlin data classes

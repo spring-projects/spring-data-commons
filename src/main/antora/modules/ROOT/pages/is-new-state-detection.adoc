@@ -18,7 +18,7 @@ If no version property is present Spring Data falls back to inspection of the id
 
 |Implementing `Persistable`
 |If an entity implements `Persistable`, Spring Data delegates the new detection to the `isNew(…)` method of the entity.
-See the link:{spring-data-commons-javadoc-base}/index.html?org/springframework/data/domain/Persistable.html[Javadoc] for details.
+See the {spring-data-commons-javadoc-base}/org/springframework/data/domain/Persistable.html[Javadoc] for details.
 
 _Note: Properties of `Persistable` will get detected and persisted if you use `AccessType.PROPERTY`.
 To avoid that, use `@Transient`._
