@@ -17,124 +17,123 @@ package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.lang.reflect.TypeVariable;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
+import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
+import org.springframework.javapoet.TypeVariableName;
 import org.springframework.util.StringUtils;
 
 /**
+ * Builder for AOT repository query methods.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
+ * @since 4.0
  */
 public class AotRepositoryMethodBuilder {
 
-	private final AotRepositoryMethodGenerationContext context;
+	private final AotQueryMethodGenerationContext context;
 
+	private RepositoryMethodContribution contribution = (context) -> CodeBlock.builder().build();
 	private RepositoryMethodCustomizer customizer = (context, body) -> {};
 
-	public AotRepositoryMethodBuilder(AotRepositoryMethodGenerationContext context) {
+	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
 
 		this.context = context;
-		initReturnType(context.getMethod(), context.getRepositoryInformation());
 		initParameters(context.getMethod(), context.getRepositoryInformation());
-	}
-
-	public void addParameter(String parameterName, Class<?> type) {
-
-		ResolvableType resolvableType = ResolvableType.forClass(type);
-		if (!resolvableType.hasGenerics() || !resolvableType.hasResolvableGenerics()) {
-			addParameter(parameterName, TypeName.get(type));
-			return;
-		}
-		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
-	}
-
-	public void addParameter(String parameterName, TypeName type) {
-		addParameter(ParameterSpec.builder(type, parameterName).build());
-	}
-
-	public void addParameter(ParameterSpec parameter) {
-		this.context.addParameter(parameter);
-	}
-
-	public void setReturnType(@Nullable TypeName returnType, @Nullable TypeName actualReturnType) {
-		this.context.getTargetMethodMetadata().setReturnType(returnType);
-		this.context.getTargetMethodMetadata().setActualReturnType(actualReturnType);
-	}
-
-	public AotRepositoryMethodBuilder customize(RepositoryMethodCustomizer customizer) {
-		this.customizer = customizer;
-		return this;
-	}
-
-	MethodSpec buildMethod() {
-
-		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
-		if (!context.returnsVoid()) {
-			builder.returns(context.getReturnType());
-		}
-		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
-				context.getMethod().getName(),
-				StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata().getMethodArguments().values().stream()
-						.map(it -> it.type.toString()).collect(Collectors.toList())));
-		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
-		customizer.customize(context, builder);
-		return builder.build();
 	}
 
 	private void initParameters(Method method, RepositoryInformation repositoryInformation) {
 
 		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
-		if (method.getParameterCount() > 0) {
-			int index = 0;
-			for (Parameter parameter : method.getParameters()) {
 
-				ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(new MethodParameter(method, index),
-						repositoryInterface);
+		for (Parameter parameter : method.getParameters()) {
 
-				TypeName parameterType = TypeName.get(resolvableParameterType.resolve());
-				if (resolvableParameterType.hasGenerics()) {
-					parameterType = ParameterizedTypeName.get(resolvableParameterType.resolve(),
-							resolvableParameterType.resolveGenerics());
-				}
-				addParameter(parameter.getName(), parameterType);
-				index++;
-			}
+			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+			methodParameter.initParameterNameDiscovery(new DefaultParameterNameDiscoverer());
+			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
 
+			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
+
+			this.context.addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
 		}
 	}
 
-	private void initReturnType(Method method, RepositoryInformation repositoryInformation) {
-
-		ResolvableType returnType = ResolvableType.forMethodReturnType(method,
-				repositoryInformation.getRepositoryInterface());
-
-		TypeName returnTypeName = TypeName.get(returnType.resolve());
-		TypeName actualReturnTypeName = null;
-		if (returnType.hasGenerics()) {
-			Class<?>[] generics = returnType.resolveGenerics();
-			returnTypeName = ParameterizedTypeName.get(returnType.resolve(), generics);
-
-			if (generics.length == 1) {
-				actualReturnTypeName = TypeName.get(generics[0]);
-			}
-		}
-
-		setReturnType(returnTypeName, actualReturnTypeName);
+	/**
+	 * Register a {@link RepositoryMethodContribution} for the repository interface that can contribute a query method
+	 * implementation block.
+	 *
+	 * @param contribution
+	 * @return
+	 */
+	public AotRepositoryMethodBuilder contribute(RepositoryMethodContribution contribution) {
+		this.contribution = contribution;
+		return this;
 	}
 
+	/**
+	 * Register a query method customizer that is applied after a successful {@link RepositoryMethodContribution}.
+	 *
+	 * @param customizer
+	 * @return
+	 */
+	public AotRepositoryMethodBuilder customize(RepositoryMethodCustomizer customizer) {
+		this.customizer = customizer;
+		return this;
+	}
+
+	/**
+	 * Builds an AOT repository method if {@link RepositoryMethodContribution} can contribute a method.
+	 *
+	 * @return the {@link MethodSpec} or {@literal null}, if the method cannot be contributed.
+	 */
+	public MethodSpec buildMethod() {
+
+		CodeBlock methodBody = contribution.contribute(context);
+
+		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
+		builder.returns(TypeName.get(context.getReturnType().getType()));
+
+		TypeVariable<Method>[] tvs = context.getMethod().getTypeParameters();
+
+		for (TypeVariable<Method> tv : tvs) {
+			builder.addTypeVariable(TypeVariableName.get(tv));
+		}
+
+		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
+				context.getMethod().getName(), StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata()
+						.getMethodArguments().values().stream().map(it -> it.type.toString()).collect(Collectors.toList())));
+		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
+		builder.addCode(methodBody);
+		customizer.customize(context, builder);
+
+		return builder.build();
+	}
+
+	/**
+	 * AOT contribution from a {@link AotRepositoryMethodBuilder} used to contribute a repository query method body.
+	 */
+	public interface RepositoryMethodContribution {
+
+		CodeBlock contribute(AotQueryMethodGenerationContext context);
+	}
+
+	/**
+	 * Customizer for a contributed AOT repository query method.
+	 */
 	public interface RepositoryMethodCustomizer {
-		void customize(AotRepositoryMethodGenerationContext context, MethodSpec.Builder builder);
+
+		void customize(AotQueryMethodGenerationContext context, MethodSpec.Builder builder);
+
 	}
 }

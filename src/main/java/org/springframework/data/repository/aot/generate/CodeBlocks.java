@@ -27,10 +27,19 @@ import org.springframework.util.StringUtils;
  */
 public class CodeBlocks {
 
-	private final AotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryFragmentMetadata metadata;
 
-	public CodeBlocks(AotRepositoryImplementationMetadata metadata) {
+	CodeBlocks(AotRepositoryFragmentMetadata metadata) {
 		this.metadata = metadata;
+	}
+
+	/**
+	 * @param message the logging message.
+	 * @param args optional args to apply to the message.
+	 * @return a {@link CodeBlock} containing a debug level guarded logging statement.
+	 */
+	public CodeBlock logDebug(String message, Object... args) {
+		return log("debug", message, args);
 	}
 
 	/**
@@ -51,15 +60,6 @@ public class CodeBlocks {
 		}
 		builder.endControlFlow();
 		return builder.build();
-	}
-
-	/**
-	 * @param message the logging message.
-	 * @param args optional args to apply to the message.
-	 * @return a {@link CodeBlock} containing a debug level guarded logging statement.
-	 */
-	public CodeBlock logDebug(String message, Object... args) {
-		return log("debug", message, args);
 	}
 
 }

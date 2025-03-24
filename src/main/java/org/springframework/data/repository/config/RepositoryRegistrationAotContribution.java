@@ -22,12 +22,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
@@ -37,7 +35,6 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
@@ -53,33 +50,35 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.javapoet.CodeBlock;
-import org.springframework.javapoet.CodeBlock.Builder;
-import org.springframework.javapoet.TypeName;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * {@link BeanRegistrationAotContribution} used to contribute repository registrations.
  *
  * @author John Blum
+ * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 3.0
  */
+// TODO: Consider moving to data.repository.aot
 public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution {
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
+
 	private @Nullable RepositoryContributor repositoryContributor;
 
 	private @Nullable AotRepositoryContext repositoryContext;
 
-	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor> moduleContribution;
+	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> moduleContribution;
 
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
@@ -119,8 +118,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return getRepositoryRegistrationAotProcessor().getBeanFactory();
 	}
 
-	protected Optional<BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor>> getModuleContribution() {
-		return Optional.ofNullable(this.moduleContribution);
+	protected @Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> getModuleContribution() {
+		return this.moduleContribution;
 	}
 
 	protected AotRepositoryContext getRepositoryContext() {
@@ -167,52 +166,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return this;
 	}
 
-	DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
-			RepositoryConfiguration<?> repositoryMetadata) {
-
-		RepositoryInformation repositoryInformation = resolveRepositoryInformation(repositoryMetadata);
-
-		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
-				AotContext.from(this.getBeanFactory()));
-
-		repositoryContext.setBeanName(bean.getBeanName());
-		repositoryContext.setBasePackages(repositoryMetadata.getBasePackages().toSet());
-		repositoryContext.setIdentifyingAnnotations(resolveIdentifyingAnnotations());
-		repositoryContext.setRepositoryInformation(repositoryInformation);
-
-		return repositoryContext;
-	}
-
-	private Set<Class<? extends Annotation>> resolveIdentifyingAnnotations() {
-
-		Set<Class<? extends Annotation>> identifyingAnnotations = Collections.emptySet();
-
-		try {
-			// TODO: Getting all beans of type RepositoryConfigurationExtensionSupport will have the effect that
-			// if the user is currently operating in multi-store mode, then all identifying annotations from
-			// all stores will be included in the resulting Set.
-			// When using AOT, is multi-store mode allowed? I don't see why not, but does this work correctly
-			// with AOT, ATM?
-			Map<String, RepositoryConfigurationExtensionSupport> repositoryConfigurationExtensionBeans = getBeanFactory()
-					.getBeansOfType(RepositoryConfigurationExtensionSupport.class);
-
-			// repositoryConfigurationExtensionBeans.values().stream()
-			// .map(RepositoryConfigurationExtensionSupport::getIdentifyingAnnotations)
-			// .flatMap(Collection::stream)
-			// .collect(Collectors.toCollection(() -> identifyingAnnotations));
-
-		} catch (Throwable ignore) {
-			// Possible BeansException because no bean exists of type RepositoryConfigurationExtension,
-			// which included non-Singletons and occurred during eager initialization.
-		}
-
-		return identifyingAnnotations;
-	}
-
-	private RepositoryInformation resolveRepositoryInformation(RepositoryConfiguration<?> repositoryMetadata) {
-		return RepositoryBeanDefinitionReader.readRepositoryInformation(repositoryMetadata, getBeanFactory());
-	}
-
 	/**
 	 * {@link BiConsumer Callback} for data module specific contributions.
 	 *
@@ -232,8 +185,12 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				"RepositoryContext cannot be null. Make sure to initialize this class with forBean(…).");
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
-		if (getModuleContribution().isPresent() && this.repositoryContributor == null) {
-			this.repositoryContributor = getModuleContribution().get().apply(getRepositoryContext(), generationContext);
+
+		var moduleContribution = getModuleContribution();
+		if (moduleContribution != null && this.repositoryContributor == null) {
+
+			this.repositoryContributor = moduleContribution.apply(getRepositoryContext(), generationContext);
+
 			if (this.repositoryContributor != null) {
 				this.repositoryContributor.contribute(generationContext);
 			}
@@ -251,35 +208,18 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 					BeanRegistrationCode beanRegistrationCode, RootBeanDefinition beanDefinition,
 					Predicate<String> attributeFilter) {
 
-				if (repositoryContributor == null) { // no aot implementation -> go on as as
+				if (repositoryContributor == null) { // no aot implementation -> go on as
 
 					return super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode, beanDefinition,
 							attributeFilter);
 				}
 
-				Builder builder = CodeBlock.builder();
-				// bring in properties as usual
-				builder.add(super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode,
-						beanDefinition, attributeFilter));
+				AotRepositoryBeanDefinitionPropertiesDecorator decorator = new AotRepositoryBeanDefinitionPropertiesDecorator(
+						() -> super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode, beanDefinition,
+								attributeFilter),
+						repositoryContributor);
 
-				builder.add(
-						"beanDefinition.getPropertyValues().addPropertyValue(\"aotImplementationFunction\", new $T<$T, $T>() {\n",
-						Function.class, BeanFactory.class, Object.class);
-				builder.indent();
-				builder.add("public $T apply(BeanFactory beanFactory) {\n", Object.class);
-				builder.indent();
-				for (Entry<String, TypeName> entry : repositoryContributor.requiredArgs().entrySet()) {
-					builder.addStatement("$T $L = beanFactory.getBean($T.class)", entry.getValue(), entry.getKey(),
-							entry.getValue());
-				}
-				builder.addStatement("return new $L($L)", repositoryContributor.getContributedTypeName(),
-						StringUtils.collectionToDelimitedString(repositoryContributor.requiredArgs().keySet(), ", "));
-				builder.unindent();
-				builder.add("}\n");
-				builder.unindent();
-				builder.add("});\n");
-
-				return builder.build();
+				return decorator.decorate();
 			}
 		};
 	}
@@ -290,7 +230,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		// TODO: is this the way?
 		contribution.getRuntimeHints().reflection()
 				.registerType(repositoryInformation.getRepositoryInterface(),
 						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
@@ -305,6 +244,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
 
 			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
+			Optional<?> implementation = fragment.getImplementation();
 
 			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
 
@@ -313,6 +253,17 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				if (!repositoryFragmentType.isInterface()) {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
 				}
+			});
+
+			implementation.ifPresent(impl -> {
+				contribution.getRuntimeHints().reflection().registerType(impl.getClass(), hint -> {
+
+					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+					if (!impl.getClass().isInterface()) {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					}
+				});
 			});
 		}
 
@@ -355,7 +306,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 
 		// Repository query methods
-		repositoryInformation.getQueryMethods().map(repositoryInformation::getReturnedDomainClass)
+		repositoryInformation.getQueryMethods().stream().map(repositoryInformation::getReturnedDomainClass)
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {
@@ -414,5 +365,53 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return Predicates.isTrue();
+	}
+
+	@SuppressWarnings("rawtypes")
+	private DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
+			RepositoryConfiguration<?> repositoryMetadata) {
+
+		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
+				AotContext.from(this.getBeanFactory()));
+
+		RepositoryFactoryBeanSupport rfbs = bean.getBeanFactory().getBean("&" + bean.getBeanName(),
+				RepositoryFactoryBeanSupport.class);
+
+		repositoryContext.setBeanName(bean.getBeanName());
+		repositoryContext.setBasePackages(repositoryMetadata.getBasePackages().toSet());
+		repositoryContext.setIdentifyingAnnotations(resolveIdentifyingAnnotations());
+		repositoryContext.setRepositoryInformation(rfbs.getRepositoryInformation());
+
+		return repositoryContext;
+	}
+
+	private Set<Class<? extends Annotation>> resolveIdentifyingAnnotations() {
+
+		Set<Class<? extends Annotation>> identifyingAnnotations = Collections.emptySet();
+
+		try {
+			// TODO: Getting all beans of type RepositoryConfigurationExtensionSupport will have the effect that
+			// if the user is currently operating in multi-store mode, then all identifying annotations from
+			// all stores will be included in the resulting Set.
+			// When using AOT, is multi-store mode allowed? I don't see why not, but does this work correctly
+			// with AOT, ATM?
+			Map<String, RepositoryConfigurationExtensionSupport> repositoryConfigurationExtensionBeans = getBeanFactory()
+					.getBeansOfType(RepositoryConfigurationExtensionSupport.class);
+
+			// repositoryConfigurationExtensionBeans.values().stream()
+			// .map(RepositoryConfigurationExtensionSupport::getIdentifyingAnnotations)
+			// .flatMap(Collection::stream)
+			// .collect(Collectors.toCollection(() -> identifyingAnnotations));
+
+		} catch (Throwable ignore) {
+			// Possible BeansException because no bean exists of type RepositoryConfigurationExtension,
+			// which included non-Singletons and occurred during eager initialization.
+		}
+
+		return identifyingAnnotations;
+	}
+
+	private RepositoryInformation resolveRepositoryInformation(RepositoryConfiguration<?> repositoryMetadata) {
+		return RepositoryBeanDefinitionReader.readRepositoryInformation(repositoryMetadata, getBeanFactory());
 	}
 }

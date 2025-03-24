@@ -15,15 +15,22 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import example.UserRepository;
 
+import java.lang.reflect.Method;
+
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aot.test.generate.TestGenerationContext;
-import org.springframework.core.test.tools.ResourceFile;
 import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.data.aot.CodeContributionAssert;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.javapoet.CodeBlock;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Christoph Strobl
@@ -35,14 +42,21 @@ class RepositoryContributorUnitTests {
 
 		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
 		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
-			@Override
-			protected AotRepositoryMethodBuilder contributeRepositoryMethod(AotRepositoryMethodGenerationContext context) {
 
-				return new AotRepositoryMethodBuilder(context).customize(((ctx, builder) -> {
-					if (!ctx.returnsVoid()) {
-						builder.addStatement("return null");
-					}
-				}));
+			@Override
+			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method,
+					RepositoryInformation repositoryInformation) {
+
+				return MethodContributor.forQueryMethod(new QueryMethod(method, repositoryInformation, getProjectionFactory()))
+						.contribute(context -> {
+
+							CodeBlock.Builder builder = CodeBlock.builder();
+							if (!ClassUtils.isVoidType(method.getReturnType())) {
+								builder.addStatement("return null");
+							}
+
+							return builder.build();
+						});
 			}
 		};
 

@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -69,7 +68,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	 * execution of repository interface methods.
 	 */
 	public QueryExecutorMethodInterceptor(RepositoryInformation repositoryInformation,
-			ProjectionFactory projectionFactory, Optional<QueryLookupStrategy> queryLookupStrategy, NamedQueries namedQueries,
+			ProjectionFactory projectionFactory, @Nullable QueryLookupStrategy queryLookupStrategy, NamedQueries namedQueries,
 			List<QueryCreationListener<?>> queryPostProcessors,
 			List<RepositoryMethodInvocationListener> methodInvocationListeners) {
 
@@ -81,22 +80,21 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		this.resultHandler = new QueryExecutionResultHandler(RepositoryFactorySupport.CONVERSION_SERVICE);
 
-		if (!queryLookupStrategy.isPresent() && repositoryInformation.hasQueryMethods()) {
+		if (queryLookupStrategy == null && repositoryInformation.hasQueryMethods()) {
 
 			throw new IllegalStateException(
 					"You have defined query methods in the repository" + " but do not have any query lookup strategy defined."
 							+ " The infrastructure apparently does not support query methods");
 		}
-
-		this.queries = queryLookupStrategy //
-				.map(it -> mapMethodsToQuery(repositoryInformation, it, projectionFactory)) //
-				.orElse(Collections.emptyMap());
+		this.queries = queryLookupStrategy != null
+				? mapMethodsToQuery(repositoryInformation, queryLookupStrategy, projectionFactory)
+				: Collections.emptyMap();
 	}
 
 	private Map<Method, RepositoryQuery> mapMethodsToQuery(RepositoryInformation repositoryInformation,
 			QueryLookupStrategy lookupStrategy, ProjectionFactory projectionFactory) {
 
-		List<Method> queryMethods = repositoryInformation.getQueryMethods().toList();
+		List<Method> queryMethods = repositoryInformation.getQueryMethods();
 		Map<Method, RepositoryQuery> result = new HashMap<>(queryMethods.size(), 1.0f);
 
 		for (Method method : queryMethods) {

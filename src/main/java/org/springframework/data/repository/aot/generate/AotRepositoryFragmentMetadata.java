@@ -22,21 +22,22 @@ import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Christoph Strobl
  */
-class AotRepositoryImplementationMetadata {
+public class AotRepositoryFragmentMetadata {
 
-	private ClassName className;
-	private Map<String, FieldSpec> fields = new HashMap<>(3);
+	private final ClassName className;
+	private final Map<String, FieldSpec> fields = new HashMap<>(3);
 	private final Map<String, TypeName> constructorArguments = new LinkedHashMap<>(3);
 
-	public AotRepositoryImplementationMetadata(ClassName className) {
+	public AotRepositoryFragmentMetadata(ClassName className) {
 		this.className = className;
 	}
 

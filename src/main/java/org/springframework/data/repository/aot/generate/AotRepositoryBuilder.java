@@ -15,49 +15,51 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.temporal.ChronoField;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 
 /**
+ * Builder for AOT repository fragments.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
-public class AotRepositoryBuilder {
+class AotRepositoryBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final AotRepositoryImplementationMetadata generationMetadata;
+	private final ProjectionFactory projectionFactory;
+	private final AotRepositoryFragmentMetadata generationMetadata;
 
-	private Consumer<AotRepositoryConstructorBuilder> constructorBuilderCustomizer;
-	private Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction;
-	private RepositoryCustomizer customizer;
+	private Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
+	private BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction;
+	private ClassCustomizer customizer;
 
-	public static AotRepositoryBuilder forRepository(RepositoryInformation repositoryInformation) {
-		return new AotRepositoryBuilder(repositoryInformation);
-	}
-
-	AotRepositoryBuilder(RepositoryInformation repositoryInformation) {
+	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, ProjectionFactory projectionFactory) {
 
 		this.repositoryInformation = repositoryInformation;
-		this.generationMetadata = new AotRepositoryImplementationMetadata(className());
+		this.projectionFactory = projectionFactory;
+
+		this.generationMetadata = new AotRepositoryFragmentMetadata(className());
 		this.generationMetadata.addField(FieldSpec
 				.builder(TypeName.get(Log.class), "logger", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
@@ -66,54 +68,80 @@ public class AotRepositoryBuilder {
 		this.customizer = (info, metadata, builder) -> {};
 	}
 
-	public JavaFile javaFile() {
+	public static <M extends QueryMethod> AotRepositoryBuilder forRepository(RepositoryInformation repositoryInformation,
+			ProjectionFactory projectionFactory) {
+		return new AotRepositoryBuilder(repositoryInformation, projectionFactory);
+	}
 
-		YearMonth creationDate = YearMonth.now(ZoneId.of("UTC"));
+	public AotRepositoryBuilder withConstructorCustomizer(
+			Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
+
+		this.constructorCustomizer = constructorCustomizer;
+		return this;
+	}
+
+	public AotRepositoryBuilder withQueryMethodContributor(
+			BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction) {
+		this.methodContributorFunction = methodContributorFunction;
+		return this;
+	}
+
+	public AotRepositoryBuilder withClassCustomizer(ClassCustomizer classCustomizer) {
+
+		this.customizer = classCustomizer;
+		return this;
+	}
+
+	public JavaFile build() {
 
 		// start creating the type
 		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
 				.addModifiers(Modifier.PUBLIC) //
 				.addAnnotation(Generated.class) //
 				.addJavadoc("AOT generated repository implementation for {@link $T}.\n",
-						repositoryInformation.getRepositoryInterface()) //
-				.addJavadoc("\n") //
-				.addJavadoc("@since $L/$L\n", creationDate.get(ChronoField.YEAR), creationDate.get(ChronoField.MONTH_OF_YEAR)) //
-				.addJavadoc("@author $L", "Spring Data"); // TODO: does System.getProperty("user.name") make sense here?
-
-		// TODO: we do not need that here
-		// .addSuperinterface(repositoryInformation.getRepositoryInterface());
+						repositoryInformation.getRepositoryInterface());
 
 		// create the constructor
 		AotRepositoryConstructorBuilder constructorBuilder = new AotRepositoryConstructorBuilder(repositoryInformation,
 				generationMetadata);
-		constructorBuilderCustomizer.accept(constructorBuilder);
+		constructorCustomizer.accept(constructorBuilder);
 		builder.addMethod(constructorBuilder.buildConstructor());
 
-		// write methods
-		// start with the derived ones
-		ReflectionUtils.doWithMethods(repositoryInformation.getRepositoryInterface(), method -> {
+		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
+				.sorted(Comparator.<Method, String> comparing(it -> {
+					return it.getDeclaringClass().getName();
+				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
+				.forEach(method -> {
 
-			AotRepositoryMethodGenerationContext context = new AotRepositoryMethodGenerationContext(method,
-					repositoryInformation, generationMetadata);
-			AotRepositoryMethodBuilder methodBuilder = methodContextFunction.apply(context);
-			if (methodBuilder != null) {
-				builder.addMethod(methodBuilder.buildMethod());
-			}
+					if (repositoryInformation.isCustomMethod(method)) {
+						// TODO: fragment
+						return;
+					}
 
-		}, it -> {
+					if (repositoryInformation.isBaseClassMethod(method)) {
+						// TODO: base
+						return;
+					}
 
-			/*
-			the isBaseClassMethod(it) check seems to have some issues.
-			need to hard code it here
-			 */
+					if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+						// TODO: report what we've skipped
+						return;
+					}
 
-			if (ReflectionUtils.findMethod(CrudRepository.class, it.getName(), it.getParameterTypes()) != null) {
-				return false;
-			}
+					if (repositoryInformation.isQueryMethod(method)) {
 
-			return !repositoryInformation.isBaseClassMethod(it) && !repositoryInformation.isCustomMethod(it)
-					&& !it.isDefault();
-		});
+						MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
+								repositoryInformation);
+
+						if (contributor != null) {
+
+							AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
+									method, contributor.getQueryMethod(), generationMetadata);
+
+							builder.addMethod(contributor.contribute(context));
+						}
+					}
+				});
 
 		// write fields at the end so we make sure to capture things added by methods
 		generationMetadata.getFields().values().forEach(builder::addField);
@@ -123,25 +151,7 @@ public class AotRepositoryBuilder {
 		return JavaFile.builder(packageName(), builder.build()).build();
 	}
 
-	AotRepositoryBuilder withConstructorCustomizer(Consumer<AotRepositoryConstructorBuilder> constuctorBuilder) {
-
-		this.constructorBuilderCustomizer = constuctorBuilder;
-		return this;
-	}
-
-	AotRepositoryBuilder withDerivedMethodFunction(
-			Function<AotRepositoryMethodGenerationContext, AotRepositoryMethodBuilder> methodContextFunction) {
-		this.methodContextFunction = methodContextFunction;
-		return this;
-	}
-
-	AotRepositoryBuilder withFileCustomizer(RepositoryCustomizer repositoryCustomizer) {
-
-		this.customizer = repositoryCustomizer;
-		return this;
-	}
-
-	AotRepositoryImplementationMetadata getGenerationMetadata() {
+	public AotRepositoryFragmentMetadata getGenerationMetadata() {
 		return generationMetadata;
 	}
 
@@ -157,13 +167,31 @@ public class AotRepositoryBuilder {
 		return "%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName());
 	}
 
-	Map<String, TypeName> getAutowireFields() {
+	public Map<String, TypeName> getAutowireFields() {
 		return generationMetadata.getConstructorArguments();
 	}
 
-	public interface RepositoryCustomizer {
+	public RepositoryInformation getRepositoryInformation() {
+		return repositoryInformation;
+	}
 
-		void customize(RepositoryInformation repositoryInformation, AotRepositoryImplementationMetadata metadata,
+	public ProjectionFactory getProjectionFactory() {
+		return projectionFactory;
+	}
+
+	/**
+	 * Customizer interface to customize the AOT repository fragment class after it has been defined.
+	 */
+	public interface ClassCustomizer {
+
+		/**
+		 * Apply customization ot the AOT repository fragment class after it has been defined..
+		 *
+		 * @param information
+		 * @param metadata
+		 * @param builder
+		 */
+		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata,
 				TypeSpec.Builder builder);
 	}
 }

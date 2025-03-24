@@ -140,7 +140,7 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 		if (repositoryInformation != null) {
 			types.addAll(TypeCollector.inspect(repositoryInformation.getDomainType()).list());
 
-			repositoryInformation.getQueryMethods()
+			repositoryInformation.getQueryMethods().stream()
 					.flatMap(it -> TypeUtils.resolveTypesInSignature(repositoryInformation.getRepositoryInterface(), it).stream())
 					.flatMap(it -> TypeCollector.inspect(it).list().stream()).forEach(types::add);
 		}

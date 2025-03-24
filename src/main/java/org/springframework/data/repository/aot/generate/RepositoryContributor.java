@@ -15,19 +15,29 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.lang.reflect.Method;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 
 /**
+ * Contributor for AOT repository fragments.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class RepositoryContributor {
 
@@ -36,18 +46,39 @@ public class RepositoryContributor {
 	private final AotRepositoryBuilder builder;
 
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
-		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation());
+		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
+				createProjectionFactory());
+	}
+
+	protected ProjectionFactory createProjectionFactory() {
+		return new SpelAwareProxyProjectionFactory();
+	}
+
+	protected ProjectionFactory getProjectionFactory() {
+		return builder.getProjectionFactory();
+	}
+
+	protected RepositoryInformation getRepositoryInformation() {
+		return builder.getRepositoryInformation();
+	}
+
+	public String getContributedTypeName() {
+		return builder.getGenerationMetadata().getTargetTypeName().toString();
+	}
+
+	public java.util.Map<String, TypeName> requiredArgs() {
+		return builder.getAutowireFields();
 	}
 
 	public void contribute(GenerationContext generationContext) {
 
 		// TODO: do we need - generationContext.withName("spring-data");
 
-		builder.withFileCustomizer(this::customizeFile);
+		builder.withClassCustomizer(this::customizeClass);
 		builder.withConstructorCustomizer(this::customizeConstructor);
-		builder.withDerivedMethodFunction(this::contributeRepositoryMethod);
+		builder.withQueryMethodContributor(this::contributeQueryMethod);
 
-		JavaFile file = builder.javaFile();
+		JavaFile file = builder.build();
 		String typeName = "%s.%s".formatted(file.packageName, file.typeSpec.name);
 
 		if (logger.isTraceEnabled()) {
@@ -66,27 +97,27 @@ public class RepositoryContributor {
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 	}
 
-	public String getContributedTypeName() {
-		return builder.getGenerationMetadata().getTargetTypeName().toString();
-	}
+	/**
+	 * Customization hook for store implementations to customize class after building the entire class.
+	 */
+	protected void customizeClass(RepositoryInformation information, AotRepositoryFragmentMetadata metadata,
+			TypeSpec.Builder builder) {
 
-	public java.util.Map<String, TypeName> requiredArgs() {
-		return builder.getAutowireFields();
 	}
 
 	/**
-	 * Customization Hook for Store implementations
+	 * Customization hook for store implementations to customize the fragment constructor after building the constructor.
 	 */
 	protected void customizeConstructor(AotRepositoryConstructorBuilder constructorBuilder) {
 
 	}
 
-	protected void customizeFile(RepositoryInformation information, AotRepositoryImplementationMetadata metadata,
-			TypeSpec.Builder builder) {
-
-	}
-
-	protected AotRepositoryMethodBuilder contributeRepositoryMethod(AotRepositoryMethodGenerationContext context) {
+	/**
+	 * Customization hook for store implementations to contribute a query method.
+	 */
+	protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method,
+			RepositoryInformation repositoryInformation) {
 		return null;
 	}
+
 }
