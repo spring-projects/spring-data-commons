@@ -382,4 +382,13 @@ public interface TypeInformation<S> {
 	 * @since 2.7
 	 */
 	TypeDescriptor toTypeDescriptor();
+
+	/**
+	 * Returns the {@link ResolvableType} for this type information.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 4.0
+	 */
+	ResolvableType toResolvableType();
+
 }

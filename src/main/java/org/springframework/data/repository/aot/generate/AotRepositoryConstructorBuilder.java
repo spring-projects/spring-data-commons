@@ -27,22 +27,32 @@ import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 
 /**
+ * Builder for AOT Repository Constructors.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
+ * @since 4.0
  */
 public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final AotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryFragmentMetadata metadata;
 
 	private ConstructorCustomizer customizer = (info, builder) -> {};
 
 	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
-			AotRepositoryImplementationMetadata metadata) {
+			AotRepositoryFragmentMetadata metadata) {
 
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;
 	}
 
+	/**
+	 * Add constructor parameter.
+	 *
+	 * @param parameterName
+	 * @param type
+	 */
 	public void addParameter(String parameterName, Class<?> type) {
 
 		ResolvableType resolvableType = ResolvableType.forClass(type);
@@ -53,12 +63,24 @@ public class AotRepositoryConstructorBuilder {
 		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
 	}
 
+	/**
+	 * Add constructor parameter.
+	 *
+	 * @param parameterName
+	 * @param type
+	 */
 	public void addParameter(String parameterName, TypeName type) {
 
 		this.metadata.addConstructorArgument(parameterName, type);
 		this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
 	}
 
+	/**
+	 * Add constructor customizer. Customizer is invoked after adding constructor arguments and before assigning
+	 * constructor arguments to fields.
+	 *
+	 * @param customizer
+	 */
 	public void customize(ConstructorCustomizer customizer) {
 		this.customizer = customizer;
 	}
@@ -66,11 +88,18 @@ public class AotRepositoryConstructorBuilder {
 	MethodSpec buildConstructor() {
 
 		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
+
 		for (Entry<String, TypeName> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			builder.addParameter(parameter.getValue(), parameter.getKey()).addStatement("this.$N = $N", parameter.getKey(),
+			builder.addParameter(parameter.getValue(), parameter.getKey());
+		}
+
+		customizer.customize(repositoryInformation, builder);
+
+		for (Entry<String, TypeName> parameter : this.metadata.getConstructorArguments().entrySet()) {
+			builder.addStatement("this.$N = $N", parameter.getKey(),
 					parameter.getKey());
 		}
-		customizer.customize(repositoryInformation, builder);
+
 		return builder.build();
 	}
 
@@ -87,8 +116,12 @@ public class AotRepositoryConstructorBuilder {
 		return TypeName.get(repositoryInformation.getRepositoryBaseClass());
 	}
 
+	/**
+	 * Customizer for the AOT repository constructor.
+	 */
 	public interface ConstructorCustomizer {
 
-		void customize(RepositoryInformation repositoryInformation, MethodSpec.Builder builder);
+		void customize(RepositoryInformation information, MethodSpec.Builder builder);
 	}
+
 }

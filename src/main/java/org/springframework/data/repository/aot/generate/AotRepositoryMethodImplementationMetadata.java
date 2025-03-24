@@ -15,25 +15,31 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.core.ResolvableType;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Christoph Strobl
  */
 class AotRepositoryMethodImplementationMetadata {
 
-	private final Map<String, ParameterSpec> methodArguments;
-	@Nullable private TypeName actualReturnType;
-	@Nullable private TypeName returnType;
+	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
+	private final ResolvableType actualReturnType;
+	private final ResolvableType returnType;
 
-	public AotRepositoryMethodImplementationMetadata() {
-		this.methodArguments = new LinkedHashMap<>();
+	public AotRepositoryMethodImplementationMetadata(RepositoryInformation repositoryInformation, Method method) {
+
+		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
+		this.actualReturnType = ResolvableType.forType(repositoryInformation.getReturnedDomainClass(method));
 	}
 
 	@Nullable
@@ -46,13 +52,11 @@ class AotRepositoryMethodImplementationMetadata {
 		return null;
 	}
 
-	@Nullable
-	public TypeName getReturnType() {
+	public ResolvableType getReturnType() {
 		return returnType;
 	}
 
-	@Nullable
-	public TypeName getActualReturnType() {
+	public ResolvableType getActualReturnType() {
 		return actualReturnType;
 	}
 
@@ -62,13 +66,5 @@ class AotRepositoryMethodImplementationMetadata {
 
 	Map<String, ParameterSpec> getMethodArguments() {
 		return methodArguments;
-	}
-
-	void setActualReturnType(@Nullable TypeName actualReturnType) {
-		this.actualReturnType = actualReturnType;
-	}
-
-	void setReturnType(@Nullable TypeName returnType) {
-		this.returnType = returnType;
 	}
 }

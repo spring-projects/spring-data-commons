@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -139,9 +140,20 @@ public abstract class ReactiveWrappers {
 
 		Assert.notNull(type, "Type must not be null");
 
-		return Arrays.stream(type.getMethods())//
-				.flatMap(ReflectionUtils::returnTypeAndParameters)//
-				.anyMatch(ReactiveWrappers::supports);
+		for (Method method : type.getMethods()) {
+
+			if (ReactiveWrappers.supports(method.getReturnType())) {
+				return true;
+			}
+
+			for (Class<?> parameterType : method.getParameterTypes()) {
+				if (ReactiveWrappers.supports(parameterType)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
