@@ -201,6 +201,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	}
 
 	@Override
+	public ResolvableType toResolvableType() {
+		return resolvableType;
+	}
+
+	@Override
 	public TypeInformation<?> getRawTypeInformation() {
 		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()));
 	}

@@ -36,12 +36,12 @@ import org.springframework.javapoet.TypeName;
 public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
-	private final AotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryFragmentMetadata metadata;
 
 	private ConstructorCustomizer customizer = (info, builder) -> {};
 
 	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
-			AotRepositoryImplementationMetadata metadata) {
+			AotRepositoryFragmentMetadata metadata) {
 
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;

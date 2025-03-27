@@ -21,5 +21,7 @@ import org.springframework.aot.generate.GenerationContext;
  * @author Christoph Strobl
  */
 public interface AotCodeContributor {
+
 	void contribute(GenerationContext generationContext);
+
 }

@@ -40,6 +40,7 @@ import java.util.Optional;
 
 import javax.lang.model.element.Modifier;
 
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.domain.Limit;
@@ -48,6 +49,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.ParameterSpec;
@@ -62,25 +65,39 @@ import org.springframework.util.ClassUtils;
 public class AotRepositoryMethodGenerationContext {
 
 	private final Method method;
+	private final QueryMethod queryMethod;
 	private final RepositoryInformation repositoryInformation;
-	private final AotRepositoryImplementationMetadata targetTypeMetadata;
+	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final AotRepositoryMethodImplementationMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
-	@Nullable PartTree partTree;
+	private final @Nullable PartTree partTree;
 
-	public AotRepositoryMethodGenerationContext(Method method, RepositoryInformation repositoryInformation,
-			AotRepositoryImplementationMetadata targetTypeMetadata) {
+	public AotRepositoryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method,
+			QueryMethod queryMethod, AotRepositoryFragmentMetadata targetTypeMetadata) {
 
 		this.method = method;
+		this.queryMethod = queryMethod;
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
-		this.targetMethodMetadata = new AotRepositoryMethodImplementationMetadata();
+		this.targetMethodMetadata = new AotRepositoryMethodImplementationMetadata(repositoryInformation, method);
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
+
+		PartTree partTree = null;
 		try {
-			this.partTree = new PartTree(method.getName(), repositoryInformation.getDomainType());
+			partTree = new PartTree(method.getName(), repositoryInformation.getDomainType());
 		} catch (Exception e) {
 			// not a part tree quer
 		}
+
+		this.partTree = partTree;
+	}
+
+	QueryMethod getQueryMethod() {
+		return queryMethod;
+	}
+
+	public ReturnedType getReturnedType() {
+		return queryMethod.getResultProcessor().getReturnedType();
 	}
 
 	public boolean hasField(String fieldName) {
@@ -107,7 +124,7 @@ public class AotRepositoryMethodGenerationContext {
 		return method;
 	}
 
-	AotRepositoryImplementationMetadata getTargetTypeMetadata() {
+	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
 		return targetTypeMetadata;
 	}
 
@@ -130,8 +147,9 @@ public class AotRepositoryMethodGenerationContext {
 		this.targetMethodMetadata.addParameter(parameter);
 	}
 
+
 	public boolean returnsVoid() {
-		return getMethod().getReturnType().equals(Void.TYPE);
+		return ClassUtils.isVoidType(getReturnType().getRawClass());
 	}
 
 	public boolean returnsPage() {
@@ -166,8 +184,7 @@ public class AotRepositoryMethodGenerationContext {
 		return partTree != null ? partTree.isDelete() : method.getName().startsWith("delete");
 	}
 
-	@Nullable
-	public TypeName getActualReturnType() {
+	public ResolvableType getActualReturnType() {
 		return targetMethodMetadata.getActualReturnType();
 	}
 
@@ -192,8 +209,7 @@ public class AotRepositoryMethodGenerationContext {
 		return values != null ? (T) values.get(attribute) : null;
 	}
 
-	@Nullable
-	public TypeName getReturnType() {
+	public ResolvableType getReturnType() {
 		return targetMethodMetadata.getReturnType();
 	}
 
@@ -204,4 +220,5 @@ public class AotRepositoryMethodGenerationContext {
 	public CodeBlocks codeBlocks() {
 		return codeBlocks;
 	}
+
 }

@@ -27,9 +27,9 @@ import org.springframework.util.StringUtils;
  */
 public class CodeBlocks {
 
-	private final AotRepositoryImplementationMetadata metadata;
+	private final AotRepositoryFragmentMetadata metadata;
 
-	public CodeBlocks(AotRepositoryImplementationMetadata metadata) {
+	public CodeBlocks(AotRepositoryFragmentMetadata metadata) {
 		this.metadata = metadata;
 	}
 

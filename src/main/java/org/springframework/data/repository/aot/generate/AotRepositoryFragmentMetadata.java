@@ -30,13 +30,13 @@ import org.springframework.lang.Nullable;
 /**
  * @author Christoph Strobl
  */
-public class AotRepositoryImplementationMetadata {
+public class AotRepositoryFragmentMetadata {
 
-	private ClassName className;
-	private Map<String, FieldSpec> fields = new HashMap<>(3);
+	private final ClassName className;
+	private final Map<String, FieldSpec> fields = new HashMap<>(3);
 	private final Map<String, TypeName> constructorArguments = new LinkedHashMap<>(3);
 
-	public AotRepositoryImplementationMetadata(ClassName className) {
+	public AotRepositoryFragmentMetadata(ClassName className) {
 		this.className = className;
 	}
 
