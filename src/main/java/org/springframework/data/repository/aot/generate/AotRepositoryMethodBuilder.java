@@ -41,12 +41,12 @@ import org.springframework.util.StringUtils;
  */
 public class AotRepositoryMethodBuilder {
 
-	private final AotRepositoryMethodGenerationContext context;
+	private final AotQueryMethodGenerationContext context;
 
 	private RepositoryMethodContribution contribution = (context) -> CodeBlock.builder().build();
 	private RepositoryMethodCustomizer customizer = (context, body) -> {};
 
-	AotRepositoryMethodBuilder(AotRepositoryMethodGenerationContext context) {
+	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
 
 		this.context = context;
 		initParameters(context.getMethod(), context.getRepositoryInformation());
@@ -105,7 +105,7 @@ public class AotRepositoryMethodBuilder {
 		CodeBlock methodBody = contribution.contribute(context);
 
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
-		builder.returns(TypeName.get(context.getReturnType().toClass()));
+		builder.returns(TypeName.get(context.getReturnType().getType()));
 
 		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
 				context.getMethod().getName(),
@@ -123,7 +123,7 @@ public class AotRepositoryMethodBuilder {
 	 */
 	public interface RepositoryMethodContribution {
 
-		CodeBlock contribute(AotRepositoryMethodGenerationContext context);
+		CodeBlock contribute(AotQueryMethodGenerationContext context);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class AotRepositoryMethodBuilder {
 	 */
 	public interface RepositoryMethodCustomizer {
 
-		void customize(AotRepositoryMethodGenerationContext context, MethodSpec.Builder builder);
+		void customize(AotQueryMethodGenerationContext context, MethodSpec.Builder builder);
 
 	}
 }

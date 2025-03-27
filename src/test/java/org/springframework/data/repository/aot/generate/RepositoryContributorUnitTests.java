@@ -30,6 +30,7 @@ import org.springframework.data.aot.CodeContributionAssert;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.CodeBlock;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Christoph Strobl
@@ -50,7 +51,7 @@ class RepositoryContributorUnitTests {
 						.contribute(context -> {
 
 							CodeBlock.Builder builder = CodeBlock.builder();
-							if (!context.returnsVoid()) {
+							if (!ClassUtils.isVoidType(method.getReturnType())) {
 								builder.addStatement("return null");
 							}
 

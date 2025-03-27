@@ -117,7 +117,7 @@ class AotRepositoryBuilder {
 
 			if (contributor != null) {
 
-				AotRepositoryMethodGenerationContext context = new AotRepositoryMethodGenerationContext(repositoryInformation,
+				AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
 						method, contributor.getQueryMethod(), generationMetadata);
 
 				builder.addMethod(contributor.contribute(context));

@@ -47,7 +47,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 		return builderConsumer -> new MethodContributor<>(queryMethod) {
 
 			@Override
-			public MethodSpec contribute(AotRepositoryMethodGenerationContext context) {
+			public MethodSpec contribute(AotQueryMethodGenerationContext context) {
 				AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
 				builderConsumer.accept(builder);
 				return builder.buildMethod();
@@ -65,7 +65,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 * @param context generation context.
 	 * @return
 	 */
-	public abstract MethodSpec contribute(AotRepositoryMethodGenerationContext context);
+	public abstract MethodSpec contribute(AotQueryMethodGenerationContext context);
 
 	/**
 	 * Builder for a query method contributor.

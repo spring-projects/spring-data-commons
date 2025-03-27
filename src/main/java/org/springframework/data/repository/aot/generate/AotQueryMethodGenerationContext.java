@@ -34,24 +34,15 @@ package org.springframework.data.repository.aot.generate;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import javax.lang.model.element.Modifier;
 
 import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.domain.Limit;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
@@ -61,14 +52,16 @@ import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * Generational AOT context for repository query method generation.
+ *
  * @author Christoph Strobl
- * @since 2025/01
+ * @author Mark Paluch
+ * @since 4.0
  */
-public class AotRepositoryMethodGenerationContext {
+public class AotQueryMethodGenerationContext {
 
 	private final Method method;
 	private final MergedAnnotations annotations;
@@ -79,8 +72,8 @@ public class AotRepositoryMethodGenerationContext {
 	private final CodeBlocks codeBlocks;
 	private final @Nullable PartTree partTree;
 
-	AotRepositoryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method,
-			QueryMethod queryMethod, AotRepositoryFragmentMetadata targetTypeMetadata) {
+	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
+			AotRepositoryFragmentMetadata targetTypeMetadata) {
 
 		this.method = method;
 		this.annotations = MergedAnnotations.from(method);
@@ -100,6 +93,29 @@ public class AotRepositoryMethodGenerationContext {
 		this.partTree = partTree;
 	}
 
+	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
+		return targetTypeMetadata;
+	}
+
+	AotRepositoryMethodImplementationMetadata getTargetMethodMetadata() {
+		return targetMethodMetadata;
+	}
+
+	public RepositoryInformation getRepositoryInformation() {
+		return repositoryInformation;
+	}
+
+	public Method getMethod() {
+		return method;
+	}
+
+	public CodeBlocks codeBlocks() {
+		return codeBlocks;
+	}
+
+	/**
+	 * @return the {@link MergedAnnotations} that are present on the method.
+	 */
 	public MergedAnnotations getAnnotations() {
 		return annotations;
 	}
@@ -120,6 +136,14 @@ public class AotRepositoryMethodGenerationContext {
 	 */
 	public ReturnedType getReturnedType() {
 		return queryMethod.getResultProcessor().getReturnedType();
+	}
+
+	public ResolvableType getActualReturnType() {
+		return targetMethodMetadata.getActualReturnType();
+	}
+
+	public ResolvableType getReturnType() {
+		return targetMethodMetadata.getReturnType();
 	}
 
 	/**
@@ -158,7 +182,7 @@ public class AotRepositoryMethodGenerationContext {
 			if (parameter.isBindable()) {
 
 				if (bindable == parameterIndex) {
-					return getParameterNameOfPosition(totalIndex);
+					return getParameterName(totalIndex);
 				}
 				bindable++;
 			}
@@ -207,22 +231,36 @@ public class AotRepositoryMethodGenerationContext {
 			}
 
 			if (parameter.getName().filter(it -> it.equals(parameterName)).isPresent()) {
-				return getParameterNameOfPosition(totalIndex - 1);
+				return getParameterName(totalIndex - 1);
 			}
 		}
 
 		return null;
 	}
 
+	/**
+	 * @return list of bindable parameter names.
+	 */
 	public List<String> getBindableParameterNames() {
 
 		List<String> result = new ArrayList<>();
 
 		for (Parameter parameter : queryMethod.getParameters().getBindableParameters()) {
+			parameter.getName().map(result::add);
+		}
 
-			if (parameter.isBindable()) {
-				parameter.getName().map(result::add);
-			}
+		return result;
+	}
+
+	/**
+	 * @return list of all parameter names (including non-bindable special parameters).
+	 */
+	public List<String> getAllParameterNames() {
+
+		List<String> result = new ArrayList<>();
+
+		for (Parameter parameter : queryMethod.getParameters()) {
+			parameter.getName().map(result::add);
 		}
 
 		return result;
@@ -240,20 +278,8 @@ public class AotRepositoryMethodGenerationContext {
 		targetTypeMetadata.addField(fieldSpec);
 	}
 
-	public String fieldNameOf(Class<?> type) {
+	public @Nullable String fieldNameOf(Class<?> type) {
 		return targetTypeMetadata.fieldNameOf(type);
-	}
-
-	public RepositoryInformation getRepositoryInformation() {
-		return repositoryInformation;
-	}
-
-	public Method getMethod() {
-		return method;
-	}
-
-	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
-		return targetTypeMetadata;
 	}
 
 	@Nullable
@@ -261,9 +287,13 @@ public class AotRepositoryMethodGenerationContext {
 		return targetMethodMetadata.getParameterNameOf(type);
 	}
 
-	public @Nullable String getParameterNameOfPosition(int position) {
+	public @Nullable String getParameterName(int position) {
 
-		ArrayList<Entry<String, ParameterSpec>> entries = new ArrayList<>(
+		if (0 > position) {
+			return null;
+		}
+
+		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(
 				targetMethodMetadata.getMethodArguments().entrySet());
 		if (position < entries.size()) {
 			return entries.get(position).getKey();
@@ -275,78 +305,19 @@ public class AotRepositoryMethodGenerationContext {
 		this.targetMethodMetadata.addParameter(parameter);
 	}
 
-
-	public boolean returnsVoid() {
-		return ClassUtils.isVoidType(getReturnType().getRawClass());
-	}
-
-	public boolean returnsPage() {
-		return ClassUtils.isAssignable(Page.class, getMethod().getReturnType());
-	}
-
-	public boolean returnsSlice() {
-		return ClassUtils.isAssignable(Slice.class, getMethod().getReturnType());
-	}
-
-	public boolean returnsCollection() {
-		return ClassUtils.isAssignable(Collection.class, getMethod().getReturnType());
-	}
-
-	public boolean returnsSingleValue() {
-		return !returnsPage() && !returnsSlice() && !returnsCollection();
-	}
-
-	public boolean returnsOptionalValue() {
-		return ClassUtils.isAssignable(Optional.class, getMethod().getReturnType());
-	}
-
-	public boolean isCountMethod() {
-		return partTree != null ? partTree.isCountProjection() : method.getName().startsWith("count");
-	}
-
-	public boolean isExistsMethod() {
-		return partTree != null ? partTree.isExistsProjection() : method.getName().startsWith("exists");
-	}
-
-	public boolean isDeleteMethod() {
-		return partTree != null ? partTree.isDelete() : method.getName().startsWith("delete");
-	}
-
-	public ResolvableType getActualReturnType() {
-		return targetMethodMetadata.getActualReturnType();
-	}
-
 	@Nullable
 	public String getSortParameterName() {
-		return getParameterNameOf(Sort.class);
+		return getParameterName(queryMethod.getParameters().getSortIndex());
 	}
 
 	@Nullable
 	public String getPageableParameterName() {
-		return getParameterNameOf(Pageable.class);
+		return getParameterName(queryMethod.getParameters().getPageableIndex());
 	}
 
 	@Nullable
 	public String getLimitParameterName() {
-		return getParameterNameOf(Limit.class);
-	}
-
-	@Nullable
-	public <T> T annotationValue(Class<? extends Annotation> annotation, String attribute) {
-		AnnotationAttributes values = AnnotatedElementUtils.getMergedAnnotationAttributes(getMethod(), annotation);
-		return values != null ? (T) values.get(attribute) : null;
-	}
-
-	public ResolvableType getReturnType() {
-		return targetMethodMetadata.getReturnType();
-	}
-
-	AotRepositoryMethodImplementationMetadata getTargetMethodMetadata() {
-		return targetMethodMetadata;
-	}
-
-	public CodeBlocks codeBlocks() {
-		return codeBlocks;
+		return getParameterName(queryMethod.getParameters().getLimitIndex());
 	}
 
 }
