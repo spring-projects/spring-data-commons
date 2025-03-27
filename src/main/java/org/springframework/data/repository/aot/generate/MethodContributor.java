@@ -21,8 +21,9 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.MethodSpec;
 
 /**
- * Contributor for AOT repository methods.
+ * Strategy for contributing AOT repository methods by looking introspecting query methods.
  *
+ * @param <M> query method type.
  * @author Mark Paluch
  * @since 4.0
  */
@@ -38,8 +39,8 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 * Creates a new builder to build a {@code MethodContributor}.
 	 *
 	 * @param queryMethod the query method to be used.
-	 * @return
-	 * @param <M>
+	 * @return the new builder.
+	 * @param <M> query method type.
 	 */
 	public static <M extends QueryMethod> QueryMethodContributorBuilder<M> forQueryMethod(M queryMethod) {
 
