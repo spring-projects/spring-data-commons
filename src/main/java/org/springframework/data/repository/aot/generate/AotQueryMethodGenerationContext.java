@@ -147,6 +147,13 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
+	 * @return the {@link TypeName} representing the method return type.
+	 */
+	public TypeName getReturnTypeName() {
+		return TypeName.get(getReturnType().getType());
+	}
+
+	/**
 	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given
 	 * {@code parameterIndex} or throws {@link IllegalArgumentException} if the parameter cannot be determined by its
 	 * index.
