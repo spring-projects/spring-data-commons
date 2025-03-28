@@ -20,11 +20,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Christoph Strobl

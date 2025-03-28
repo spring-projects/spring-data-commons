@@ -39,6 +39,8 @@ import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
@@ -50,7 +52,6 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**

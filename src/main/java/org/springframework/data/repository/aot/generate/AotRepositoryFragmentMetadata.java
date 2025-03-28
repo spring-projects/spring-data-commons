@@ -22,10 +22,11 @@ import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.TypeName;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Christoph Strobl
