@@ -47,7 +47,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
@@ -70,7 +69,6 @@ public class AotQueryMethodGenerationContext {
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final AotRepositoryMethodImplementationMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
-	private final @Nullable PartTree partTree;
 
 	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
 			AotRepositoryFragmentMetadata targetTypeMetadata) {
@@ -82,15 +80,6 @@ public class AotQueryMethodGenerationContext {
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new AotRepositoryMethodImplementationMetadata(repositoryInformation, method);
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
-
-		PartTree partTree = null;
-		try {
-			partTree = new PartTree(method.getName(), repositoryInformation.getDomainType());
-		} catch (Exception e) {
-			// not a part tree quer
-		}
-
-		this.partTree = partTree;
 	}
 
 	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
