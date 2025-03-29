@@ -3,7 +3,6 @@
 Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; Mark Paluch; Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
-:feature-scroll: true
 
 (C) 2008-2025 The original authors.
 
