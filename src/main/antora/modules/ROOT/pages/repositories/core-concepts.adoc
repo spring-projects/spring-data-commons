@@ -1,5 +1,6 @@
 [[repositories.core-concepts]]
 = Core concepts
+:feature-scroll:
 
 The central interface in the Spring Data repository abstraction is `Repository`.
 It takes the domain class to manage as well as the identifier type of the domain class as type arguments.
