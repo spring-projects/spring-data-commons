@@ -17,6 +17,7 @@ package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.TypeVariable;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
@@ -28,8 +29,8 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.TypeVariableName;
 import org.springframework.util.StringUtils;
 
 /**
@@ -62,11 +63,7 @@ public class AotRepositoryMethodBuilder {
 			methodParameter.initParameterNameDiscovery(new DefaultParameterNameDiscoverer());
 			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
 
-			TypeName parameterType = TypeName.get(resolvableParameterType.resolve());
-			if (resolvableParameterType.hasGenerics()) {
-				parameterType = ParameterizedTypeName.get(resolvableParameterType.resolve(),
-						resolvableParameterType.resolveGenerics());
-			}
+			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
 
 			this.context.addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
 		}
@@ -107,10 +104,15 @@ public class AotRepositoryMethodBuilder {
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
 		builder.returns(TypeName.get(context.getReturnType().getType()));
 
+		TypeVariable<Method>[] tvs = context.getMethod().getTypeParameters();
+
+		for (TypeVariable<Method> tv : tvs) {
+			builder.addTypeVariable(TypeVariableName.get(tv));
+		}
+
 		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
-				context.getMethod().getName(),
-				StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata().getMethodArguments().values().stream()
-						.map(it -> it.type.toString()).collect(Collectors.toList())));
+				context.getMethod().getName(), StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata()
+						.getMethodArguments().values().stream().map(it -> it.type.toString()).collect(Collectors.toList())));
 		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
 		builder.addCode(methodBody);
 		customizer.customize(context, builder);
