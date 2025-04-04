@@ -16,6 +16,8 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -28,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
@@ -36,7 +37,6 @@ import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Builder for AOT repository fragments.
@@ -107,36 +107,41 @@ class AotRepositoryBuilder {
 		constructorCustomizer.accept(constructorBuilder);
 		builder.addMethod(constructorBuilder.buildConstructor());
 
-		// TODO: Why not use repositoryInformation.getQueryMethods()?
-		// write methods
-		// start with the derived ones
-		ReflectionUtils.doWithMethods(repositoryInformation.getRepositoryInterface(), method -> {
+		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
+				.sorted(Comparator.<Method, String> comparing(it -> {
+					return it.getDeclaringClass().getName();
+				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
+				.forEach(method -> {
 
-			MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
-					repositoryInformation);
+					if (repositoryInformation.isCustomMethod(method)) {
+						// TODO: fragment
+						return;
+					}
 
-			if (contributor != null) {
+					if (repositoryInformation.isBaseClassMethod(method)) {
+						// TODO: base
+						return;
+					}
 
-				AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
-						method, contributor.getQueryMethod(), generationMetadata);
+					if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+						// TODO: report what we've skipped
+						return;
+					}
 
-				builder.addMethod(contributor.contribute(context));
-			}
+					if (repositoryInformation.isQueryMethod(method)) {
 
-		}, it -> {
+						MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
+								repositoryInformation);
 
-			/*
-			the isBaseClassMethod(it) check seems to have some issues.
-			need to hard code it here
-			 */
+						if (contributor != null) {
 
-			if (ReflectionUtils.findMethod(CrudRepository.class, it.getName(), it.getParameterTypes()) != null) {
-				return false;
-			}
+							AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
+									method, contributor.getQueryMethod(), generationMetadata);
 
-			return !repositoryInformation.isBaseClassMethod(it) && !repositoryInformation.isCustomMethod(it)
-					&& !it.isDefault();
-		});
+							builder.addMethod(contributor.contribute(context));
+						}
+					}
+				});
 
 		// write fields at the end so we make sure to capture things added by methods
 		generationMetadata.getFields().values().forEach(builder::addField);

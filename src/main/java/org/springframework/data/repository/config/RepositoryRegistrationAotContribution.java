@@ -49,6 +49,7 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
@@ -362,10 +363,14 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
 				AotContext.from(this.getBeanFactory()));
 
+		// TODO: Flip lazyInit flag to true for AOT processing to not generate the actual repository.
+		RepositoryFactoryBeanSupport rfbs = bean.getBeanFactory().getBean("&" + bean.getBeanName(),
+				RepositoryFactoryBeanSupport.class);
+
 		repositoryContext.setBeanName(bean.getBeanName());
 		repositoryContext.setBasePackages(repositoryMetadata.getBasePackages().toSet());
 		repositoryContext.setIdentifyingAnnotations(resolveIdentifyingAnnotations());
-		repositoryContext.setRepositoryInformation(repositoryInformation);
+		repositoryContext.setRepositoryInformation(rfbs.getRepositoryInformation());
 
 		return repositoryContext;
 	}
