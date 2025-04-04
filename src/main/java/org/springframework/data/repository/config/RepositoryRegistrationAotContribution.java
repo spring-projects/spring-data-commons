@@ -293,7 +293,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 
 		// Repository query methods
-		repositoryInformation.getQueryMethods().map(repositoryInformation::getReturnedDomainClass)
+		repositoryInformation.getQueryMethods().stream().map(repositoryInformation::getReturnedDomainClass)
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {

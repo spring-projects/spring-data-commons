@@ -413,7 +413,8 @@ public abstract class RepositoryFactorySupport
 
 		Optional<QueryLookupStrategy> queryLookupStrategy = getQueryLookupStrategy(queryLookupStrategyKey,
 				getValueExpressionDelegate());
-		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(), queryLookupStrategy,
+		result.addAdvice(new QueryExecutorMethodInterceptor(information, getProjectionFactory(),
+				queryLookupStrategy.orElse(null),
 				namedQueries, queryPostProcessors, methodInvocationListeners));
 
 		result.addAdvice(

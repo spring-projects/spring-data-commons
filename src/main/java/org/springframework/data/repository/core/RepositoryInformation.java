@@ -16,8 +16,7 @@
 package org.springframework.data.repository.core;
 
 import java.lang.reflect.Method;
-
-import org.springframework.data.util.Streamable;
+import java.util.List;
 
 /**
  * Additional repository specific information
@@ -56,7 +55,7 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 *
 	 * @return
 	 */
-	Streamable<Method> getQueryMethods();
+	List<Method> getQueryMethods();
 
 	/**
 	 * Returns the base class to be used to create the proxy backing instance.

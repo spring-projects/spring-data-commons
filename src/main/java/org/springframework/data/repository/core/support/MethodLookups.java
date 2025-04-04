@@ -123,19 +123,26 @@ interface MethodLookups {
 
 			Assert.notNull(repositoryMetadata, "Repository metadata must not be null");
 
-			this.entityType = repositoryMetadata.getDomainTypeInformation().toTypeDescriptor().getResolvableType();
-			this.idType = repositoryMetadata.getIdTypeInformation().toTypeDescriptor().getResolvableType();
+			this.entityType = repositoryMetadata.getDomainTypeInformation().toResolvableType();
+			this.idType = repositoryMetadata.getIdTypeInformation().toResolvableType();
 			this.repositoryInterface = repositoryMetadata.getRepositoryInterface();
 		}
 
 		@Override
 		public List<MethodPredicate> getLookups() {
 
-			MethodPredicate detailedComparison = (MethodPredicate) (invoked, candidate) -> Optional.of(candidate)
-					.filter(baseClassMethod -> baseClassMethod.getName().equals(invoked.getName()))// Right name
-					.filter(baseClassMethod -> baseClassMethod.getParameterCount() == invoked.getParameterCount())
-					.filter(baseClassMethod -> parametersMatch(invoked.getMethod(), baseClassMethod))// All parameters match
-					.isPresent();
+			MethodPredicate detailedComparison = (MethodPredicate) (invoked, candidate) -> {
+
+				if (candidate.getParameterCount() != invoked.getParameterCount()) {
+					return false;
+				}
+
+				if (!candidate.getName().equals(invoked.getName())) {
+					return false;
+				}
+
+				return parametersMatch(invoked.getMethod(), candidate);
+			};
 
 			return Collections.singletonList(detailedComparison);
 		}

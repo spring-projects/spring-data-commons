@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -49,13 +49,13 @@ class QueryExecutorMethodInterceptorUnitTests {
 
 		assertThatIllegalStateException()
 				.isThrownBy(() -> new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(),
-						Optional.empty(), PropertiesBasedNamedQueries.EMPTY, Collections.emptyList(), Collections.emptyList()));
+						null, PropertiesBasedNamedQueries.EMPTY, Collections.emptyList(), Collections.emptyList()));
 	}
 
 	@Test // DATACMNS-1508
 	void skipsQueryLookupsIfQueryLookupStrategyIsNotPresent() {
 
-		new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), Optional.empty(),
+		new QueryExecutorMethodInterceptor(information, new SpelAwareProxyProjectionFactory(), null,
 				PropertiesBasedNamedQueries.EMPTY, Collections.emptyList(), Collections.emptyList());
 
 		verify(strategy, times(0)).resolveQuery(any(), any(), any(), any());
