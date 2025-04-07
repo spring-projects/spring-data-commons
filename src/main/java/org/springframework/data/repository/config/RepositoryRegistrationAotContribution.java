@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -229,7 +230,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		// TODO: is this the way?
 		contribution.getRuntimeHints().reflection()
 				.registerType(repositoryInformation.getRepositoryInterface(),
 						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
@@ -244,6 +244,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
 
 			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
+			Optional<?> implementation = fragment.getImplementation();
 
 			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
 
@@ -252,6 +253,17 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				if (!repositoryFragmentType.isInterface()) {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
 				}
+			});
+
+			implementation.ifPresent(impl -> {
+				contribution.getRuntimeHints().reflection().registerType(impl.getClass(), hint -> {
+
+					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+					if (!impl.getClass().isInterface()) {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					}
+				});
 			});
 		}
 
@@ -355,15 +367,13 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return Predicates.isTrue();
 	}
 
+	@SuppressWarnings("rawtypes")
 	private DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
 			RepositoryConfiguration<?> repositoryMetadata) {
-
-		RepositoryInformation repositoryInformation = resolveRepositoryInformation(repositoryMetadata);
 
 		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
 				AotContext.from(this.getBeanFactory()));
 
-		// TODO: Flip lazyInit flag to true for AOT processing to not generate the actual repository.
 		RepositoryFactoryBeanSupport rfbs = bean.getBeanFactory().getBean("&" + bean.getBeanName(),
 				RepositoryFactoryBeanSupport.class);
 

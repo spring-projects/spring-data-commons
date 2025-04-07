@@ -21,6 +21,7 @@ import static org.springframework.data.repository.aot.RepositoryRegistrationAotC
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
@@ -31,9 +32,18 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.data.aot.sample.*;
+import org.springframework.data.aot.sample.ConfigWithCustomImplementation;
+import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass;
+import org.springframework.data.aot.sample.ConfigWithFragments;
+import org.springframework.data.aot.sample.ConfigWithQueryMethods;
 import org.springframework.data.aot.sample.ConfigWithQueryMethods.ProjectionInterface;
+import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
+import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository;
+import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresent;
+import org.springframework.data.aot.sample.ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository;
+import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
+import org.springframework.data.aot.sample.ReactiveConfig;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
@@ -185,10 +195,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesReflectionFor(PagingAndSortingRepository.class) // base repository
 							.contributesReflectionFor(ConfigWithCustomImplementation.Person.class) // repository domain type
 
-							// fragments
-							.contributesReflectionFor(ConfigWithCustomImplementation.CustomImplInterface.class,
-									ConfigWithCustomImplementation.RepositoryWithCustomImplementationImpl.class);
-
+							// fragments (custom implementation)
+							.contributesReflectionFor(ConfigWithCustomImplementation.RepositoryWithCustomImplementationImpl.class);
 				});
 	}
 

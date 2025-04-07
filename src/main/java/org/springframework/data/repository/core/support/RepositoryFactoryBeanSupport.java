@@ -31,6 +31,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
@@ -85,7 +86,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private @Nullable ApplicationEventPublisher publisher;
 	private @Nullable BeanFactory beanFactory;
 	private @Nullable Environment environment;
-	private boolean lazyInit = false;
+	private boolean lazyInit = Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING); // use lazy-init in AOT processing
 	private @Nullable EvaluationContextProvider evaluationContextProvider;
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
 
