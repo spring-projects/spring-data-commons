@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -291,6 +292,25 @@ public class RepositoryComposition {
 	}
 
 	/**
+	 * Find the {@link RepositoryFragment} for the given {@link Method} invoked on the composite interface.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return the fragment implementing that method or {@literal null} if not found.
+	 */
+	public @Nullable RepositoryFragment<?> findFragment(Method method) {
+
+		Method methodToCall = getMethod(method);
+
+		if (methodToCall != null) {
+
+			return fragments.stream().filter(it -> it.hasMethod(methodToCall)) //
+					.findFirst().orElse(null);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Find the implementation method for the given {@link Method} invoked on the composite interface.
 	 *
 	 * @param method must not be {@literal null}.
@@ -414,12 +434,12 @@ public class RepositoryComposition {
 		}
 
 		/**
-		 * Create {@link RepositoryFragments} from a {@link List} of {@link RepositoryFragment fragments}.
+		 * Create {@link RepositoryFragments} from a {@link Collection} of {@link RepositoryFragment fragments}.
 		 *
 		 * @param fragments must not be {@literal null}.
 		 * @return the {@link RepositoryFragments} for {@code implementations}.
 		 */
-		public static RepositoryFragments from(List<RepositoryFragment<?>> fragments) {
+		public static RepositoryFragments from(Collection<RepositoryFragment<?>> fragments) {
 
 			Assert.notNull(fragments, "RepositoryFragments must not be null");
 
@@ -474,6 +494,11 @@ public class RepositoryComposition {
 		@Override
 		public Iterator<RepositoryFragment<?>> iterator() {
 			return fragments.iterator();
+		}
+
+		@Nullable
+		RepositoryFragment<?> findFragment(Method methodToCall) {
+			return fragmentCache.computeIfAbsent(methodToCall, this::findImplementationFragment);
 		}
 
 		/**

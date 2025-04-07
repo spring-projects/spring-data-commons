@@ -18,6 +18,8 @@ package org.springframework.data.repository.core;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.springframework.data.repository.core.support.RepositoryComposition;
+
 /**
  * Additional repository specific information
  *
@@ -93,4 +95,14 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	default boolean hasQueryMethods() {
 		return getQueryMethods().iterator().hasNext();
 	}
+
+	/**
+	 * Returns the {@link RepositoryComposition} for this repository. This is used to determine the composition of the
+	 * repository and its fragments.
+	 *
+	 * @return never {@literal null}.
+	 * @since 4.0
+	 */
+	RepositoryComposition getRepositoryComposition();
+
 }

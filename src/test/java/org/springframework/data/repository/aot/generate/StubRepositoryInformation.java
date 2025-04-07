@@ -124,4 +124,10 @@ class StubRepositoryInformation implements RepositoryInformation {
 	public Method getTargetClassMethod(Method method) {
 		return null;
 	}
+
+	@Override
+	public RepositoryComposition getRepositoryComposition() {
+		return baseComposition;
+	}
+
 }

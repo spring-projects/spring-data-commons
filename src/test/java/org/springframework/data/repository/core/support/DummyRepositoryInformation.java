@@ -121,4 +121,10 @@ public final class DummyRepositoryInformation implements RepositoryInformation {
 	public Set<RepositoryFragment<?>> getFragments() {
 		return Collections.emptySet();
 	}
+
+	@Override
+	public RepositoryComposition getRepositoryComposition() {
+		return RepositoryComposition.empty();
+	}
+
 }

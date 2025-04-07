@@ -16,8 +16,10 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -26,11 +28,16 @@ import javax.lang.model.element.Modifier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.repository.aot.generate.json.JSONException;
+import org.springframework.data.repository.aot.generate.json.JSONObject;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.RepositoryComposition;
+import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
@@ -50,8 +57,8 @@ class AotRepositoryBuilder {
 	private final ProjectionFactory projectionFactory;
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
-	private Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
-	private BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction;
+	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
+	private @Nullable BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction;
 	private ClassCustomizer customizer;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, ProjectionFactory projectionFactory) {
@@ -92,7 +99,7 @@ class AotRepositoryBuilder {
 		return this;
 	}
 
-	public JavaFile build() {
+	public AotBundle build() {
 
 		// start creating the type
 		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
@@ -104,43 +111,25 @@ class AotRepositoryBuilder {
 		// create the constructor
 		AotRepositoryConstructorBuilder constructorBuilder = new AotRepositoryConstructorBuilder(repositoryInformation,
 				generationMetadata);
-		constructorCustomizer.accept(constructorBuilder);
+		if (constructorCustomizer != null) {
+			constructorCustomizer.accept(constructorBuilder);
+		}
+
 		builder.addMethod(constructorBuilder.buildConstructor());
+
+		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
+		AotRepositoryMetadata.RepositoryType repositoryType = repositoryInformation.isReactiveRepository()
+				? AotRepositoryMetadata.RepositoryType.REACTIVE
+				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
+
+		RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
 
 		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
 				.sorted(Comparator.<Method, String> comparing(it -> {
 					return it.getDeclaringClass().getName();
 				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
 				.forEach(method -> {
-
-					if (repositoryInformation.isCustomMethod(method)) {
-						// TODO: fragment
-						return;
-					}
-
-					if (repositoryInformation.isBaseClassMethod(method)) {
-						// TODO: base
-						return;
-					}
-
-					if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
-						// TODO: report what we've skipped
-						return;
-					}
-
-					if (repositoryInformation.isQueryMethod(method)) {
-
-						MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
-								repositoryInformation);
-
-						if (contributor != null) {
-
-							AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
-									method, contributor.getQueryMethod(), generationMetadata);
-
-							builder.addMethod(contributor.contribute(context));
-						}
-					}
+					contributeMethod(method, repositoryComposition, methodMetadata, builder);
 				});
 
 		// write fields at the end so we make sure to capture things added by methods
@@ -148,7 +137,65 @@ class AotRepositoryBuilder {
 
 		// finally customize the file itself
 		this.customizer.customize(repositoryInformation, generationMetadata, builder);
-		return JavaFile.builder(packageName(), builder.build()).build();
+		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
+
+		// TODO: module identifier
+		AotRepositoryMetadata metadata = new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(),
+				"", repositoryType, methodMetadata);
+
+		try {
+			return new AotBundle(javaFile, metadata.toJson());
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
+			List<AotRepositoryMethod> methodMetadata, TypeSpec.Builder builder) {
+
+		if (repositoryInformation.isCustomMethod(method) || repositoryInformation.isBaseClassMethod(method)) {
+
+			RepositoryFragment<?> fragment = repositoryComposition.findFragment(method);
+
+			if (fragment != null) {
+				methodMetadata.add(getFragmentMetadata(method, fragment));
+			}
+			return;
+		}
+
+		if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+			return;
+		}
+
+		if (repositoryInformation.isQueryMethod(method) && methodContributorFunction != null) {
+
+			MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
+					repositoryInformation);
+
+			if (contributor != null) {
+
+				if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
+
+					AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation, method,
+							contributor.getQueryMethod(), generationMetadata);
+
+					builder.addMethod(contributor.contribute(context));
+				}
+
+				methodMetadata
+						.add(new AotRepositoryMethod(method.getName(), method.toGenericString(), contributor.getMetadata(), null));
+			}
+		}
+	}
+
+	private AotRepositoryMethod getFragmentMetadata(Method method, RepositoryFragment<?> fragment) {
+
+		String signature = fragment.getSignatureContributor().getName();
+		String implementation = fragment.getImplementation().map(it -> it.getClass().getName()).orElse(null);
+
+		AotFragmentTarget fragmentTarget = new AotFragmentTarget(signature, implementation);
+
+		return new AotRepositoryMethod(method.getName(), method.toGenericString(), null, fragmentTarget);
 	}
 
 	public AotRepositoryFragmentMetadata getGenerationMetadata() {
@@ -193,5 +240,10 @@ class AotRepositoryBuilder {
 		 */
 		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata,
 				TypeSpec.Builder builder);
+
 	}
+
+	record AotBundle(JavaFile javaFile, JSONObject metadata) {
+	}
+
 }
