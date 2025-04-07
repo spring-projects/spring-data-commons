@@ -25,7 +25,7 @@ import org.springframework.data.repository.aot.generate.json.JSONObject;
  * @author Mark Paluch
  * @since 4.0
  */
-record AotRepositoryMetadata(String name, String moduleName,
+record AotRepositoryMetadata(String name, String module,
 		org.springframework.data.repository.aot.generate.AotRepositoryMetadata.RepositoryType type,
 		List<AotRepositoryMethod> methods) {
 
@@ -37,7 +37,7 @@ record AotRepositoryMetadata(String name, String moduleName,
 
 		JSONObject metadata = new JSONObject();
 		metadata.put("name", name());
-		metadata.put("moduleName", moduleName());
+		metadata.put("module", module());
 		metadata.put("type", type().name());
 
 		JSONArray methods = new JSONArray();
