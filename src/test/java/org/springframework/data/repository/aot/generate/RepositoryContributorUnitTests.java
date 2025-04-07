@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import example.UserRepository;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,13 @@ class RepositoryContributorUnitTests {
 					RepositoryInformation repositoryInformation) {
 
 				return MethodContributor.forQueryMethod(new QueryMethod(method, repositoryInformation, getProjectionFactory()))
+						.withMetadata(new QueryMetadata() {
+
+							@Override
+							public Map<String, Object> serialize() {
+								return Map.of();
+							}
+						})
 						.contribute(context -> {
 
 							CodeBlock.Builder builder = CodeBlock.builder();

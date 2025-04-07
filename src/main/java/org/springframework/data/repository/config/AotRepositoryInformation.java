@@ -73,4 +73,9 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 		return baseComposition.get().findMethod(method).orElse(method);
 	}
 
+	@Override
+	public RepositoryComposition getRepositoryComposition() {
+		return baseComposition.get().append(RepositoryComposition.RepositoryFragments.from(fragments.get()));
+	}
+
 }

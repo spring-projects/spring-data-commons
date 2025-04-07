@@ -131,4 +131,9 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 		return composition.getFragments().toSet();
 	}
 
+	@Override
+	public RepositoryComposition getRepositoryComposition() {
+		return composition.append(baseComposition.getFragments());
+	}
+
 }

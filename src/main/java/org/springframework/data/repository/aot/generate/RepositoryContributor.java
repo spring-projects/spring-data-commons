@@ -26,12 +26,14 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.aot.generate.json.JSONException;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
+import org.springframework.util.StringUtils;
 
 /**
  * Contributor for AOT repository fragments.
@@ -78,23 +80,50 @@ public class RepositoryContributor {
 		builder.withConstructorCustomizer(this::customizeConstructor);
 		builder.withQueryMethodContributor(this::contributeQueryMethod);
 
-		JavaFile file = builder.build();
-		String typeName = "%s.%s".formatted(file.packageName, file.typeSpec.name);
+		AotRepositoryBuilder.AotBundle aotBundle = builder.build();
+
+		Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
+		String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
+
+		JavaFile javaFile = aotBundle.javaFile();
+		String typeName = "%s.%s".formatted(javaFile.packageName, javaFile.typeSpec.name);
+		String repositoryJson;
+
+		try {
+			repositoryJson = aotBundle.metadata().toString(2);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
 
 		if (logger.isTraceEnabled()) {
+			logger.trace("""
+					------ AOT Repository.json: %s ------
+					%s
+					-------------------
+					""".formatted(repositoryJsonFileName, repositoryJson));
+
 			logger.trace("""
 					------ AOT Generated Repository: %s ------
 					%s
 					-------------------
-					""".formatted(typeName, file));
+					""".formatted(typeName, javaFile));
 		}
 
-		// generate the file itself
-		generationContext.getGeneratedFiles().addSourceFile(file);
+		// generate the files
+		generationContext.getGeneratedFiles().addSourceFile(javaFile);
+		generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
 
 		// generate native runtime hints - needed cause we're using the repository proxy
 		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName),
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+	}
+
+	private static String getRepositoryJsonFileName(Class<?> repositoryInterface) {
+
+		String repositoryJsonName = repositoryInterface.getSimpleName() + ".json";
+		String repositoryJsonPath = repositoryInterface.getPackageName().replace('.', '/');
+
+		return StringUtils.hasText(repositoryJsonPath) ? repositoryJsonPath + "/" + repositoryJsonName : repositoryJsonName;
 	}
 
 	/**
