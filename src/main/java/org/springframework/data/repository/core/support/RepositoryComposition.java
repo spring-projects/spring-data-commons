@@ -556,9 +556,9 @@ public class RepositoryComposition {
 		private static @Nullable Method findMethod(InvokedMethod invokedMethod, List<MethodLookup.MethodPredicate> lookups,
 				RepositoryFragments fragments) {
 
-			for (RepositoryFragment<?> fragment : fragments) {
-				for (Method candidate : fragment.findMethods(invokedMethod.getName())) {
-					for (MethodLookup.MethodPredicate methodPredicate : lookups) {
+			for (MethodLookup.MethodPredicate methodPredicate : lookups) {
+				for (RepositoryFragment<?> fragment : fragments) {
+					for (Method candidate : fragment.findMethods(invokedMethod.getName())) {
 						if (methodPredicate.test(invokedMethod, candidate)) {
 							return candidate;
 						}
