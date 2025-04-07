@@ -17,6 +17,9 @@ package org.springframework.data.repository.aot.generate;
 
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.MethodSpec;
 
@@ -30,9 +33,11 @@ import org.springframework.javapoet.MethodSpec;
 public abstract class MethodContributor<M extends QueryMethod> {
 
 	private final M queryMethod;
+	private final QueryMetadata metadata;
 
-	private MethodContributor(M queryMethod) {
+	private MethodContributor(M queryMethod, QueryMetadata metadata) {
 		this.queryMethod = queryMethod;
+		this.metadata = metadata;
 	}
 
 	/**
@@ -42,15 +47,18 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 * @return the new builder.
 	 * @param <M> query method type.
 	 */
-	public static <M extends QueryMethod> QueryMethodContributorBuilder<M> forQueryMethod(M queryMethod) {
+	public static <M extends QueryMethod> QueryMethodMetadataContributorBuilder<M> forQueryMethod(M queryMethod) {
 
-		return builderConsumer -> new MethodContributor<>(queryMethod) {
+		return new QueryMethodMetadataContributorBuilder<M>() {
 
 			@Override
-			public MethodSpec contribute(AotQueryMethodGenerationContext context) {
-				AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
-				builderConsumer.accept(builder);
-				return builder.buildMethod();
+			public MethodContributor<M> metadataOnly(QueryMetadata metadata) {
+				return new MetadataMethodContributor<>(queryMethod, metadata);
+			}
+
+			@Override
+			public QueryMethodContributorBuilder<M> withMetadata(QueryMetadata metadata) {
+				return builderConsumer -> new AotMethodContributor<>(queryMethod, metadata, builderConsumer);
 			}
 		};
 	}
@@ -59,13 +67,86 @@ public abstract class MethodContributor<M extends QueryMethod> {
 		return queryMethod;
 	}
 
+	public QueryMetadata getMetadata() {
+		return metadata;
+	}
+
+	/**
+	 * @return whether {@code MethodContributor} can contribute a {@link MethodSpec} implementing the actual query method.
+	 */
+	public boolean contributesMethodSpec() {
+		return false;
+	}
+
 	/**
 	 * Contribute the actual method specification to be added to the repository fragment.
 	 *
 	 * @param context generation context.
 	 * @return
 	 */
-	public abstract MethodSpec contribute(AotQueryMethodGenerationContext context);
+	public abstract @Nullable MethodSpec contribute(AotQueryMethodGenerationContext context);
+
+	private static class MetadataMethodContributor<M extends QueryMethod> extends MethodContributor<M> {
+
+		private MetadataMethodContributor(M queryMethod, QueryMetadata metadata) {
+			super(queryMethod, metadata);
+		}
+
+		@Override
+		public @Nullable MethodSpec contribute(AotQueryMethodGenerationContext context) {
+			return null;
+		}
+	}
+
+	private static class AotMethodContributor<M extends QueryMethod> extends MethodContributor<M> {
+
+		private final Consumer<AotRepositoryMethodBuilder> builderConsumer;
+
+		private AotMethodContributor(M queryMethod, QueryMetadata metadata,
+				Consumer<AotRepositoryMethodBuilder> builderConsumer) {
+			super(queryMethod, metadata);
+			this.builderConsumer = builderConsumer;
+		}
+
+		@Override
+		public boolean contributesMethodSpec() {
+			return true;
+		}
+
+		@Override
+		public @NonNull MethodSpec contribute(AotQueryMethodGenerationContext context) {
+
+			AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
+			builderConsumer.accept(builder);
+			return builder.buildMethod();
+		}
+	}
+
+	/**
+	 * Initial builder for a query method contributor. This builder allows returning a {@link MethodContributor} using
+	 * metadata-only (i.e. no code contribution) or a {@link QueryMethodContributorBuilder} accepting code contributions.
+	 *
+	 * @param <M> query method type.
+	 */
+	public interface QueryMethodMetadataContributorBuilder<M extends QueryMethod> {
+
+		/**
+		 * Terminal method accepting {@link QueryMetadata} to build the {@link MethodContributor}.
+		 *
+		 * @param metadata the query metadata describing queries used by the query method.
+		 * @return the method contributor to use.
+		 */
+		MethodContributor<M> metadataOnly(QueryMetadata metadata);
+
+		/**
+		 * Builder method accepting {@link QueryMetadata} to enrich query method metadata.
+		 *
+		 * @param metadata the query metadata describing queries used by the query method.
+		 * @return the method contributor builder.
+		 */
+		QueryMethodContributorBuilder<M> withMetadata(QueryMetadata metadata);
+
+	}
 
 	/**
 	 * Builder for a query method contributor.
