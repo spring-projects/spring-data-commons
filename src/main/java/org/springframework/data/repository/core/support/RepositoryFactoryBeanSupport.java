@@ -17,6 +17,7 @@ package org.springframework.data.repository.core.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -373,7 +374,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		}
 
 		FragmentCreationContext creationContext = new DefaultFragmentCreationContext(repositoryMetadata,
-				valueExpressionDelegate, factory.getProjectionFactory());
+				valueExpressionDelegate, factory::getProjectionFactory);
 
 		RepositoryFragments fragments = RepositoryFragments.empty();
 		for (RepositoryFragmentsFunction function : functions) {
@@ -443,7 +444,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 	private record DefaultFragmentCreationContext(RepositoryMetadata repositoryMetadata,
 			ValueExpressionDelegate valueExpressionDelegate,
-			ProjectionFactory projectionFactory) implements FragmentCreationContext {
+			Supplier<ProjectionFactory> projectionFactory) implements FragmentCreationContext {
 
 		@Override
 		public RepositoryMetadata getRepositoryMetadata() {
@@ -457,7 +458,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		@Override
 		public ProjectionFactory getProjectionFactory() {
-			return projectionFactory();
+			return projectionFactory().get();
 		}
 
 	}
