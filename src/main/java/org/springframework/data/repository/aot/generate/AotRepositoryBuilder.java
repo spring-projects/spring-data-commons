@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -29,10 +30,10 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.aot.generate.json.JSONException;
 import org.springframework.data.repository.aot.generate.json.JSONObject;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -215,7 +216,11 @@ class AotRepositoryBuilder {
 	}
 
 	public Map<String, TypeName> getAutowireFields() {
-		return generationMetadata.getConstructorArguments();
+		Map<String, TypeName> autowireFields = new LinkedHashMap<>(generationMetadata.getConstructorArguments().size());
+		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
+			autowireFields.put(entry.getKey(), entry.getValue().getTypeName());
+		}
+		return autowireFields;
 	}
 
 	public RepositoryInformation getRepositoryInformation() {
@@ -238,8 +243,7 @@ class AotRepositoryBuilder {
 		 * @param metadata
 		 * @param builder
 		 */
-		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata,
-				TypeSpec.Builder builder);
+		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata, TypeSpec.Builder builder);
 
 	}
 
