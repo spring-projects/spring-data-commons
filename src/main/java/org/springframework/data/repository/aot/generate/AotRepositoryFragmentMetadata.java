@@ -35,7 +35,7 @@ public class AotRepositoryFragmentMetadata {
 
 	private final ClassName className;
 	private final Map<String, FieldSpec> fields = new HashMap<>(3);
-	private final Map<String, TypeName> constructorArguments = new LinkedHashMap<>(3);
+	private final Map<String, ConstructorArgument> constructorArguments = new LinkedHashMap<>(3);
 
 	public AotRepositoryFragmentMetadata(ClassName className) {
 		this.className = className;
@@ -82,11 +82,43 @@ public class AotRepositoryFragmentMetadata {
 		return fields;
 	}
 
-	public Map<String, TypeName> getConstructorArguments() {
+	public Map<String, ConstructorArgument> getConstructorArguments() {
 		return constructorArguments;
 	}
 
 	public void addConstructorArgument(String parameterName, TypeName type) {
-		this.constructorArguments.put(parameterName, type);
+		addConstructorArgument(parameterName, type, parameterName);
+	}
+
+	public void addConstructorArgument(String parameterName, TypeName type, @Nullable String fieldName) {
+		this.constructorArguments.put(parameterName, new ConstructorArgument(parameterName, type, fieldName));
+	}
+
+	static class ConstructorArgument {
+		String parameterName;
+		@Nullable String fieldName;
+		TypeName typeName;
+
+		public ConstructorArgument(String parameterName,TypeName typeName, String fieldName) {
+			this.parameterName = parameterName;
+			this.fieldName = fieldName;
+			this.typeName = typeName;
+		}
+
+		boolean isForLocalField() {
+			return fieldName != null;
+		}
+
+		public String getParameterName() {
+			return parameterName;
+		}
+
+		public String getFieldName() {
+			return fieldName;
+		}
+
+		public TypeName getTypeName() {
+			return typeName;
+		}
 	}
 }
