@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import javax.lang.model.element.Modifier;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
@@ -64,15 +65,27 @@ public class AotRepositoryConstructorBuilder {
 	}
 
 	/**
-	 * Add constructor parameter.
+	 * Add constructor parameter and create a field for it.
 	 *
 	 * @param parameterName
 	 * @param type
 	 */
 	public void addParameter(String parameterName, TypeName type) {
+		addParameter(parameterName, type, true);
+	}
 
-		this.metadata.addConstructorArgument(parameterName, type);
-		this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
+	/**
+	 * Add constructor parameter.
+	 *
+	 * @param parameterName
+	 * @param type
+	 */
+	public void addParameter(String parameterName, TypeName type, boolean createField) {
+
+		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
+		if(createField) {
+			this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
+		}
 	}
 
 	/**
@@ -89,15 +102,17 @@ public class AotRepositoryConstructorBuilder {
 
 		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 
-		for (Entry<String, TypeName> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			builder.addParameter(parameter.getValue(), parameter.getKey());
+		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
+			builder.addParameter(parameter.getValue().getTypeName(), parameter.getKey());
 		}
 
 		customizer.customize(repositoryInformation, builder);
 
-		for (Entry<String, TypeName> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			builder.addStatement("this.$N = $N", parameter.getKey(),
+		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
+			if(parameter.getValue().isForLocalField()) {
+				builder.addStatement("this.$N = $N", parameter.getKey(),
 					parameter.getKey());
+			}
 		}
 
 		return builder.build();
