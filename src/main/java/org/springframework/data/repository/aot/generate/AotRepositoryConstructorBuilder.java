@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.util.List;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
@@ -34,6 +33,7 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
+// TODO: extract constructor contributor in a similar way to MethodContributor.
 public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
@@ -103,7 +103,7 @@ public class AotRepositoryConstructorBuilder {
 		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 
 		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			builder.addParameter(parameter.getValue().getTypeName(), parameter.getKey());
+			builder.addParameter(parameter.getValue().typeName(), parameter.getKey());
 		}
 
 		customizer.customize(repositoryInformation, builder);
@@ -116,19 +116,6 @@ public class AotRepositoryConstructorBuilder {
 		}
 
 		return builder.build();
-	}
-
-	private static TypeName getDefaultStoreRepositoryImplementationType(RepositoryInformation repositoryInformation) {
-
-		ResolvableType resolvableType = ResolvableType.forClass(repositoryInformation.getRepositoryBaseClass());
-		if (resolvableType.hasGenerics()) {
-			List<Class<?>> generics = List.of();
-			if (resolvableType.getGenerics().length == 2) { // TODO: Find some other way to resolve generics
-				generics = List.of(repositoryInformation.getDomainType(), repositoryInformation.getIdType());
-			}
-			return ParameterizedTypeName.get(repositoryInformation.getRepositoryBaseClass(), generics.toArray(Class[]::new));
-		}
-		return TypeName.get(repositoryInformation.getRepositoryBaseClass());
 	}
 
 	/**

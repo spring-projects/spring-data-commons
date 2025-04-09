@@ -25,6 +25,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.env.Environment;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
@@ -62,6 +63,11 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public ConfigurableListableBeanFactory getBeanFactory() {
 		return getAotContext().getBeanFactory();
+	}
+
+	@Override
+	public Environment getEnvironment() {
+		return getAotContext().getEnvironment();
 	}
 
 	@Override

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.data.repository.aot.generate.json;
+package org.springframework.data.repository.aot.generate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.jspecify.annotations.NullUnmarked;
 
 // Note: this class was written without inspecting the non-free org.json source code.
 
@@ -53,7 +55,8 @@ import java.util.List;
  * overrideable methods is not specified. See <i>Effective Java</i> Item 17, "Design and Document or inheritance or else
  * prohibit it" for further information.
  */
-public class JSONStringer {
+@NullUnmarked
+class JSONStringer {
 
 	/**
 	 * The output data, containing at most one top-level array or object.

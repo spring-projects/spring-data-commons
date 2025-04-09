@@ -21,6 +21,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 
 /**
@@ -49,16 +50,20 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 */
 	public static <M extends QueryMethod> QueryMethodMetadataContributorBuilder<M> forQueryMethod(M queryMethod) {
 
-		return new QueryMethodMetadataContributorBuilder<M>() {
+		return new QueryMethodMetadataContributorBuilder<>() {
 
 			@Override
 			public MethodContributor<M> metadataOnly(QueryMetadata metadata) {
-				return new MetadataMethodContributor<>(queryMethod, metadata);
+				return new MetadataContributor<>(queryMethod, metadata);
 			}
+
 
 			@Override
 			public QueryMethodContributorBuilder<M> withMetadata(QueryMetadata metadata) {
-				return builderConsumer -> new AotMethodContributor<>(queryMethod, metadata, builderConsumer);
+
+				return contribution -> new GeneratedMethodContributor<>(queryMethod, metadata, b -> {
+					b.contribute(contribution::contribute);
+				});
 			}
 		};
 	}
@@ -85,42 +90,6 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 * @return
 	 */
 	public abstract @Nullable MethodSpec contribute(AotQueryMethodGenerationContext context);
-
-	private static class MetadataMethodContributor<M extends QueryMethod> extends MethodContributor<M> {
-
-		private MetadataMethodContributor(M queryMethod, QueryMetadata metadata) {
-			super(queryMethod, metadata);
-		}
-
-		@Override
-		public @Nullable MethodSpec contribute(AotQueryMethodGenerationContext context) {
-			return null;
-		}
-	}
-
-	private static class AotMethodContributor<M extends QueryMethod> extends MethodContributor<M> {
-
-		private final Consumer<AotRepositoryMethodBuilder> builderConsumer;
-
-		private AotMethodContributor(M queryMethod, QueryMetadata metadata,
-				Consumer<AotRepositoryMethodBuilder> builderConsumer) {
-			super(queryMethod, metadata);
-			this.builderConsumer = builderConsumer;
-		}
-
-		@Override
-		public boolean contributesMethodSpec() {
-			return true;
-		}
-
-		@Override
-		public @NonNull MethodSpec contribute(AotQueryMethodGenerationContext context) {
-
-			AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
-			builderConsumer.accept(builder);
-			return builder.buildMethod();
-		}
-	}
 
 	/**
 	 * Initial builder for a query method contributor. This builder allows returning a {@link MethodContributor} using
@@ -161,18 +130,62 @@ public abstract class MethodContributor<M extends QueryMethod> {
 		 * @param contribution the method contribution that provides the method to be added to the repository.
 		 * @return the method contributor to use.
 		 */
-		default MethodContributor<M> contribute(AotRepositoryMethodBuilder.RepositoryMethodContribution contribution) {
-			return using(builder -> builder.contribute(contribution));
+		MethodContributor<M> contribute(RepositoryMethodContribution contribution);
+
+	}
+
+	/**
+	 * AOT contribution from a {@link AotRepositoryMethodBuilder} used to contribute a repository query method body.
+	 */
+	public interface RepositoryMethodContribution {
+
+		CodeBlock contribute(AotQueryMethodGenerationContext context);
+	}
+
+	/**
+	 * Customizer for a contributed AOT repository query method.
+	 */
+	public interface RepositoryMethodCustomizer {
+
+		void customize(AotQueryMethodGenerationContext context, MethodSpec.Builder builder);
+
+	}
+
+	private static class MetadataContributor<M extends QueryMethod> extends MethodContributor<M> {
+
+		private MetadataContributor(M queryMethod, QueryMetadata metadata) {
+			super(queryMethod, metadata);
 		}
 
-		/**
-		 * Terminal method accepting a consumer that uses {@link AotRepositoryMethodBuilder} to build the method.
-		 *
-		 * @param builderConsumer consumer method being provided with the {@link AotRepositoryMethodBuilder} that provides
-		 *          the method to be added to the repository.
-		 * @return the method contributor to use.
-		 */
-		MethodContributor<M> using(Consumer<AotRepositoryMethodBuilder> builderConsumer);
+		@Override
+		public @Nullable MethodSpec contribute(AotQueryMethodGenerationContext context) {
+			return null;
+		}
+
+	}
+
+	private static class GeneratedMethodContributor<M extends QueryMethod> extends MethodContributor<M> {
+
+		private final Consumer<AotRepositoryMethodBuilder> builderConsumer;
+
+		private GeneratedMethodContributor(M queryMethod, QueryMetadata metadata,
+				Consumer<AotRepositoryMethodBuilder> builderConsumer) {
+			super(queryMethod, metadata);
+			this.builderConsumer = builderConsumer;
+		}
+
+		@Override
+		public boolean contributesMethodSpec() {
+			return true;
+		}
+
+		@Override
+		public @NonNull MethodSpec contribute(AotQueryMethodGenerationContext context) {
+
+			AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
+			builderConsumer.accept(builder);
+			return builder.buildMethod();
+		}
 
 	}
 

@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.springframework.data.repository.aot.generate.json;
+package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import org.jspecify.annotations.NullUnmarked;
 
 // Note: this class was written without inspecting the non-free org.json source code.
 
@@ -40,7 +42,8 @@ import java.util.List;
  * should not be subclassed. In particular, self-use by overridable methods is not specified. See <i>Effective Java</i>
  * Item 17, "Design and Document or inheritance or else prohibit it" for further information.
  */
-public class JSONArray {
+@NullUnmarked
+class JSONArray {
 
 	private final List<Object> values;
 

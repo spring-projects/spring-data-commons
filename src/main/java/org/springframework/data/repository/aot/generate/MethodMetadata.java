@@ -28,15 +28,17 @@ import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 
 /**
+ * Metadata about an AOT Repository method.
+ *
  * @author Christoph Strobl
  */
-class AotRepositoryMethodImplementationMetadata {
+class MethodMetadata {
 
 	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
 
-	public AotRepositoryMethodImplementationMetadata(RepositoryInformation repositoryInformation, Method method) {
+	public MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
 		this.actualReturnType = ResolvableType.forType(repositoryInformation.getReturnedDomainClass(method));
@@ -64,7 +66,8 @@ class AotRepositoryMethodImplementationMetadata {
 		this.methodArguments.put(parameterSpec.name, parameterSpec);
 	}
 
-	Map<String, ParameterSpec> getMethodArguments() {
+	public Map<String, ParameterSpec> getMethodArguments() {
 		return methodArguments;
 	}
+
 }

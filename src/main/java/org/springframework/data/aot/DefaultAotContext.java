@@ -28,6 +28,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -40,14 +41,22 @@ class DefaultAotContext implements AotContext {
 
 	private final ConfigurableListableBeanFactory factory;
 
-	public DefaultAotContext(BeanFactory beanFactory) {
+	private final Environment environment;
+
+	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
 		factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
 				: new DefaultListableBeanFactory(beanFactory);
+		this.environment = environment;
 	}
 
 	@Override
 	public ConfigurableListableBeanFactory getBeanFactory() {
 		return factory;
+	}
+
+	@Override
+	public Environment getEnvironment() {
+		return environment;
 	}
 
 	@Override
@@ -138,4 +147,5 @@ class DefaultAotContext implements AotContext {
 			return factory.getType(beanName, false);
 		}
 	}
+
 }
