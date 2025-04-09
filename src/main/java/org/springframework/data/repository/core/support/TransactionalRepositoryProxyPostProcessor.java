@@ -80,7 +80,7 @@ class TransactionalRepositoryProxyPostProcessor implements RepositoryProxyPostPr
 	}
 
 	/**
-	 * Custom implementation of {@link AnnotationTransactionAttributeSource} that that slightly modify the algorithm
+	 * Custom implementation of {@link AnnotationTransactionAttributeSource} that slightly modify the algorithm
 	 * transaction configuration is discovered.
 	 * <p>
 	 * The original Spring implementation favors the implementation class' transaction configuration over one declared at
