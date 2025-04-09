@@ -18,6 +18,8 @@ package org.springframework.data.repository.aot.generate;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
@@ -40,12 +42,12 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotRepositoryMethodBuilder {
+class AotRepositoryMethodBuilder {
 
 	private final AotQueryMethodGenerationContext context;
 
-	private RepositoryMethodContribution contribution = (context) -> CodeBlock.builder().build();
-	private RepositoryMethodCustomizer customizer = (context, body) -> {};
+	private Function<AotQueryMethodGenerationContext, CodeBlock> contribution = (context) -> CodeBlock.builder().build();
+	private BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer = (context, body) -> {};
 
 	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
 
@@ -70,36 +72,40 @@ public class AotRepositoryMethodBuilder {
 	}
 
 	/**
-	 * Register a {@link RepositoryMethodContribution} for the repository interface that can contribute a query method
-	 * implementation block.
+	 * Register a {@link org.springframework.data.repository.aot.generate.MethodContributor.RepositoryMethodContribution}
+	 * for the repository interface that can contribute a query method implementation block.
 	 *
 	 * @param contribution
 	 * @return
 	 */
-	public AotRepositoryMethodBuilder contribute(RepositoryMethodContribution contribution) {
+	public AotRepositoryMethodBuilder contribute(Function<AotQueryMethodGenerationContext, CodeBlock> contribution) {
 		this.contribution = contribution;
 		return this;
 	}
 
 	/**
-	 * Register a query method customizer that is applied after a successful {@link RepositoryMethodContribution}.
+	 * Register a query method customizer that is applied after a successful
+	 * {@link org.springframework.data.repository.aot.generate.MethodContributor.RepositoryMethodContribution}.
 	 *
 	 * @param customizer
 	 * @return
 	 */
-	public AotRepositoryMethodBuilder customize(RepositoryMethodCustomizer customizer) {
+	public AotRepositoryMethodBuilder customize(
+			BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer) {
 		this.customizer = customizer;
 		return this;
 	}
 
 	/**
-	 * Builds an AOT repository method if {@link RepositoryMethodContribution} can contribute a method.
+	 * Builds an AOT repository method if
+	 * {@link org.springframework.data.repository.aot.generate.MethodContributor.RepositoryMethodContribution} can
+	 * contribute a method.
 	 *
 	 * @return the {@link MethodSpec} or {@literal null}, if the method cannot be contributed.
 	 */
 	public MethodSpec buildMethod() {
 
-		CodeBlock methodBody = contribution.contribute(context);
+		CodeBlock methodBody = contribution.apply(context);
 
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
 		builder.returns(TypeName.get(context.getReturnType().getType()));
@@ -115,25 +121,9 @@ public class AotRepositoryMethodBuilder {
 						.getMethodArguments().values().stream().map(it -> it.type.toString()).collect(Collectors.toList())));
 		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
 		builder.addCode(methodBody);
-		customizer.customize(context, builder);
+		customizer.accept(context, builder);
 
 		return builder.build();
 	}
 
-	/**
-	 * AOT contribution from a {@link AotRepositoryMethodBuilder} used to contribute a repository query method body.
-	 */
-	public interface RepositoryMethodContribution {
-
-		CodeBlock contribute(AotQueryMethodGenerationContext context);
-	}
-
-	/**
-	 * Customizer for a contributed AOT repository query method.
-	 */
-	public interface RepositoryMethodCustomizer {
-
-		void customize(AotQueryMethodGenerationContext context, MethodSpec.Builder builder);
-
-	}
 }

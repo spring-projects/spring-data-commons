@@ -34,8 +34,6 @@ import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
-import org.springframework.data.repository.aot.generate.json.JSONException;
-import org.springframework.data.repository.aot.generate.json.JSONObject;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -59,7 +57,7 @@ class AotRepositoryBuilder {
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
 	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
-	private @Nullable BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction;
+	private @Nullable BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction;
 	private ClassCustomizer customizer;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, ProjectionFactory projectionFactory) {
@@ -89,7 +87,7 @@ class AotRepositoryBuilder {
 	}
 
 	public AotRepositoryBuilder withQueryMethodContributor(
-			BiFunction<Method, RepositoryInformation, MethodContributor<? extends QueryMethod>> methodContributorFunction) {
+			BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction) {
 		this.methodContributorFunction = methodContributorFunction;
 		return this;
 	}
@@ -144,11 +142,7 @@ class AotRepositoryBuilder {
 		AotRepositoryMetadata metadata = new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(),
 				"", repositoryType, methodMetadata);
 
-		try {
-			return new AotBundle(javaFile, metadata.toJson());
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
+		return new AotBundle(javaFile, metadata.toJson());
 	}
 
 	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
@@ -218,7 +212,7 @@ class AotRepositoryBuilder {
 	public Map<String, TypeName> getAutowireFields() {
 		Map<String, TypeName> autowireFields = new LinkedHashMap<>(generationMetadata.getConstructorArguments().size());
 		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
-			autowireFields.put(entry.getKey(), entry.getValue().getTypeName());
+			autowireFields.put(entry.getKey(), entry.getValue().typeName());
 		}
 		return autowireFields;
 	}

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.data.repository.aot.generate.json;
+package org.springframework.data.repository.aot.generate;
 
 // Note: this class was written without inspecting the non-free org.json source code.
+
+import org.jspecify.annotations.NullUnmarked;
 
 /**
  * Parses a JSON (<a href="https://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>) encoded string into the corresponding
@@ -51,7 +53,8 @@ package org.springframework.data.repository.aot.generate.json;
  * overrideable methods is not specified. See <i>Effective Java</i> Item 17, "Design and Document or inheritance or else
  * prohibit it" for further information.
  */
-public class JSONTokener {
+@NullUnmarked
+class JSONTokener {
 
 	/**
 	 * The input JSON.

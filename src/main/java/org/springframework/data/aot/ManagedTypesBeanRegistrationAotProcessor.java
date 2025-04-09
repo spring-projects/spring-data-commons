@@ -31,8 +31,12 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
@@ -47,10 +51,11 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @since 3.0
  */
-public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor {
+public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor, EnvironmentAware {
 
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
+	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
 		this.moduleIdentifier = moduleIdentifier;
@@ -62,6 +67,11 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	}
 
 	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = Lazy.of(() -> environment);
+	}
+
+	@Override
 	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
 		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
@@ -69,7 +79,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		}
 
 		BeanFactory beanFactory = registeredBean.getBeanFactory();
-		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean), registeredBean);
+		return contribute(AotContext.from(beanFactory, this.environment.get()), resolveManagedTypes(registeredBean),
+				registeredBean);
 	}
 
 	private ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
