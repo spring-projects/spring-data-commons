@@ -31,6 +31,9 @@ import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.SpringProperties;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.util.TypeScanner;
 import org.springframework.util.Assert;
 
@@ -48,7 +51,7 @@ import org.springframework.util.Assert;
  * @see BeanFactory
  * @since 3.0
  */
-public interface AotContext {
+public interface AotContext extends EnvironmentCapable {
 
 	String GENERATED_REPOSITORIES_ENABLED = "spring.aot.repositories.enabled";
 
@@ -67,7 +70,24 @@ public interface AotContext {
 
 		Assert.notNull(beanFactory, "BeanFactory must not be null");
 
-		return new DefaultAotContext(beanFactory);
+		return new DefaultAotContext(beanFactory, new StandardEnvironment());
+	}
+
+	/**
+	 * Create an {@link AotContext} backed by the given {@link BeanFactory}.
+	 *
+	 * @param beanFactory reference to the {@link BeanFactory}; must not be {@literal null}.
+	 * @return a new instance of {@link AotContext}.
+	 * @param environment reference to the {@link Environment}; must not be {@literal null}.
+	 * @return a new instance of {@link AotContext}.
+	 * @see BeanFactory
+	 */
+	static AotContext from(BeanFactory beanFactory, Environment environment) {
+
+		Assert.notNull(beanFactory, "BeanFactory must not be null");
+		Assert.notNull(environment, "Environment must not be null");
+
+		return new DefaultAotContext(beanFactory, environment);
 	}
 
 	/**

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.test.tools.ClassFile;
 import org.springframework.data.repository.config.AotRepositoryContext;
@@ -44,6 +45,11 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 
 	@Override
 	public ConfigurableListableBeanFactory getBeanFactory() {
+		return null;
+	}
+
+	@Override
+	public Environment getEnvironment() {
 		return null;
 	}
 
