@@ -18,6 +18,7 @@ package org.springframework.data.repository.query;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -38,6 +39,7 @@ import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -68,8 +70,26 @@ public class QueryMethod {
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
+	 * @deprecated since 3.5, use {@link QueryMethod#QueryMethod(Method, RepositoryMetadata, ProjectionFactory, Function)}
+	 *             instead.
 	 */
+	@Deprecated(since = "3.5")
 	public QueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
+		this(method, metadata, factory, null);
+	}
+
+	/**
+	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
+	 * invocations of the method given.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
+	 * @param parametersFunction must not be {@literal null}.
+	 * @since 3.5
+	 */
+	public QueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+			@Nullable Function<ParametersSource, ? extends Parameters<?, ?>> parametersFunction) {
 
 		Assert.notNull(method, "Method must not be null");
 		Assert.notNull(metadata, "Repository metadata must not be null");
@@ -86,7 +106,8 @@ public class QueryMethod {
 		this.method = method;
 		this.unwrappedReturnType = potentiallyUnwrapReturnTypeFor(metadata, method);
 		this.metadata = metadata;
-		this.parameters = createParameters(method, metadata.getDomainTypeInformation());
+		this.parameters = parametersFunction == null ? createParameters(method, metadata.getDomainTypeInformation())
+				: parametersFunction.apply(ParametersSource.of(metadata, method));
 
 		this.domainClass = Lazy.of(() -> {
 
@@ -186,7 +207,10 @@ public class QueryMethod {
 	 * @param parametersSource must not be {@literal null}.
 	 * @return must not return {@literal null}.
 	 * @since 3.2.1
+	 * @deprecated since 3.5, use {@link QueryMethod#QueryMethod(Method, RepositoryMetadata, ProjectionFactory, Function)}
+	 *             instead.
 	 */
+	@Deprecated(since = "3.5")
 	protected Parameters<?, ?> createParameters(ParametersSource parametersSource) {
 		return new DefaultParameters(parametersSource);
 	}
