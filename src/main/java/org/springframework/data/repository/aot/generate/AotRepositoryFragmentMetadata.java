@@ -31,6 +31,7 @@ import org.springframework.javapoet.TypeName;
 /**
  * @author Christoph Strobl
  */
+// TODO: Can we make this package-private?
 public class AotRepositoryFragmentMetadata {
 
 	private final ClassName className;
@@ -94,31 +95,11 @@ public class AotRepositoryFragmentMetadata {
 		this.constructorArguments.put(parameterName, new ConstructorArgument(parameterName, type, fieldName));
 	}
 
-	static class ConstructorArgument {
-		String parameterName;
-		@Nullable String fieldName;
-		TypeName typeName;
-
-		public ConstructorArgument(String parameterName,TypeName typeName, String fieldName) {
-			this.parameterName = parameterName;
-			this.fieldName = fieldName;
-			this.typeName = typeName;
-		}
+	public record ConstructorArgument(String parameterName, TypeName typeName, @Nullable String fieldName) {
 
 		boolean isForLocalField() {
 			return fieldName != null;
 		}
 
-		public String getParameterName() {
-			return parameterName;
-		}
-
-		public String getFieldName() {
-			return fieldName;
-		}
-
-		public TypeName getTypeName() {
-			return typeName;
-		}
 	}
 }

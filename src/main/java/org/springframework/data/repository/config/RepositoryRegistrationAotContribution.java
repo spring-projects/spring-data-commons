@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -80,38 +79,38 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> moduleContribution;
 
-	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
+	private final RepositoryRegistrationAotProcessor aotProcessor;
 
 	/**
 	 * Constructs a new instance of the {@link RepositoryRegistrationAotContribution} initialized with the given, required
 	 * {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
 	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
-	 *          which this contribution was created.
+	 * @param processor reference back to the {@link RepositoryRegistrationAotProcessor} from which this contribution was
+	 *          created.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see RepositoryRegistrationAotProcessor
 	 */
 	protected RepositoryRegistrationAotContribution(
-			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+			RepositoryRegistrationAotProcessor processor) {
 
-		Assert.notNull(repositoryRegistrationAotProcessor, "RepositoryRegistrationAotProcessor must not be null");
+		Assert.notNull(processor, "RepositoryRegistrationAotProcessor must not be null");
 
-		this.repositoryRegistrationAotProcessor = repositoryRegistrationAotProcessor;
+		this.aotProcessor = processor;
 	}
 
 	/**
 	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
 	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
 	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
-	 *          which this contribution was created.
+	 * @param processor reference back to the {@link RepositoryRegistrationAotProcessor} from which this contribution was
+	 *          created.
 	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see RepositoryRegistrationAotProcessor
 	 */
 	public static RepositoryRegistrationAotContribution fromProcessor(
-			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
-		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
+			RepositoryRegistrationAotProcessor processor) {
+		return new RepositoryRegistrationAotContribution(processor);
 	}
 
 	protected ConfigurableListableBeanFactory getBeanFactory() {
@@ -131,7 +130,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	protected RepositoryRegistrationAotProcessor getRepositoryRegistrationAotProcessor() {
-		return this.repositoryRegistrationAotProcessor;
+		return this.aotProcessor;
 	}
 
 	public RepositoryInformation getRepositoryInformation() {
@@ -173,7 +172,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @return this.
 	 */
 	public RepositoryRegistrationAotContribution withModuleContribution(
-			@Nullable BiFunction<AotRepositoryContext, GenerationContext, RepositoryContributor> moduleContribution) {
+			@Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> moduleContribution) {
 		this.moduleContribution = moduleContribution;
 		return this;
 	}
@@ -360,9 +359,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				|| ClassUtils.isPrimitiveArray(type); //
 	}
 
-	// TODO What was this meant to be used for? Was this type filter maybe meant to be used in
-	// the TypeContributor.contribute(:Class, :Predicate :GenerationContext) method
-	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return Predicates.isTrue();
 	}
@@ -372,7 +368,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			RepositoryConfiguration<?> repositoryMetadata) {
 
 		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
-				AotContext.from(this.getBeanFactory()));
+				AotContext.from(getBeanFactory(), getRepositoryRegistrationAotProcessor().getEnvironment()));
 
 		RepositoryFactoryBeanSupport rfbs = bean.getBeanFactory().getBean("&" + bean.getBeanName(),
 				RepositoryFactoryBeanSupport.class);
@@ -385,33 +381,9 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return repositoryContext;
 	}
 
+	// TODO: Capture Repository Config
 	private Set<Class<? extends Annotation>> resolveIdentifyingAnnotations() {
-
-		Set<Class<? extends Annotation>> identifyingAnnotations = Collections.emptySet();
-
-		try {
-			// TODO: Getting all beans of type RepositoryConfigurationExtensionSupport will have the effect that
-			// if the user is currently operating in multi-store mode, then all identifying annotations from
-			// all stores will be included in the resulting Set.
-			// When using AOT, is multi-store mode allowed? I don't see why not, but does this work correctly
-			// with AOT, ATM?
-			Map<String, RepositoryConfigurationExtensionSupport> repositoryConfigurationExtensionBeans = getBeanFactory()
-					.getBeansOfType(RepositoryConfigurationExtensionSupport.class);
-
-			// repositoryConfigurationExtensionBeans.values().stream()
-			// .map(RepositoryConfigurationExtensionSupport::getIdentifyingAnnotations)
-			// .flatMap(Collection::stream)
-			// .collect(Collectors.toCollection(() -> identifyingAnnotations));
-
-		} catch (Throwable ignore) {
-			// Possible BeansException because no bean exists of type RepositoryConfigurationExtension,
-			// which included non-Singletons and occurred during eager initialization.
-		}
-
-		return identifyingAnnotations;
+		return Collections.emptySet();
 	}
 
-	private RepositoryInformation resolveRepositoryInformation(RepositoryConfiguration<?> repositoryMetadata) {
-		return RepositoryBeanDefinitionReader.readRepositoryInformation(repositoryMetadata, getBeanFactory());
-	}
 }

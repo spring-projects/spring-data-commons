@@ -15,18 +15,25 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.repository.aot.generate.json.JSONException;
-import org.springframework.data.repository.aot.generate.json.JSONObject;
-
 /**
+ * Value object capturing metadata about a repository method.
+ *
  * @author Mark Paluch
  * @since 4.0
  */
 record AotRepositoryMethod(String name, String signature, @Nullable QueryMetadata query,
 		@Nullable AotFragmentTarget fragment) {
 
+	/**
+	 * Convert this {@link AotRepositoryMethod} to a {@link JSONObject}.
+	 *
+	 * @return
+	 * @throws JSONException
+	 */
 	public JSONObject toJson() throws JSONException {
 
 		JSONObject method = new JSONObject();
@@ -34,11 +41,23 @@ record AotRepositoryMethod(String name, String signature, @Nullable QueryMetadat
 		method.put("signature", signature());
 
 		if (query() != null) {
-			method.put("query", query().toJson());
+			method.put("query", queryMetadataToJson(query()));
 		} else if (fragment() != null) {
 			method.put("fragment", fragment().toJson());
 		}
 
 		return method;
 	}
+
+	static JSONObject queryMetadataToJson(QueryMetadata queryMetadata) throws JSONException {
+
+		JSONObject query = new JSONObject();
+
+		for (Map.Entry<String, Object> entry : queryMetadata.serialize().entrySet()) {
+			query.put(entry.getKey(), entry.getValue());
+		}
+
+		return query;
+	}
+
 }
