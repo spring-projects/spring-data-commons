@@ -21,8 +21,11 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 
 /**
  * Interface to access method parameters. Allows dedicated access to parameters of special types
@@ -33,35 +36,48 @@ import org.springframework.data.domain.Sort;
 public interface ParameterAccessor extends Iterable<Object> {
 
 	/**
-	 * Returns the {@link ScrollPosition} of the parameters, if available. Returns {@code null} otherwise.
-	 *
-	 * @return
+	 * @return the {@link Vector} of the parameters, if available; {@literal null} otherwise.
+	 * @since 4.0
+	 */
+	@Nullable
+	Vector getVector();
+
+	/**
+	 * @return the {@link Score} of the parameters, if available; {@literal null} otherwise.
+	 * @since 4.0
+	 */
+	@Nullable
+	Score getScore();
+
+	/**
+	 * @return the {@link Range} of {@link Score} of the parameters, if available; {@literal null} otherwise.
+	 * @since 4.0
+	 */
+	@Nullable
+	Range<Score> getScoreRange();
+
+	/**
+	 * @return the {@link ScrollPosition} of the parameters, if available; {@literal null} otherwise.
 	 */
 	@Nullable
 	ScrollPosition getScrollPosition();
 
 	/**
-	 * Returns the {@link Pageable} of the parameters, if available. Returns {@link Pageable#unpaged()} otherwise.
-	 *
-	 * @return
+	 * @return the {@link Pageable} of the parameters, if available; {@link Pageable#unpaged()} otherwise.
 	 */
 	Pageable getPageable();
 
 	/**
-	 * Returns the sort instance to be used for query creation. Will use a {@link Sort} parameter if available or the
-	 * {@link Sort} contained in a {@link Pageable} if available. Returns {@link Sort#unsorted()} if no {@link Sort} can
-	 * be found.
-	 *
-	 * @return
+	 * @return the sort instance to be used for query creation. Will use a {@link Sort} parameter if available or the
+	 *         {@link Sort} contained in a {@link Pageable} if available. {@link Sort#unsorted()} if no {@link Sort} can
+	 *         be found.
 	 */
 	Sort getSort();
 
 	/**
-	 * Returns the {@link Limit} instance to be used for query creation. If no {@link java.lang.reflect.Parameter}
-	 * assignable to {@link Limit} can be found {@link Limit} will be created out of {@link Pageable#getPageSize()} if
-	 * present.
-	 *
-	 * @return
+	 * @return the {@link Limit} instance to be used for query creation. If no {@link java.lang.reflect.Parameter}
+	 *         assignable to {@link Limit} can be found {@link Limit} will be created out of
+	 *         {@link Pageable#getPageSize()} if present.
 	 * @since 3.2
 	 */
 	default Limit getLimit() {
@@ -69,9 +85,7 @@ public interface ParameterAccessor extends Iterable<Object> {
 	}
 
 	/**
-	 * Returns the dynamic projection type to be used when executing the query or {@literal null} if none is defined.
-	 *
-	 * @return
+	 * @return the dynamic projection type to be used when executing the query or {@literal null} if none is defined.
 	 * @since 2.2
 	 */
 	@Nullable
@@ -83,7 +97,7 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * {@link String}, {@code #getBindableParameter(1)} would return the second {@link String} value.
 	 *
 	 * @param index
-	 * @return
+	 * @return the bindable value with the given index
 	 */
 	@Nullable
 	Object getBindableValue(int index);
@@ -91,7 +105,7 @@ public interface ParameterAccessor extends Iterable<Object> {
 	/**
 	 * Returns whether one of the bindable parameter values is {@literal null}.
 	 *
-	 * @return
+	 * @return {@literal true} if one of the bindable parameter values is {@literal null}.
 	 */
 	boolean hasBindableNullValue();
 
@@ -99,7 +113,9 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * Returns an iterator over all <em>bindable</em> parameters. This means parameters implementing {@link Pageable} or
 	 * {@link Sort} will not be included in this {@link Iterator}.
 	 *
-	 * @return
+	 * @return iterator over all <em>bindable</em> parameters.
 	 */
+	@Override
 	Iterator<Object> iterator();
+
 }

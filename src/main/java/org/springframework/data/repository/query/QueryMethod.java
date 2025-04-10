@@ -26,6 +26,8 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.SearchResult;
+import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
@@ -41,6 +43,7 @@ import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Abstraction of a method that is designated to execute a finder query. Enriches the standard {@link Method} interface
@@ -278,6 +281,24 @@ public class QueryMethod {
 	 */
 	public final boolean isPageQuery() {
 		return org.springframework.util.ClassUtils.isAssignable(Page.class, unwrappedReturnType);
+	}
+
+	/**
+	 * Returns whether the finder will return a {@link SearchResults} (or collection of {@link SearchResult}) of results.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	public boolean isSearchQuery() {
+
+		if (ClassUtils.isAssignable(SearchResults.class, unwrappedReturnType)) {
+			return true;
+		}
+
+		TypeInformation<?> returnType = metadata.getReturnType(method);
+		TypeInformation<?> componentType = returnType.getComponentType();
+
+		return componentType != null && SearchResult.class.isAssignableFrom(componentType.getType());
 	}
 
 	/**

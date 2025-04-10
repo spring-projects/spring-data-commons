@@ -22,8 +22,11 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.util.Assert;
@@ -93,6 +96,36 @@ public class ParametersParameterAccessor implements ParameterAccessor {
 	 */
 	protected @Nullable Object[] getValues() {
 		return this.values;
+	}
+
+	@Override
+	public @Nullable Vector getVector() {
+
+		if (parameters.getVectorIndex() == -1) {
+			return null;
+		}
+
+		return (Vector) values[parameters.getVectorIndex()];
+	}
+
+	@Override
+	public @Nullable Score getScore() {
+
+		if (!parameters.hasScoreParameter()) {
+			return null;
+		}
+
+		return (Score) values[parameters.getScoreIndex()];
+	}
+
+	@Override
+	public @Nullable Range<Score> getScoreRange() {
+
+		if (!parameters.hasScoreRangeParameter()) {
+			return null;
+		}
+
+		return (Range<Score>) values[parameters.getScoreRangeIndex()];
 	}
 
 	@Override

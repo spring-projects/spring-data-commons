@@ -34,13 +34,15 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.SearchResult;
+import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Window;
 import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -388,6 +390,24 @@ class QueryMethodUnitTests {
 				});
 	}
 
+	@Test // GH-
+	void considersSearchResults() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("searchTop5By");
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+
+		assertThat(queryMethod.isSearchQuery()).isTrue();
+	}
+
+	@Test // GH-
+	void considersSearchResult() throws NoSuchMethodException {
+
+		var method = SampleRepository.class.getMethod("searchListTop5By");
+		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+
+		assertThat(queryMethod.isSearchQuery()).isTrue();
+	}
+
 	interface SampleRepository extends Repository<User, Serializable> {
 
 		String pagingMethodWithInvalidReturnType(Pageable pageable);
@@ -460,6 +480,10 @@ class QueryMethodUnitTests {
 		List<User> findTop5By(Limit limit);
 
 		List<User> findTop5By(Pageable page);
+
+		SearchResults<User> searchTop5By();
+
+		List<SearchResult<User>> searchListTop5By();
 	}
 
 	class User {

@@ -72,6 +72,27 @@ public final class Distance implements Serializable, Comparable<Distance> {
 	}
 
 	/**
+	 * Creates a new {@link Distance} with a neutral metric. This means the provided value needs to be in normalized form.
+	 *
+	 * @param value distance value.
+	 * @since 4.0
+	 */
+	public static Distance of(double value) {
+		return new Distance(value);
+	}
+
+	/**
+	 * Creates a new {@link Distance} with the given {@link Metric}.
+	 *
+	 * @param value distance value.
+	 * @param metric must not be {@literal null}.
+	 * @since 4.0
+	 */
+	public static Distance of(double value, Metric metric) {
+		return new Distance(value, metric);
+	}
+
+	/**
 	 * Creates a {@link Range} between the given {@link Distance}.
 	 *
 	 * @param min can be {@literal null}.
