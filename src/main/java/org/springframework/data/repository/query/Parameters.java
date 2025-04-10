@@ -27,10 +27,14 @@ import java.util.function.Function;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -55,6 +59,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
+	private final int vectorIndex;
+	private final int scoreIndex;
+	private final int scoreRangeIndex;
 	private final int scrollPositionIndex;
 	private final int pageableIndex;
 	private final int sortIndex;
@@ -72,8 +79,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 	 * @param parameterFactory must not be {@literal null}.
 	 * @since 3.2.1
 	 */
-	protected Parameters(ParametersSource parametersSource,
-			Function<MethodParameter, T> parameterFactory) {
+	protected Parameters(ParametersSource parametersSource, Function<MethodParameter, T> parameterFactory) {
 
 		Assert.notNull(parametersSource, "ParametersSource must not be null");
 		Assert.notNull(parameterFactory, "Parameter factory must not be null");
@@ -84,6 +90,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		this.parameters = new ArrayList<>(parameterCount);
 		this.dynamicProjectionIndex = -1;
 
+		int vectorIndex = -1;
+		int scoreIndex = -1;
+		int scoreRangeIndex = -1;
 		int scrollPositionIndex = -1;
 		int pageableIndex = -1;
 		int sortIndex = -1;
@@ -106,6 +115,20 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 				this.dynamicProjectionIndex = parameter.getIndex();
 			}
 
+			if (Vector.class.isAssignableFrom(parameter.getType())) {
+				vectorIndex = i;
+			}
+
+			if (Score.class.isAssignableFrom(parameter.getType())) {
+				scoreIndex = i;
+			}
+
+			if (Range.class.isAssignableFrom(parameter.getType())
+					&& ResolvableType.forMethodParameter(methodParameter).getGeneric(0)
+							.isAssignableFrom(Score.class)) {
+				scoreRangeIndex = i;
+			}
+
 			if (ScrollPosition.class.isAssignableFrom(parameter.getType())) {
 				scrollPositionIndex = i;
 			}
@@ -125,6 +148,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			parameters.add(parameter);
 		}
 
+		this.vectorIndex = vectorIndex;
+		this.scoreIndex = scoreIndex;
+		this.scoreRangeIndex = scoreRangeIndex;
 		this.scrollPositionIndex = scrollPositionIndex;
 		this.pageableIndex = pageableIndex;
 		this.sortIndex = sortIndex;
@@ -143,6 +169,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 
 		this.parameters = new ArrayList<>(originals.size());
 
+		int vectorIndexTemp = -1;
+		int scoreIndexTemp = -1;
+		int scoreRangeIndexTemp = -1;
 		int scrollPositionIndexTemp = -1;
 		int pageableIndexTemp = -1;
 		int sortIndexTemp = -1;
@@ -154,6 +183,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			T original = originals.get(i);
 			this.parameters.add(original);
 
+			vectorIndexTemp = original.isVector() ? i : -1;
+			scoreIndexTemp = original.isScore() ? i : -1;
+			scoreRangeIndexTemp = original.isScoreRange() ? i : -1;
 			scrollPositionIndexTemp = original.isScrollPosition() ? i : -1;
 			pageableIndexTemp = original.isPageable() ? i : -1;
 			sortIndexTemp = original.isSort() ? i : -1;
@@ -161,6 +193,9 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			dynamicProjectionTemp = original.isDynamicProjectionParameter() ? i : -1;
 		}
 
+		this.vectorIndex = vectorIndexTemp;
+		this.scoreIndex = scoreIndexTemp;
+		this.scoreRangeIndex = scoreRangeIndexTemp;
 		this.scrollPositionIndex = scrollPositionIndexTemp;
 		this.pageableIndex = pageableIndexTemp;
 		this.sortIndex = sortIndexTemp;
@@ -181,6 +216,49 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		}
 
 		return createFrom(bindables);
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Vector} argument.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	public boolean hasVectorParameter() {
+		return vectorIndex != -1;
+	}
+
+	public int getVectorIndex() {
+		return vectorIndex;
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Score} argument.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	public boolean hasScoreParameter() {
+		return scoreIndex != -1;
+	}
+
+	public int getScoreIndex() {
+		return scoreIndex;
+	}
+
+	/**
+	 * Returns whether the method the {@link Parameters} was created for contains a {@link Range} of {@link Score}
+	 * argument.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	public boolean hasScoreRangeParameter() {
+		return scoreRangeIndex != -1;
+	}
+
+	public int getScoreRangeIndex() {
+		return scoreRangeIndex;
 	}
 
 	/**

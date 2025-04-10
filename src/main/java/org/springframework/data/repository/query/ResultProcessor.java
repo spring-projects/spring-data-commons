@@ -28,6 +28,7 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Window;
 import org.springframework.data.projection.ProjectionFactory;
@@ -152,6 +153,10 @@ public class ResultProcessor {
 
 		if (source instanceof Slice && (method.isPageQuery() || method.isSliceQuery())) {
 			return (T) ((Slice<?>) source).map(converter::convert);
+		}
+
+		if (source instanceof SearchResults<?> results && method.isSearchQuery()) {
+			return (T) results.map(converter::convert);
 		}
 
 		if (source instanceof Collection<?> collection && method.isCollectionQuery()) {

@@ -26,6 +26,7 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
@@ -278,6 +279,16 @@ public class QueryMethod {
 	 */
 	public final boolean isPageQuery() {
 		return org.springframework.util.ClassUtils.isAssignable(Page.class, unwrappedReturnType);
+	}
+
+	/**
+	 * Returns whether the finder will return a {@link SearchResults} of results.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	public final boolean isSearchQuery() {
+		return org.springframework.util.ClassUtils.isAssignable(SearchResults.class, unwrappedReturnType);
 	}
 
 	/**

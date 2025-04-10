@@ -38,6 +38,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Window;
 import org.springframework.data.geo.GeoResults;
@@ -98,6 +99,7 @@ public abstract class QueryExecutionConverters {
 		ALLOWED_PAGEABLE_TYPES.add(Page.class);
 		ALLOWED_PAGEABLE_TYPES.add(List.class);
 		ALLOWED_PAGEABLE_TYPES.add(Window.class);
+		ALLOWED_PAGEABLE_TYPES.add(SearchResults.class);
 
 		WRAPPER_TYPES.add(NullableWrapperToCompletableFutureConverter.getWrapperType());
 
@@ -253,6 +255,7 @@ public abstract class QueryExecutionConverters {
 		boolean needToUnwrap = type.isCollectionLike() //
 				|| Slice.class.isAssignableFrom(rawType) //
 				|| GeoResults.class.isAssignableFrom(rawType) //
+				|| SearchResults.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
 				|| supports(rawType) //
 				|| Stream.class.isAssignableFrom(rawType);

@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 
@@ -32,7 +34,7 @@ import org.springframework.data.domain.Sort;
  */
 class SimpleParameterAccessorUnitTests {
 
-	Parameters<?, ?> parameters, cursorRequestParameters, sortParameters, pageableParameters;
+	Parameters<?, ?> parameters, cursorRequestParameters, sortParameters, pageableParameters, scoreParameters;
 
 	@BeforeEach
 	void setUp() throws SecurityException, NoSuchMethodException {
@@ -44,6 +46,9 @@ class SimpleParameterAccessorUnitTests {
 				ParametersSource.of(Sample.class.getMethod("sample1", String.class, Sort.class)));
 		pageableParameters = new DefaultParameters(
 				ParametersSource.of(Sample.class.getMethod("sample2", String.class, Pageable.class)));
+
+		scoreParameters = new DefaultParameters(
+				ParametersSource.of(Sample.class.getMethod("sample", String.class, Score.class, Range.class)));
 	}
 
 	@Test
@@ -122,11 +127,31 @@ class SimpleParameterAccessorUnitTests {
 		assertThat(accessor.getSort()).isEqualTo(sort);
 	}
 
+	@Test
+	void returnsScoreIfAvailable() {
+
+		Score score = Score.of(1);
+		ParameterAccessor accessor = new ParametersParameterAccessor(scoreParameters, new Object[] { "test", score, null });
+
+		assertThat(accessor.getScore()).isEqualTo(score);
+	}
+
+	@Test
+	void returnsScoreRangeIfAvailable() {
+
+		Range<Score> range = Score.between(2d, 4d);
+		ParameterAccessor accessor = new ParametersParameterAccessor(scoreParameters, new Object[] { "test", null, range });
+
+		assertThat(accessor.getScoreRange()).isEqualTo(range);
+	}
+
 	interface Sample {
 
 		void sample(String firstname);
 
 		void sample(ScrollPosition scrollPosition);
+
+		void sample(String firstname, Score score, Range<Score> range);
 
 		void sample1(String firstname, Sort sort);
 
