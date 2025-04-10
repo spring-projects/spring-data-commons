@@ -7,6 +7,7 @@
 ** xref:repositories/query-methods.adoc[]
 ** xref:repositories/definition.adoc[]
 ** xref:repositories/query-methods-details.adoc[]
+** xref:repositories/vector-search.adoc[]
 ** xref:repositories/create-instances.adoc[]
 ** xref:repositories/custom-implementations.adoc[]
 ** xref:repositories/core-domain-events.adoc[]
