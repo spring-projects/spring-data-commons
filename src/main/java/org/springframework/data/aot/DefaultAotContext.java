@@ -147,4 +147,5 @@ class DefaultAotContext implements AotContext {
 			return factory.getType(beanName, false);
 		}
 	}
+
 }

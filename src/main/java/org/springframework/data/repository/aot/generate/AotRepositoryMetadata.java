@@ -17,11 +17,9 @@ package org.springframework.data.repository.aot.generate;
 
 import java.util.List;
 
-import org.springframework.data.repository.aot.generate.json.JSONArray;
-import org.springframework.data.repository.aot.generate.json.JSONException;
-import org.springframework.data.repository.aot.generate.json.JSONObject;
-
 /**
+ * Value object capturing metadata about a repository.
+ *
  * @author Mark Paluch
  * @since 4.0
  */
@@ -33,6 +31,12 @@ record AotRepositoryMetadata(String name, String module,
 		IMPERATIVE, REACTIVE
 	}
 
+	/**
+	 * Convert this {@link AotRepositoryMetadata} to a {@link JSONObject}.
+	 *
+	 * @return
+	 * @throws JSONException
+	 */
 	JSONObject toJson() throws JSONException {
 
 		JSONObject metadata = new JSONObject();
@@ -49,6 +53,6 @@ record AotRepositoryMetadata(String name, String module,
 		metadata.put("methods", methods);
 
 		return metadata;
-
 	}
+
 }

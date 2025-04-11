@@ -31,6 +31,7 @@ import org.springframework.javapoet.TypeName;
 /**
  * @author Christoph Strobl
  */
+// TODO: Can we make this package-private?
 public class AotRepositoryFragmentMetadata {
 
 	private final ClassName className;

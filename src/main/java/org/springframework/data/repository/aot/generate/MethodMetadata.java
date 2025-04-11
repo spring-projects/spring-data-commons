@@ -30,13 +30,13 @@ import org.springframework.javapoet.TypeName;
 /**
  * @author Christoph Strobl
  */
-class AotRepositoryMethodImplementationMetadata {
+class MethodMetadata {
 
 	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
 
-	public AotRepositoryMethodImplementationMetadata(RepositoryInformation repositoryInformation, Method method) {
+	public MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
 		this.actualReturnType = ResolvableType.forType(repositoryInformation.getReturnedDomainClass(method));

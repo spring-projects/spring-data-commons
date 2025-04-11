@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.util.List;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
@@ -116,19 +115,6 @@ public class AotRepositoryConstructorBuilder {
 		}
 
 		return builder.build();
-	}
-
-	private static TypeName getDefaultStoreRepositoryImplementationType(RepositoryInformation repositoryInformation) {
-
-		ResolvableType resolvableType = ResolvableType.forClass(repositoryInformation.getRepositoryBaseClass());
-		if (resolvableType.hasGenerics()) {
-			List<Class<?>> generics = List.of();
-			if (resolvableType.getGenerics().length == 2) { // TODO: Find some other way to resolve generics
-				generics = List.of(repositoryInformation.getDomainType(), repositoryInformation.getIdType());
-			}
-			return ParameterizedTypeName.get(repositoryInformation.getRepositoryBaseClass(), generics.toArray(Class[]::new));
-		}
-		return TypeName.get(repositoryInformation.getRepositoryBaseClass());
 	}
 
 	/**

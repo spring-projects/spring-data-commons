@@ -26,7 +26,6 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.data.repository.aot.generate.json.JSONException;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;

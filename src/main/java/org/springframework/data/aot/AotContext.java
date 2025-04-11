@@ -48,8 +48,8 @@ import org.springframework.util.Assert;
  * @author Christoph Strobl
  * @author John Blum
  * @author Mark Paluch
- * @see BeanFactory
  * @since 3.0
+ * @see BeanFactory
  */
 public interface AotContext extends EnvironmentCapable {
 

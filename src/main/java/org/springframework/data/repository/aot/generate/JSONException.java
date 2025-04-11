@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.data.repository.aot.generate.json;
+package org.springframework.data.repository.aot.generate;
 
 // Note: this class was written without inspecting the non-free org.json source code.
+
+import org.jspecify.annotations.NullUnmarked;
 
 /**
  * Thrown to indicate a problem with the JSON API. Such problems include:
@@ -43,7 +45,8 @@ package org.springframework.data.repository.aot.generate.json;
  * }
  * </pre>
  */
-public class JSONException extends Exception {
+@NullUnmarked
+class JSONException extends RuntimeException {
 
 	public JSONException(String s) {
 		super(s);

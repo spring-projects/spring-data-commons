@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @since 4.0
  */
+// TODO: Make this package-private?
 public class AotRepositoryMethodBuilder {
 
 	private final AotQueryMethodGenerationContext context;

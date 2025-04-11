@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Christoph Strobl
  */
+@Deprecated(forRemoval = true)
 public class CodeBlocks {
 
 	private final AotRepositoryFragmentMetadata metadata;

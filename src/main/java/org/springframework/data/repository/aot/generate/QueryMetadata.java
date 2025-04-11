@@ -17,24 +17,17 @@ package org.springframework.data.repository.aot.generate;
 
 import java.util.Map;
 
-import org.springframework.data.repository.aot.generate.json.JSONException;
-import org.springframework.data.repository.aot.generate.json.JSONObject;
-
 /**
+ * Interface providing metadata about a query. Name and multiplicity of keys is subject to a provider's implementation.
+ *
  * @author Mark Paluch
+ * @since 4.0
  */
 public interface QueryMetadata {
 
+	/**
+	 * @return serialize query metadata to a {@link Map} of key/value pairs using simple types (string, numbers).
+	 */
 	Map<String, Object> serialize();
 
-	public default JSONObject toJson() throws JSONException {
-
-		JSONObject query = new JSONObject();
-
-		for (Map.Entry<String, Object> entry : serialize().entrySet()) {
-			query.put(entry.getKey(), entry.getValue());
-		}
-
-		return query;
-	}
 }

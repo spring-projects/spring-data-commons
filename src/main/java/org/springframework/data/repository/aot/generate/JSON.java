@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.data.repository.aot.generate.json;
+package org.springframework.data.repository.aot.generate;
 
+import org.jspecify.annotations.NullUnmarked;
+
+@NullUnmarked
 class JSON {
 
 	static double checkDouble(double d) throws JSONException {

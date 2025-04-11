@@ -68,7 +68,7 @@ public class AotQueryMethodGenerationContext {
 	private final QueryMethod queryMethod;
 	private final RepositoryInformation repositoryInformation;
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
-	private final AotRepositoryMethodImplementationMetadata targetMethodMetadata;
+	private final MethodMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
 
 	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
@@ -79,7 +79,7 @@ public class AotQueryMethodGenerationContext {
 		this.queryMethod = queryMethod;
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
-		this.targetMethodMetadata = new AotRepositoryMethodImplementationMetadata(repositoryInformation, method);
+		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
 	}
 
@@ -87,7 +87,7 @@ public class AotQueryMethodGenerationContext {
 		return targetTypeMetadata;
 	}
 
-	AotRepositoryMethodImplementationMetadata getTargetMethodMetadata() {
+	MethodMetadata getTargetMethodMetadata() {
 		return targetMethodMetadata;
 	}
 

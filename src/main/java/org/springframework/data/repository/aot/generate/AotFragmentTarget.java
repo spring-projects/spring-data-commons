@@ -17,10 +17,9 @@ package org.springframework.data.repository.aot.generate;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.repository.aot.generate.json.JSONException;
-import org.springframework.data.repository.aot.generate.json.JSONObject;
-
 /**
+ * Value object capturing metadata about a fragment target.
+ *
  * @author Mark Paluch
  * @since 4.0
  */
@@ -39,4 +38,5 @@ record AotFragmentTarget(String signature, @Nullable String implementation) {
 
 		return fragment;
 	}
+
 }
