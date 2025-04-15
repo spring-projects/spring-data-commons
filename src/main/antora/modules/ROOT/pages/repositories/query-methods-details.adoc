@@ -537,11 +537,11 @@ List<User> findByLastname(Limit limit);
 
 User findFirstByOrderByLastnameAsc();
 
-User findTopByOrderByAgeDesc();
+User findTopByLastnameOrderByAgeDesc(String lastname);
 
 Page<User> queryFirst10ByLastname(String lastname, Pageable pageable);
 
-Slice<User> findTop3ByLastname(String lastname, Pageable pageable);
+Slice<User> findTop3By(Pageable pageable);
 
 List<User> findFirst10ByLastname(String lastname, Sort sort);
 
