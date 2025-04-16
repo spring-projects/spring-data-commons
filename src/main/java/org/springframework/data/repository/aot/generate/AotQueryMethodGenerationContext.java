@@ -24,11 +24,11 @@ import java.util.Map.Entry;
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.data.repository.aot.generate.VariableNameFactory.VariableName;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
@@ -54,6 +54,7 @@ public class AotQueryMethodGenerationContext {
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final MethodMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
+	private final VariableNameFactory variableNameFactory;
 
 	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
 			AotRepositoryFragmentMetadata targetTypeMetadata) {
@@ -65,6 +66,7 @@ public class AotQueryMethodGenerationContext {
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
+		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
 	}
 
 	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
@@ -125,6 +127,16 @@ public class AotQueryMethodGenerationContext {
 	 */
 	public TypeName getReturnTypeName() {
 		return TypeName.get(getReturnType().getType());
+	}
+
+	/**
+	 * Suggests naming clash free variant for the given intended variable name within the local method context.
+	 *
+	 * @param variableName the intended variable name.
+	 * @return the suggested VariableName
+	 */
+	public VariableName suggestLocalVariableName(String variableName) {
+		return variableNameFactory.generateName(variableName);
 	}
 
 	/**
@@ -274,8 +286,7 @@ public class AotQueryMethodGenerationContext {
 			return null;
 		}
 
-		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(
-				targetMethodMetadata.getMethodArguments().entrySet());
+		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(targetMethodMetadata.getMethodArguments().entrySet());
 		if (position < entries.size()) {
 			return entries.get(position).getKey();
 		}
