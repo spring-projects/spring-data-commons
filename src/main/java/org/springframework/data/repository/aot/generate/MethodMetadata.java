@@ -16,12 +16,16 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jspecify.annotations.Nullable;
-
+import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.MethodParameter;
+import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.ParameterSpec;
@@ -31,6 +35,7 @@ import org.springframework.javapoet.TypeName;
  * Metadata about an AOT Repository method.
  *
  * @author Christoph Strobl
+ * @since 4.0
  */
 class MethodMetadata {
 
@@ -38,10 +43,11 @@ class MethodMetadata {
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
 
-	public MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
+	MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
 		this.actualReturnType = ResolvableType.forType(repositoryInformation.getReturnedDomainClass(method));
+		this.initParameters(repositoryInformation, method, new DefaultParameterNameDiscoverer());
 	}
 
 	@Nullable
@@ -54,20 +60,50 @@ class MethodMetadata {
 		return null;
 	}
 
-	public ResolvableType getReturnType() {
+	ResolvableType getReturnType() {
 		return returnType;
 	}
 
-	public ResolvableType getActualReturnType() {
+	ResolvableType getActualReturnType() {
 		return actualReturnType;
 	}
 
-	public void addParameter(ParameterSpec parameterSpec) {
+	void addParameter(ParameterSpec parameterSpec) {
 		this.methodArguments.put(parameterSpec.name, parameterSpec);
 	}
 
-	public Map<String, ParameterSpec> getMethodArguments() {
+	Map<String, ParameterSpec> getMethodArguments() {
 		return methodArguments;
 	}
 
+	@Nullable
+	String getParameterName(int position) {
+
+		if (0 > position) {
+			return null;
+		}
+
+		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(methodArguments.entrySet());
+		if (position < entries.size()) {
+			return entries.get(position).getKey();
+		}
+		return null;
+	}
+
+	private void initParameters(RepositoryInformation repositoryInformation, Method method,
+			ParameterNameDiscoverer nameDiscoverer) {
+
+		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
+
+		for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+
+			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+			methodParameter.initParameterNameDiscovery(nameDiscoverer);
+			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
+
+			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
+
+			addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
+		}
+	}
 }
