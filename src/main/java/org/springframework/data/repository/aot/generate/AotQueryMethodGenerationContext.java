@@ -19,12 +19,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
@@ -54,6 +52,7 @@ public class AotQueryMethodGenerationContext {
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final MethodMetadata targetMethodMetadata;
 	private final CodeBlocks codeBlocks;
+	private final VariableNameFactory variableNameFactory;
 
 	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
 			AotRepositoryFragmentMetadata targetTypeMetadata) {
@@ -64,6 +63,7 @@ public class AotQueryMethodGenerationContext {
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
+		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
 		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
 	}
 
@@ -125,6 +125,16 @@ public class AotQueryMethodGenerationContext {
 	 */
 	public TypeName getReturnTypeName() {
 		return TypeName.get(getReturnType().getType());
+	}
+
+	/**
+	 * Suggest naming clash free variant for the given intended variable name within the local method context.
+	 *
+	 * @param variableName the intended variable name.
+	 * @return the suggested VariableName
+	 */
+	public String suggestLocalVariableName(String variableName) {
+		return variableNameFactory.generateName(variableName);
 	}
 
 	/**
@@ -227,7 +237,7 @@ public class AotQueryMethodGenerationContext {
 		List<String> result = new ArrayList<>();
 
 		for (Parameter parameter : queryMethod.getParameters().getBindableParameters()) {
-			parameter.getName().map(result::add);
+			getParameterName(parameter.getIndex());
 		}
 
 		return result;
@@ -237,14 +247,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return list of all parameter names (including non-bindable special parameters).
 	 */
 	public List<String> getAllParameterNames() {
-
-		List<String> result = new ArrayList<>();
-
-		for (Parameter parameter : queryMethod.getParameters()) {
-			parameter.getName().map(result::add);
-		}
-
-		return result;
+		return targetMethodMetadata.getMethodArguments().keySet().stream().toList();
 	}
 
 	public boolean hasField(String fieldName) {
@@ -269,17 +272,7 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	public @Nullable String getParameterName(int position) {
-
-		if (0 > position) {
-			return null;
-		}
-
-		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(
-				targetMethodMetadata.getMethodArguments().entrySet());
-		if (position < entries.size()) {
-			return entries.get(position).getKey();
-		}
-		return null;
+		return targetMethodMetadata.getParameterName(position);
 	}
 
 	public void addParameter(ParameterSpec parameter) {

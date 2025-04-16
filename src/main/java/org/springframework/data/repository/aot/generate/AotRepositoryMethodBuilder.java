@@ -16,7 +16,6 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -24,13 +23,8 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
-import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.core.MethodParameter;
-import org.springframework.core.ResolvableType;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeVariableName;
 import org.springframework.util.StringUtils;
@@ -50,25 +44,7 @@ class AotRepositoryMethodBuilder {
 	private BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer = (context, body) -> {};
 
 	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
-
 		this.context = context;
-		initParameters(context.getMethod(), context.getRepositoryInformation());
-	}
-
-	private void initParameters(Method method, RepositoryInformation repositoryInformation) {
-
-		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
-
-		for (Parameter parameter : method.getParameters()) {
-
-			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
-			methodParameter.initParameterNameDiscovery(new DefaultParameterNameDiscoverer());
-			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
-
-			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
-
-			this.context.addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
-		}
 	}
 
 	/**
