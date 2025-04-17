@@ -1,5 +1,6 @@
 [[repositories.query-methods.details]]
 = Defining Query Methods
+:feature-scroll:
 
 The repository proxy has two ways to derive a store-specific query from the method name:
 
@@ -457,10 +458,10 @@ ifdef::feature-scroll[]
 | `limit + 1` at `OffsetScrollPosition.getOffset()`
 | One to many queries fetching data starting at `OffsetScrollPosition.getOffset()` applying limiting.
 a| A `Window` can only navigate to the next `Window`.
-endif::[]
 
 * `Window` provides details whether there is more data to fetch.
 * Offset-based queries becomes inefficient when the offset is too large because the database still has to materialize the full result.
+endif::[]
 
 | `Page<T>`
 | `Pageable.getPageSize()`  at `Pageable.getOffset()`
@@ -518,8 +519,6 @@ QSort sort = QSort.by(QPerson.firstname.asc())
   .and(QSort.by(QPerson.lastname.desc()));
 ----
 
-ifdef::feature-scroll[]
-endif::[]
 
 [[repositories.limit-query-result]]
 === Limiting Query Results
