@@ -37,6 +37,7 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Chris Bono
  */
 @ExtendWith(MockitoExtension.class)
 class ParameterUnitTests<P extends PersistentProperty<P>> {
@@ -147,6 +148,35 @@ class ParameterUnitTests<P extends PersistentProperty<P>> {
 		Parameter<StaticType, P> iFace = new Parameter<StaticType, P>("outer", TypeInformation.of(StaticType.class),
 				annotations, pe);
 		assertThat(iFace.isEnclosingClassParameter()).isFalse();
+	}
+
+	@Test // GH-3088
+	void getRequiredNameDoesNotThrowExceptionWhenHasName() {
+
+		var parameter = new Parameter<>("someName", type, annotations, entity);
+		assertThat(parameter.getRequiredName()).isEqualTo("someName");
+	}
+
+	@Test // GH-3088
+	void getRequiredNameThrowsExceptionWhenHasNoName() {
+
+		var parameter = new Parameter<>(null, type, annotations, entity);
+		assertThatIllegalStateException().isThrownBy(() -> parameter.getRequiredName())
+				.withMessage("No name associated with this parameter");
+	}
+
+	@Test // GH-3088
+	void hasNameReturnsTrueWhenHasName() {
+
+		var parameter = new Parameter<>("someName", type, annotations, entity);
+		assertThat(parameter.hasName()).isTrue();
+	}
+
+	@Test // GH-3088
+	void hasNameReturnsFalseWhenHasNoName() {
+
+		var parameter = new Parameter<>(null, type, annotations, entity);
+		assertThat(parameter.hasName()).isFalse();
 	}
 
 	interface IFace {
