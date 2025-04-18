@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * @param <T> the type of the parameter
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Chris Bono
  */
 public class Parameter<T, P extends PersistentProperty<P>> {
 
@@ -96,6 +97,31 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 */
 	public @Nullable String getName() {
 		return name;
+	}
+
+	/**
+	 * Returns the required parameter name.
+	 *
+	 * @return the parameter name or throws {@link IllegalStateException} if the parameter does not have a name
+	 * @since 3.5
+	 */
+	public String getRequiredName() {
+
+		if (!hasName()) {
+			throw new IllegalStateException("No name associated with this parameter");
+		}
+
+		return getName();
+	}
+
+	/**
+	 * Returns whether the parameter has a name.
+	 *
+	 * @return whether the parameter has a name
+	 * @since 3.5
+	 */
+	public boolean hasName() {
+		return this.name != null;
 	}
 
 	/**
