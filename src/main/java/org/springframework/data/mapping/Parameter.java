@@ -91,9 +91,10 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the name of the parameter.
+	 * Returns the name of the parameter (through constructor/method parameter naming).
 	 *
-	 * @return
+	 * @return the name of the parameter.
+	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
 	@Nullable
 	public String getName() {
@@ -101,10 +102,22 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the required parameter name.
+	 * Returns whether the parameter has a name.
 	 *
-	 * @return the parameter name or throws {@link IllegalStateException} if the parameter does not have a name
+	 * @return whether the parameter has a name.
 	 * @since 3.5
+	 */
+	public boolean hasName() {
+		return this.name != null;
+	}
+
+	/**
+	 * Returns the required name of the parameter (through constructor/method parameter naming) or throws
+	 * {@link IllegalStateException} if the parameter has no name.
+	 *
+	 * @return the parameter name or throws {@link IllegalStateException} if the parameter does not have a name.
+	 * @since 3.5
+	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
 	public String getRequiredName() {
 
@@ -113,16 +126,6 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		}
 
 		return getName();
-	}
-
-	/**
-	 * Returns whether the parameter has a name.
-	 *
-	 * @return whether the parameter has a name
-	 * @since 3.5
-	 */
-	public boolean hasName() {
-		return this.name != null;
 	}
 
 	/**

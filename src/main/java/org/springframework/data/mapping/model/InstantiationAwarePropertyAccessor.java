@@ -95,7 +95,7 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 
 		creator.getParameters().forEach(it -> {
 
-			if (it.getName() == null) {
+			if (!it.hasName()) {
 				throw new IllegalStateException(
 						String.format("Cannot detect parameter names of copy creator of %s", owner.getType()));
 			}
