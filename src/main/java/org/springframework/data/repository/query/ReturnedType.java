@@ -303,8 +303,8 @@ public abstract class ReturnedType {
 			List<String> properties = new ArrayList<>(parameterCount);
 
 			for (Parameter<Object, ?> parameter : constructor.getParameters()) {
-				if (parameter.getName() != null) {
-					properties.add(parameter.getName());
+				if (parameter.hasName()) {
+					properties.add(parameter.getRequiredName());
 				}
 			}
 

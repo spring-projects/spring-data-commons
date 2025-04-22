@@ -155,9 +155,22 @@ public class Parameter {
 	}
 
 	/**
+	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
+	 *
+	 * @return
+	 * @since 1.11
+	 * @see Param
+	 */
+	public boolean isExplicitlyNamed() {
+		return parameter.hasParameterAnnotation(Param.class);
+	}
+
+	/**
 	 * Returns the name of the parameter (through {@link Param} annotation or method parameter naming).
 	 *
 	 * @return the optional name of the parameter.
+	 * @see Param
+	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
 	public Optional<String> getName() {
 		return this.name.get();
@@ -170,6 +183,8 @@ public class Parameter {
 	 * @return the required parameter name.
 	 * @throws IllegalStateException if the parameter has no name.
 	 * @since 3.4
+	 * @see Param
+	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
 	public String getRequiredName() {
 
@@ -186,15 +201,6 @@ public class Parameter {
 		return parameterType;
 	}
 
-	/**
-	 * Returns whether the parameter is named explicitly, i.e. annotated with {@link Param}.
-	 *
-	 * @return
-	 * @since 1.11
-	 */
-	public boolean isExplicitlyNamed() {
-		return parameter.hasParameterAnnotation(Param.class);
-	}
 
 	@Override
 	public String toString() {
