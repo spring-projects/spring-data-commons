@@ -138,9 +138,8 @@ class AotRepositoryBuilder {
 		this.customizer.customize(repositoryInformation, generationMetadata, builder);
 		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
 
-		// TODO: module identifier
 		AotRepositoryMetadata metadata = new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(),
-				"", repositoryType, methodMetadata);
+			repositoryInformation.moduleName() != null ? repositoryInformation.moduleName() : "", repositoryType, methodMetadata);
 
 		return new AotBundle(javaFile, metadata.toJson());
 	}
@@ -148,14 +147,14 @@ class AotRepositoryBuilder {
 	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
 			List<AotRepositoryMethod> methodMetadata, TypeSpec.Builder builder) {
 
-		if (repositoryInformation.isCustomMethod(method) || repositoryInformation.isBaseClassMethod(method)) {
+		if (repositoryInformation.isCustomMethod(method) || (repositoryInformation.isBaseClassMethod(method) && !repositoryInformation.isQueryMethod(method))) {
 
 			RepositoryFragment<?> fragment = repositoryComposition.findFragment(method);
 
 			if (fragment != null) {
 				methodMetadata.add(getFragmentMetadata(method, fragment));
+				return;
 			}
-			return;
 		}
 
 		if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {

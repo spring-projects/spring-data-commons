@@ -95,6 +95,10 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private @Nullable Lazy<T> repository;
 	private @Nullable RepositoryMetadata repositoryMetadata;
 
+	// AOT bean factory hint?
+	private @Nullable String moduleBaseClass;
+	private @Nullable String moduleName;
+
 	/**
 	 * Creates a new {@link RepositoryFactoryBeanSupport} for the given repository interface.
 	 *
@@ -155,7 +159,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param repositoryFragments
 	 */
 	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
-		setRepositoryFragments(RepositoryFragmentsFunction.just(repositoryFragments));
+		setRepositoryFragmentsFunction(RepositoryFragmentsFunction.just(repositoryFragments));
 	}
 
 	/**
@@ -165,7 +169,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * @param fragmentsFunction
 	 * @since 4.0
 	 */
-	public void setRepositoryFragments(RepositoryFragmentsFunction fragmentsFunction) {
+	public void setRepositoryFragmentsFunction(RepositoryFragmentsFunction fragmentsFunction) {
 		this.fragments.add(fragmentsFunction);
 	}
 
@@ -255,6 +259,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;
+	}
+
+	public void setModuleBaseClass(String moduleBaseClass) {
+		this.moduleBaseClass = moduleBaseClass;
+	}
+
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
 	}
 
 	@Override

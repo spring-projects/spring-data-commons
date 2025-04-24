@@ -265,7 +265,7 @@ public interface RepositoryFragment<T> {
 
 			Assert.notNull(implementation, "Implementation object must not be null");
 
-			if (interfaceClass != null) {
+			if (interfaceClass != null && !(implementation instanceof Class)) {
 
 				Assert
 						.isTrue(ClassUtils.isAssignableValue(interfaceClass, implementation),
