@@ -184,7 +184,7 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 		return true;
 	}
 
-	private RepositoryMetadata getMetadata() {
+	protected RepositoryMetadata getMetadata() {
 		return metadata.get();
 	}
 
