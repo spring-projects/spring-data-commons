@@ -18,6 +18,7 @@ package org.springframework.data.repository.core;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 
 /**
@@ -104,5 +105,9 @@ public interface RepositoryInformation extends RepositoryMetadata {
 	 * @since 4.0
 	 */
 	RepositoryComposition getRepositoryComposition();
+
+	default @Nullable String moduleName() {
+		return null;
+	}
 
 }

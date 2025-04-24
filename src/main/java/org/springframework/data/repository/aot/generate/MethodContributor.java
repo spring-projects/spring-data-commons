@@ -36,7 +36,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	private final M queryMethod;
 	private final QueryMetadata metadata;
 
-	private MethodContributor(M queryMethod, QueryMetadata metadata) {
+	MethodContributor(M queryMethod, QueryMetadata metadata) {
 		this.queryMethod = queryMethod;
 		this.metadata = metadata;
 	}
