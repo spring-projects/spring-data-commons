@@ -36,11 +36,13 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface based controller method parameters.
  *
  * @author Oliver Gierke
+ * @author Chris Bono
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
@@ -88,9 +90,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 			return false;
 		}
 
-		// Annotated parameter
-		if (parameter.getParameterAnnotation(ProjectedPayload.class) != null
-				|| parameter.getParameterAnnotation(ModelAttribute.class) != null) {
+		// Annotated parameter (excluding multipart)
+		if ((parameter.hasParameterAnnotation(ProjectedPayload.class) || parameter.hasParameterAnnotation(
+				ModelAttribute.class)) && !MultipartResolutionDelegate.isMultipartArgument(parameter)) {
 			return true;
 		}
 
