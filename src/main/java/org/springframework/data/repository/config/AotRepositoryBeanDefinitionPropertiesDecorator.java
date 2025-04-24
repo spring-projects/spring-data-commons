@@ -55,7 +55,7 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 		// bring in properties as usual
 		builder.add(inheritedProperties.get());
 
-		builder.add("beanDefinition.getPropertyValues().addPropertyValue(\"repositoryFragments\", new $T() {\n",
+		builder.add("beanDefinition.getPropertyValues().addPropertyValue(\"repositoryFragmentsFunction\", new $T() {\n",
 				RepositoryFactoryBeanSupport.RepositoryFragmentsFunction.class);
 		builder.indent();
 		builder.add("public $T getRepositoryFragments($T beanFactory, $T context) {\n",

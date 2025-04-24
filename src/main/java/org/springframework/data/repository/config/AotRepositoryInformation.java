@@ -21,10 +21,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformationSupport;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryComposition;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Lazy;
 
@@ -36,16 +38,31 @@ import org.springframework.data.util.Lazy;
  */
 class AotRepositoryInformation extends RepositoryInformationSupport implements RepositoryInformation {
 
+	private final @Nullable String moduleName;
 	private final Supplier<Collection<RepositoryFragment<?>>> fragments;
-	private Lazy<RepositoryComposition> baseComposition = Lazy.of(() -> {
-		return RepositoryComposition.of(RepositoryFragment.structural(getRepositoryBaseClass()));
-	});
 
-	AotRepositoryInformation(Supplier<RepositoryMetadata> repositoryMetadata, Supplier<Class<?>> repositoryBaseClass,
-			Supplier<Collection<RepositoryFragment<?>>> fragments) {
+	private final Lazy<RepositoryComposition> repositoryComposition;
+	private final Lazy<RepositoryComposition> baseComposition;
+
+	AotRepositoryInformation(@Nullable String moduleName, Supplier<RepositoryMetadata> repositoryMetadata,
+			Supplier<Class<?>> repositoryBaseClass, Supplier<Collection<RepositoryFragment<?>>> fragments) {
 
 		super(repositoryMetadata, repositoryBaseClass);
+
+		this.moduleName = moduleName;
 		this.fragments = fragments;
+
+		this.repositoryComposition = Lazy
+				.of(() -> RepositoryComposition.fromMetadata(getMetadata()).append(RepositoryFragments.from(getFragments())));
+
+		this.baseComposition = Lazy.of(() -> {
+
+			RepositoryComposition targetRepoComposition = repositoryComposition.get();
+
+			return RepositoryComposition.of(RepositoryFragment.structural(getRepositoryBaseClass())) //
+					.withArgumentConverter(targetRepoComposition.getArgumentConverter()) //
+					.withMethodLookup(targetRepoComposition.getMethodLookup());
+		});
 	}
 
 	/**
@@ -57,10 +74,9 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 		return new LinkedHashSet<>(fragments.get());
 	}
 
-	// Not required during AOT processing.
 	@Override
 	public boolean isCustomMethod(Method method) {
-		return false;
+		return repositoryComposition.get().findMethod(method).isPresent();
 	}
 
 	@Override
@@ -75,7 +91,11 @@ class AotRepositoryInformation extends RepositoryInformationSupport implements R
 
 	@Override
 	public RepositoryComposition getRepositoryComposition() {
-		return baseComposition.get().append(RepositoryComposition.RepositoryFragments.from(fragments.get()));
+		return repositoryComposition.get();
 	}
 
+	@Override
+	public @Nullable String moduleName() {
+		return moduleName;
+	}
 }

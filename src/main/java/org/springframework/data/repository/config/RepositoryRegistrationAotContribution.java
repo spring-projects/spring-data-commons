@@ -28,7 +28,6 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
@@ -49,7 +48,6 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
@@ -90,8 +88,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see RepositoryRegistrationAotProcessor
 	 */
-	protected RepositoryRegistrationAotContribution(
-			RepositoryRegistrationAotProcessor processor) {
+	protected RepositoryRegistrationAotContribution(RepositoryRegistrationAotProcessor processor) {
 
 		Assert.notNull(processor, "RepositoryRegistrationAotProcessor must not be null");
 
@@ -108,8 +105,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
 	 * @see RepositoryRegistrationAotProcessor
 	 */
-	public static RepositoryRegistrationAotContribution fromProcessor(
-			RepositoryRegistrationAotProcessor processor) {
+	public static RepositoryRegistrationAotContribution fromProcessor(RepositoryRegistrationAotProcessor processor) {
 		return new RepositoryRegistrationAotContribution(processor);
 	}
 
@@ -255,7 +251,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			});
 
 			implementation.ifPresent(impl -> {
-				contribution.getRuntimeHints().reflection().registerType(impl.getClass(), hint -> {
+				Class<?> typeToRegister = impl instanceof Class c ? c : impl.getClass();
+				contribution.getRuntimeHints().reflection().registerType(typeToRegister, hint -> {
 
 					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
 
@@ -365,18 +362,16 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	@SuppressWarnings("rawtypes")
 	private DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
-			RepositoryConfiguration<?> repositoryMetadata) {
+			RepositoryConfiguration<?> repositoryConfiguration) {
 
 		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(
 				AotContext.from(getBeanFactory(), getRepositoryRegistrationAotProcessor().getEnvironment()));
 
-		RepositoryFactoryBeanSupport rfbs = bean.getBeanFactory().getBean("&" + bean.getBeanName(),
-				RepositoryFactoryBeanSupport.class);
-
 		repositoryContext.setBeanName(bean.getBeanName());
-		repositoryContext.setBasePackages(repositoryMetadata.getBasePackages().toSet());
+		repositoryContext.setBasePackages(repositoryConfiguration.getBasePackages().toSet());
 		repositoryContext.setIdentifyingAnnotations(resolveIdentifyingAnnotations());
-		repositoryContext.setRepositoryInformation(rfbs.getRepositoryInformation());
+		repositoryContext
+				.setRepositoryInformation(RepositoryBeanDefinitionReader.repositoryInformation(repositoryConfiguration, bean));
 
 		return repositoryContext;
 	}
