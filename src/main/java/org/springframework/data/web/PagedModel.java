@@ -33,22 +33,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Oliver Drotbohm
  * @author Greg Turnquist
+ * @author Lazar Radinović
  * @since 3.3
  */
 public class PagedModel<T> {
 
 	private final Page<T> page;
 
+	private final boolean oneIndexedParameters;
+
 	/**
 	 * Creates a new {@link PagedModel} for the given {@link Page}.
 	 *
-	 * @param page must not be {@literal null}.
+	 * @param page                must not be {@literal null}.
+	 * @param oneIndexedParameters indicates weather to serialize page number by adding 0 or 1
 	 */
-	public PagedModel(Page<T> page) {
+	public PagedModel(Page<T> page, boolean oneIndexedParameters) {
 
 		Assert.notNull(page, "Page must not be null");
 
 		this.page = page;
+		this.oneIndexedParameters = oneIndexedParameters;
 	}
 
 	@JsonProperty
@@ -59,7 +64,7 @@ public class PagedModel<T> {
 	@Nullable
 	@JsonProperty("page")
 	public PageMetadata getMetadata() {
-		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(),
+		return new PageMetadata(page.getSize(), page.getNumber() + (oneIndexedParameters ? 1 : 0), page.getTotalElements(),
 				page.getTotalPages());
 	}
 
