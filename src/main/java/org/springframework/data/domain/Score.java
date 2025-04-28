@@ -68,30 +68,6 @@ public sealed class Score implements Serializable permits Similarity {
 		return Range.from(Range.Bound.inclusive(min)).to(Range.Bound.inclusive(max));
 	}
 
-	/**
-	 * Creates a new {@link Range} by creating minimum and maximum {@link Score} from the given values without
-	 * {@link ScoringFunction#UNSPECIFIED specifying a scoring function}.
-	 *
-	 * @param minValue minimum value.
-	 * @param maxValue maximum value.
-	 * @return the {@link Range} between the given values.
-	 */
-	public static Range<Score> between(double minValue, double maxValue) {
-		return between(minValue, maxValue, ScoringFunction.UNSPECIFIED);
-	}
-
-	/**
-	 * Creates a new {@link Range} by creating minimum and maximum {@link Score} from the given values.
-	 *
-	 * @param minValue minimum value.
-	 * @param maxValue maximum value.
-	 * @param function the scoring function to use.
-	 * @return the {@link Range} between the given values.
-	 */
-	public static Range<Score> between(double minValue, double maxValue, ScoringFunction function) {
-		return between(Score.of(minValue, function), Score.of(maxValue, function));
-	}
-
 	public double getValue() {
 		return value;
 	}

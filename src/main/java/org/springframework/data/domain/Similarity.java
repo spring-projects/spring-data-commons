@@ -18,7 +18,7 @@ package org.springframework.data.domain;
 import org.springframework.util.Assert;
 
 /**
- * Value object to represent a similarity score determined by a {@link ScoringFunction}. Similarity is expressed through
+ * Value object to represent a similarity value determined by a {@link ScoringFunction}. Similarity is expressed through
  * a numerical value ranging between {@code 0} and {@code 1} where zero represents the lowest similarity and one the
  * highest similarity.
  * <p>
@@ -35,27 +35,40 @@ public final class Similarity extends Score {
 	}
 
 	/**
-	 * Creates a new {@link Similarity} from a plain {@code score} value using {@link ScoringFunction#UNSPECIFIED}.
+	 * Creates a new {@link Similarity} from a plain {@code similarity} value using {@link ScoringFunction#UNSPECIFIED}.
 	 *
-	 * @param score the score value without a specific {@link ScoringFunction}, ranging between {@code 0} and {@code 1}.
+	 * @param similarity the similarity value without a specific {@link ScoringFunction}, ranging between {@code 0} and
+	 *          {@code 1}.
 	 * @return the new {@link Similarity}.
 	 */
-	public static Similarity of(double score) {
-		return of(score, ScoringFunction.UNSPECIFIED);
+	public static Similarity of(double similarity) {
+		return of(similarity, ScoringFunction.UNSPECIFIED);
 	}
 
 	/**
-	 * Creates a new {@link Similarity} from a {@code score} value using the given {@link ScoringFunction}.
+	 * Creates a new {@link Similarity} from a {@code similarity} value using the given {@link ScoringFunction}.
 	 *
-	 * @param score the score value, ranging between {@code 0} and {@code 1}.
-	 * @param function the scoring function that has computed the {@code score}.
+	 * @param similarity the similarity value, ranging between {@code 0} and {@code 1}.
+	 * @param function the scoring function that has computed the {@code similarity}.
 	 * @return the new {@link Similarity}.
 	 */
-	public static Similarity of(double score, ScoringFunction function) {
+	public static Similarity of(double similarity, ScoringFunction function) {
 
-		Assert.isTrue(score >= (double) 0.0F && score <= (double) 1.0F, "Similarity must be in [0,1] range.");
+		Assert.isTrue(similarity >= 0.0 && similarity <= 1.0, "Similarity must be in [0,1] range.");
 
-		return new Similarity(score, function);
+		return new Similarity(similarity, function);
+	}
+
+	/**
+	 * Creates a new raw {@link Similarity} from a {@code similarity} value using the given {@link ScoringFunction}.
+	 * Typically, this method is used when accepting external similarity values coming from a database search result.
+	 *
+	 * @param similarity the similarity value, ranging between {@code 0} and {@code 1}.
+	 * @param function the scoring function that has computed the {@code similarity}.
+	 * @return the new {@link Similarity}.
+	 */
+	public static Similarity raw(double similarity, ScoringFunction function) {
+		return new Similarity(similarity, function);
 	}
 
 	/**
@@ -77,7 +90,7 @@ public final class Similarity extends Score {
 	 * @param maxValue maximum value, ranging between {@code 0} and {@code 1}.
 	 * @return the {@link Range} between the given values.
 	 */
-	public static Range<Score> between(double minValue, double maxValue) {
+	public static Range<Similarity> between(double minValue, double maxValue) {
 		return between(minValue, maxValue, ScoringFunction.UNSPECIFIED);
 	}
 
@@ -89,8 +102,8 @@ public final class Similarity extends Score {
 	 * @param function the scoring function to use.
 	 * @return the {@link Range} between the given values.
 	 */
-	public static Range<Score> between(double minValue, double maxValue, ScoringFunction function) {
-		return (Range) between(Similarity.of(minValue, function), Similarity.of(maxValue, function));
+	public static Range<Similarity> between(double minValue, double maxValue, ScoringFunction function) {
+		return between(Similarity.of(minValue, function), Similarity.of(maxValue, function));
 	}
 
 	@Override
@@ -100,4 +113,5 @@ public final class Similarity extends Score {
 		}
 		return super.equals(other);
 	}
+
 }

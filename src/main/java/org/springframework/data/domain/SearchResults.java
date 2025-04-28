@@ -50,6 +50,7 @@ public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Iterator<SearchResult<T>> iterator() {
 		return (Iterator<SearchResult<T>>) results.iterator();
 	}
@@ -64,11 +65,7 @@ public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable
 
 		Assert.notNull(converter, "Function must not be null");
 
-		List<SearchResult<U>> result = results.stream().map(it -> {
-
-			SearchResult<U> mapped = it.map(converter);
-			return mapped;
-		}).collect(Collectors.toList());
+		List<SearchResult<U>> result = results.stream().map(it -> it.<U> map(converter)).collect(Collectors.toList());
 
 		return new SearchResults<>(result);
 	}
@@ -93,7 +90,8 @@ public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable
 
 	@Override
 	public String toString() {
-		return String.format("SearchResults: [results: %s]", StringUtils.collectionToCommaDelimitedString(results));
+		return results.isEmpty() ? "SearchResults: [empty]"
+				: String.format("SearchResults: [results: %s]", StringUtils.collectionToCommaDelimitedString(results));
 	}
 
 }

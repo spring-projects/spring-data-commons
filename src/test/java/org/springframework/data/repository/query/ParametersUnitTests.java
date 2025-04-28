@@ -31,6 +31,9 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Window;
 import org.springframework.data.repository.Repository;
@@ -230,6 +233,22 @@ class ParametersUnitTests {
 		assertThat(parameters.getParameter(0).getType()).isEqualTo(Long.class);
 	}
 
+	@Test // GH-
+	void considersScoreRange() throws Exception {
+
+		var parameters = getParametersFor("methodWithScoreRange", Range.class);
+
+		assertThat(parameters.hasScoreRangeParameter()).isTrue();
+	}
+
+	@Test // GH-
+	void considersSimilarityRange() throws Exception {
+
+		var parameters = getParametersFor("methodWithSimilarityRange", Range.class);
+
+		assertThat(parameters.hasScoreRangeParameter()).isTrue();
+	}
+
 	private Parameters<?, Parameter> getParametersFor(String methodName, Class<?>... parameterTypes)
 			throws SecurityException, NoSuchMethodException {
 
@@ -267,6 +286,10 @@ class ParametersUnitTests {
 		void methodWithPublisher(Publisher<String> publisher);
 
 		void methodWithSingle(Single<String> single);
+
+		void methodWithScoreRange(Range<Score> single);
+
+		void methodWithSimilarityRange(Range<Similarity> single);
 
 		Page<Object> customPageable(SomePageable pageable);
 

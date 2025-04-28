@@ -38,6 +38,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.SearchResult;
 import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Window;
@@ -255,6 +256,7 @@ public abstract class QueryExecutionConverters {
 		boolean needToUnwrap = type.isCollectionLike() //
 				|| Slice.class.isAssignableFrom(rawType) //
 				|| GeoResults.class.isAssignableFrom(rawType) //
+				|| SearchResult.class.isAssignableFrom(rawType) //
 				|| SearchResults.class.isAssignableFrom(rawType) //
 				|| rawType.isArray() //
 				|| supports(rawType) //

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -139,7 +140,7 @@ class SimpleParameterAccessorUnitTests {
 	@Test
 	void returnsScoreRangeIfAvailable() {
 
-		Range<Score> range = Score.between(2d, 4d);
+		Range<Similarity> range = Similarity.between(0, 1);
 		ParameterAccessor accessor = new ParametersParameterAccessor(scoreParameters, new Object[] { "test", null, range });
 
 		assertThat(accessor.getScoreRange()).isEqualTo(range);

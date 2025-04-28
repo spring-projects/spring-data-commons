@@ -124,8 +124,7 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 			}
 
 			if (Range.class.isAssignableFrom(parameter.getType())
-					&& ResolvableType.forMethodParameter(methodParameter).getGeneric(0)
-							.isAssignableFrom(Score.class)) {
+					&& Score.class.isAssignableFrom(ResolvableType.forMethodParameter(methodParameter).getGeneric(0).toClass())) {
 				scoreRangeIndex = i;
 			}
 
