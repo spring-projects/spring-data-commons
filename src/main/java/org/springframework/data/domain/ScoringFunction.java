@@ -65,7 +65,7 @@ public interface ScoringFunction {
 	}
 
 	/**
-	 * Return the dot product (inner product) scoring function.
+	 * Return the dot product (also known as inner product) scoring function.
 	 * <p>
 	 * Computes the algebraic product of two vectors, considering both direction and magnitude.
 	 *
