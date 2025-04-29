@@ -125,6 +125,7 @@ public class Parameter {
 	 *
 	 * @return
 	 */
+	@SuppressWarnings("NullAway")
 	public String getPlaceholder() {
 
 		if (isNamedParameter()) {

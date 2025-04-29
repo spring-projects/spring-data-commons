@@ -118,6 +118,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	 * @since 3.5
 	 * @see org.springframework.core.ParameterNameDiscoverer
 	 */
+	@SuppressWarnings("NullAway")
 	public String getRequiredName() {
 
 		if (!hasName()) {
