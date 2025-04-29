@@ -20,8 +20,11 @@ import java.util.Optional;
 import org.springframework.dao.OptimisticLockingFailureException;
 
 /**
- * Interface for generic CRUD operations on a repository for a specific type.
- *
+ * Interface for generic CRUD operations on a repository for a specific type. In general operations offered via this
+ * interface participate in life cycle events, and optimistic locking. Therefore, modules may choose to load an entity
+ * before deleting or updating it in order to facilitate this, and any modifying method call may trigger an exception
+ * due to failure of optimistic locking.
+ * 
  * @author Oliver Gierke
  * @author Eberhard Wolff
  * @author Jens Schauder
@@ -106,7 +109,11 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Deletes the entity with the given id.
 	 * <p>
 	 * If the entity is not found in the persistence store it is silently ignored.
-	 *
+	 * <p>
+	 * Note that, since this method triggers life cycle events, it might need to load an entity before deleting it. This
+	 * also might trigger {@link OptimisticLockingFailureException} if between loading and actually deleting the entity,
+	 * the entity was changed by some other process.
+	 * 
 	 * @param id must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@literal id} is {@literal null}
 	 */
