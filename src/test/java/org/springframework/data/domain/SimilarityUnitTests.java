@@ -36,7 +36,7 @@ class SimilarityUnitTests {
 	@Test
 	void shouldConstructRawSimilarity() {
 
-		Similarity similarity = Similarity.raw(2, ScoringFunction.UNSPECIFIED);
+		Similarity similarity = Similarity.raw(2, ScoringFunction.unspecified());
 
 		assertThat(similarity.getValue()).isEqualTo(2);
 	}
@@ -48,7 +48,7 @@ class SimilarityUnitTests {
 
 		assertThat(similarity).isEqualTo(Similarity.of(1)).isNotEqualTo(Score.of(1)).isNotEqualTo(Similarity.of(0.5));
 		assertThat(similarity).hasToString("1.0");
-		assertThat(similarity.getFunction()).isEqualTo(ScoringFunction.UNSPECIFIED);
+		assertThat(similarity.getFunction()).isEqualTo(ScoringFunction.unspecified());
 	}
 
 	@Test

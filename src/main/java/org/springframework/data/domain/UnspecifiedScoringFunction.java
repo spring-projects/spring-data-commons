@@ -38,4 +38,9 @@ class UnspecifiedScoringFunction implements ScoringFunction, Serializable {
 		return 32;
 	}
 
+	@Override
+	public String toString() {
+		return "UNSPECIFIED";
+	}
+
 }

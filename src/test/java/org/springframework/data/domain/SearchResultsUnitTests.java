@@ -17,7 +17,9 @@ package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,28 @@ class SearchResultsUnitTests {
 		var serialized = (SearchResults<String>) SerializationUtils
 				.deserialize(SerializationUtils.serialize(searchResults));
 		assertThat(serialized).isEqualTo(searchResults);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test // GH-
+	void testStream() {
+
+		var result = new SearchResult<>("test", Score.of(2));
+		var searchResults = new SearchResults<>(Collections.singletonList(result));
+
+		List<SearchResult<String>> list = searchResults.stream().toList();
+		assertThat(list).isEqualTo(searchResults.getContent());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test // GH-
+	void testContentStream() {
+
+		var result = new SearchResult<>("test", Score.of(2));
+		var searchResults = new SearchResults<>(Collections.singletonList(result));
+
+		List<String> list = searchResults.contentStream().toList();
+		assertThat(list).isEqualTo(Arrays.asList(result.getContent()));
 	}
 
 }

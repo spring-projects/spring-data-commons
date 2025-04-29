@@ -16,15 +16,72 @@
 package org.springframework.data.domain;
 
 /**
+ * Strategy interface for scoring functions.
+ * <p>
+ * Implementations define how score (distance or similarity) between two vectors is computed, allowing control over
+ * ranking behavior in search queries.
+ * <p>
+ * Provides commonly used scoring variants via static factory methods. See {@link VectorScoringFunctions} for the
+ * concrete implementations.
+ *
  * @author Mark Paluch
  * @since 4.0
+ * @see Score
+ * @see Similarity
  */
 public interface ScoringFunction {
 
 	/**
-	 * The default {@link ScoringFunction} when none is specified.
+	 * Returns the default {@code ScoringFunction} to be used when none is explicitly specified.
+	 * <p>
+	 * This is typically used to indicate the absence of a scoring definition.
+	 *
+	 * @return the default {@code ScoringFunction} instance.
 	 */
-	ScoringFunction UNSPECIFIED = UnspecifiedScoringFunction.INSTANCE;
+	static ScoringFunction unspecified() {
+		return UnspecifiedScoringFunction.INSTANCE;
+	}
 
+	/**
+	 * Return the Euclidean distance scoring function.
+	 * <p>
+	 * Calculates the L2 norm (straight-line distance) between two vectors.
+	 *
+	 * @return the {@code ScoringFunction} based on Euclidean distance.
+	 */
+	static ScoringFunction euclidean() {
+		return VectorScoringFunctions.EUCLIDEAN;
+	}
+
+	/**
+	 * Return the cosine similarity scoring function.
+	 * <p>
+	 * Measures the cosine of the angle between two vectors, independent of magnitude.
+	 *
+	 * @return the {@code ScoringFunction} based on cosine similarity.
+	 */
+	static ScoringFunction cosine() {
+		return VectorScoringFunctions.COSINE;
+	}
+
+	/**
+	 * Return the dot product (inner product) scoring function.
+	 * <p>
+	 * Computes the algebraic product of two vectors, considering both direction and magnitude.
+	 *
+	 * @return the {@code ScoringFunction} based on dot product.
+	 */
+	static ScoringFunction dotProduct() {
+		return VectorScoringFunctions.DOT_PRODUCT;
+	}
+
+	/**
+	 * Return the name of the scoring function.
+	 * <p>
+	 * Typically used for display or configuration purposes.
+	 *
+	 * @return the identifying name of this scoring function.
+	 */
 	String getName();
+
 }

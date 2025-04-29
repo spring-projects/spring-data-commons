@@ -223,7 +223,7 @@ public final class Range<T> {
 	/**
 	 * Apply a mapping {@link Function} to the lower and upper boundary values.
 	 *
-	 * @param mapper must not be {@literal null}. If the mapper returns {@code null}, then the corresponding boundary
+	 * @param mapper must not be {@literal null}. If the mapper returns {@literal null}, then the corresponding boundary
 	 *          value represents an {@link Bound#unbounded()} boundary.
 	 * @return a new {@link Range} after applying the value to the mapper.
 	 * @param <R> target type of the mapping function.
@@ -430,7 +430,7 @@ public final class Range<T> {
 		/**
 		 * Apply a mapping {@link Function} to the boundary value.
 		 *
-		 * @param mapper must not be {@literal null}. If the mapper returns {@code null}, then the boundary value
+		 * @param mapper must not be {@literal null}. If the mapper returns {@literal null}, then the boundary value
 		 *          corresponds with {@link Bound#unbounded()}.
 		 * @return a new {@link Bound} after applying the value to the mapper.
 		 * @param <R>

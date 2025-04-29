@@ -20,11 +20,18 @@ import java.io.Serializable;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Value object to represent search result scores determined by a {@link ScoringFunction}. Scores are used to rank
- * search results and typically, a higher score indicates a more relevant result.
+ * Value object representing a search result score computed via a {@link ScoringFunction}.
+ * <p>
+ * Encapsulates the numeric score and the scoring function used to derive it. Scores are primarily used to rank search
+ * results. Depending on the used {@link ScoringFunction} higher scores can indicate either a higher distance or a
+ * higher similarity. Use the {@link Similarity} class to indicate usage of a normalized score across representing
+ * effectively the similarity.
+ * <p>
+ * Instances of this class are immutable and suitable for use in comparison, sorting, and range operations.
  *
  * @author Mark Paluch
  * @since 4.0
+ * @see Similarity
  */
 public sealed class Score implements Serializable permits Similarity {
 
@@ -37,13 +44,13 @@ public sealed class Score implements Serializable permits Similarity {
 	}
 
 	/**
-	 * Creates a new {@link Score} from a plain {@code score} value using {@link ScoringFunction#UNSPECIFIED}.
+	 * Creates a new {@link Score} from a plain {@code score} value using {@link ScoringFunction#unspecified()}.
 	 *
 	 * @param score the score value without a specific {@link ScoringFunction}.
 	 * @return the new {@link Score}.
 	 */
 	public static Score of(double score) {
-		return of(score, ScoringFunction.UNSPECIFIED);
+		return of(score, ScoringFunction.unspecified());
 	}
 
 	/**
@@ -58,20 +65,30 @@ public sealed class Score implements Serializable permits Similarity {
 	}
 
 	/**
-	 * Creates a {@link Range} between the given {@link Score}.
+	 * Creates a {@link Range} from the given minimum and maximum {@code Score} values.
 	 *
-	 * @param min can be {@literal null}.
-	 * @param max can be {@literal null}.
-	 * @return will never be {@literal null}.
+	 * @param min the lower score value, must not be {@literal null}.
+	 * @param max the upper score value, must not be {@literal null}.
+	 * @return a {@link Range} over {@link Score} bounds.
 	 */
 	public static Range<Score> between(Score min, Score max) {
 		return Range.from(Range.Bound.inclusive(min)).to(Range.Bound.inclusive(max));
 	}
 
+	/**
+	 * Returns the raw numeric value of the score.
+	 *
+	 * @return the score value.
+	 */
 	public double getValue() {
 		return value;
 	}
 
+	/**
+	 * Returns the {@link ScoringFunction} that was used to compute this score.
+	 *
+	 * @return the associated scoring function.
+	 */
 	public ScoringFunction getFunction() {
 		return function;
 	}

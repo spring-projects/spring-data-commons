@@ -18,11 +18,25 @@ package org.springframework.data.domain;
 import org.springframework.util.Assert;
 
 /**
- * Value object to represent a similarity value determined by a {@link ScoringFunction}. Similarity is expressed through
- * a numerical value ranging between {@code 0} and {@code 1} where zero represents the lowest similarity and one the
- * highest similarity.
+ * Value object representing a normalized similarity score determined by a {@link ScoringFunction}.
  * <p>
- * Similarity assumes normalized values and is typically used in vector search scenarios.
+ * Similarity values are constrained to the range {@code [0.0, 1.0]}, where {@code 0.0} denotes the least similarity and
+ * {@code 1.0} the maximum similarity. This normalization allows for consistent comparison of similarity scores across
+ * different scoring models and systems.
+ * <p>
+ * Primarily used in vector search and approximate nearest neighbor arrangements where results are ranked based on
+ * normalized relevance. Vector searches typically return a collection of results ordered by their similarity to the
+ * query vector.
+ * <p>
+ * This class is designed for use in information retrieval contexts, recommendation systems, and other applications
+ * requiring normalized comparison of results.
+ * <p>
+ * A {@code Similarity} instance includes both the similarity {@code value} and information about the
+ * {@link ScoringFunction} used to generate it, providing context for proper interpretation of the score.
+ * <p>
+ * Instances are immutable and support range-based comparisons, making them suitable for filtering and ranking
+ * operations. The class extends {@link Score} to inherit common scoring functionality while adding similarity-specific
+ * semantics.
  *
  * @author Mark Paluch
  * @since 4.0
@@ -35,22 +49,23 @@ public final class Similarity extends Score {
 	}
 
 	/**
-	 * Creates a new {@link Similarity} from a plain {@code similarity} value using {@link ScoringFunction#UNSPECIFIED}.
+	 * Creates a new {@link Similarity} from a plain {@code similarity} value using {@link ScoringFunction#unspecified()}.
 	 *
 	 * @param similarity the similarity value without a specific {@link ScoringFunction}, ranging between {@code 0} and
 	 *          {@code 1}.
 	 * @return the new {@link Similarity}.
 	 */
 	public static Similarity of(double similarity) {
-		return of(similarity, ScoringFunction.UNSPECIFIED);
+		return of(similarity, ScoringFunction.unspecified());
 	}
 
 	/**
-	 * Creates a new {@link Similarity} from a {@code similarity} value using the given {@link ScoringFunction}.
+	 * Creates a new {@link Similarity} from a raw value and the associated {@link ScoringFunction}.
 	 *
-	 * @param similarity the similarity value, ranging between {@code 0} and {@code 1}.
-	 * @param function the scoring function that has computed the {@code similarity}.
-	 * @return the new {@link Similarity}.
+	 * @param similarity the similarity value in the {@code [0.0, 1.0]} range.
+	 * @param function the scoring function that produced this similarity.
+	 * @return a new {@link Similarity} instance.
+	 * @throws IllegalArgumentException if the value is outside the allowed range.
 	 */
 	public static Similarity of(double similarity, ScoringFunction function) {
 
@@ -60,12 +75,13 @@ public final class Similarity extends Score {
 	}
 
 	/**
-	 * Creates a new raw {@link Similarity} from a {@code similarity} value using the given {@link ScoringFunction}.
-	 * Typically, this method is used when accepting external similarity values coming from a database search result.
+	 * Create a raw {@link Similarity} value without validation.
+	 * <p>
+	 * Intended for use when accepting similarity values from trusted sources such as search engines or databases.
 	 *
-	 * @param similarity the similarity value, ranging between {@code 0} and {@code 1}.
-	 * @param function the scoring function that has computed the {@code similarity}.
-	 * @return the new {@link Similarity}.
+	 * @param similarity the similarity value in the {@code [0.0, 1.0]} range.
+	 * @param function the scoring function that produced this similarity.
+	 * @return a new {@link Similarity} instance.
 	 */
 	public static Similarity raw(double similarity, ScoringFunction function) {
 		return new Similarity(similarity, function);
@@ -74,33 +90,33 @@ public final class Similarity extends Score {
 	/**
 	 * Creates a {@link Range} between the given {@link Similarity}.
 	 *
-	 * @param min can be {@literal null}.
-	 * @param max can be {@literal null}.
-	 * @return will never be {@literal null}.
+	 * @param min lower value.
+	 * @param max upper value.
+	 * @return the {@link Range} between the given values.
 	 */
 	public static Range<Similarity> between(Similarity min, Similarity max) {
 		return Range.from(Range.Bound.inclusive(min)).to(Range.Bound.inclusive(max));
 	}
 
 	/**
-	 * Creates a new {@link Range} by creating minimum and maximum {@link Similarity} from the given values without
-	 * {@link ScoringFunction#UNSPECIFIED specifying a scoring function}.
+	 * Creates a new {@link Range} by creating minimum and maximum {@link Similarity} from the given values
+	 * {@link ScoringFunction#unspecified() without specifying} a specific scoring function.
 	 *
-	 * @param minValue minimum value, ranging between {@code 0} and {@code 1}.
-	 * @param maxValue maximum value, ranging between {@code 0} and {@code 1}.
+	 * @param minValue lower value, ranging between {@code 0} and {@code 1}.
+	 * @param maxValue upper value, ranging between {@code 0} and {@code 1}.
 	 * @return the {@link Range} between the given values.
 	 */
 	public static Range<Similarity> between(double minValue, double maxValue) {
-		return between(minValue, maxValue, ScoringFunction.UNSPECIFIED);
+		return between(minValue, maxValue, ScoringFunction.unspecified());
 	}
 
 	/**
-	 * Creates a new {@link Range} by creating minimum and maximum {@link Similarity} from the given values.
+	 * Creates a {@link Range} of {@link Similarity} values using raw values and a specified scoring function.
 	 *
-	 * @param minValue minimum value, ranging between {@code 0} and {@code 1}.
-	 * @param maxValue maximum value, ranging between {@code 0} and {@code 1}.
-	 * @param function the scoring function to use.
-	 * @return the {@link Range} between the given values.
+	 * @param minValue the lower similarity value.
+	 * @param maxValue the upper similarity value.
+	 * @param function the scoring function to associate with the values.
+	 * @return a {@link Range} of {@link Similarity} values.
 	 */
 	public static Range<Similarity> between(double minValue, double maxValue, ScoringFunction function) {
 		return between(Similarity.of(minValue, function), Similarity.of(maxValue, function));

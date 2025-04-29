@@ -21,29 +21,39 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Value object to capture {@link SearchResult}s.
+ * Value object encapsulating a collection of {@link SearchResult} instances.
+ * <p>
+ * Typically used as the result type for search or similarity queries, exposing access to the result content and
+ * supporting mapping operations to transform the result content type.
  *
+ * @param <T> the type of content contained within each {@link SearchResult}.
  * @author Mark Paluch
  * @since 4.0
+ * @see SearchResult
  */
 public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable {
 
 	private final List<? extends SearchResult<T>> results;
 
-	public SearchResults(List<SearchResult<T>> results) {
+	/**
+	 * Creates a new {@link SearchResults} instance from the given list of {@link SearchResult} items.
+	 *
+	 * @param results the search results to encapsulate, must not be {@code null}
+	 */
+	public SearchResults(List<? extends SearchResult<T>> results) {
 		this.results = results;
 	}
 
 	/**
-	 * Returns the actual content of the {@link SearchResult}s.
-	 *
-	 * @return the actual content.
+	 * Return the actual content of the {@link SearchResult} items as an unmodifiable list.
 	 */
 	public List<SearchResult<T>> getContent() {
 		return Collections.unmodifiableList(results);
@@ -56,10 +66,33 @@ public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable
 	}
 
 	/**
-	 * Returns new {@link SearchResults} with the content of the current one mapped by the given {@link Function}.
+	 * Returns a sequential {@link Stream} containing {@link SearchResult} items in this {@code SearchResults} instance.
 	 *
-	 * @param converter must not be {@literal null}.
-	 * @return a new {@link SearchResults} with the content of the current one mapped by the given {@link Function}.
+	 * @return a sequential {@link Stream} containing {@link SearchResult} items in this {@code SearchResults} instance.
+	 */
+	public Stream<SearchResult<T>> stream() {
+		return Streamable.of(this).stream();
+	}
+
+	/**
+	 * Returns a sequential {@link Stream} containing {@link #getContent() unwrapped content} items in this
+	 * {@code SearchResults} instance.
+	 *
+	 * @return a sequential {@link Stream} containing {@link #getContent() unwrapped content} items in this
+	 *         {@code SearchResults} instance.
+	 */
+	public Stream<T> contentStream() {
+		return getContent().stream().map(SearchResult::getContent);
+	}
+
+	/**
+	 * Creates a new {@code SearchResults} instance with the content of the current results mapped via the given
+	 * {@link Function}.
+	 *
+	 * @param converter the mapping function to apply to the content of each {@link SearchResult}, must not be
+	 *          {@literal null}.
+	 * @param <U> the target type of the mapped content.
+	 * @return a new {@code SearchResults} instance containing mapped result content.
 	 */
 	public <U> SearchResults<U> map(Function<? super T, ? extends U> converter) {
 
