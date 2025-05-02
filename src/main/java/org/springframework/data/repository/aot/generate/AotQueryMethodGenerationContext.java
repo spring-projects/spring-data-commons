@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
@@ -64,8 +63,8 @@ public class AotQueryMethodGenerationContext {
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
-		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
 		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
+		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
 	}
 
 	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
@@ -129,7 +128,7 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * Suggests naming clash free variant for the given intended variable name within the local method context.
+	 * Suggest naming clash free variant for the given intended variable name within the local method context.
 	 *
 	 * @param variableName the intended variable name.
 	 * @return the suggested VariableName
@@ -238,7 +237,7 @@ public class AotQueryMethodGenerationContext {
 		List<String> result = new ArrayList<>();
 
 		for (Parameter parameter : queryMethod.getParameters().getBindableParameters()) {
-			parameter.getName().map(result::add);
+			getParameterName(parameter.getIndex());
 		}
 
 		return result;
@@ -248,14 +247,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return list of all parameter names (including non-bindable special parameters).
 	 */
 	public List<String> getAllParameterNames() {
-
-		List<String> result = new ArrayList<>();
-
-		for (Parameter parameter : queryMethod.getParameters()) {
-			parameter.getName().map(result::add);
-		}
-
-		return result;
+		return targetMethodMetadata.getMethodArguments().keySet().stream().toList();
 	}
 
 	public boolean hasField(String fieldName) {
@@ -280,16 +272,7 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	public @Nullable String getParameterName(int position) {
-
-		if (0 > position) {
-			return null;
-		}
-
-		List<Entry<String, ParameterSpec>> entries = new ArrayList<>(targetMethodMetadata.getMethodArguments().entrySet());
-		if (position < entries.size()) {
-			return entries.get(position).getKey();
-		}
-		return null;
+		return targetMethodMetadata.getParameterName(position);
 	}
 
 	public void addParameter(ParameterSpec parameter) {
