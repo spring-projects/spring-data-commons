@@ -21,8 +21,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * {@link VariableNameFactory} implementation keeping track of defined names resolving name clashes using internal
- * counter appending {@code _%d} to a suggested name in case of a clash.
+ * Non thread safe {@link VariableNameFactory} implementation keeping track of defined names resolving name clashes
+ * using internal counters appending {@code _%d} to a suggested name in case of a clash.
  *
  * @author Christoph Strobl
  * @since 4.0
@@ -31,36 +31,43 @@ class LocalVariableNameFactory implements VariableNameFactory {
 
 	private final MultiValueMap<String, String> variables;
 
+	/**
+	 * Create a new {@link LocalVariableNameFactory} considering available {@link MethodMetadata#getMethodArguments()
+	 * method arguments}.
+	 * 
+	 * @param methodMetadata source metadata
+	 * @return new instance of {@link LocalVariableNameFactory}.
+	 */
 	static LocalVariableNameFactory forMethod(MethodMetadata methodMetadata) {
 		return of(methodMetadata.getMethodArguments().keySet());
 	}
 
-	static LocalVariableNameFactory empty() {
-		return of(Set.of());
-	}
-
-	static LocalVariableNameFactory of(Set<String> variables) {
-		return new LocalVariableNameFactory(variables);
+	/**
+	 * Create a new {@link LocalVariableNameFactory} with a predefined set of initial variable names.
+	 *
+	 * @param predefinedVariables variables already known to be used in the given context.
+	 * @return new instance of {@link LocalVariableNameFactory}.
+	 */
+	static LocalVariableNameFactory of(Set<String> predefinedVariables) {
+		return new LocalVariableNameFactory(predefinedVariables);
 	}
 
 	LocalVariableNameFactory(Iterable<String> predefinedVariableNames) {
 
 		variables = new LinkedMultiValueMap<>();
-		for (String parameterName : predefinedVariableNames) {
-			variables.add(parameterName, parameterName);
-		}
+		predefinedVariableNames.forEach(varName -> variables.add(varName, varName));
 	}
 
 	@Override
-	public String generateName(String suggestedName) {
+	public String generateName(String intendedVariableName) {
 
-		if (!variables.containsKey(suggestedName)) {
-			variables.add(suggestedName, suggestedName);
-			return suggestedName;
+		if (!variables.containsKey(intendedVariableName)) {
+			variables.add(intendedVariableName, intendedVariableName);
+			return intendedVariableName;
 		}
 
-		String targetName = suggestTargetName(suggestedName);
-		variables.add(suggestedName, targetName);
+		String targetName = suggestTargetName(intendedVariableName);
+		variables.add(intendedVariableName, targetName);
 		variables.add(targetName, targetName);
 		return targetName;
 	}

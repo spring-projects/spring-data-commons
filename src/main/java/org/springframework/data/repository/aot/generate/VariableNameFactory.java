@@ -15,12 +15,24 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import org.springframework.lang.CheckReturnValue;
+
 /**
+ * Name factory for generating clash free variable names checking an intended name against predefined and already used
+ * ones.
+ *
  * @author Christoph Strobl
  * @since 4.0
  */
-public interface VariableNameFactory {
+interface VariableNameFactory {
 
-	String generateName(String suggestedName);
+	/**
+	 * Compare and potentially generate a new name for the given intended variable name.
+	 *
+	 * @param intendedVariableName must not be {@literal null}.
+	 * @return the {@literal intendedVariableName} if no naming clash detected or a clash free generated name.
+	 */
+	@CheckReturnValue
+	String generateName(String intendedVariableName);
 
 }

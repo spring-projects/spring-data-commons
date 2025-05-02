@@ -51,6 +51,16 @@ class LocalVariableNameFactoryUnitTests {
 	}
 
 	@Test // GH-3270
+	void worksWithVariablesContainingUnderscores() {
+
+		assertThat(variableNameFactory.generateName("first_name")).isEqualTo("first_name");
+		assertThat(variableNameFactory.generateName("first_name")).isEqualTo("first_name_1");
+		assertThat(variableNameFactory.generateName("first_name")).isEqualTo("first_name_2");
+		assertThat(variableNameFactory.generateName("first_name_3")).isEqualTo("first_name_3");
+		assertThat(variableNameFactory.generateName("first_name")).isEqualTo("first_name_4");
+	}
+
+	@Test // GH-3270
 	void considersPredefinedNames() {
 		assertThat(variableNameFactory.generateName("firstname")).isEqualTo("firstname_1");
 	}
