@@ -37,26 +37,26 @@ class LocalVariableNameFactoryUnitTests {
 	@Test // GH-3270
 	void resolvesNameClashesInNames() {
 
-		assertThat(variableNameFactory.generateName("name").name()).isEqualTo("name");
-		assertThat(variableNameFactory.generateName("name").name()).isEqualTo("name_1");
-		assertThat(variableNameFactory.generateName("name").name()).isEqualTo("name_2");
-		assertThat(variableNameFactory.generateName("name1").name()).isEqualTo("name1");
-		assertThat(variableNameFactory.generateName("name3").name()).isEqualTo("name3");
-		assertThat(variableNameFactory.generateName("name3").name()).isEqualTo("name3_1");
-		assertThat(variableNameFactory.generateName("name4_1").name()).isEqualTo("name4_1");
-		assertThat(variableNameFactory.generateName("name4").name()).isEqualTo("name4");
-		assertThat(variableNameFactory.generateName("name4_1_1").name()).isEqualTo("name4_1_1");
-		assertThat(variableNameFactory.generateName("name4_1").name()).isEqualTo("name4_1_2");
-		assertThat(variableNameFactory.generateName("name4_1").name()).isEqualTo("name4_1_3");
+		assertThat(variableNameFactory.generateName("name")).isEqualTo("name");
+		assertThat(variableNameFactory.generateName("name")).isEqualTo("name_1");
+		assertThat(variableNameFactory.generateName("name")).isEqualTo("name_2");
+		assertThat(variableNameFactory.generateName("name1")).isEqualTo("name1");
+		assertThat(variableNameFactory.generateName("name3")).isEqualTo("name3");
+		assertThat(variableNameFactory.generateName("name3")).isEqualTo("name3_1");
+		assertThat(variableNameFactory.generateName("name4_1")).isEqualTo("name4_1");
+		assertThat(variableNameFactory.generateName("name4")).isEqualTo("name4");
+		assertThat(variableNameFactory.generateName("name4_1_1")).isEqualTo("name4_1_1");
+		assertThat(variableNameFactory.generateName("name4_1")).isEqualTo("name4_1_2");
+		assertThat(variableNameFactory.generateName("name4_1")).isEqualTo("name4_1_3");
 	}
 
 	@Test // GH-3270
 	void considersPredefinedNames() {
-		assertThat(variableNameFactory.generateName("firstname").name()).isEqualTo("firstname_1");
+		assertThat(variableNameFactory.generateName("firstname")).isEqualTo("firstname_1");
 	}
 
 	@Test // GH-3270
 	void considersCase() {
-		assertThat(variableNameFactory.generateName("firstName").name()).isEqualTo("firstName");
+		assertThat(variableNameFactory.generateName("firstName")).isEqualTo("firstName");
 	}
 }

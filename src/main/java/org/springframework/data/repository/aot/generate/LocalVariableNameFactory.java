@@ -29,7 +29,7 @@ import org.springframework.util.MultiValueMap;
  */
 class LocalVariableNameFactory implements VariableNameFactory {
 
-	private final MultiValueMap<String, VariableName> variables;
+	private final MultiValueMap<String, String> variables;
 
 	static LocalVariableNameFactory forMethod(MethodMetadata methodMetadata) {
 		return of(methodMetadata.getMethodArguments().keySet());
@@ -47,24 +47,22 @@ class LocalVariableNameFactory implements VariableNameFactory {
 
 		variables = new LinkedMultiValueMap<>();
 		for (String parameterName : predefinedVariableNames) {
-			variables.add(parameterName, new VariableName(parameterName));
+			variables.add(parameterName, parameterName);
 		}
 	}
 
 	@Override
-	public VariableName generateName(String suggestedName) {
+	public String generateName(String suggestedName) {
 
 		if (!variables.containsKey(suggestedName)) {
-			VariableName variableName = new VariableName(suggestedName);
-			variables.add(suggestedName, variableName);
-			return variableName;
+			variables.add(suggestedName, suggestedName);
+			return suggestedName;
 		}
 
 		String targetName = suggestTargetName(suggestedName);
-		VariableName variableName = new VariableName(suggestedName, targetName);
-		variables.add(suggestedName, variableName);
-		variables.add(targetName, variableName);
-		return variableName;
+		variables.add(suggestedName, targetName);
+		variables.add(targetName, targetName);
+		return targetName;
 	}
 
 	String suggestTargetName(String suggested) {

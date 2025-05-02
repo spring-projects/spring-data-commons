@@ -21,16 +21,6 @@ package org.springframework.data.repository.aot.generate;
  */
 public interface VariableNameFactory {
 
-	VariableName generateName(String suggestedName);
+	String generateName(String suggestedName);
 
-	record VariableName(String source, String target) {
-
-		public VariableName(String source) {
-			this(source, source);
-		}
-
-		public String name() {
-			return target;
-		}
-	}
 }

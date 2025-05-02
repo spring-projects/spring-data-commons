@@ -28,7 +28,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.repository.aot.generate.VariableNameFactory.VariableName;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
@@ -135,7 +134,7 @@ public class AotQueryMethodGenerationContext {
 	 * @param variableName the intended variable name.
 	 * @return the suggested VariableName
 	 */
-	public VariableName suggestLocalVariableName(String variableName) {
+	public String suggestLocalVariableName(String variableName) {
 		return variableNameFactory.generateName(variableName);
 	}
 
