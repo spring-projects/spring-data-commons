@@ -56,7 +56,7 @@ public abstract class ReturnedType {
 
 	private final Class<?> domainType;
 
-	private ReturnedType(Class<?> domainType) {
+	protected ReturnedType(Class<?> domainType) {
 		this.domainType = domainType;
 	}
 
