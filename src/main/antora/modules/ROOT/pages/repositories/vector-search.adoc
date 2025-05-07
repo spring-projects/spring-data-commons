@@ -80,11 +80,11 @@ Score values are not part of a domain model and therefore represented best as ou
 Generally, a Score is computed by a `ScoringFunction`.
 The actual scoring function used to calculate this score can depends on the underlying database and can be obtained from a search index or input parameters.
 
-Spring Data supports declares constants for commonly used functions such as:
+Spring Data support declares constants for commonly used functions such as:
 
-Euclidean distance:: Calculates the straight-line distance in n-dimensional space involving the square root of the sum of squared differences.
-Cosine similarity:: Measures the angle between two vectors by calculating the Dot product first and then normalizing its result by dividing by the product of their lengths.
-Dot product:: Computes the sum of element-wise multiplications.
+Euclidean Distance:: Calculates the straight-line distance in n-dimensional space involving the square root of the sum of squared differences.
+Cosine Similarity:: Measures the angle between two vectors by calculating the Dot product first and then normalizing its result by dividing by the product of their lengths.
+Dot Product:: Computes the sum of element-wise multiplications.
 
 The choice of similarity function can impact both the performance and semantics of the search and is often determined by the underlying database or index being used.
 Spring Data adopts to the database's native scoring function capabilities and whether the score can be used to limit results.
@@ -107,7 +107,7 @@ Generally, you have the choice of declaring a search method using two approaches
 * Query Derivation
 * Declaring a String-based Query
 
-Generally, Vector Search methods must declare a `Vector` parameter to define the query vector.
+Vector Search methods must declare a `Vector` parameter to define the query vector.
 
 [[vector-search.method.derivation]]
 === Derived Search Methods
@@ -142,7 +142,7 @@ endif::[]
 
 With more control over the actual query, Spring Data can make fewer assumptions about the query and its parameters.
 For example, `Similarity` normalization uses the native score function within the query to normalize the given similarity into a score predicate value and vice versa.
-If an annotated query doesn't define e.g. the score, then the score value in the returned `SearchResult<T>` will be zero.
+If an annotated query does not define e.g. the score, then the score value in the returned `SearchResult<T>` will be zero.
 
 [[vector-search.method.sorting]]
 === Sorting
