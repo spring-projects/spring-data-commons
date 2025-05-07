@@ -65,6 +65,7 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 	private static final String QUERY_LOOKUP_STRATEGY = "queryLookupStrategy";
 	private static final String REPOSITORY_FACTORY_BEAN_CLASS = "repositoryFactoryBeanClass";
 	private static final String REPOSITORY_BASE_CLASS = "repositoryBaseClass";
+	private static final String REPOSITORY_FRAGMENTS_CONTRIBUTOR_CLASS = "fragmentsContributor";
 	private static final String CONSIDER_NESTED_REPOSITORIES = "considerNestedRepositories";
 	private static final String BOOTSTRAP_MODE = "bootstrapMode";
 	private static final String BEAN_NAME_GENERATOR = "nameGenerator";
@@ -185,6 +186,16 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 		Class<?> repositoryBaseClass = attributes.getClass(REPOSITORY_BASE_CLASS);
 		return DefaultRepositoryBaseClass.class.equals(repositoryBaseClass) ? Optional.empty()
 				: Optional.of(repositoryBaseClass.getName());
+	}
+
+	@Override
+	public Optional<String> getRepositoryFragmentsContributorClassName() {
+
+		if (!attributes.containsKey(REPOSITORY_FRAGMENTS_CONTRIBUTOR_CLASS)) {
+			return Optional.empty();
+		}
+
+		return Optional.of(attributes.getClass(REPOSITORY_FRAGMENTS_CONTRIBUTOR_CLASS).getName());
 	}
 
 	/**

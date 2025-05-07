@@ -55,6 +55,7 @@ import org.springframework.data.repository.aot.RepositoryRegistrationAotProcesso
 import org.springframework.data.repository.config.EnableRepositories;
 import org.springframework.data.repository.config.RepositoryRegistrationAotContribution;
 import org.springframework.data.repository.config.RepositoryRegistrationAotProcessor;
+import org.springframework.data.repository.config.SampleRepositoryFragmentsContributor;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.transaction.interceptor.TransactionalProxy;
 
@@ -237,10 +238,11 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) //
-				.hasNoFragments() //
+				.hasFragments() //
 				.codeContributionSatisfies(contribution -> { //
 					// interface
 					contribution
+							.contributesReflectionFor(SampleRepositoryFragmentsContributor.class) // repository structural fragment
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) // repository
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.RepoBaseClass.class) // base repo class
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.Person.class); // repository domain type

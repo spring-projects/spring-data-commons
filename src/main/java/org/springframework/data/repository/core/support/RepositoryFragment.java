@@ -83,6 +83,18 @@ public interface RepositoryFragment<T> {
 	}
 
 	/**
+	 * Create a structural {@link RepositoryFragment} given {@code interfaceClass} and {@code implementationClass}.
+	 *
+	 * @param interfaceClass must not be {@literal null}.
+	 * @param implementationClass must not be {@literal null}.
+	 * @return
+	 * @since 4.0
+	 */
+	static <T> RepositoryFragment<T> structural(Class<T> interfaceClass, Class<?> implementationClass) {
+		return new StructuralRepositoryFragment<>(interfaceClass, implementationClass);
+	}
+
+	/**
 	 * Attempt to find the {@link Method} by name and exact parameters. Returns {@literal true} if the method was found or
 	 * {@literal false} otherwise.
 	 *
@@ -101,6 +113,15 @@ public interface RepositoryFragment<T> {
 	 */
 	default Optional<T> getImplementation() {
 		return Optional.empty();
+	}
+
+	/**
+	 * @return the optional implementation class. Only available for fragments that ship an implementation descriptor.
+	 *         Structural (interface-only) fragments return always {@link Optional#empty()}.
+	 * @since 4.0
+	 */
+	default Optional<Class<?>> getImplementationClass() {
+		return getImplementation().map(it -> it.getClass());
 	}
 
 	/**
@@ -186,17 +207,30 @@ public interface RepositoryFragment<T> {
 
 	class StructuralRepositoryFragment<T> implements RepositoryFragment<T> {
 
-		private final Class<T> interfaceOrImplementation;
+		private final Class<T> interfaceClass;
+		private final Class<?> implementationClass;
 		private final Method[] methods;
 
 		public StructuralRepositoryFragment(Class<T> interfaceOrImplementation) {
-			this.interfaceOrImplementation = interfaceOrImplementation;
-			this.methods = getSignatureContributor().getMethods();
+			this.interfaceClass = interfaceOrImplementation;
+			this.implementationClass = interfaceOrImplementation;
+			this.methods = interfaceOrImplementation.getMethods();
+		}
+
+		public StructuralRepositoryFragment(Class<T> interfaceClass, Class<?> implementationClass) {
+			this.interfaceClass = interfaceClass;
+			this.implementationClass = implementationClass;
+			this.methods = interfaceClass.getMethods();
 		}
 
 		@Override
 		public Class<?> getSignatureContributor() {
-			return interfaceOrImplementation;
+			return interfaceClass;
+		}
+
+		@Override
+		public Optional<Class<?>> getImplementationClass() {
+			return Optional.of(implementationClass);
 		}
 
 		@Override
@@ -221,31 +255,30 @@ public interface RepositoryFragment<T> {
 
 		@Override
 		public RepositoryFragment<T> withImplementation(T implementation) {
-			return new ImplementedRepositoryFragment<>(interfaceOrImplementation, implementation);
+			return new ImplementedRepositoryFragment<>(interfaceClass, implementation);
 		}
 
 		@Override
 		public String toString() {
-			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceOrImplementation));
+			return String.format("StructuralRepositoryFragment %s", ClassUtils.getShortName(interfaceClass));
 		}
 
 		@Override
 		public boolean equals(Object o) {
-
-			if (this == o) {
-				return true;
-			}
-
 			if (!(o instanceof StructuralRepositoryFragment<?> that)) {
 				return false;
 			}
 
-			return ObjectUtils.nullSafeEquals(interfaceOrImplementation, that.interfaceOrImplementation);
+			if (!ObjectUtils.nullSafeEquals(interfaceClass, that.interfaceClass)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(implementationClass, that.implementationClass);
 		}
 
 		@Override
 		public int hashCode() {
-			return ObjectUtils.nullSafeHashCode(interfaceOrImplementation);
+			return ObjectUtils.nullSafeHash(interfaceClass, implementationClass);
 		}
 	}
 

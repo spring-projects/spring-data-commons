@@ -41,6 +41,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
+import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 
@@ -53,6 +54,7 @@ import org.springframework.javapoet.TypeSpec;
 class AotRepositoryBuilder {
 
 	private final RepositoryInformation repositoryInformation;
+	private final String moduleName;
 	private final ProjectionFactory projectionFactory;
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
@@ -60,9 +62,11 @@ class AotRepositoryBuilder {
 	private @Nullable BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction;
 	private ClassCustomizer customizer;
 
-	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, ProjectionFactory projectionFactory) {
+	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
+			ProjectionFactory projectionFactory) {
 
 		this.repositoryInformation = repositoryInformation;
+		this.moduleName = moduleName;
 		this.projectionFactory = projectionFactory;
 
 		this.generationMetadata = new AotRepositoryFragmentMetadata(className());
@@ -74,11 +78,37 @@ class AotRepositoryBuilder {
 		this.customizer = (info, metadata, builder) -> {};
 	}
 
-	public static <M extends QueryMethod> AotRepositoryBuilder forRepository(RepositoryInformation repositoryInformation,
+	/**
+	 * Create a new {@code AotRepositoryBuilder} for the given {@link RepositoryInformation}.
+	 *
+	 * @param information must not be {@literal null}.
+	 * @param moduleName must not be {@literal null}.
+	 * @param projectionFactory must not be {@literal null}.
+	 * @return
+	 */
+	public static AotRepositoryBuilder forRepository(RepositoryInformation information, String moduleName,
 			ProjectionFactory projectionFactory) {
-		return new AotRepositoryBuilder(repositoryInformation, projectionFactory);
+		return new AotRepositoryBuilder(information, moduleName, projectionFactory);
 	}
 
+	/**
+	 * Configure a {@link ClassCustomizer} customizer.
+	 *
+	 * @param classCustomizer must not be {@literal null}.
+	 * @return {@code this}.
+	 */
+	public AotRepositoryBuilder withClassCustomizer(ClassCustomizer classCustomizer) {
+
+		this.customizer = classCustomizer;
+		return this;
+	}
+
+	/**
+	 * Configure a {@link AotRepositoryConstructorBuilder} customizer.
+	 *
+	 * @param constructorCustomizer must not be {@literal null}.
+	 * @return {@code this}.
+	 */
 	public AotRepositoryBuilder withConstructorCustomizer(
 			Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
 
@@ -86,42 +116,33 @@ class AotRepositoryBuilder {
 		return this;
 	}
 
+	/**
+	 * Configure a {@link MethodContributor}.
+	 *
+	 * @param methodContributorFunction must not be {@literal null}.
+	 * @return {@code this}.
+	 */
 	public AotRepositoryBuilder withQueryMethodContributor(
 			BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction) {
+
 		this.methodContributorFunction = methodContributorFunction;
-		return this;
-	}
-
-	public AotRepositoryBuilder withClassCustomizer(ClassCustomizer classCustomizer) {
-
-		this.customizer = classCustomizer;
 		return this;
 	}
 
 	public AotBundle build() {
 
+		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
+		RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
+
 		// start creating the type
 		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
 				.addModifiers(Modifier.PUBLIC) //
 				.addAnnotation(Generated.class) //
-				.addJavadoc("AOT generated repository implementation for {@link $T}.\n",
+				.addJavadoc("AOT generated $L repository implementation for {@link $T}.\n", moduleName,
 						repositoryInformation.getRepositoryInterface());
 
 		// create the constructor
-		AotRepositoryConstructorBuilder constructorBuilder = new AotRepositoryConstructorBuilder(repositoryInformation,
-				generationMetadata);
-		if (constructorCustomizer != null) {
-			constructorCustomizer.accept(constructorBuilder);
-		}
-
-		builder.addMethod(constructorBuilder.buildConstructor());
-
-		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
-		AotRepositoryMetadata.RepositoryType repositoryType = repositoryInformation.isReactiveRepository()
-				? AotRepositoryMetadata.RepositoryType.REACTIVE
-				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
-
-		RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
+		builder.addMethod(buildConstructor());
 
 		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
 				.sorted(Comparator.<Method, String> comparing(it -> {
@@ -136,12 +157,35 @@ class AotRepositoryBuilder {
 
 		// finally customize the file itself
 		this.customizer.customize(repositoryInformation, generationMetadata, builder);
+
 		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
+		AotRepositoryMetadata metadata = getAotRepositoryMetadata(methodMetadata);
 
-		AotRepositoryMetadata metadata = new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(),
-			repositoryInformation.moduleName() != null ? repositoryInformation.moduleName() : "", repositoryType, methodMetadata);
+		return new AotBundle(javaFile, metadata);
+	}
 
-		return new AotBundle(javaFile, metadata.toJson());
+	private MethodSpec buildConstructor() {
+
+		AotRepositoryConstructorBuilder constructorBuilder = new AotRepositoryConstructorBuilder(repositoryInformation,
+				generationMetadata);
+
+		if (constructorCustomizer != null) {
+			constructorCustomizer.accept(constructorBuilder);
+		}
+
+		return constructorBuilder.buildConstructor();
+	}
+
+	private AotRepositoryMetadata getAotRepositoryMetadata(List<AotRepositoryMethod> methodMetadata) {
+
+		AotRepositoryMetadata.RepositoryType repositoryType = repositoryInformation.isReactiveRepository()
+				? AotRepositoryMetadata.RepositoryType.REACTIVE
+				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
+
+		String jsonModuleName = moduleName.replaceAll("Reactive", "").trim();
+
+		return new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(), jsonModuleName,
+				repositoryType, methodMetadata);
 	}
 
 	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
@@ -185,8 +229,7 @@ class AotRepositoryBuilder {
 	private AotRepositoryMethod getFragmentMetadata(Method method, RepositoryFragment<?> fragment) {
 
 		String signature = fragment.getSignatureContributor().getName();
-		String implementation = fragment.getImplementation().map(it -> it.getClass().getName()).orElse(null);
-
+		String implementation = fragment.getImplementationClass().map(Class::getName).orElse(null);
 		AotFragmentTarget fragmentTarget = new AotFragmentTarget(signature, implementation);
 
 		return new AotRepositoryMethod(method.getName(), method.toGenericString(), null, fragmentTarget);
@@ -240,7 +283,7 @@ class AotRepositoryBuilder {
 
 	}
 
-	record AotBundle(JavaFile javaFile, JSONObject metadata) {
+	record AotBundle(JavaFile javaFile, AotRepositoryMetadata metadata) {
 	}
 
 }

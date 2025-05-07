@@ -95,10 +95,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private @Nullable Lazy<T> repository;
 	private @Nullable RepositoryMetadata repositoryMetadata;
 
-	// AOT bean factory hint?
-	private @Nullable String moduleBaseClass;
-	private @Nullable String moduleName;
-
 	/**
 	 * Creates a new {@link RepositoryFactoryBeanSupport} for the given repository interface.
 	 *
@@ -261,14 +257,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
-	public void setModuleBaseClass(String moduleBaseClass) {
-		this.moduleBaseClass = moduleBaseClass;
-	}
-
-	public void setModuleName(String moduleName) {
-		this.moduleName = moduleName;
-	}
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
@@ -279,6 +267,11 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	public RepositoryInformation getRepositoryInformation() {
 		return getRequiredFactory().getRepositoryInformation(getRequiredRepositoryMetadata(), cachedFragments);
+	}
+
+	@Override
+	public RepositoryFragmentsContributor getRepositoryFragmentsContributor() {
+		return RepositoryFragmentsContributor.empty();
 	}
 
 	@Override
