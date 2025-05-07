@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -122,7 +122,7 @@ public final class SearchResult<T> implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("SearchResult [content: %s, score: %s]", content, score);
+		return String.format("SearchResult [instance: %s, score: %s]", ClassUtils.getShortName(content.getClass()), score);
 	}
 
 }
