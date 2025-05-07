@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.query;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -226,6 +226,12 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		return vectorIndex != -1;
 	}
 
+	/**
+	 * Returns the index of the {@link Vector} argument.
+	 *
+	 * @return the argument index or {@literal -1} if none defined.
+	 * @since 4.0
+	 */
 	public int getVectorIndex() {
 		return vectorIndex;
 	}
@@ -240,12 +246,18 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		return scoreIndex != -1;
 	}
 
+	/**
+	 * Returns the index of the {@link Score} argument.
+	 *
+	 * @return the argument index or {@literal -1} if none defined.
+	 * @since 4.0
+	 */
 	public int getScoreIndex() {
 		return scoreIndex;
 	}
 
 	/**
-	 * Returns whether the method the {@link Parameters} was created for contains a {@link Range} of {@link Score}
+	 * Returns whether the method, the {@link Parameters} was created for, contains a {@link Range} of {@link Score}
 	 * argument.
 	 *
 	 * @return
@@ -255,6 +267,12 @@ public abstract class Parameters<S extends Parameters<S, T>, T extends Parameter
 		return scoreRangeIndex != -1;
 	}
 
+	/**
+	 * Returns the index of the argument that contains a {@link Range} of {@link Score}.
+	 *
+	 * @return the argument index or {@literal -1} if none defined.
+	 * @since 4.0
+	 */
 	public int getScoreRangeIndex() {
 		return scoreRangeIndex;
 	}

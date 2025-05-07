@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Value object encapsulating a collection of {@link SearchResult} instances.
@@ -123,8 +122,7 @@ public class SearchResults<T> implements Iterable<SearchResult<T>>, Serializable
 
 	@Override
 	public String toString() {
-		return results.isEmpty() ? "SearchResults: [empty]"
-				: String.format("SearchResults: [results: %s]", StringUtils.collectionToCommaDelimitedString(results));
+		return results.isEmpty() ? "SearchResults [empty]" : String.format("SearchResults [size: %s]", results.size());
 	}
 
 }

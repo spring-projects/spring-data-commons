@@ -15,7 +15,6 @@
  */
 package org.springframework.data.geo;
 
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collections;
@@ -23,11 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Value object to capture {@link GeoResult}s as well as the average distance they have.
@@ -129,8 +126,8 @@ public class GeoResults<T> implements Iterable<GeoResult<T>>, Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("GeoResults: [averageDistance: %s, results: %s]", averageDistance.toString(),
-				StringUtils.collectionToCommaDelimitedString(results));
+		return results.isEmpty() ? "GeoResults [empty]"
+				: String.format("GeoResults [averageDistance: %s, size: %s]", averageDistance, results.size());
 	}
 
 	private static Distance calculateAverageDistance(List<? extends GeoResult<?>> results, Metric metric) {
