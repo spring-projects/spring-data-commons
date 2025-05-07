@@ -179,7 +179,7 @@ class AotRepositoryBuilder {
 				? AotRepositoryMetadata.RepositoryType.REACTIVE
 				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
 
-		String jsonModuleName = moduleName.replaceAll("Reactive", "").trim();
+		String jsonModuleName = moduleName != null ? moduleName.replaceAll("Reactive", "").trim() : null;
 
 		return new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(), jsonModuleName,
 				repositoryType, methodMetadata);
