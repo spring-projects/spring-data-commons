@@ -82,6 +82,15 @@ public interface RepositoryConfigurationSource {
 	Optional<String> getRepositoryBaseClassName();
 
 	/**
+	 * Returns the name of the repository fragments contributor class to be used or {@link Optional#empty()} if the store
+	 * specific defaults shall be applied.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	Optional<String> getRepositoryFragmentsContributorClassName();
+
+	/**
 	 * Returns the name of the repository factory bean class or {@link Optional#empty()} if not defined in the source.
 	 *
 	 * @return

@@ -22,13 +22,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass.RepoBaseClass;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.config.EnableRepositories;
+import org.springframework.data.repository.config.EnableRepositoriesWithContributor;
 
 /**
  * @author Christoph Strobl
  */
 @Configuration
-@EnableRepositories(repositoryBaseClass = RepoBaseClass.class, considerNestedRepositories = true,
+@EnableRepositoriesWithContributor(repositoryBaseClass = RepoBaseClass.class, considerNestedRepositories = true,
 		includeFilters = { @Filter(type = FilterType.REGEX, pattern = ".*CustomerRepositoryWithCustomBaseRepo$") })
 public class ConfigWithCustomRepositoryBaseClass {
 

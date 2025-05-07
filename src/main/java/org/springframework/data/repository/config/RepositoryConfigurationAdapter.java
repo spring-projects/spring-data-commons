@@ -72,6 +72,11 @@ class RepositoryConfigurationAdapter<T extends RepositoryConfigurationSource>
 	}
 
 	@Override
+	public Optional<String> getRepositoryFragmentsContributorClassName() {
+		return repositoryConfiguration.getRepositoryFragmentsContributorClassName();
+	}
+
+	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return repositoryConfiguration.getRepositoryFactoryBeanClassName();
 	}

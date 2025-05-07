@@ -15,10 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import example.UserRepository;
 import example.UserRepositoryExtension;
@@ -31,7 +30,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.data.aot.CodeContributionAssert;
@@ -97,8 +96,8 @@ class RepositoryContributorUnitTests {
 	@Test // GH-3279
 	void callsMethodContributionForQueryMethod() {
 
-		AotRepositoryContext repositoryContext = Mockito.mock(AotRepositoryContext.class);
-		RepositoryInformation repositoryInformation = Mockito.mock(RepositoryInformation.class);
+		AotRepositoryContext repositoryContext = mock(AotRepositoryContext.class);
+		RepositoryInformation repositoryInformation = mock(RepositoryInformation.class);
 
 		when(repositoryContext.getRepositoryInformation()).thenReturn(repositoryInformation);
 		when(repositoryInformation.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
@@ -113,8 +112,9 @@ class RepositoryContributorUnitTests {
 	@Test // GH-3279
 	void doesNotContributeBaseClassMethods() {
 
-		AotRepositoryContext repositoryContext = Mockito.mock(AotRepositoryContext.class);
-		RepositoryInformation repositoryInformation = Mockito.mock(RepositoryInformation.class);
+		AotRepositoryContext repositoryContext = mock(AotRepositoryContext.class);
+		when(repositoryContext.getModuleName()).thenReturn("Commons");
+		RepositoryInformation repositoryInformation = mock(RepositoryInformation.class);
 
 		when(repositoryContext.getRepositoryInformation()).thenReturn(repositoryInformation);
 		when(repositoryInformation.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
@@ -133,8 +133,9 @@ class RepositoryContributorUnitTests {
 	@Test // GH-3279
 	void doesNotContributeFragmentMethod() {
 
-		AotRepositoryContext repositoryContext = Mockito.mock(AotRepositoryContext.class);
-		RepositoryInformation repositoryInformation = Mockito.mock(RepositoryInformation.class);
+		AotRepositoryContext repositoryContext = mock(AotRepositoryContext.class);
+		when(repositoryContext.getModuleName()).thenReturn("Commons");
+		RepositoryInformation repositoryInformation = mock(RepositoryInformation.class);
 
 		when(repositoryContext.getRepositoryInformation()).thenReturn(repositoryInformation);
 		when(repositoryInformation.getRepositoryInterface()).thenReturn((Class) UserRepository.class);
@@ -157,8 +158,9 @@ class RepositoryContributorUnitTests {
 	@Test // GH-3279
 	void contributesBaseClassMethodIfQueryMethod() {
 
-		AotRepositoryContext repositoryContext = Mockito.mock(AotRepositoryContext.class);
-		RepositoryInformation repositoryInformation = Mockito.mock(RepositoryInformation.class);
+		AotRepositoryContext repositoryContext = mock(AotRepositoryContext.class);
+		when(repositoryContext.getModuleName()).thenReturn("Commons");
+		RepositoryInformation repositoryInformation = mock(RepositoryInformation.class);
 
 		when(repositoryContext.getRepositoryInformation()).thenReturn(repositoryInformation);
 		when(repositoryInformation.getRepositoryInterface()).thenReturn((Class) UserRepository.class);

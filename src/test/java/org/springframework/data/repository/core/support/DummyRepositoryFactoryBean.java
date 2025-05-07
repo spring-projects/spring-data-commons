@@ -29,6 +29,7 @@ public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID exten
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private final T repository;
+	private RepositoryFragmentsContributor repositoryFragmentsContributor = RepositoryFragmentsContributor.empty();
 
 	public DummyRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
 
@@ -36,6 +37,19 @@ public class DummyRepositoryFactoryBean<T extends Repository<S, ID>, S, ID exten
 
 		this.repository = mock(repositoryInterface);
 		setMappingContext(new SampleMappingContext());
+	}
+
+	public T getRepository() {
+		return repository;
+	}
+
+	@Override
+	public RepositoryFragmentsContributor getRepositoryFragmentsContributor() {
+		return repositoryFragmentsContributor;
+	}
+
+	public void setRepositoryFragmentsContributor(RepositoryFragmentsContributor repositoryFragmentsContributor) {
+		this.repositoryFragmentsContributor = repositoryFragmentsContributor;
 	}
 
 	@Override
