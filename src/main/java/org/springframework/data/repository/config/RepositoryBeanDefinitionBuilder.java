@@ -116,6 +116,11 @@ class RepositoryBeanDefinitionBuilder {
 				.rootBeanDefinition(configuration.getRepositoryFactoryBeanClassName());
 
 		builder.getRawBeanDefinition().setSource(configuration.getSource());
+
+		// AOT Repository hints
+		builder.getRawBeanDefinition().setAttribute(RepositoryConfiguration.class.getName(), configuration);
+		builder.getRawBeanDefinition().setAttribute(RepositoryConfigurationExtension.class.getName(), extension);
+
 		builder.addConstructorArgValue(configuration.getRepositoryInterface());
 		builder.addPropertyValue("queryLookupStrategyKey", configuration.getQueryLookupStrategyKey());
 		builder.addPropertyValue("lazyInit", configuration.isLazyInit());
@@ -124,6 +129,10 @@ class RepositoryBeanDefinitionBuilder {
 
 		configuration.getRepositoryBaseClassName()//
 				.ifPresent(it -> builder.addPropertyValue("repositoryBaseClass", it));
+
+		configuration.getRepositoryFragmentsContributorClassName()//
+				.ifPresent(it -> builder.addPropertyValue("repositoryFragmentsContributor",
+						BeanDefinitionBuilder.genericBeanDefinition(it).getRawBeanDefinition()));
 
 		NamedQueriesBeanDefinitionBuilder definitionBuilder = new NamedQueriesBeanDefinitionBuilder(
 				extension.getDefaultNamedQueryLocation());

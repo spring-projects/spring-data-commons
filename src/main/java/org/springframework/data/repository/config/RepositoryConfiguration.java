@@ -79,6 +79,15 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	Optional<String> getRepositoryBaseClassName();
 
 	/**
+	 * Returns the name of the repository fragments contributor class to be used or {@link Optional#empty()} if the store
+	 * specific defaults shall be applied.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	Optional<String> getRepositoryFragmentsContributorClassName();
+
+	/**
 	 * Returns the name of the repository factory bean class to be used.
 	 *
 	 * @return
@@ -157,11 +166,12 @@ public interface RepositoryConfiguration<T extends RepositoryConfigurationSource
 	ImplementationLookupConfiguration toLookupConfiguration(MetadataReaderFactory factory);
 
 	/**
-	 * Returns a human readable description of the repository interface declaration for error reporting purposes.
+	 * Returns a human-readable description of the repository interface declaration for error reporting purposes.
 	 *
 	 * @return can be {@literal null}.
 	 * @since 2.3
 	 */
 	@Nullable
 	String getResourceDescription();
+
 }

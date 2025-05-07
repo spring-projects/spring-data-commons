@@ -145,6 +145,11 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	}
 
 	@Override
+	public Optional<String> getRepositoryFragmentsContributorClassName() {
+		return Optional.empty();
+	}
+
+	@Override
 	public Optional<String> getRepositoryFactoryBeanClassName() {
 		return getNullDefaultedAttribute(element, REPOSITORY_FACTORY_BEAN_CLASS_NAME);
 	}

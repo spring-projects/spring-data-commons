@@ -44,6 +44,11 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
+	public String getModuleName() {
+		return "Commons";
+	}
+
+	@Override
 	public ConfigurableListableBeanFactory getBeanFactory() {
 		return null;
 	}

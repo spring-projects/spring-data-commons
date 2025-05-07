@@ -69,6 +69,7 @@ import org.springframework.util.Assert;
  *
  * @author Christoph Strobl
  * @author John Blum
+ * @author Mark Paluch
  * @since 3.0
  */
 public class RepositoryRegistrationAotProcessor
@@ -123,11 +124,16 @@ public class RepositoryRegistrationAotProcessor
 		return getConfigMap().containsKey(bean.getBeanName());
 	}
 
-	protected RepositoryRegistrationAotContribution newRepositoryRegistrationAotContribution(
+	protected @Nullable RepositoryRegistrationAotContribution newRepositoryRegistrationAotContribution(
 			RegisteredBean repositoryBean) {
 
-		RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.fromProcessor(this)
-				.forBean(repositoryBean);
+		RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.load(this,
+				repositoryBean);
+
+		// cannot contribute a repository bean.
+		if (contribution == null) {
+			return null;
+		}
 
 		//TODO: add the hook for customizing bean initialization code here!
 

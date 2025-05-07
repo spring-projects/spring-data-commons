@@ -15,33 +15,37 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import example.UserRepository;
 import example.UserRepository.User;
 
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.lang.model.element.Modifier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import org.springframework.data.geo.Metric;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.config.AotRepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.stereotype.Repository;
 
 /**
+ * Unit tests for {@link AotRepositoryBuilder}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class AotRepositoryBuilderUnitTests {
 
@@ -57,7 +61,7 @@ class AotRepositoryBuilderUnitTests {
 	@Test // GH-3279
 	void writesClassSkeleton() {
 
-		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation,
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 		assertThat(repoBuilder.build().javaFile().toString())
 				.contains("package %s;".formatted(UserRepository.class.getPackageName())) // same package as source repo
@@ -69,7 +73,7 @@ class AotRepositoryBuilderUnitTests {
 	@Test // GH-3279
 	void appliesCtorArguments() {
 
-		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation,
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 		repoBuilder.withConstructorCustomizer(ctor -> {
 			ctor.addParameter("param1", Metric.class);
@@ -89,7 +93,7 @@ class AotRepositoryBuilderUnitTests {
 	@Test // GH-3279
 	void appliesCtorCodeBlock() {
 
-		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation,
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 		repoBuilder.withConstructorCustomizer(ctor -> {
 			ctor.customize((info, code) -> {
@@ -103,7 +107,7 @@ class AotRepositoryBuilderUnitTests {
 	@Test // GH-3279
 	void appliesClassCustomizations() {
 
-		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation,
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 
 		repoBuilder.withClassCustomizer((info, metadata, clazz) -> {
@@ -128,12 +132,11 @@ class AotRepositoryBuilderUnitTests {
 	@Test // GH-3279
 	void appliesQueryMethodContributor() {
 
-		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation,
-				new SpelAwareProxyProjectionFactory());
+		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
+				AnnotationRepositoryMetadata.getMetadata(UserRepository.class), CrudRepository.class, List.of());
 
-		when(repositoryInformation.isQueryMethod(Mockito.argThat(arg -> arg.getName().equals("findByFirstname"))))
-				.thenReturn(true);
-		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
+				new SpelAwareProxyProjectionFactory());
 
 		repoBuilder.withQueryMethodContributor((method, info) -> {
 
@@ -154,4 +157,35 @@ class AotRepositoryBuilderUnitTests {
 		assertThat(repoBuilder.build().javaFile().toString()) //
 				.containsIgnoringWhitespaces("void oops() { }");
 	}
+
+	@Test // GH-3279
+	void shouldContributeFragmentImplementationMetadata() {
+
+		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
+				AnnotationRepositoryMetadata.getMetadata(QuerydslUserRepository.class), CrudRepository.class,
+				List.of(RepositoryFragment.structural(QuerydslPredicateExecutor.class, DummyQuerydslPredicateExecutor.class)));
+
+		AotRepositoryBuilder builder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
+				new SpelAwareProxyProjectionFactory());
+		AotRepositoryBuilder.AotBundle bundle = builder.build();
+
+		AotRepositoryMethod method = bundle.metadata().methods().stream().filter(it -> it.name().equals("findBy"))
+				.findFirst().get();
+
+		assertThat(method.fragment()).isNotNull();
+		assertThat(method.fragment().signature()).isEqualTo(QuerydslPredicateExecutor.class.getName());
+		assertThat(method.fragment().implementation()).isEqualTo(DummyQuerydslPredicateExecutor.class.getName());
+	}
+
+	interface UserRepository extends org.springframework.data.repository.Repository<User, String> {
+
+		String someMethod();
+	}
+
+	interface QuerydslUserRepository
+			extends org.springframework.data.repository.Repository<User, String>, QuerydslPredicateExecutor<User> {
+
+	}
+
+	interface DummyQuerydslPredicateExecutor<T> extends QuerydslPredicateExecutor<T> {}
 }
