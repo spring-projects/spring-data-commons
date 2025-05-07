@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @since 4.0
  */
 public class RepositoryContributor {
 
@@ -46,19 +47,34 @@ public class RepositoryContributor {
 
 	private final AotRepositoryBuilder builder;
 
+	/**
+	 * Create a new {@code RepositoryContributor} for the given {@link AotRepositoryContext}.
+	 *
+	 * @param repositoryContext
+	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
 		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
-				createProjectionFactory());
+				repositoryContext.getModuleName(), createProjectionFactory());
 	}
 
+	/**
+	 * @return a new {@link ProjectionFactory} to be used with the AOT repository builder. The actual instance should be
+	 *         accessed through {@link #getProjectionFactory()}.
+	 */
 	protected ProjectionFactory createProjectionFactory() {
 		return new SpelAwareProxyProjectionFactory();
 	}
 
+	/**
+	 * @return the used {@link ProjectionFactory}.
+	 */
 	protected ProjectionFactory getProjectionFactory() {
 		return builder.getProjectionFactory();
 	}
 
+	/**
+	 * @return the used {@link RepositoryInformation}.
+	 */
 	protected RepositoryInformation getRepositoryInformation() {
 		return builder.getRepositoryInformation();
 	}
@@ -73,13 +89,10 @@ public class RepositoryContributor {
 
 	public void contribute(GenerationContext generationContext) {
 
-		// TODO: do we need - generationContext.withName("spring-data");
-
-		builder.withClassCustomizer(this::customizeClass);
-		builder.withConstructorCustomizer(this::customizeConstructor);
-		builder.withQueryMethodContributor(this::contributeQueryMethod);
-
-		AotRepositoryBuilder.AotBundle aotBundle = builder.build();
+		AotRepositoryBuilder.AotBundle aotBundle = builder.withClassCustomizer(this::customizeClass) //
+				.withConstructorCustomizer(this::customizeConstructor) //
+				.withQueryMethodContributor(this::contributeQueryMethod) //
+				.build();
 
 		Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
 		String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
@@ -89,7 +102,7 @@ public class RepositoryContributor {
 		String repositoryJson;
 
 		try {
-			repositoryJson = aotBundle.metadata().toString(2);
+			repositoryJson = aotBundle.metadata().toJson().toString(2);
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}

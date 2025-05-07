@@ -16,9 +16,9 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Set;
 
-import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -28,8 +28,9 @@ import org.springframework.data.repository.core.RepositoryInformation;
  *
  * @author Christoph Strobl
  * @author John Blum
- * @see AotContext
+ * @author Mark Paluch
  * @since 3.0
+ * @see AotContext
  */
 public interface AotRepositoryContext extends AotContext {
 
@@ -39,6 +40,12 @@ public interface AotRepositoryContext extends AotContext {
 	String getBeanName();
 
 	/**
+	 * @return the Spring Data module name, see {@link RepositoryConfigurationExtension#getModuleName()}.
+	 * @since 4.0
+	 */
+	String getModuleName();
+
+	/**
 	 * @return a {@link Set} of {@link String base packages} to search for repositories.
 	 */
 	Set<String> getBasePackages();
@@ -46,7 +53,7 @@ public interface AotRepositoryContext extends AotContext {
 	/**
 	 * @return the {@link Annotation} types used to identify domain types.
 	 */
-	Set<Class<? extends Annotation>> getIdentifyingAnnotations();
+	Collection<Class<? extends Annotation>> getIdentifyingAnnotations();
 
 	/**
 	 * @return {@link RepositoryInformation metadata} about the repository itself.
@@ -64,4 +71,5 @@ public interface AotRepositoryContext extends AotContext {
 	 * @return all {@link Class types} reachable from the repository.
 	 */
 	Set<Class<?>> getResolvedTypes();
+
 }

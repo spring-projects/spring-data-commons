@@ -114,12 +114,17 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	@Override
 	public Optional<String> getRepositoryBaseClassName() {
-		return configurationSource.getRepositoryBaseClassName();
+		return configurationSource.getRepositoryBaseClassName()
+				.or(() -> Optional.ofNullable(extension.getRepositoryBaseClassName()));
+	}
+
+	@Override
+	public Optional<String> getRepositoryFragmentsContributorClassName() {
+		return configurationSource.getRepositoryFragmentsContributorClassName();
 	}
 
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
-
 		return configurationSource.getRepositoryFactoryBeanClassName()
 				.orElseGet(extension::getRepositoryFactoryBeanClassName);
 	}

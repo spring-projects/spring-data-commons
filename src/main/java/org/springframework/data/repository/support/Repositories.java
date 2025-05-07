@@ -35,6 +35,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
+import org.springframework.data.repository.core.support.RepositoryFragmentsContributor;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
@@ -362,6 +363,11 @@ public class Repositories implements Iterable<Class<?>> {
 
 		@Override
 		public RepositoryInformation getRepositoryInformation() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public RepositoryFragmentsContributor getRepositoryFragmentsContributor() {
 			throw new UnsupportedOperationException();
 		}
 

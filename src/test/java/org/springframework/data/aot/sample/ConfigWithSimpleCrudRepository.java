@@ -15,6 +15,8 @@
  */
 package org.springframework.data.aot.sample;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository.MyRepo;
@@ -34,7 +36,7 @@ public class ConfigWithSimpleCrudRepository {
 
 	public static class Person {
 
-		@javax.annotation.Nullable
+		@Nullable
 		Address address;
 
 	}

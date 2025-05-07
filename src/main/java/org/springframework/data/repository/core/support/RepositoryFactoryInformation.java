@@ -47,6 +47,15 @@ public interface RepositoryFactoryInformation<T, ID> {
 	RepositoryInformation getRepositoryInformation();
 
 	/**
+	 * Returns the {@link RepositoryFragmentsContributor} that is used to contribute additional fragments based on the
+	 * repository declaration.
+	 *
+	 * @return
+	 * @since 4.0
+	 */
+	RepositoryFragmentsContributor getRepositoryFragmentsContributor();
+
+	/**
 	 * Returns the {@link PersistentEntity} managed by the underlying repository. Can be {@literal null} in case the
 	 * underlying persistence mechanism does not expose a {@link MappingContext}.
 	 *
