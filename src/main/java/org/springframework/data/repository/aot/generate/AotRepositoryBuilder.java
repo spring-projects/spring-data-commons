@@ -22,14 +22,13 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.projection.ProjectionFactory;
@@ -58,8 +57,8 @@ class AotRepositoryBuilder {
 	private final ProjectionFactory projectionFactory;
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
-	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
-	private @Nullable BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction;
+	private @Nullable ConstructorCustomizer constructorCustomizer;
+	private @Nullable MethodContributorFactory methodContributorFactory;
 	private ClassCustomizer customizer;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
@@ -109,23 +108,21 @@ class AotRepositoryBuilder {
 	 * @param constructorCustomizer must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withConstructorCustomizer(
-			Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
+	public AotRepositoryBuilder withConstructorCustomizer(ConstructorCustomizer constructorCustomizer) {
 
 		this.constructorCustomizer = constructorCustomizer;
 		return this;
 	}
 
 	/**
-	 * Configure a {@link MethodContributor}.
+	 * Configure a {@link MethodContributor} factory.
 	 *
-	 * @param methodContributorFunction must not be {@literal null}.
+	 * @param methodContributorFactory must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withQueryMethodContributor(
-			BiFunction<Method, RepositoryInformation, @Nullable MethodContributor<? extends QueryMethod>> methodContributorFunction) {
+	public AotRepositoryBuilder withQueryMethodContributor(MethodContributorFactory methodContributorFactory) {
 
-		this.methodContributorFunction = methodContributorFunction;
+		this.methodContributorFactory = methodContributorFactory;
 		return this;
 	}
 
@@ -170,7 +167,7 @@ class AotRepositoryBuilder {
 				generationMetadata);
 
 		if (constructorCustomizer != null) {
-			constructorCustomizer.accept(constructorBuilder);
+			constructorCustomizer.customize(constructorBuilder);
 		}
 
 		return constructorBuilder.buildConstructor();
@@ -191,7 +188,8 @@ class AotRepositoryBuilder {
 	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
 			List<AotRepositoryMethod> methodMetadata, TypeSpec.Builder builder) {
 
-		if (repositoryInformation.isCustomMethod(method) || (repositoryInformation.isBaseClassMethod(method) && !repositoryInformation.isQueryMethod(method))) {
+		if (repositoryInformation.isCustomMethod(method)
+				|| (repositoryInformation.isBaseClassMethod(method) && !repositoryInformation.isQueryMethod(method))) {
 
 			RepositoryFragment<?> fragment = repositoryComposition.findFragment(method);
 
@@ -205,9 +203,9 @@ class AotRepositoryBuilder {
 			return;
 		}
 
-		if (repositoryInformation.isQueryMethod(method) && methodContributorFunction != null) {
+		if (repositoryInformation.isQueryMethod(method) && methodContributorFactory != null) {
 
-			MethodContributor<? extends QueryMethod> contributor = methodContributorFunction.apply(method,
+			MethodContributor<? extends QueryMethod> contributor = methodContributorFactory.create(method,
 					repositoryInformation);
 
 			if (contributor != null) {
@@ -273,13 +271,47 @@ class AotRepositoryBuilder {
 	public interface ClassCustomizer {
 
 		/**
-		 * Apply customization ot the AOT repository fragment class after it has been defined..
+		 * Apply customization ot the AOT repository fragment class after it has been defined.
 		 *
-		 * @param information
-		 * @param metadata
-		 * @param builder
+		 * @param information repository information.
+		 * @param metadata metadata of the AOT repository fragment.
+		 * @param builder the actual builder.
 		 */
 		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata, TypeSpec.Builder builder);
+
+	}
+
+	/**
+	 * Customizer interface to customize the AOT repository fragment constructor through
+	 * {@link AotRepositoryConstructorBuilder}.
+	 */
+	public interface ConstructorCustomizer {
+
+		/**
+		 * Apply customization ot the AOT repository fragment constructor.
+		 *
+		 * @param constructorBuilder the builder to be customized.
+		 */
+		void customize(AotRepositoryConstructorBuilder constructorBuilder);
+
+	}
+
+	/**
+	 * Factory interface to conditionally create {@link MethodContributor} instances. An implementation may decide whether
+	 * to return a {@link MethodContributor} or {@literal null}, if no method (code or metadata) should be contributed.
+	 */
+	public interface MethodContributorFactory {
+
+		/**
+		 * Apply customization ot the AOT repository fragment constructor.
+		 *
+		 * @param method the method to be contributed.
+		 * @param information repository information.
+		 * @return the {@link MethodContributor} to be used. Can be {@literal null} if the method and method metadata should
+		 *         not be contributed.
+		 */
+		@Nullable
+		MethodContributor<? extends QueryMethod> create(Method method, RepositoryInformation information);
 
 	}
 
