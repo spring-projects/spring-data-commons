@@ -39,22 +39,25 @@ public interface ParameterAccessor extends Iterable<Object> {
 	 * @return the {@link Vector} of the parameters, if available; {@literal null} otherwise.
 	 * @since 4.0
 	 */
-	@Nullable
-	Vector getVector();
+	default @Nullable Vector getVector() {
+		return null;
+	}
 
 	/**
 	 * @return the {@link Score} of the parameters, if available; {@literal null} otherwise.
 	 * @since 4.0
 	 */
-	@Nullable
-	Score getScore();
+	default @Nullable Score getScore() {
+		return null;
+	}
 
 	/**
 	 * @return the {@link Range} of {@link Score} of the parameters, if available; {@literal null} otherwise.
 	 * @since 4.0
 	 */
-	@Nullable
-	Range<Score> getScoreRange();
+	default @Nullable Range<Score> getScoreRange() {
+		return null;
+	}
 
 	/**
 	 * @return the {@link ScrollPosition} of the parameters, if available; {@literal null} otherwise.

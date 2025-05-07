@@ -128,7 +128,7 @@ class SimpleParameterAccessorUnitTests {
 		assertThat(accessor.getSort()).isEqualTo(sort);
 	}
 
-	@Test
+	@Test // GH-3285
 	void returnsScoreIfAvailable() {
 
 		Score score = Score.of(1);
@@ -137,7 +137,7 @@ class SimpleParameterAccessorUnitTests {
 		assertThat(accessor.getScore()).isEqualTo(score);
 	}
 
-	@Test
+	@Test // GH-3285
 	void returnsScoreRangeIfAvailable() {
 
 		Range<Similarity> range = Similarity.between(0, 1);

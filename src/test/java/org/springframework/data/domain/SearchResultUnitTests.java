@@ -33,12 +33,12 @@ class SearchResultUnitTests {
 	SearchResult<String> third = new SearchResult<>("Bar", Score.of(2.5));
 	SearchResult<String> fourth = new SearchResult<>("Foo", Score.of(5.2));
 
-	@Test // GH-
+	@Test // GH-3285
 	void considersSameInstanceEqual() {
 		assertThat(first.equals(first)).isTrue();
 	}
 
-	@Test // GH-
+	@Test // GH-3285
 	void considersSameValuesAsEqual() {
 
 		assertThat(first.equals(second)).isTrue();
@@ -49,14 +49,13 @@ class SearchResultUnitTests {
 		assertThat(fourth.equals(first)).isFalse();
 	}
 
-	@Test
+	@Test // GH-3285
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	// GH-
 	void rejectsNullContent() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new SearchResult(null, Score.of(2.5)));
 	}
 
-	@Test // GH-
+	@Test // GH-3285
 	@SuppressWarnings("unchecked")
 	void testSerialization() {
 

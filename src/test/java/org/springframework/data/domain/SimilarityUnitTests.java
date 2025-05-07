@@ -15,7 +15,8 @@
  */
 package org.springframework.data.domain;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +27,14 @@ import org.junit.jupiter.api.Test;
  */
 class SimilarityUnitTests {
 
-	@Test
+	@Test // GH-3285
 	void shouldBeBounded() {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> Similarity.of(-1));
 		assertThatIllegalArgumentException().isThrownBy(() -> Similarity.of(1.01));
 	}
 
-	@Test
+	@Test // GH-3285
 	void shouldConstructRawSimilarity() {
 
 		Similarity similarity = Similarity.raw(2, ScoringFunction.unspecified());
@@ -41,7 +42,7 @@ class SimilarityUnitTests {
 		assertThat(similarity.getValue()).isEqualTo(2);
 	}
 
-	@Test
+	@Test // GH-3285
 	void shouldConstructGenericSimilarity() {
 
 		Similarity similarity = Similarity.of(1);
@@ -51,7 +52,7 @@ class SimilarityUnitTests {
 		assertThat(similarity.getFunction()).isEqualTo(ScoringFunction.unspecified());
 	}
 
-	@Test
+	@Test // GH-3285
 	void shouldConstructMeteredSimilarity() {
 
 		Similarity similarity = Similarity.of(1, VectorScoringFunctions.COSINE);
@@ -62,7 +63,7 @@ class SimilarityUnitTests {
 		assertThat(similarity.getFunction()).isEqualTo(VectorScoringFunctions.COSINE);
 	}
 
-	@Test
+	@Test // GH-3285
 	void shouldConstructRange() {
 
 		Range<Similarity> range = Similarity.between(0.5, 1);
@@ -74,7 +75,7 @@ class SimilarityUnitTests {
 		assertThat(range.getUpperBound().isInclusive()).isTrue();
 	}
 
-	@Test
+	@Test // GH-3285
 	void shouldConstructRangeWithFunction() {
 
 		Range<Similarity> range = Similarity.between(0.5, 1, VectorScoringFunctions.COSINE);

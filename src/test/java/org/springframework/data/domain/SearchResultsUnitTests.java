@@ -33,7 +33,7 @@ import org.springframework.util.SerializationUtils;
 class SearchResultsUnitTests {
 
 	@SuppressWarnings("unchecked")
-	@Test // GH-
+	@Test // GH-3285
 	void testSerialization() {
 
 		var result = new SearchResult<>("test", Score.of(2));
@@ -45,7 +45,7 @@ class SearchResultsUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test // GH-
+	@Test // GH-3285
 	void testStream() {
 
 		var result = new SearchResult<>("test", Score.of(2));
@@ -56,7 +56,7 @@ class SearchResultsUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test // GH-
+	@Test // GH-3285
 	void testContentStream() {
 
 		var result = new SearchResult<>("test", Score.of(2));

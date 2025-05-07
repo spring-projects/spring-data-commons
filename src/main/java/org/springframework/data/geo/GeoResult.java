@@ -19,7 +19,6 @@ import java.io.Serial;
 import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -79,6 +78,6 @@ public final class GeoResult<T> implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("GeoResult [content: %s, distance: %s, ]", content.toString(), distance.toString());
+		return String.format("GeoResult [content: %s, distance: %s]", content, distance);
 	}
 }
