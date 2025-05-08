@@ -76,7 +76,7 @@ class AotRepositoryBuilder {
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
 				.build());
 
-		this.customizer = (info, metadata, builder) -> {};
+		this.customizer = (info, builder) -> {};
 	}
 
 	/**
@@ -162,8 +162,7 @@ class AotRepositoryBuilder {
 		generationMetadata.getFields().values().forEach(builder::addField);
 
 		// finally customize the file itself
-		this.customizer.customize(repositoryInformation, generationMetadata, builder);
-
+		this.customizer.customize(repositoryInformation, builder);
 		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
 		AotRepositoryMetadata metadata = getAotRepositoryMetadata(methodMetadata);
 
@@ -282,11 +281,10 @@ class AotRepositoryBuilder {
 		/**
 		 * Apply customization ot the AOT repository fragment class after it has been defined.
 		 *
-		 * @param information repository information.
-		 * @param metadata metadata of the AOT repository fragment.
-		 * @param builder the actual builder.
+		 * @param information the repository information that is used for the AOT fragment.
+		 * @param builder the class builder to be customized.
 		 */
-		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata, TypeSpec.Builder builder);
+		void customize(RepositoryInformation information, TypeSpec.Builder builder);
 
 	}
 

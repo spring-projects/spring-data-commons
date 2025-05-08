@@ -20,9 +20,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Modifier;
-
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
@@ -31,8 +30,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.javapoet.FieldSpec;
-import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.ObjectUtils;
 
@@ -51,7 +48,6 @@ public class AotQueryMethodGenerationContext {
 	private final RepositoryInformation repositoryInformation;
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final MethodMetadata targetMethodMetadata;
-	private final CodeBlocks codeBlocks;
 	private final VariableNameFactory variableNameFactory;
 
 	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
@@ -64,11 +60,6 @@ public class AotQueryMethodGenerationContext {
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
 		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
-		this.codeBlocks = new CodeBlocks(targetTypeMetadata);
-	}
-
-	AotRepositoryFragmentMetadata getTargetTypeMetadata() {
-		return targetTypeMetadata;
 	}
 
 	MethodMetadata getTargetMethodMetadata() {
@@ -79,12 +70,18 @@ public class AotQueryMethodGenerationContext {
 		return repositoryInformation;
 	}
 
-	public Method getMethod() {
-		return method;
+	/**
+	 * Obtain the field name by type.
+	 *
+	 * @param type
+	 * @return
+	 */
+	public @Nullable String fieldNameOf(Class<?> type) {
+		return targetTypeMetadata.fieldNameOf(type);
 	}
 
-	public CodeBlocks codeBlocks() {
-		return codeBlocks;
+	public Method getMethod() {
+		return method;
 	}
 
 	/**
@@ -112,10 +109,18 @@ public class AotQueryMethodGenerationContext {
 		return queryMethod.getResultProcessor().getReturnedType();
 	}
 
+	/**
+	 * @return the actual returned domain type.
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(Method)
+	 */
 	public ResolvableType getActualReturnType() {
 		return targetMethodMetadata.getActualReturnType();
 	}
 
+	/**
+	 * @return the query method return type.
+	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(Method)
+	 */
 	public ResolvableType getReturnType() {
 		return targetMethodMetadata.getReturnType();
 	}
@@ -128,23 +133,12 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * Obtain a naming-clash free variant for the given logical variable name within the local method context. Returns the
-	 * target variable name when called multiple times with the same {@code variableName}.
-	 *
-	 * @param variableName the logical variable name.
-	 * @return the variable name used in the generated code.
-	 */
-	public String localVariable(String variableName) {
-		return targetMethodMetadata.getLocalVariables().computeIfAbsent(variableName, variableNameFactory::generateName);
-	}
-
-	/**
 	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given
 	 * {@code parameterIndex} or throws {@link IllegalArgumentException} if the parameter cannot be determined by its
 	 * index.
 	 *
 	 * @param parameterIndex the zero-based parameter index as used in the query to reference bindable parameters.
-	 * @return the parameter name.
+	 * @return the method parameter name.
 	 */
 	public String getRequiredBindableParameterName(int parameterIndex) {
 
@@ -162,9 +156,8 @@ public class AotQueryMethodGenerationContext {
 	 * {@code parameterIndex} or {@code null} if the parameter cannot be determined by its index.
 	 *
 	 * @param parameterIndex the zero-based parameter index as used in the query to reference bindable parameters.
-	 * @return the parameter name.
+	 * @return the method parameter name.
 	 */
-	// TODO: Simplify?!
 	public @Nullable String getBindableParameterName(int parameterIndex) {
 
 		int bindable = 0;
@@ -186,12 +179,12 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given
-	 * {@code parameterName} or throws {@link IllegalArgumentException} if the parameter cannot be determined by its
-	 * index.
+	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given logical
+	 * {@code parameterName} or throws {@link IllegalArgumentException} if the parameter cannot be determined by its name.
 	 *
 	 * @param parameterName the parameter name as used in the query to reference bindable parameters.
-	 * @return the parameter name.
+	 * @return the method parameter name.
+	 * @see org.springframework.data.repository.query.Param
 	 */
 	public String getRequiredBindableParameterName(String parameterName) {
 
@@ -205,13 +198,13 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given
-	 * {@code parameterName} or {@code null} if the parameter cannot be determined by its index.
+	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given logical
+	 * {@code parameterName} or {@code null} if the parameter cannot be determined by its name.
 	 *
 	 * @param parameterName the parameter name as used in the query to reference bindable parameters.
-	 * @return the parameter name.
+	 * @return the method parameter name.
+	 * @see org.springframework.data.repository.query.Param
 	 */
-	// TODO: Simplify?!
 	public @Nullable String getBindableParameterName(String parameterName) {
 
 		int totalIndex = 0;
@@ -238,7 +231,7 @@ public class AotQueryMethodGenerationContext {
 		List<String> result = new ArrayList<>();
 
 		for (Parameter parameter : queryMethod.getParameters().getBindableParameters()) {
-			getParameterName(parameter.getIndex());
+			result.add(getParameterName(parameter.getIndex()));
 		}
 
 		return result;
@@ -251,45 +244,50 @@ public class AotQueryMethodGenerationContext {
 		return targetMethodMetadata.getMethodArguments().keySet().stream().toList();
 	}
 
-	public boolean hasField(String fieldName) {
-		return targetTypeMetadata.hasField(fieldName);
+	/**
+	 * Obtain a naming-clash free variant for the given logical variable name within the local method context. Returns the
+	 * target variable name when called multiple times with the same {@code variableName}.
+	 *
+	 * @param variableName the logical variable name.
+	 * @return the variable name used in the generated code.
+	 */
+	public String localVariable(String variableName) {
+		return targetMethodMetadata.getLocalVariables().computeIfAbsent(variableName, variableNameFactory::generateName);
 	}
 
-	public void addField(String fieldName, TypeName type, Modifier... modifiers) {
-		targetTypeMetadata.addField(fieldName, type, modifiers);
-	}
-
-	public void addField(FieldSpec fieldSpec) {
-		targetTypeMetadata.addField(fieldSpec);
-	}
-
-	public @Nullable String fieldNameOf(Class<?> type) {
-		return targetTypeMetadata.fieldNameOf(type);
-	}
-
-	@Nullable
-	public String getParameterNameOf(Class<?> type) {
-		return targetMethodMetadata.getParameterNameOf(type);
-	}
-
+	/**
+	 * Returns the parameter name for the method parameter at {@code position}.
+	 *
+	 * @param position zero-indexed parameter position.
+	 * @return
+	 * @see Method#getParameters()
+	 */
 	public @Nullable String getParameterName(int position) {
 		return targetMethodMetadata.getParameterName(position);
 	}
 
-	public void addParameter(ParameterSpec parameter) {
-		this.targetMethodMetadata.addParameter(parameter);
-	}
-
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Sort sort parameter} or {@code null} if
+	 *         the method does not declare a sort parameter.
+	 */
 	@Nullable
 	public String getSortParameterName() {
 		return getParameterName(queryMethod.getParameters().getSortIndex());
 	}
 
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Pageable pageable parameter} or
+	 *         {@code null} if the method does not declare a pageable parameter.
+	 */
 	@Nullable
 	public String getPageableParameterName() {
 		return getParameterName(queryMethod.getParameters().getPageableIndex());
 	}
 
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Limit limit parameter} or {@code null} if
+	 *         the method does not declare a limit parameter.
+	 */
 	@Nullable
 	public String getLimitParameterName() {
 		return getParameterName(queryMethod.getParameters().getLimitIndex());
