@@ -96,7 +96,7 @@ class AotRepositoryBuilderUnitTests {
 		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 		repoBuilder.withConstructorCustomizer(ctor -> {
-			ctor.customize((info, code) -> {
+			ctor.customize((code) -> {
 				code.addStatement("throw new $T($S)", IllegalStateException.class, "initialization error");
 			});
 		});
@@ -110,7 +110,9 @@ class AotRepositoryBuilderUnitTests {
 		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 
-		repoBuilder.withClassCustomizer((info, metadata, clazz) -> {
+		repoBuilder.withClassCustomizer((builder) -> {
+
+			builder.customize(clazz -> {
 
 			clazz.addField(Float.class, "f", Modifier.PRIVATE, Modifier.STATIC);
 			clazz.addField(Double.class, "d", Modifier.PUBLIC);
@@ -119,6 +121,7 @@ class AotRepositoryBuilderUnitTests {
 			clazz.addAnnotation(Repository.class);
 
 			clazz.addMethod(MethodSpec.methodBuilder("oops").build());
+			});
 		});
 
 		assertThat(repoBuilder.build().javaFile().toString()) //
@@ -138,7 +141,7 @@ class AotRepositoryBuilderUnitTests {
 		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 
-		repoBuilder.withQueryMethodContributor((method, info) -> {
+		repoBuilder.withQueryMethodContributor((method) -> {
 
 			return new MethodContributor<>(mock(QueryMethod.class), null) {
 
