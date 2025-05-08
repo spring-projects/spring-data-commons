@@ -35,11 +35,13 @@ import org.springframework.javapoet.TypeName;
  * Metadata about an AOT Repository method.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 4.0
  */
 class MethodMetadata {
 
 	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
+	private final Map<String, String> localVariables = new LinkedHashMap<>();
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
 
@@ -88,6 +90,10 @@ class MethodMetadata {
 			return entries.get(position).getKey();
 		}
 		return null;
+	}
+
+	Map<String, String> getLocalVariables() {
+		return localVariables;
 	}
 
 	private void initParameters(RepositoryInformation repositoryInformation, Method method,

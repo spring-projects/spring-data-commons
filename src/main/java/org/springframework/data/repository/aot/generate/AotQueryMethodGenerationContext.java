@@ -128,13 +128,14 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * Suggest naming clash free variant for the given intended variable name within the local method context.
+	 * Obtain a naming-clash free variant for the given logical variable name within the local method context. Returns the
+	 * target variable name when called multiple times with the same {@code variableName}.
 	 *
-	 * @param variableName the intended variable name.
-	 * @return the suggested VariableName
+	 * @param variableName the logical variable name.
+	 * @return the variable name used in the generated code.
 	 */
-	public String suggestLocalVariableName(String variableName) {
-		return variableNameFactory.generateName(variableName);
+	public String localVariable(String variableName) {
+		return targetMethodMetadata.getLocalVariables().computeIfAbsent(variableName, variableNameFactory::generateName);
 	}
 
 	/**

@@ -52,6 +52,8 @@ import org.springframework.javapoet.TypeSpec;
  */
 class AotRepositoryBuilder {
 
+	private static final Log logger = LogFactory.getLog(AotRepositoryBuilder.class);
+
 	private final RepositoryInformation repositoryInformation;
 	private final String moduleName;
 	private final ProjectionFactory projectionFactory;
@@ -146,7 +148,14 @@ class AotRepositoryBuilder {
 					return it.getDeclaringClass().getName();
 				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
 				.forEach(method -> {
-					contributeMethod(method, repositoryComposition, methodMetadata, builder);
+					try {
+						contributeMethod(method, repositoryComposition, methodMetadata, builder);
+					} catch (RuntimeException e) {
+						if (logger.isErrorEnabled()) {
+							logger.error("Failed to contribute Repository method [%s.%s]"
+									.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()), e);
+						}
+					}
 				});
 
 		// write fields at the end so we make sure to capture things added by methods
