@@ -39,6 +39,7 @@ import org.springframework.data.repository.core.support.AbstractRepositoryMetada
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.core.support.RepositoryFragmentsContributor;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -81,6 +82,8 @@ class RepositoryBeanDefinitionReader {
 	 * @return the {@link RepositoryInformation} derived from the repository bean.
 	 */
 	public RepositoryInformation getRepositoryInformation() {
+
+		Assert.notNull(configuration, "Configuration must not be null");
 
 		RepositoryMetadata metadata = AbstractRepositoryMetadata
 				.getMetadata(forName(configuration.getRepositoryInterface()));
@@ -177,6 +180,8 @@ class RepositoryBeanDefinitionReader {
 		if (repositoryFragmentsContributor instanceof BeanDefinition bd) {
 			return (RepositoryFragmentsContributor) BeanUtils.instantiateClass(getClass(bd));
 		}
+
+		Assert.state(beanDefinition.getBeanClassName() != null, "No Repository BeanFactory set");
 
 		Class<?> repositoryFactoryBean = forName(beanDefinition.getBeanClassName());
 		Constructor<?> constructor = ClassUtils.getConstructorIfAvailable(repositoryFactoryBean, Class.class);

@@ -17,13 +17,15 @@ package org.springframework.data.repository.aot.generate;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Value object capturing metadata about a repository.
  *
  * @author Mark Paluch
  * @since 4.0
  */
-record AotRepositoryMetadata(String name, String module,
+record AotRepositoryMetadata(String name, @Nullable String module,
 		org.springframework.data.repository.aot.generate.AotRepositoryMetadata.RepositoryType type,
 		List<AotRepositoryMethod> methods) {
 
