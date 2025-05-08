@@ -15,15 +15,15 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
 import org.assertj.core.api.MapAssert;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.config.AotRepositoryContext;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -41,8 +41,7 @@ public class MethodCapturingRepositoryContributor extends RepositoryContributor 
 	}
 
 	@Override
-	protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method,
-			RepositoryInformation repositoryInformation) {
+	protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
 		capturedInvocations.add(method.getName(), method);
 		return null;
 	}

@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
@@ -43,6 +44,7 @@ import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
+import org.springframework.util.Assert;
 
 /**
  * Builder for AOT repository fragments.
@@ -59,9 +61,9 @@ class AotRepositoryBuilder {
 	private final ProjectionFactory projectionFactory;
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
-	private @Nullable ConstructorCustomizer constructorCustomizer;
+	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
 	private @Nullable MethodContributorFactory methodContributorFactory;
-	private ClassCustomizer customizer;
+	private Consumer<AotRepositoryClassBuilder> classCustomizer;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
 			ProjectionFactory projectionFactory) {
@@ -76,7 +78,7 @@ class AotRepositoryBuilder {
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
 				.build());
 
-		this.customizer = (info, builder) -> {};
+		this.classCustomizer = (builder) -> {};
 	}
 
 	/**
@@ -93,14 +95,14 @@ class AotRepositoryBuilder {
 	}
 
 	/**
-	 * Configure a {@link ClassCustomizer} customizer.
+	 * Configure a {@link AotRepositoryConstructorBuilder} customizer.
 	 *
 	 * @param classCustomizer must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withClassCustomizer(ClassCustomizer classCustomizer) {
+	public AotRepositoryBuilder withClassCustomizer(Consumer<AotRepositoryClassBuilder> classCustomizer) {
 
-		this.customizer = classCustomizer;
+		this.classCustomizer = classCustomizer;
 		return this;
 	}
 
@@ -110,7 +112,8 @@ class AotRepositoryBuilder {
 	 * @param constructorCustomizer must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withConstructorCustomizer(ConstructorCustomizer constructorCustomizer) {
+	public AotRepositoryBuilder withConstructorCustomizer(
+			Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
 
 		this.constructorCustomizer = constructorCustomizer;
 		return this;
@@ -162,7 +165,12 @@ class AotRepositoryBuilder {
 		generationMetadata.getFields().values().forEach(builder::addField);
 
 		// finally customize the file itself
-		this.customizer.customize(repositoryInformation, builder);
+		this.classCustomizer.accept(customizer -> {
+
+			Assert.notNull(customizer, "ClassCustomizer must not be null");
+			customizer.customize(builder);
+		});
+
 		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
 		AotRepositoryMetadata metadata = getAotRepositoryMetadata(methodMetadata);
 
@@ -171,11 +179,11 @@ class AotRepositoryBuilder {
 
 	private MethodSpec buildConstructor() {
 
-		AotRepositoryConstructorBuilder constructorBuilder = new AotRepositoryConstructorBuilder(repositoryInformation,
+		RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(
 				generationMetadata);
 
 		if (constructorCustomizer != null) {
-			constructorCustomizer.customize(constructorBuilder);
+			constructorCustomizer.accept(constructorBuilder);
 		}
 
 		return constructorBuilder.buildConstructor();
@@ -213,8 +221,7 @@ class AotRepositoryBuilder {
 
 		if (repositoryInformation.isQueryMethod(method) && methodContributorFactory != null) {
 
-			MethodContributor<? extends QueryMethod> contributor = methodContributorFactory.create(method,
-					repositoryInformation);
+			MethodContributor<? extends QueryMethod> contributor = methodContributorFactory.create(method);
 
 			if (contributor != null) {
 
@@ -273,20 +280,6 @@ class AotRepositoryBuilder {
 		return projectionFactory;
 	}
 
-	/**
-	 * Customizer interface to customize the AOT repository fragment class after it has been defined.
-	 */
-	public interface ClassCustomizer {
-
-		/**
-		 * Apply customization ot the AOT repository fragment class after it has been defined.
-		 *
-		 * @param information the repository information that is used for the AOT fragment.
-		 * @param builder the class builder to be customized.
-		 */
-		void customize(RepositoryInformation information, TypeSpec.Builder builder);
-
-	}
 
 	/**
 	 * Customizer interface to customize the AOT repository fragment constructor through
@@ -313,12 +306,11 @@ class AotRepositoryBuilder {
 		 * Apply customization ot the AOT repository fragment constructor.
 		 *
 		 * @param method the method to be contributed.
-		 * @param information repository information.
 		 * @return the {@link MethodContributor} to be used. Can be {@literal null} if the method and method metadata should
 		 *         not be contributed.
 		 */
 		@Nullable
-		MethodContributor<? extends QueryMethod> create(Method method, RepositoryInformation information);
+		MethodContributor<? extends QueryMethod> create(Method method);
 
 	}
 
