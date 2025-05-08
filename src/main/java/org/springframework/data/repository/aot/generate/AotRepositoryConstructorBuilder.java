@@ -15,15 +15,7 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.util.Map.Entry;
-
-import javax.lang.model.element.Modifier;
-
-import org.springframework.core.ResolvableType;
-import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 
 /**
@@ -33,18 +25,7 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotRepositoryConstructorBuilder {
-
-	private final RepositoryInformation repositoryInformation;
-	private final AotRepositoryFragmentMetadata metadata;
-
-	private ConstructorCustomizer customizer = (info, builder) -> {};
-
-	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation, AotRepositoryFragmentMetadata metadata) {
-
-		this.repositoryInformation = repositoryInformation;
-		this.metadata = metadata;
-	}
+public interface AotRepositoryConstructorBuilder {
 
 	/**
 	 * Add constructor parameter and create a field storing its value.
@@ -52,16 +33,7 @@ public class AotRepositoryConstructorBuilder {
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
 	 */
-	public void addParameter(String parameterName, Class<?> type) {
-
-		ResolvableType resolvableType = ResolvableType.forClass(type);
-		if (!resolvableType.hasGenerics() || !resolvableType.hasResolvableGenerics()) {
-			addParameter(parameterName, TypeName.get(type));
-			return;
-		}
-
-		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
-	}
+	void addParameter(String parameterName, Class<?> type);
 
 	/**
 	 * Add constructor parameter and create a field storing its value.
@@ -69,7 +41,7 @@ public class AotRepositoryConstructorBuilder {
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
 	 */
-	public void addParameter(String parameterName, TypeName type) {
+	default void addParameter(String parameterName, TypeName type) {
 		addParameter(parameterName, type, true);
 	}
 
@@ -80,14 +52,7 @@ public class AotRepositoryConstructorBuilder {
 	 * @param type parameter type.
 	 * @param createField whether to create a field for the parameter and assign its value to the field.
 	 */
-	public void addParameter(String parameterName, TypeName type, boolean createField) {
-
-		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
-
-		if (createField) {
-			this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
-		}
-	}
+	void addParameter(String parameterName, TypeName type, boolean createField);
 
 	/**
 	 * Add constructor customizer. Customizer is invoked after adding constructor arguments and before assigning
@@ -95,41 +60,19 @@ public class AotRepositoryConstructorBuilder {
 	 *
 	 * @param customizer the customizer with direct access to the {@link MethodSpec.Builder constructor builder}.
 	 */
-	public void customize(ConstructorCustomizer customizer) {
-		this.customizer = customizer;
-	}
-
-	MethodSpec buildConstructor() {
-
-		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
-
-		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			builder.addParameter(parameter.getValue().typeName(), parameter.getKey());
-		}
-
-		customizer.customize(repositoryInformation, builder);
-
-		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			if (parameter.getValue().isForLocalField()) {
-				builder.addStatement("this.$N = $N", parameter.getKey(), parameter.getKey());
-			}
-		}
-
-		return builder.build();
-	}
+	void customize(ConstructorCustomizer customizer);
 
 	/**
 	 * Customizer for the AOT repository constructor.
 	 */
-	public interface ConstructorCustomizer {
+	interface ConstructorCustomizer {
 
 		/**
 		 * Customize the constructor.
 		 *
-		 * @param information the repository information that is used for the AOT fragment.
 		 * @param builder the constructor builder to be customized.
 		 */
-		void customize(RepositoryInformation information, MethodSpec.Builder builder);
+		void customize(MethodSpec.Builder builder);
 
 	}
 

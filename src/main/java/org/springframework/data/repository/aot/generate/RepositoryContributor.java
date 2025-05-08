@@ -31,6 +31,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
+import org.springframework.util.StringUtils;
 import org.springframework.javapoet.TypeSpec;
 
 /**
@@ -136,23 +137,21 @@ public class RepositoryContributor {
 	/**
 	 * Customization hook for store implementations to customize class after building the entire class.
 	 */
-	protected void customizeClass(RepositoryInformation information,
-			TypeSpec.Builder builder) {
+	protected void customizeClass(AotRepositoryClassBuilder builder) {
 
 	}
 
 	/**
 	 * Customization hook for store implementations to customize the fragment constructor after building the constructor.
 	 */
-	protected void customizeConstructor(AotRepositoryConstructorBuilder constructorBuilder) {
+	protected void customizeConstructor(AotRepositoryConstructorBuilder builder) {
 
 	}
 
 	/**
 	 * Customization hook for store implementations to contribute a query method.
 	 */
-	protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method,
-			RepositoryInformation repositoryInformation) {
+	protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
 		return null;
 	}
 
