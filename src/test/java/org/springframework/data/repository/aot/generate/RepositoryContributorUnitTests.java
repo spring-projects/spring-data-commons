@@ -58,10 +58,10 @@ class RepositoryContributorUnitTests {
 		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
 
 			@Override
-			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method,
-					RepositoryInformation repositoryInformation) {
+			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
 
-				return MethodContributor.forQueryMethod(new QueryMethod(method, repositoryInformation, getProjectionFactory()))
+				return MethodContributor
+						.forQueryMethod(new QueryMethod(method, getRepositoryInformation(), getProjectionFactory()))
 						.withMetadata(new QueryMetadata() {
 
 							@Override
