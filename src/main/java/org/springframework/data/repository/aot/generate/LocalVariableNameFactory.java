@@ -31,10 +31,16 @@ class LocalVariableNameFactory implements VariableNameFactory {
 
 	private final MultiValueMap<String, String> variables;
 
+	LocalVariableNameFactory(Iterable<String> predefinedVariableNames) {
+
+		variables = new LinkedMultiValueMap<>();
+		predefinedVariableNames.forEach(varName -> variables.add(varName, varName));
+	}
+
 	/**
 	 * Create a new {@link LocalVariableNameFactory} considering available {@link MethodMetadata#getMethodArguments()
 	 * method arguments}.
-	 * 
+	 *
 	 * @param methodMetadata source metadata
 	 * @return new instance of {@link LocalVariableNameFactory}.
 	 */
@@ -50,12 +56,6 @@ class LocalVariableNameFactory implements VariableNameFactory {
 	 */
 	static LocalVariableNameFactory of(Set<String> predefinedVariables) {
 		return new LocalVariableNameFactory(predefinedVariables);
-	}
-
-	LocalVariableNameFactory(Iterable<String> predefinedVariableNames) {
-
-		variables = new LinkedMultiValueMap<>();
-		predefinedVariableNames.forEach(varName -> variables.add(varName, varName));
 	}
 
 	@Override
@@ -84,4 +84,5 @@ class LocalVariableNameFactory implements VariableNameFactory {
 		}
 		return suggestTargetName(suggested, counter + 1);
 	}
+
 }
