@@ -33,7 +33,6 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
-// TODO: extract constructor contributor in a similar way to MethodContributor.
 public class AotRepositoryConstructorBuilder {
 
 	private final RepositoryInformation repositoryInformation;
@@ -41,18 +40,17 @@ public class AotRepositoryConstructorBuilder {
 
 	private ConstructorCustomizer customizer = (info, builder) -> {};
 
-	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation,
-			AotRepositoryFragmentMetadata metadata) {
+	AotRepositoryConstructorBuilder(RepositoryInformation repositoryInformation, AotRepositoryFragmentMetadata metadata) {
 
 		this.repositoryInformation = repositoryInformation;
 		this.metadata = metadata;
 	}
 
 	/**
-	 * Add constructor parameter.
+	 * Add constructor parameter and create a field storing its value.
 	 *
-	 * @param parameterName
-	 * @param type
+	 * @param parameterName name of the parameter.
+	 * @param type parameter type.
 	 */
 	public void addParameter(String parameterName, Class<?> type) {
 
@@ -61,14 +59,15 @@ public class AotRepositoryConstructorBuilder {
 			addParameter(parameterName, TypeName.get(type));
 			return;
 		}
+
 		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
 	}
 
 	/**
-	 * Add constructor parameter and create a field for it.
+	 * Add constructor parameter and create a field storing its value.
 	 *
-	 * @param parameterName
-	 * @param type
+	 * @param parameterName name of the parameter.
+	 * @param type parameter type.
 	 */
 	public void addParameter(String parameterName, TypeName type) {
 		addParameter(parameterName, type, true);
@@ -77,13 +76,15 @@ public class AotRepositoryConstructorBuilder {
 	/**
 	 * Add constructor parameter.
 	 *
-	 * @param parameterName
-	 * @param type
+	 * @param parameterName name of the parameter.
+	 * @param type parameter type.
+	 * @param createField whether to create a field for the parameter and assign its value to the field.
 	 */
 	public void addParameter(String parameterName, TypeName type, boolean createField) {
 
 		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
-		if(createField) {
+
+		if (createField) {
 			this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
 		}
 	}
@@ -92,7 +93,7 @@ public class AotRepositoryConstructorBuilder {
 	 * Add constructor customizer. Customizer is invoked after adding constructor arguments and before assigning
 	 * constructor arguments to fields.
 	 *
-	 * @param customizer
+	 * @param customizer the customizer with direct access to the {@link MethodSpec.Builder constructor builder}.
 	 */
 	public void customize(ConstructorCustomizer customizer) {
 		this.customizer = customizer;
@@ -109,9 +110,8 @@ public class AotRepositoryConstructorBuilder {
 		customizer.customize(repositoryInformation, builder);
 
 		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			if(parameter.getValue().isForLocalField()) {
-				builder.addStatement("this.$N = $N", parameter.getKey(),
-					parameter.getKey());
+			if (parameter.getValue().isForLocalField()) {
+				builder.addStatement("this.$N = $N", parameter.getKey(), parameter.getKey());
 			}
 		}
 
@@ -123,7 +123,14 @@ public class AotRepositoryConstructorBuilder {
 	 */
 	public interface ConstructorCustomizer {
 
+		/**
+		 * Customize the constructor.
+		 *
+		 * @param information the repository information that is used for the AOT fragment.
+		 * @param builder the constructor builder to be customized.
+		 */
 		void customize(RepositoryInformation information, MethodSpec.Builder builder);
+
 	}
 
 }

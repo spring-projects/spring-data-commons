@@ -29,10 +29,13 @@ import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.TypeName;
 
 /**
+ * Metadata for a repository fragment.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
+ * @since 4.0
  */
-// TODO: Can we make this package-private?
-public class AotRepositoryFragmentMetadata {
+class AotRepositoryFragmentMetadata {
 
 	private final ClassName className;
 	private final Map<String, FieldSpec> fields = new HashMap<>(3);
@@ -59,18 +62,6 @@ public class AotRepositoryFragmentMetadata {
 		return className;
 	}
 
-	public String getTargetTypeSimpleName() {
-		return className.simpleName();
-	}
-
-	public String getTargetTypePackageName() {
-		return className.packageName();
-	}
-
-	public boolean hasField(String fieldName) {
-		return fields.containsKey(fieldName);
-	}
-
 	public void addField(String fieldName, TypeName type, Modifier... modifiers) {
 		fields.put(fieldName, FieldSpec.builder(type, fieldName, modifiers).build());
 	}
@@ -79,16 +70,12 @@ public class AotRepositoryFragmentMetadata {
 		fields.put(fieldSpec.name, fieldSpec);
 	}
 
-	Map<String, FieldSpec> getFields() {
+	public Map<String, FieldSpec> getFields() {
 		return fields;
 	}
 
 	public Map<String, ConstructorArgument> getConstructorArguments() {
 		return constructorArguments;
-	}
-
-	public void addConstructorArgument(String parameterName, TypeName type) {
-		addConstructorArgument(parameterName, type, parameterName);
 	}
 
 	public void addConstructorArgument(String parameterName, TypeName type, @Nullable String fieldName) {

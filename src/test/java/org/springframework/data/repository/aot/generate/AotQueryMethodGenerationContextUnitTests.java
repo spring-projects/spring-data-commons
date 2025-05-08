@@ -15,13 +15,14 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 
 import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
@@ -31,6 +32,7 @@ import org.springframework.data.util.TypeInformation;
  * Tests targeting {@link AotQueryMethodGenerationContext}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class AotQueryMethodGenerationContextUnitTests {
 
@@ -39,8 +41,8 @@ class AotQueryMethodGenerationContextUnitTests {
 
 		AotQueryMethodGenerationContext ctx = ctxFor("reservedParameterMethod");
 
-		assertThat(ctx.suggestLocalVariableName("foo")).isEqualTo("foo");
-		assertThat(ctx.suggestLocalVariableName("arg0")).isNotIn("arg0", "arg1", "arg2");
+		assertThat(ctx.localVariable("foo")).isEqualTo("foo");
+		assertThat(ctx.localVariable("arg0")).isNotIn("arg0", "arg1", "arg2");
 	}
 
 	AotQueryMethodGenerationContext ctxFor(String methodName) throws NoSuchMethodException {

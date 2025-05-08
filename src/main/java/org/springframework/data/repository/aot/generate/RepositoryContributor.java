@@ -136,7 +136,7 @@ public class RepositoryContributor {
 	/**
 	 * Customization hook for store implementations to customize class after building the entire class.
 	 */
-	protected void customizeClass(RepositoryInformation information, AotRepositoryFragmentMetadata metadata,
+	protected void customizeClass(RepositoryInformation information,
 			TypeSpec.Builder builder) {
 
 	}

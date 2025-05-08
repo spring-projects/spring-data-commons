@@ -52,6 +52,8 @@ import org.springframework.javapoet.TypeSpec;
  */
 class AotRepositoryBuilder {
 
+	private static final Log logger = LogFactory.getLog(AotRepositoryBuilder.class);
+
 	private final RepositoryInformation repositoryInformation;
 	private final String moduleName;
 	private final ProjectionFactory projectionFactory;
@@ -74,7 +76,7 @@ class AotRepositoryBuilder {
 				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
 				.build());
 
-		this.customizer = (info, metadata, builder) -> {};
+		this.customizer = (info, builder) -> {};
 	}
 
 	/**
@@ -146,15 +148,21 @@ class AotRepositoryBuilder {
 					return it.getDeclaringClass().getName();
 				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
 				.forEach(method -> {
-					contributeMethod(method, repositoryComposition, methodMetadata, builder);
+					try {
+						contributeMethod(method, repositoryComposition, methodMetadata, builder);
+					} catch (RuntimeException e) {
+						if (logger.isErrorEnabled()) {
+							logger.error("Failed to contribute Repository method [%s.%s]"
+									.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()), e);
+						}
+					}
 				});
 
 		// write fields at the end so we make sure to capture things added by methods
 		generationMetadata.getFields().values().forEach(builder::addField);
 
 		// finally customize the file itself
-		this.customizer.customize(repositoryInformation, generationMetadata, builder);
-
+		this.customizer.customize(repositoryInformation, builder);
 		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
 		AotRepositoryMetadata metadata = getAotRepositoryMetadata(methodMetadata);
 
@@ -273,11 +281,10 @@ class AotRepositoryBuilder {
 		/**
 		 * Apply customization ot the AOT repository fragment class after it has been defined.
 		 *
-		 * @param information repository information.
-		 * @param metadata metadata of the AOT repository fragment.
-		 * @param builder the actual builder.
+		 * @param information the repository information that is used for the AOT fragment.
+		 * @param builder the class builder to be customized.
 		 */
-		void customize(RepositoryInformation information, AotRepositoryFragmentMetadata metadata, TypeSpec.Builder builder);
+		void customize(RepositoryInformation information, TypeSpec.Builder builder);
 
 	}
 
