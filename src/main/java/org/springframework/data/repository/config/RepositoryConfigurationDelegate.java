@@ -15,13 +15,28 @@
  */
 package org.springframework.data.repository.config;
 
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.AutowireCandidateResolver;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
@@ -42,10 +57,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
 
-import java.lang.reflect.TypeVariable;
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  * Delegate for configuration integration to reuse the general way of detecting repositories. Customization is done by
  * providing a configuration format specific {@link RepositoryConfigurationSource} (currently either XML or annotations
@@ -64,6 +75,9 @@ public class RepositoryConfigurationDelegate {
 	private static final String MULTIPLE_MODULES = "Multiple Spring Data modules found, entering strict repository configuration mode";
 	private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = "Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working";
 
+	private static final List<Class<?>> DEFAULT_AUTOWIRE_CANDIDATE_RESOLVERS = List
+			.of(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class);
+
 	private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
 
 	private final RepositoryConfigurationSource configurationSource;
@@ -81,7 +95,7 @@ public class RepositoryConfigurationDelegate {
 	 * @param environment must not be {@literal null}.
 	 */
 	public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource,
-										   ResourceLoader resourceLoader, Environment environment) {
+			ResourceLoader resourceLoader, Environment environment) {
 
 		this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
 		boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
@@ -106,7 +120,7 @@ public class RepositoryConfigurationDelegate {
 	 *         {@link Environment}.
 	 */
 	private static Environment defaultEnvironment(@Nullable Environment environment,
-												  @Nullable ResourceLoader resourceLoader) {
+			@Nullable ResourceLoader resourceLoader) {
 
 		if (environment != null) {
 			return environment;
@@ -125,7 +139,7 @@ public class RepositoryConfigurationDelegate {
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 */
 	public List<BeanComponentDefinition> registerRepositoriesIn(BeanDefinitionRegistry registry,
-																RepositoryConfigurationExtension extension) {
+			RepositoryConfigurationExtension extension) {
 
 		if (logger.isInfoEnabled()) {
 			logger.info(LogMessage.format("Bootstrapping Spring Data %s repositories in %s mode.", //
@@ -211,7 +225,7 @@ public class RepositoryConfigurationDelegate {
 	}
 
 	private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension,
-									   Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
+			Map<String, RepositoryConfigurationAdapter<?>> metadataByRepositoryBeanName) {
 
 		BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder
 				.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -234,37 +248,32 @@ public class RepositoryConfigurationDelegate {
 	 * @param registry must not be {@literal null}.
 	 */
 	private static void potentiallyLazifyRepositories(Map<String, RepositoryConfiguration<?>> configurations,
-													  BeanDefinitionRegistry registry, BootstrapMode mode) {
+			BeanDefinitionRegistry registry, BootstrapMode mode) {
 
-		if (!DefaultListableBeanFactory.class.isInstance(registry) || BootstrapMode.DEFAULT.equals(mode)) {
+		if (!(registry instanceof DefaultListableBeanFactory beanFactory) || BootstrapMode.DEFAULT.equals(mode)) {
 			return;
 		}
 
-		DefaultListableBeanFactory beanFactory = DefaultListableBeanFactory.class.cast(registry);
 		AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();
 
-		if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class)
-				.contains(resolver.getClass())) {
+		if (!DEFAULT_AUTOWIRE_CANDIDATE_RESOLVERS.contains(resolver.getClass())) {
 
 			logger.warn(LogMessage.format(NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER, resolver.getClass().getName()));
-
 			return;
 		}
 
-		AutowireCandidateResolver newResolver = LazyRepositoryInjectionPointResolver.class.isInstance(resolver) //
-				? LazyRepositoryInjectionPointResolver.class.cast(resolver).withAdditionalConfigurations(configurations) //
+		AutowireCandidateResolver newResolver = resolver instanceof LazyRepositoryInjectionPointResolver lazy //
+				? lazy.withAdditionalConfigurations(configurations) //
 				: new LazyRepositoryInjectionPointResolver(configurations);
 
 		beanFactory.setAutowireCandidateResolver(newResolver);
 
-		if (mode.equals(BootstrapMode.DEFERRED)) {
+		if (mode.equals(BootstrapMode.DEFERRED)
+				&& !beanFactory.containsBean(DeferredRepositoryInitializationListener.class.getName())) {
 
 			logger.debug("Registering deferred repository initialization listener.");
-
-			if (!beanFactory.containsBean(DeferredRepositoryInitializationListener.class.getName())) {
-				beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
-						new DeferredRepositoryInitializationListener(beanFactory));
-			}
+			beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(),
+					new DeferredRepositoryInitializationListener(beanFactory));
 		}
 	}
 
@@ -274,7 +283,7 @@ public class RepositoryConfigurationDelegate {
 	 * scanning.
 	 *
 	 * @return {@literal true} if multiple data store repository implementations are present in the application. This
-	 *         typically means an Spring application is using more than 1 type of data store.
+	 *         typically means a Spring application is using more than 1 type of data store.
 	 */
 	private boolean multipleStoresDetected() {
 

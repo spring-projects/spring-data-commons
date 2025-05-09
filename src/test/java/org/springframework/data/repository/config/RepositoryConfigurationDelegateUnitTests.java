@@ -15,12 +15,20 @@
  */
 package org.springframework.data.repository.config;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.lang.reflect.TypeVariable;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -51,13 +59,6 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.sample.AddressRepository;
 import org.springframework.data.repository.sample.AddressRepositoryClient;
 import org.springframework.data.repository.sample.ProductRepository;
-
-import java.lang.reflect.TypeVariable;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link RepositoryConfigurationDelegate}.
@@ -112,8 +113,8 @@ class RepositoryConfigurationDelegateUnitTests {
 		assertThat(beanFactory.getBeanNamesForType(DeferredRepositoryInitializationListener.class)).isNotEmpty();
 	}
 
-	@Test
-	void registersMultiDeferredRepositoryInitializationListener() {
+	@Test // GH-3287
+	void registersOneDeferredRepositoryInitializationListener() {
 
 		var beanFactory = assertLazyRepositoryBeanSetup(DeferredConfig.class, OtherDeferredConfig.class);
 
