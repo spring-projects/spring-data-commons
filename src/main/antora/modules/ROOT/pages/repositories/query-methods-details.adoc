@@ -1,6 +1,5 @@
 [[repositories.query-methods.details]]
 = Defining Query Methods
-:feature-scroll:
 
 The repository proxy has two ways to derive a store-specific query from the method name:
 
