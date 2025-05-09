@@ -6,6 +6,7 @@ asciidoc:
     attribute-missing: 'warn'
     chomp: 'all'
     version: ${project.version}
+    copyright-year: ${current.year}
     springversionshort: ${spring.short}
     springversion: ${spring}
     spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/data-commons/docs/{version}/api/
