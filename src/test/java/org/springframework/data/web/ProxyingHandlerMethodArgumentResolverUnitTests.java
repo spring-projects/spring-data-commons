@@ -27,11 +27,13 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Unit tests for {@link ProxyingHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Chris Bono
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
@@ -88,6 +90,14 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
 	}
 
+	@Test // GH-3258
+	void doesNotSupportAtModelAttributeForMultipartParam() throws Exception {
+
+		var parameter = getParameter("withModelAttributeMultipart", MultipartFile.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
 
 		var method = ReflectionUtils.findMethod(Controller.class, methodName, parameterType);
@@ -112,5 +122,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		void withForeignAnnotation(@Autowired SampleInterface param);
 
 		void withModelAttribute(@ModelAttribute SampleInterface param);
+
+		void withModelAttributeMultipart(@ModelAttribute MultipartFile file);
 	}
 }
