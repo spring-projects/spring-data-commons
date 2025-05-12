@@ -36,6 +36,8 @@ Some store modules may define their own result wrapper types.
 |`GeoResult<T>`|A result entry with additional information, such as the distance to a reference location.
 |`GeoResults<T>`|A list of `GeoResult<T>` with additional information, such as the average distance to a reference location.
 |`GeoPage<T>`|A `Page` with `GeoResult<T>`, such as the average distance to a reference location.
+|`SearchResult<T>`|A result entry with additional information, such as the score in relation to the reference search term.
+|`SearchResults<T>`|A list of `SearchResult<T>`.
 |`Mono<T>`|A Project Reactor `Mono` emitting zero or one element using reactive repositories. Expects the query method to return one result at most. If no result is found, `Mono.empty()` is returned. More than one result triggers an `IncorrectResultSizeDataAccessException`.
 |`Flux<T>`|A Project Reactor `Flux` emitting zero, one, or many elements using reactive repositories. Queries returning `Flux` can emit also an infinite number of elements.
 |`Single<T>`|A RxJava `Single` emitting a single element using reactive repositories. Expects the query method to return one result at most. If no result is found, `Mono.empty()` is returned. More than one result triggers an `IncorrectResultSizeDataAccessException`.
