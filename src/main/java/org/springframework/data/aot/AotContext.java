@@ -72,7 +72,6 @@ public interface AotContext extends EnvironmentCapable {
 	 * Create an {@link AotContext} backed by the given {@link BeanFactory}.
 	 *
 	 * @param beanFactory reference to the {@link BeanFactory}; must not be {@literal null}.
-	 * @return a new instance of {@link AotContext}.
 	 * @param environment reference to the {@link Environment}; must not be {@literal null}.
 	 * @return a new instance of {@link AotContext}.
 	 * @see BeanFactory
