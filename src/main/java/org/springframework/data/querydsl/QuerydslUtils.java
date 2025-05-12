@@ -41,7 +41,7 @@ public abstract class QuerydslUtils {
 	 * @param path can be {@literal null}.
 	 * @return
 	 */
-	public static String toDotPath(Path<?> path) {
+	public static String toDotPath(@Nullable Path<?> path) {
 		return toDotPath(path, "");
 	}
 
