@@ -137,7 +137,7 @@ public class CustomConversions {
 	/**
 	 * Creates a new {@link CustomConversions} instance registering all given user defined converters and selecting
 	 * {@link Converter converters} from {@link StoreConversions} depending on
-	 * {@link StoreConversions#getSimpleTypeHolder() store simple types} only considering those that either convert
+	 * {@link CustomConversions#getSimpleTypeHolder() store simple types} only considering those that either convert
 	 * to/from a store supported type.
 	 *
 	 * @param storeConversions must not be {@literal null}.

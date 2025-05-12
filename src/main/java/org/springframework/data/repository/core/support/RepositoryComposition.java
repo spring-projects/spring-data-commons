@@ -354,12 +354,6 @@ public class RepositoryComposition {
 		return this.methodLookup;
 	}
 
-	/**
-	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
-	 *
-	 * @author Mark Paluch
-	 * @author Christoph Strobl
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -383,6 +377,12 @@ public class RepositoryComposition {
 		return this.argumentConverter;
 	}
 
+	/**
+	 * Value object representing an ordered list of {@link RepositoryFragment fragments}.
+	 *
+	 * @author Mark Paluch
+	 * @author Christoph Strobl
+	 */
 	public static class RepositoryFragments implements Streamable<RepositoryFragment<?>> {
 
 		static final RepositoryFragments EMPTY = new RepositoryFragments(Collections.emptyList());
