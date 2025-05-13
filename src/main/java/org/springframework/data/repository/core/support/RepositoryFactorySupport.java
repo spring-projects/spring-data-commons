@@ -534,8 +534,23 @@ public abstract class RepositoryFactorySupport
 	 * @param <ID> the id type
 	 * @param domainClass
 	 * @return
+	 * @deprecated since 4.0, use {@link #getEntityInformation(RepositoryMetadata)} instead.
 	 */
-	public abstract <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
+	@Deprecated(since = "4.0")
+	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+		throw new UnsupportedOperationException("getEntityInformation is not implemented");
+	}
+
+	/**
+	 * Returns the {@link EntityInformation} for the given {@link RepositoryMetadata}.
+	 *
+	 * @param metadata must not be {@literal null}.
+	 * @return the {@link EntityInformation} to be used for {@link RepositoryMetadata}.
+	 * @since 4.0
+	 */
+	public EntityInformation<?, ?> getEntityInformation(RepositoryMetadata metadata) {
+		return getEntityInformation(metadata.getDomainType());
+	}
 
 	/**
 	 * Create a repository instance as backing for the query proxy.

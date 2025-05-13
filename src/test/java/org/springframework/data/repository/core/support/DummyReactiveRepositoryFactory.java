@@ -54,8 +54,7 @@ public class DummyReactiveRepositoryFactory extends ReactiveRepositoryFactorySup
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public EntityInformation<?, ?> getEntityInformation(RepositoryMetadata metadata) {
 		return mock(EntityInformation.class);
 	}
 
