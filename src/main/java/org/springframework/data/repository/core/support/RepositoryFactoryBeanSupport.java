@@ -261,7 +261,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
 		return (EntityInformation<S, ID>) getRequiredFactory()
-				.getEntityInformation(getRequiredRepositoryMetadata().getDomainType());
+				.getEntityInformation(getRequiredRepositoryMetadata());
 	}
 
 	@Override
