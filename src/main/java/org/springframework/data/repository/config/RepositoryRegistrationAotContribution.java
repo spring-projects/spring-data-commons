@@ -194,9 +194,9 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 		RepositoryInformation repositoryInformation = reader.getRepositoryInformation();
 		DefaultAotRepositoryContext repositoryContext = new DefaultAotRepositoryContext(bean, repositoryInformation,
-				extension.getModuleName(), AotContext.from(bean.getBeanFactory(), environment));
+				extension.getModuleName(), AotContext.from(bean.getBeanFactory(), environment),
+				configuration.getConfigurationSource());
 
-		repositoryContext.setBasePackages(repositoryConfiguration.getBasePackages().toSet());
 		repositoryContext.setIdentifyingAnnotations(extension.getIdentifyingAnnotations());
 
 		return repositoryContext;

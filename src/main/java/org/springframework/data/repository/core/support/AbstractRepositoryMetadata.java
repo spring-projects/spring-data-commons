@@ -100,11 +100,16 @@ public abstract class AbstractRepositoryMetadata implements RepositoryMetadata {
 
 	@Override
 	public Class<?> getReturnedDomainClass(Method method) {
+		return getReturnedDomainTypeInformation(method).getType();
+	}
+
+	@Override
+	public TypeInformation<?> getReturnedDomainTypeInformation(Method method) {
 
 		TypeInformation<?> returnType = getReturnType(method);
 		returnType = ReactiveWrapperConverters.unwrapWrapperTypes(returnType);
 
-		return QueryExecutionConverters.unwrapWrapperTypes(returnType, getDomainTypeInformation()).getType();
+		return QueryExecutionConverters.unwrapWrapperTypes(returnType, getDomainTypeInformation());
 	}
 
 	@Override

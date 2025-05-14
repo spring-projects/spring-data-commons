@@ -90,6 +90,11 @@ public abstract class RepositoryInformationSupport implements RepositoryInformat
 	}
 
 	@Override
+	public TypeInformation<?> getReturnedDomainTypeInformation(Method method) {
+		return getMetadata().getReturnedDomainTypeInformation(method);
+	}
+
+	@Override
 	public CrudMethods getCrudMethods() {
 		return getMetadata().getCrudMethods();
 	}
