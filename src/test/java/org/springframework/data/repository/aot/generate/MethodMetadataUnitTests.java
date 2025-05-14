@@ -15,13 +15,14 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 
 import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.TypeInformation;
@@ -73,6 +74,7 @@ class MethodMetadataUnitTests {
 
 		RepositoryInformation ri = Mockito.mock(RepositoryInformation.class);
 		Mockito.doReturn(TypeInformation.of(target.getReturnType())).when(ri).getReturnType(eq(target));
+		Mockito.doReturn(TypeInformation.of(target.getReturnType())).when(ri).getReturnedDomainTypeInformation(eq(target));
 		return new MethodMetadata(ri, target);
 	}
 

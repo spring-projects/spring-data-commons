@@ -381,7 +381,7 @@
 	</profiles>
 
 	<repositories>
-<repository>
+		<repository>
 			<id>spring-snapshot</id>
 			<url>https://repo.spring.io/snapshot</url>
 			<snapshots>

@@ -46,6 +46,7 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 	private final RegisteredBean bean;
 	private final String moduleName;
+	private final RepositoryConfigurationSource configurationSource;
 	private final AotContext aotContext;
 	private final RepositoryInformation repositoryInformation;
 	private final Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
@@ -56,12 +57,14 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	private String beanName;
 
 	public DefaultAotRepositoryContext(RegisteredBean bean, RepositoryInformation repositoryInformation,
-			String moduleName, AotContext aotContext) {
+			String moduleName, AotContext aotContext, RepositoryConfigurationSource configurationSource) {
 		this.bean = bean;
 		this.repositoryInformation = repositoryInformation;
 		this.moduleName = moduleName;
+		this.configurationSource = configurationSource;
 		this.aotContext = aotContext;
 		this.beanName = bean.getBeanName();
+		this.basePackages = configurationSource.getBasePackages().toSet();
 	}
 
 	public AotContext getAotContext() {
@@ -71,6 +74,11 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public String getModuleName() {
 		return moduleName;
+	}
+
+	@Override
+	public RepositoryConfigurationSource getConfigurationSource() {
+		return configurationSource;
 	}
 
 	@Override

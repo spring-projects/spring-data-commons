@@ -48,18 +48,25 @@ class MethodMetadata {
 	MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
-		this.actualReturnType = ResolvableType.forType(repositoryInformation.getReturnedDomainClass(method));
+		this.actualReturnType = repositoryInformation.getReturnedDomainTypeInformation(method).toResolvableType();
 		this.initParameters(repositoryInformation, method, new DefaultParameterNameDiscoverer());
 	}
 
-	@Nullable
-	public String getParameterNameOf(Class<?> type) {
-		for (Entry<String, ParameterSpec> entry : methodArguments.entrySet()) {
-			if (entry.getValue().type.equals(TypeName.get(type))) {
-				return entry.getKey();
-			}
+	private void initParameters(RepositoryInformation repositoryInformation, Method method,
+			ParameterNameDiscoverer nameDiscoverer) {
+
+		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
+
+		for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+
+			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+			methodParameter.initParameterNameDiscovery(nameDiscoverer);
+			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
+
+			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
+
+			addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
 		}
-		return null;
 	}
 
 	ResolvableType getReturnType() {
@@ -96,20 +103,4 @@ class MethodMetadata {
 		return localVariables;
 	}
 
-	private void initParameters(RepositoryInformation repositoryInformation, Method method,
-			ParameterNameDiscoverer nameDiscoverer) {
-
-		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
-
-		for (java.lang.reflect.Parameter parameter : method.getParameters()) {
-
-			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
-			methodParameter.initParameterNameDiscovery(nameDiscoverer);
-			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
-
-			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
-
-			addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
-		}
-	}
 }

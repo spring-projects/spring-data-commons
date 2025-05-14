@@ -15,10 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import example.UserRepository;
 import example.UserRepository.User;
@@ -29,6 +28,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.TypeInformation;
@@ -58,6 +58,7 @@ class AotRepositoryMethodBuilderUnitTests {
 		when(methodGenerationContext.getMethod()).thenReturn(method);
 		when(methodGenerationContext.getReturnType()).thenReturn(ResolvableType.forClass(User.class));
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
+		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
 		methodMetadata.addParameter(ParameterSpec.builder(String.class, "firstname").build());
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
@@ -75,6 +76,7 @@ class AotRepositoryMethodBuilderUnitTests {
 		when(methodGenerationContext.getReturnType())
 				.thenReturn(ResolvableType.forClassWithGenerics(List.class, User.class));
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
+		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
 		methodMetadata
 				.addParameter(ParameterSpec.builder(ParameterizedTypeName.get(List.class, String.class), "firstnames").build());

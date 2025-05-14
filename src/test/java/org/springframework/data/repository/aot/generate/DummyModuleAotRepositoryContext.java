@@ -26,6 +26,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.test.tools.ClassFile;
 import org.springframework.data.repository.config.AotRepositoryContext;
+import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.lang.Nullable;
@@ -46,6 +47,11 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public String getModuleName() {
 		return "Commons";
+	}
+
+	@Override
+	public RepositoryConfigurationSource getConfigurationSource() {
+		return null;
 	}
 
 	@Override

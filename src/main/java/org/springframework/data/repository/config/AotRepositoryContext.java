@@ -46,9 +46,16 @@ public interface AotRepositoryContext extends AotContext {
 	String getModuleName();
 
 	/**
+	 * @return the repository configuration source.
+	 */
+	RepositoryConfigurationSource getConfigurationSource();
+
+	/**
 	 * @return a {@link Set} of {@link String base packages} to search for repositories.
 	 */
-	Set<String> getBasePackages();
+	default Set<String> getBasePackages() {
+		return getConfigurationSource().getBasePackages().toSet();
+	}
 
 	/**
 	 * @return the {@link Annotation} types used to identify domain types.

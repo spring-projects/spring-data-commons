@@ -403,7 +403,8 @@ public class QueryMethod {
 			}
 		}
 
-		throw new IllegalStateException("Method has to have one of the following return types " + types);
+		throw new IllegalStateException(
+				"Method '%s' has to have one of the following return types: %s".formatted(method, types));
 	}
 
 	static class QueryMethodValidator {

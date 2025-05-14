@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.User;
@@ -58,6 +60,16 @@ class AbstractRepositoryMetadataUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ConcreteRepository.class);
 		Method method = ConcreteRepository.class.getMethod("intermediateMethod");
 		assertThat(metadata.getReturnedDomainClass(method)).isEqualTo(User.class);
+	}
+
+	@Test // GH-3279
+	void detectsProjectionTypeCorrectly() throws Exception {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(ExtendingRepository.class);
+		Method method = ExtendingRepository.class.getMethod("findByFirstname", Pageable.class, String.class, Class.class);
+
+		ResolvableType resolvableType = metadata.getReturnedDomainTypeInformation(method).toResolvableType();
+		assertThat(resolvableType.getType()).hasToString("T");
 	}
 
 	@Test // DATACMNS-98
@@ -152,6 +164,8 @@ class AbstractRepositoryMetadataUnitTests {
 	interface ExtendingRepository extends Serializable, UserRepository {
 
 		Page<User> findByFirstname(Pageable pageable, String firstname);
+
+		<T> Page<T> findByFirstname(Pageable pageable, String firstname, Class<T> projectionType);
 
 		GenericType<User> someMethod();
 

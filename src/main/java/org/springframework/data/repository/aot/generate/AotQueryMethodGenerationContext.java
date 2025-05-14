@@ -293,4 +293,22 @@ public class AotQueryMethodGenerationContext {
 		return getParameterName(queryMethod.getParameters().getLimitIndex());
 	}
 
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.ScrollPosition scroll position parameter}
+	 *         or {@code null} if the method does not declare a scroll position parameter.
+	 */
+	@Nullable
+	public String getScrollPositionParameterName() {
+		return getParameterName(queryMethod.getParameters().getScrollPositionIndex());
+	}
+
+	/**
+	 * @return the parameter name for the {@link Class dynamic projection parameter} or {@code null} if the method does
+	 *         not declare a dynamic projection parameter.
+	 */
+	@Nullable
+	public String getDynamicProjectionParameterName() {
+		return getParameterName(queryMethod.getParameters().getDynamicProjectionIndex());
+	}
+
 }
