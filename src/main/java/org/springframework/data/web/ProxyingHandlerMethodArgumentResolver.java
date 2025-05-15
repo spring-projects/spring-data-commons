@@ -90,9 +90,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 			return false;
 		}
 
-		// Annotated parameter (excluding multipart @ModelAttribute)
-		if (parameter.hasParameterAnnotation(ProjectedPayload.class) ||
-				(parameter.hasParameterAnnotation(ModelAttribute.class) && !MultipartResolutionDelegate.isMultipartArgument(parameter))) {
+		// Annotated parameter (excluding multipart)
+		if ((parameter.hasParameterAnnotation(ProjectedPayload.class) || parameter.hasParameterAnnotation(
+				ModelAttribute.class)) && !MultipartResolutionDelegate.isMultipartArgument(parameter)) {
 			return true;
 		}
 

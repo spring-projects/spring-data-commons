@@ -98,6 +98,22 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
 
+	@Test // GH-3258
+	void doesSupportAtProjectedPayload() throws Exception {
+
+		var parameter = getParameter("withProjectedPayload", SampleInterface.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+	}
+
+	@Test // GH-3258
+	void doesNotSupportAtProjectedPayloadForMultipartParam() throws Exception {
+
+		var parameter = getParameter("withProjectedPayloadMultipart", MultipartFile.class);
+
+		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
 
 		var method = ReflectionUtils.findMethod(Controller.class, methodName, parameterType);
@@ -124,5 +140,9 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		void withModelAttribute(@ModelAttribute SampleInterface param);
 
 		void withModelAttributeMultipart(@ModelAttribute MultipartFile file);
+
+		void withProjectedPayload(@ProjectedPayload SampleInterface param);
+
+		void withProjectedPayloadMultipart(@ProjectedPayload MultipartFile file);
 	}
 }
