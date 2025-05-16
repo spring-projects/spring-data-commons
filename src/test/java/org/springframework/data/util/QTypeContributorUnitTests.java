@@ -26,10 +26,16 @@ import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
 import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
 import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.querydsl.User;
 import org.springframework.javapoet.ClassName;
 
 import com.querydsl.core.types.EntityPath;
 
+/**
+ * Unit tests for {@link QTypeContributor}.
+ *
+ * @author ckdgus08
+ */
 class QTypeContributorUnitTests {
 
 	@Test // GH-2721
@@ -67,5 +73,60 @@ class QTypeContributorUnitTests {
 
 		assertThat(generationContext.getRuntimeHints()).matches(
 				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person.class).negate());
+	}
+
+	@Test // DATAMONGO-4958
+	void doesNotAddQTypeHintForArrayType() {
+
+		GenerationContext generationContext = new DefaultGenerationContext(
+				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+
+		QTypeContributor.contributeEntityPath(Person[].class, generationContext, HidingClassLoader.hideTypes());
+
+		assertThat(generationContext.getRuntimeHints()).matches(
+				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person.class).negate());
+		assertThat(generationContext.getRuntimeHints()).matches(
+				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person[].class).negate());
+	}
+
+	@Test // DATAMONGO-4958
+	void addsQTypeHintForQUserType() {
+
+		GenerationContext generationContext = new DefaultGenerationContext(
+				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+
+		QTypeContributor.contributeEntityPath(User.class, generationContext, getClass().getClassLoader());
+
+		var qUserHintCount = generationContext.getRuntimeHints().reflection().typeHints()
+				.filter(hint -> hint.getType().getName().equals("org.springframework.data.querydsl.QUser"))
+				.count();
+		assertThat(qUserHintCount).isEqualTo(1);
+	}
+
+	@Test // DATAMONGO-4958
+	void doesNotAddQTypeHintForQUserArrayType() {
+
+		GenerationContext generationContext = new DefaultGenerationContext(
+				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+		var classLoader = getClass().getClassLoader();
+
+		QTypeContributor.contributeEntityPath(User[].class, generationContext, classLoader);
+
+		assertThat(generationContext.getRuntimeHints().reflection().typeHints()).isEmpty();
+		var qUserHintCount = generationContext.getRuntimeHints().reflection().typeHints()
+				.filter(hint -> hint.getType().getName().equals("org.springframework.data.querydsl.QUser"))
+				.count();
+		assertThat(qUserHintCount).isEqualTo(0);
+	}
+
+	@Test // DATAMONGO-4958
+	void doesNotAddQTypeHintForPrimitiveType() {
+
+		GenerationContext generationContext = new DefaultGenerationContext(
+				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+
+		QTypeContributor.contributeEntityPath(int.class, generationContext, getClass().getClassLoader());
+
+		assertThat(generationContext.getRuntimeHints().reflection().typeHints()).isEmpty();
 	}
 }
