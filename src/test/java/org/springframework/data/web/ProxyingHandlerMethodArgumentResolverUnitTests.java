@@ -22,6 +22,7 @@ import example.SampleInterface;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -43,7 +44,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 			() -> new DefaultConversionService(), true);
 
 	@Test // DATACMNS-776
-	void supportAnnotatedInterface() throws Exception {
+	void supportAnnotatedInterface() {
 
 		var parameter = getParameter("with", AnnotatedInterface.class);
 
@@ -51,7 +52,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	void supportsUnannotatedInterfaceFromUserPackage() throws Exception {
+	void supportsUnannotatedInterfaceFromUserPackage() {
 
 		var parameter = getParameter("with", SampleInterface.class);
 
@@ -59,7 +60,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() throws Exception {
+	void doesNotSupportUnannotatedInterfaceFromSpringNamespace() {
 
 		var parameter = getParameter("with", UnannotatedInterface.class);
 
@@ -67,7 +68,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // DATACMNS-776
-	void doesNotSupportCoreJavaType() throws Exception {
+	void doesNotSupportCoreJavaType() {
 
 		var parameter = getParameter("with", List.class);
 
@@ -75,7 +76,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // GH-2937
-	void doesNotSupportForeignSpringAnnotations() throws Exception {
+	void doesNotSupportForeignSpringAnnotations() {
 
 		var parameter = getParameter("withForeignAnnotation", SampleInterface.class);
 
@@ -83,7 +84,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // GH-2937
-	void doesSupportAtModelAttribute() throws Exception {
+	void doesSupportAtModelAttribute() {
 
 		var parameter = getParameter("withModelAttribute", SampleInterface.class);
 
@@ -91,7 +92,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // GH-3258
-	void doesNotSupportAtModelAttributeForMultipartParam() throws Exception {
+	void doesNotSupportAtModelAttributeForMultipartParam() {
 
 		var parameter = getParameter("withModelAttributeMultipart", MultipartFile.class);
 
@@ -99,7 +100,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // GH-3258
-	void doesSupportAtProjectedPayload() throws Exception {
+	void doesSupportAtProjectedPayload() {
 
 		var parameter = getParameter("withProjectedPayload", SampleInterface.class);
 
@@ -107,7 +108,7 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	}
 
 	@Test // GH-3258
-	void doesNotSupportAtProjectedPayloadForMultipartParam() throws Exception {
+	void doesNotSupportAtProjectedPayloadForMultipartParam() {
 
 		var parameter = getParameter("withProjectedPayloadMultipart", MultipartFile.class);
 
@@ -145,4 +146,5 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 
 		void withProjectedPayloadMultipart(@ProjectedPayload MultipartFile file);
 	}
+
 }
