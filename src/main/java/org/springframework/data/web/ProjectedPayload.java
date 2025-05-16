@@ -22,12 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark projection interfaces that are supposed to be used as projection interface to bind request or
- * response payloads to.
+ * Annotation to mark projection interfaces and handler method projection arguments that are supposed to be used as
+ * projection interface to bind request or response payloads to.
  *
  * @author Oliver Gierke
  * @author Chris Bono
- * @soundtrack
  * @since 1.13
  */
 @Documented
