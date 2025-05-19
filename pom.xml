@@ -131,8 +131,7 @@
 		<dependency>
 			<groupId>io.reactivex.rxjava3</groupId>
 			<artifactId>rxjava</artifactId>
-			<!-- Javadoc on Java 24 fails otherwise with: Cannot attach type annotations -->
-			<version>3.1.1</version>
+			<version>${rxjava3}</version>
 			<optional>true</optional>
 		</dependency>
 
