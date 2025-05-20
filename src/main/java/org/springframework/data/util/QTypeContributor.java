@@ -42,6 +42,10 @@ public class QTypeContributor {
 				return;
 			}
 
+			if (type.isPrimitive() || type.isArray()) {
+				return;
+			}
+
 			String queryClassName = getQueryClassName(type);
 			if (ClassUtils.isPresent(queryClassName, classLoader)) {
 
