@@ -55,13 +55,23 @@ public class PageImpl<T> extends Chunk<T> implements Page<T> {
 	}
 
 	/**
+	 * Creates a new {@link PageImpl} with the given content and pageable.
+	 *
+	 * @param content must not be {@literal null}.
+	 * @param pageable the paging information, must not be {@literal null}.
+	 */
+	public PageImpl(List<T> content, Pageable pageable) {
+		this(content, pageable, CollectionUtils.isEmpty(content) ? 0 : content.size());
+	}
+
+	/**
 	 * Creates a new {@link PageImpl} with the given content. This will result in the created {@link Page} being identical
 	 * to the entire {@link List}.
 	 *
 	 * @param content must not be {@literal null}.
 	 */
 	public PageImpl(List<T> content) {
-		this(content, Pageable.unpaged(), CollectionUtils.isEmpty(content) ? 0 : content.size());
+		this(content, Pageable.unpaged());
 	}
 
 	@Override
