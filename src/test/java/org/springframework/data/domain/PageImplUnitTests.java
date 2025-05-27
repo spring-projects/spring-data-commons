@@ -33,6 +33,22 @@ import org.junit.jupiter.api.Test;
 class PageImplUnitTests {
 
 	@Test
+	void createsPageWithContentAndPageable() {
+
+		List<String> content = Arrays.asList("foo", "bar", "baz");
+		PageRequest pageable = PageRequest.of(1, 10);
+
+		Page<String> page = new PageImpl<>(content, pageable);
+
+		assertThat(page.getContent()).isEqualTo(content);
+		assertThat(page.getPageable()).isEqualTo(pageable);
+		assertThat(page.getTotalElements()).isEqualTo(content.size());
+		assertThat(page.getTotalPages()).isEqualTo(1);
+		assertThat(page.getNumber()).isEqualTo(1);
+		assertThat(page.getSize()).isEqualTo(10);
+	}
+
+	@Test
 	void assertEqualsForSimpleSetup() {
 
 		var page = new PageImpl<String>(Collections.singletonList("Foo"));
