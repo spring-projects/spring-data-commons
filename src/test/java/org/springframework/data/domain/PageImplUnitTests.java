@@ -36,7 +36,7 @@ class PageImplUnitTests {
 	void createsPageWithContentAndPageable() {
 
 		List<String> content = Arrays.asList("foo", "bar", "baz");
-		PageRequest pageable = PageRequest.of(1, 10);
+		PageRequest pageable = PageRequest.of(0, 10);
 
 		Page<String> page = new PageImpl<>(content, pageable);
 
@@ -44,7 +44,7 @@ class PageImplUnitTests {
 		assertThat(page.getPageable()).isEqualTo(pageable);
 		assertThat(page.getTotalElements()).isEqualTo(content.size());
 		assertThat(page.getTotalPages()).isEqualTo(1);
-		assertThat(page.getNumber()).isEqualTo(1);
+		assertThat(page.getNumber()).isEqualTo(0);
 		assertThat(page.getSize()).isEqualTo(10);
 	}
 
