@@ -16,16 +16,20 @@
 package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import example.SampleInterface;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.log.LogAccessor;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.multipart.MultipartFile;
@@ -113,6 +117,24 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		var parameter = getParameter("withProjectedPayloadMultipart", MultipartFile.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
+	}
+
+	@Test // GH-3300
+	@SuppressWarnings("unchecked")
+	void deprecationLoggerOnlyLogsOncePerParameter() {
+
+		var parameter = getParameter("withModelAttribute", SampleInterface.class);
+
+		// Spy on the actual logger
+		var actualLogger = (LogAccessor) ReflectionTestUtils.getField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER");
+		var actualLoggerSpy = spy(actualLogger);
+		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy, LogAccessor.class);
+
+		// Invoke twice but should only log the first time
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		verify(actualLoggerSpy, times(1)).warn(any(Supplier.class));
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		verifyNoMoreInteractions(actualLoggerSpy);
 	}
 
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
