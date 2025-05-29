@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.log.LogAccessor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.WebDataBinder;
@@ -52,9 +54,10 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
+	private final ProjectedPayloadDeprecationLogger deprecationLogger = new ProjectedPayloadDeprecationLogger();
 
 	/**
-	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.
+	 * Creates a new {@link ProxyingHandlerMethodArgumentResolver} using the given {@link ConversionService}.
 	 *
 	 * @param conversionService must not be {@literal null}.
 	 */
@@ -80,28 +83,36 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 
+		// Simple type or not annotated with @ModelAttribute (and flag set to require annotation)
 		if (!super.supportsParameter(parameter)) {
 			return false;
 		}
 
 		Class<?> type = parameter.getParameterType();
 
+		// Only interfaces can be proxied
 		if (!type.isInterface()) {
 			return false;
 		}
 
-		// Annotated parameter (excluding multipart)
-		if ((parameter.hasParameterAnnotation(ProjectedPayload.class) || parameter.hasParameterAnnotation(
-				ModelAttribute.class)) && !MultipartResolutionDelegate.isMultipartArgument(parameter)) {
+		// Multipart not currently supported
+		if (MultipartResolutionDelegate.isMultipartArgument(parameter)) {
+			return false;
+		}
+
+		// Type or parameter explicitly annotated with @ProjectedPayload
+		if (parameter.hasParameterAnnotation(ProjectedPayload.class) || AnnotatedElementUtils.findMergedAnnotation(type,
+				ProjectedPayload.class) != null) {
 			return true;
 		}
 
-		// Annotated type
-		if (AnnotatedElementUtils.findMergedAnnotation(type, ProjectedPayload.class) != null) {
+		// Parameter annotated with @ModelAttribute
+		if (parameter.hasParameterAnnotation(ModelAttribute.class)) {
+			this.deprecationLogger.logDeprecationForParameter(parameter);
 			return true;
 		}
 
-		// Exclude parameters annotated with Spring annotation
+		// Exclude any other parameters annotated with Spring annotation
 		if (Arrays.stream(parameter.getParameterAnnotations())
 				.map(Annotation::annotationType)
 				.map(Class::getPackageName)
@@ -112,8 +123,12 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 		// Fallback for only user defined interfaces
 		String packageName = ClassUtils.getPackageName(type);
+		if (IGNORED_PACKAGES.stream().noneMatch(packageName::startsWith)) {
+			this.deprecationLogger.logDeprecationForParameter(parameter);
+			return true;
+		}
 
-		return !IGNORED_PACKAGES.stream().anyMatch(it -> packageName.startsWith(it));
+		return false;
 	}
 
 	@Override
@@ -128,4 +143,33 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	@Override
 	protected void bindRequestParameters(WebDataBinder binder, NativeWebRequest request) {}
+
+	/**
+	 * Logs a warning message when a parameter is proxied but not explicitly annotated with {@link @ProjectedPayload}.
+	 * <p>
+	 * To avoid log spamming, the message is only logged the first time the parameter is encountered.
+	 */
+	static class ProjectedPayloadDeprecationLogger {
+
+		private static final String MESSAGE = "Parameter %s (%s) is not annotated with @ProjectedPayload - support for parameters not explicitly annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
+
+		private final LogAccessor logger = new LogAccessor(ProxyingHandlerMethodArgumentResolver.class);
+
+		private final ConcurrentHashMap<MethodParameter, Boolean> loggedParameters = new ConcurrentHashMap<>();
+
+		/**
+		 * Log a warning the first time a non-annotated method parameter is encountered.
+		 *
+		 * @param parameter the parameter
+		 */
+		void logDeprecationForParameter(MethodParameter parameter) {
+
+			if (this.loggedParameters.putIfAbsent(parameter, Boolean.TRUE) == null) {
+				var paramName = parameter.getParameterName();
+				this.logger.warn(() -> MESSAGE.formatted(paramName != null ? paramName : "", parameter));
+			}
+		}
+
+	}
+
 }
