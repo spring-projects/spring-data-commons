@@ -50,6 +50,9 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
+	// NonFinalForTesting
+	private static LogAccessor LOGGER = new LogAccessor(ProxyingHandlerMethodArgumentResolver.class);
+
 	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
@@ -151,9 +154,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	 */
 	static class ProjectedPayloadDeprecationLogger {
 
-		private static final String MESSAGE = "Parameter %s (%s) is not annotated with @ProjectedPayload - support for parameters not explicitly annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
-
-		private final LogAccessor logger = new LogAccessor(ProxyingHandlerMethodArgumentResolver.class);
+		private static final String MESSAGE = "Parameter%sat position %s in %s.%s is not annotated with @ProjectedPayload - support for parameters not explicitly annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
 
 		private final ConcurrentHashMap<MethodParameter, Boolean> loggedParameters = new ConcurrentHashMap<>();
 
@@ -166,7 +167,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 			if (this.loggedParameters.putIfAbsent(parameter, Boolean.TRUE) == null) {
 				var paramName = parameter.getParameterName();
-				this.logger.warn(() -> MESSAGE.formatted(paramName != null ? paramName : "", parameter));
+				var paramNameOrEmpty = paramName != null ? (" " + paramName + " ") : " ";
+				var methodName = parameter.getMethod() != null ? parameter.getMethod().getName() : "constructor";
+				LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), parameter.getContainingClass().getName(), methodName));
 			}
 		}
 

@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.log.LogAccessor;
-import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver.ProjectedPayloadDeprecationLogger;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -126,11 +125,10 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 
 		var parameter = getParameter("withModelAttribute", SampleInterface.class);
 
-		// Spy on the actual logger in the helper class
-		var deprecationLogger = (ProjectedPayloadDeprecationLogger) ReflectionTestUtils.getField(resolver, "deprecationLogger");
-		var actualLogger = (LogAccessor) ReflectionTestUtils.getField(deprecationLogger, "logger");
+		// Spy on the actual logger
+		var actualLogger = (LogAccessor) ReflectionTestUtils.getField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER");
 		var actualLoggerSpy = spy(actualLogger);
-		ReflectionTestUtils.setField(deprecationLogger, "logger", actualLoggerSpy);
+		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy, LogAccessor.class);
 
 		// Invoke twice but should only log the first time
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
