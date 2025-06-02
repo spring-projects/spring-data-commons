@@ -167,7 +167,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 			if (this.loggedParameters.putIfAbsent(parameter, Boolean.TRUE) == null) {
 				var paramName = parameter.getParameterName();
-				var paramNameOrEmpty = paramName != null ? (" " + paramName + " ") : " ";
+				var paramNameOrEmpty = paramName != null ? (" '" + paramName + "' ") : " ";
 				var methodName = parameter.getMethod() != null ? parameter.getMethod().getName() : "constructor";
 				LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), parameter.getContainingClass().getName(), methodName));
 			}
