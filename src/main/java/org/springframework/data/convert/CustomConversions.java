@@ -70,7 +70,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class CustomConversions {
 
-	private static final Log logger = LogFactory.getLog(CustomConversions.class);
+	private static Log logger = LogFactory.getLog(CustomConversions.class);
 	private static final String READ_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as reading converter although it doesn't convert from a store-supported type; You might want to check your annotation setup at the converter implementation";
 	private static final String WRITE_CONVERTER_NOT_SIMPLE = "Registering converter from %s to %s as writing converter although it doesn't convert to a store-supported type; You might want to check your annotation setup at the converter implementation";
 	private static final String NOT_A_CONVERTER = "Converter %s is neither a Spring Converter, GenericConverter or ConverterFactory";
@@ -301,7 +301,8 @@ public class CustomConversions {
 
 			readingPairs.add(pair);
 
-			if (logger.isWarnEnabled() && !converterRegistration.isSimpleSourceType()) {
+			if (logger.isWarnEnabled() && !converterRegistration.isSimpleSourceType()
+					&& !Collection.class.isAssignableFrom(pair.getSourceType())) {
 				logger.warn(String.format(READ_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
 			}
 		}
@@ -311,7 +312,8 @@ public class CustomConversions {
 			writingPairs.add(pair);
 			customSimpleTypes.add(pair.getSourceType());
 
-			if (logger.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
+			if (logger.isWarnEnabled() && !converterRegistration.isSimpleTargetType()
+					&& !Collection.class.isAssignableFrom(pair.getTargetType())) {
 				logger.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
 			}
 		}

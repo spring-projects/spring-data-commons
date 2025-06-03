@@ -27,9 +27,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.apache.commons.logging.Log;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
@@ -44,6 +46,7 @@ import org.springframework.data.convert.Jsr310Converters.LocalDateTimeToDateConv
 import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link CustomConversions}.
@@ -156,8 +159,7 @@ class CustomConversionsUnitTests {
 
 		var conversions = StoreConversions.of(new SimpleTypeHolder(Collections.singleton(Format.class), true));
 
-		var customConversions = new CustomConversions(conversions,
-				Collections.singletonList(new FormatConverterFactory()));
+		var customConversions = new CustomConversions(conversions, Collections.singletonList(new FormatConverterFactory()));
 
 		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class)).isPresent();
 	}
@@ -214,7 +216,7 @@ class CustomConversionsUnitTests {
 
 		new CustomConversions(StoreConversions.of(DATE_EXCLUDING_SIMPLE_TYPE_HOLDER),
 				Collections.singletonList(Jsr310Converters.LocalDateTimeToInstantConverter.INSTANCE))
-						.registerConvertersIn(registry);
+				.registerConvertersIn(registry);
 
 		verify(registry).addConverter(any(Jsr310Converters.LocalDateTimeToInstantConverter.class));
 	}
@@ -293,8 +295,8 @@ class CustomConversionsUnitTests {
 	@Test
 	void hasValueConverterReturnsFalseWhenNoPropertyValueConversionsAreConfigured() {
 
-		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE,
-				Collections.emptyList(), it -> true, null);
+		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE, Collections.emptyList(),
+				it -> true, null);
 
 		CustomConversions conversions = new CustomConversions(configuration);
 
@@ -315,8 +317,8 @@ class CustomConversionsUnitTests {
 
 		doReturn(true).when(mockPropertyValueConversions).hasValueConverter(eq(mockProperty));
 
-		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE,
-				Collections.emptyList(), it -> true, mockPropertyValueConversions);
+		ConverterConfiguration configuration = new ConverterConfiguration(StoreConversions.NONE, Collections.emptyList(),
+				it -> true, mockPropertyValueConversions);
 
 		CustomConversions conversions = new CustomConversions(configuration);
 
@@ -328,6 +330,19 @@ class CustomConversionsUnitTests {
 		verifyNoInteractions(mockProperty);
 	}
 
+	@Test // GH-3306
+	void doesNotWarnForAsymmetricListConverter() {
+
+		Log actualLogger = (Log) ReflectionTestUtils.getField(CustomConversions.class, "logger");
+		Log actualLoggerSpy = spy(actualLogger);
+		ReflectionTestUtils.setField(CustomConversions.class, "logger", actualLoggerSpy, Log.class);
+
+		new CustomConversions(StoreConversions.NONE, List.of(ListOfNumberToStringConverter.INSTANCE));
+
+		verify(actualLoggerSpy, never()).warn(anyString());
+		verify(actualLoggerSpy, never()).warn(anyString(), any());
+	}
+
 	private static Class<?> createProxyTypeFor(Class<?> type) {
 
 		var factory = new ProxyFactory();
@@ -335,6 +350,16 @@ class CustomConversionsUnitTests {
 		factory.setTargetClass(type);
 
 		return factory.getProxy().getClass();
+	}
+
+	@ReadingConverter
+	enum ListOfNumberToStringConverter implements Converter<List<Number>, String> {
+
+		INSTANCE;
+
+		public String convert(List<Number> source) {
+			return source.toString();
+		}
 	}
 
 	enum FormatToStringConverter implements Converter<Format, String> {
