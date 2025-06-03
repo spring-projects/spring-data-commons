@@ -124,7 +124,7 @@ public class CustomConversions {
 				converterConfiguration.getStoreConversions(), converterConfiguration.getUserConverters()).stream()
 				.filter(this::isSupportedConverter).filter(this::shouldRegister)
 				.map(ConverterRegistrationIntent::getConverterRegistration).map(this::register).distinct()
-				.collect(Collectors.toList());
+				.collect(Collectors.toCollection(ArrayList::new));
 
 		Collections.reverse(registeredConverters);
 
