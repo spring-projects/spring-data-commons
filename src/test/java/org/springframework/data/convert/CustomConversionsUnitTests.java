@@ -273,6 +273,16 @@ class CustomConversionsUnitTests {
 		assertThat(conversionService.canConvert(List.class, io.vavr.collection.List.class)).isTrue();
 	}
 
+	@Test // GH-3304
+	void registersMultipleConvertersCorrectly() {
+
+		CustomConversions customConversions = new CustomConversions(new ConverterConfiguration(StoreConversions.NONE,
+				List.of(PointToMapConverter.INSTANCE, new FormatConverterFactory()), (it) -> true, null));
+
+		assertThat(customConversions.hasCustomWriteTarget(Point.class, Map.class)).isTrue();
+		assertThat(customConversions.hasCustomWriteTarget(String.class, Format.class)).isTrue();
+	}
+
 	@Test // GH-1484
 	void doesNotFailIfPropertiesConversionIsNull() {
 
