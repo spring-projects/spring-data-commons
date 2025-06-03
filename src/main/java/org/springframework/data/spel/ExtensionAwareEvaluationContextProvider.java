@@ -189,7 +189,7 @@ public class ExtensionAwareEvaluationContextProvider implements EvaluationContex
 		return extensions.stream()//
 				.sorted(AnnotationAwareOrderComparator.INSTANCE)//
 				.map(it -> new EvaluationContextExtensionAdapter(it, getOrCreateInformation(it))) //
-				.collect(Collectors.toList());
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	/**
