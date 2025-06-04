@@ -17,8 +17,10 @@ package org.springframework.data.web;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -45,6 +47,7 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
  *
  * @author Oliver Gierke
  * @author Chris Bono
+ * @author Mark Paluch
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
@@ -154,9 +157,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	 */
 	static class ProjectedPayloadDeprecationLogger {
 
-		private static final String MESSAGE = "Parameter%sat position %s in %s.%s is not annotated with @ProjectedPayload - support for parameters not explicitly annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
+		private static final String MESSAGE = "Parameter %sat index %s in [%s] is not annotated with @ProjectedPayload. Support for parameters not annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
 
-		private final ConcurrentHashMap<MethodParameter, Boolean> loggedParameters = new ConcurrentHashMap<>();
+		private final Set<MethodParameter> loggedParameters = Collections.synchronizedSet(new HashSet<>());
 
 		/**
 		 * Log a warning the first time a non-annotated method parameter is encountered.
@@ -165,12 +168,15 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		 */
 		void logDeprecationForParameter(MethodParameter parameter) {
 
-			if (this.loggedParameters.putIfAbsent(parameter, Boolean.TRUE) == null) {
-				var paramName = parameter.getParameterName();
-				var paramNameOrEmpty = paramName != null ? (" '" + paramName + "' ") : " ";
-				var methodName = parameter.getMethod() != null ? parameter.getMethod().getName() : "constructor";
-				LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), parameter.getContainingClass().getName(), methodName));
+			if (!this.loggedParameters.add(parameter)) {
+				return;
 			}
+
+			String paramName = parameter.getParameterName();
+			String paramNameOrEmpty = paramName != null ? ("'" + paramName + "' ") : "";
+			String methodName = parameter.getMethod() != null ? parameter.getMethod().toGenericString() : "constructor";
+
+			LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), methodName));
 		}
 
 	}

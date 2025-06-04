@@ -20,10 +20,13 @@ import static org.mockito.Mockito.*;
 
 import example.SampleInterface;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -39,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
  *
  * @author Oliver Gierke
  * @author Chris Bono
+ * @author Mark Paluch
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
@@ -126,9 +130,9 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		var parameter = getParameter("withModelAttribute", SampleInterface.class);
 
 		// Spy on the actual logger
-		var actualLogger = (LogAccessor) ReflectionTestUtils.getField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER");
-		var actualLoggerSpy = spy(actualLogger);
-		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy, LogAccessor.class);
+		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
+		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
+				LogAccessor.class);
 
 		// Invoke twice but should only log the first time
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
@@ -137,10 +141,38 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		verifyNoMoreInteractions(actualLoggerSpy);
 	}
 
+	@ParameterizedTest // GH-3300
+	@ValueSource(strings = { "withProjectedPayload", "withAnnotatedInterface" })
+	void shouldNotLogDeprecationForValidUsage(String methodName) {
+
+		var parameter = getParameter(methodName);
+
+		// Spy on the actual logger
+		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
+		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
+				LogAccessor.class);
+
+		// Invoke twice but should only log the first time
+		assertThat(resolver.supportsParameter(parameter)).isTrue();
+		verifyNoInteractions(actualLoggerSpy);
+	}
+
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {
 
 		var method = ReflectionUtils.findMethod(Controller.class, methodName, parameterType);
 		return new MethodParameter(method, 0);
+	}
+
+	private static MethodParameter getParameter(String methodName) {
+
+		for (Method method : Controller.class.getMethods()) {
+
+			if (method.getName().equals(methodName)) {
+				return new MethodParameter(method, 0);
+			}
+		}
+
+		throw new NoSuchMethodError(methodName);
 	}
 
 	@ProjectedPayload
@@ -151,6 +183,8 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	interface Controller {
 
 		void with(AnnotatedInterface param);
+
+		void withAnnotatedInterface(@ModelAttribute AnnotatedInterface param);
 
 		void with(UnannotatedInterface param);
 
