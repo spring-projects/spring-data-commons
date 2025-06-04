@@ -50,7 +50,7 @@ public class QTypeContributor {
 					logger.debug("Registering Q type %s for %s.");
 					context.getRuntimeHints().reflection().registerType(TypeReference.of(queryClassName),
 							MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-							MemberCategory.INTROSPECT_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS);
+							MemberCategory.ACCESS_DECLARED_FIELDS);
 				} else {
 					logger.debug("Skipping Q type %s. Not an EntityPath.");
 				}
