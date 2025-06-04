@@ -62,7 +62,7 @@ public class TypeContributor {
 		if (type.isAnnotation() && filter.test((Class<? extends Annotation>) type)) {
 
 			contribution.getRuntimeHints().reflection().registerType(type,
-					hint -> hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS));
+					hint -> {});
 
 			return;
 		}

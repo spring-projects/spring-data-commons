@@ -282,8 +282,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		// Kotlin
 		if (isKotlinCoroutineRepository(repositoryContext, repositoryInformation)) {
-			contribution.getRuntimeHints().reflection().registerTypes(kotlinRepositoryReflectionTypeReferences(),
-					hint -> hint.withMembers(MemberCategory.INTROSPECT_PUBLIC_METHODS));
+			contribution.getRuntimeHints().reflection().registerTypes(kotlinRepositoryReflectionTypeReferences(), hint -> {});
 		}
 
 		// Repository query methods
