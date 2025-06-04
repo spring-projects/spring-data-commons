@@ -125,8 +125,7 @@ final class PropertyValueConverterFactories {
 			PropertyValueConverter<DV, SV, C> converter = beanFactory.getBeanProvider(converterType).getIfAvailable();
 
 			if (converter == null && beanFactory instanceof AutowireCapableBeanFactory) {
-				return (PropertyValueConverter<DV, SV, C>) ((AutowireCapableBeanFactory) beanFactory).createBean(converterType,
-						AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+				return (PropertyValueConverter<DV, SV, C>) ((AutowireCapableBeanFactory) beanFactory).createBean(converterType);
 			}
 
 			return converter;
