@@ -19,6 +19,7 @@ import kotlin.reflect.KFunction;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -245,8 +246,8 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 		@Override
 		public int hashCode() {
 			int result = (nullableReturn ? 1 : 0);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(nullableParameters);
-			result = (31 * result) + ObjectUtils.nullSafeHashCode(methodParameters);
+			result = (31 * result) + Arrays.hashCode(nullableParameters);
+			result = (31 * result) + Arrays.hashCode(methodParameters);
 			return result;
 		}
 

@@ -92,7 +92,7 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 
 		//
 		hints.reflection().registerType(Throwable.class,
-				builder -> builder.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.DECLARED_FIELDS));
+				builder -> builder.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.ACCESS_DECLARED_FIELDS));
 
 		// SpEL support
 		hints.reflection().registerType(
