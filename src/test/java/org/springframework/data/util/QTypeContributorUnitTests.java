@@ -15,7 +15,12 @@
  */
 package org.springframework.data.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
+import java.net.URLClassLoader;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.generate.ClassNameGenerator;
@@ -26,7 +31,6 @@ import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
 import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
 import org.springframework.data.classloadersupport.HidingClassLoader;
-import org.springframework.data.querydsl.User;
 import org.springframework.javapoet.ClassName;
 
 import com.querydsl.core.types.EntityPath;
@@ -34,6 +38,7 @@ import com.querydsl.core.types.EntityPath;
 /**
  * Unit tests for {@link QTypeContributor}.
  *
+ * @author Christoph Strobl
  * @author ckdgus08
  */
 class QTypeContributorUnitTests {
@@ -75,8 +80,8 @@ class QTypeContributorUnitTests {
 				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person.class).negate());
 	}
 
-	@Test // DATAMONGO-4958
-	void doesNotAddQTypeHintForArrayType() {
+	@Test // GH-3284
+	void addsQTypeHintForArrayType() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
 				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
@@ -85,41 +90,11 @@ class QTypeContributorUnitTests {
 
 		assertThat(generationContext.getRuntimeHints()).matches(
 				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person.class).negate());
-		assertThat(generationContext.getRuntimeHints()).matches(
-				RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person[].class).negate());
+		assertThat(generationContext.getRuntimeHints())
+				.matches(RuntimeHintsPredicates.reflection().onType(QConfigWithQuerydslPredicateExecutor_Person[].class));
 	}
 
-	@Test // DATAMONGO-4958
-	void addsQTypeHintForQUserType() {
-
-		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
-
-		QTypeContributor.contributeEntityPath(User.class, generationContext, getClass().getClassLoader());
-
-		var qUserHintCount = generationContext.getRuntimeHints().reflection().typeHints()
-				.filter(hint -> hint.getType().getName().equals("org.springframework.data.querydsl.QUser"))
-				.count();
-		assertThat(qUserHintCount).isEqualTo(1);
-	}
-
-	@Test // DATAMONGO-4958
-	void doesNotAddQTypeHintForQUserArrayType() {
-
-		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
-		var classLoader = getClass().getClassLoader();
-
-		QTypeContributor.contributeEntityPath(User[].class, generationContext, classLoader);
-
-		assertThat(generationContext.getRuntimeHints().reflection().typeHints()).isEmpty();
-		var qUserHintCount = generationContext.getRuntimeHints().reflection().typeHints()
-				.filter(hint -> hint.getType().getName().equals("org.springframework.data.querydsl.QUser"))
-				.count();
-		assertThat(qUserHintCount).isEqualTo(0);
-	}
-
-	@Test // DATAMONGO-4958
+	@Test // GH-3284
 	void doesNotAddQTypeHintForPrimitiveType() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
@@ -128,5 +103,34 @@ class QTypeContributorUnitTests {
 		QTypeContributor.contributeEntityPath(int.class, generationContext, getClass().getClassLoader());
 
 		assertThat(generationContext.getRuntimeHints().reflection().typeHints()).isEmpty();
+	}
+
+	@Test // GH-3284
+	void doesNotFailForTypeInDefaultPackage() throws Exception {
+
+		GenerationContext generationContext = new DefaultGenerationContext(
+				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+
+		class CapturingClassLoader extends ClassLoader {
+
+			final Set<String> lookups = new HashSet<>(10);
+
+			CapturingClassLoader() {
+				super(URLClassLoader.getSystemClassLoader());
+			}
+
+			@Override
+			public Class<?> loadClass(String name) throws ClassNotFoundException {
+				lookups.add(name);
+				return super.loadClass(name);
+			}
+		}
+
+		CapturingClassLoader classLoaderToUse = new CapturingClassLoader();
+
+		var typeInDefaultPackage = Class.forName("TypeInDefaultPackage");
+		assertThatNoException().isThrownBy(
+				() -> QTypeContributor.contributeEntityPath(typeInDefaultPackage, generationContext, classLoaderToUse));
+		assertThat(classLoaderToUse.lookups).contains("QTypeInDefaultPackage");
 	}
 }

@@ -18,11 +18,11 @@ package org.springframework.data.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
@@ -38,18 +38,20 @@ public class QTypeContributor {
 
 			Class<?> entityPathType = getEntityPathType(classLoader);
 
-			if (entityPathType == null) {
-				return;
-			}
-
-			if (type.isPrimitive() || type.isArray()) {
+			if (entityPathType == null || type.isPrimitive()) {
 				return;
 			}
 
 			String queryClassName = getQueryClassName(type);
+
 			if (ClassUtils.isPresent(queryClassName, classLoader)) {
 
-				if (ClassUtils.isAssignable(entityPathType, ClassUtils.forName(queryClassName, classLoader))) {
+				Class<?> actualType = ClassUtils.forName(queryClassName, classLoader);
+				if (actualType.isArray()) {
+					actualType = actualType.getComponentType();
+				}
+
+				if (ClassUtils.isAssignable(entityPathType, actualType)) {
 
 					logger.debug("Registering Q type %s for %s.");
 					context.getRuntimeHints().reflection().registerType(TypeReference.of(queryClassName),
@@ -84,7 +86,10 @@ public class QTypeContributor {
 	private static String getQueryClassName(Class<?> domainClass) {
 
 		String simpleClassName = ClassUtils.getShortName(domainClass);
-		String pkgName = domainClass.getPackage().getName();
+		String pkgName = domainClass.getPackageName();
+		if (ObjectUtils.isEmpty(pkgName)) {
+			return String.format("Q%s%s", getClassBase(simpleClassName), domainClass.getSimpleName());
+		}
 
 		return String.format("%s.Q%s%s", pkgName, getClassBase(simpleClassName), domainClass.getSimpleName());
 	}
