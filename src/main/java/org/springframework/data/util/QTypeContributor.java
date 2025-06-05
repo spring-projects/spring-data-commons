@@ -22,6 +22,7 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Strobl
@@ -38,10 +39,6 @@ public class QTypeContributor {
 			Class<?> entityPathType = getEntityPathType(classLoader);
 
 			if (entityPathType == null) {
-				return;
-			}
-
-			if (type.isPrimitive() || type.isArray()) {
 				return;
 			}
 
@@ -84,7 +81,10 @@ public class QTypeContributor {
 	private static String getQueryClassName(Class<?> domainClass) {
 
 		String simpleClassName = ClassUtils.getShortName(domainClass);
-		String pkgName = domainClass.getPackage().getName();
+		String pkgName = domainClass.getPackageName();
+		if (!StringUtils.hasText(pkgName)) {
+			return String.format("Q%s%s", getClassBase(simpleClassName), domainClass.getSimpleName());
+		}
 
 		return String.format("%s.Q%s%s", pkgName, getClassBase(simpleClassName), domainClass.getSimpleName());
 	}
