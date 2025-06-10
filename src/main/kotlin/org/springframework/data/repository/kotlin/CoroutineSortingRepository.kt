@@ -34,7 +34,7 @@ import org.springframework.data.repository.Repository
  * @see CoroutineCrudRepository
  */
 @NoRepositoryBean
-interface CoroutineSortingRepository<T, ID> : Repository<T, ID> {
+interface CoroutineSortingRepository<T: Any, ID: Any> : Repository<T, ID> {
 
 	/**
 	 * Returns all entities sorted by the given options.
