@@ -37,7 +37,7 @@ import reactor.core.publisher.Mono
  * @see Flow
  */
 @NoRepositoryBean
-interface CoroutineCrudRepository<T, ID> : Repository<T, ID> {
+interface CoroutineCrudRepository<T: Any, ID: Any> : Repository<T, ID> {
 
 	/**
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
