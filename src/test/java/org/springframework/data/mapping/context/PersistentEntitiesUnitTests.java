@@ -35,7 +35,7 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @author Mar Paluch
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 class PersistentEntitiesUnitTests {
@@ -46,6 +46,16 @@ class PersistentEntitiesUnitTests {
 	@Test // DATACMNS-458
 	void rejectsNullMappingContexts() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new PersistentEntities(null));
+	}
+
+	@Test // GH-3310
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void lazilyAccessesIterableOfMappingContext() {
+
+		Iterable iterable = mock(Iterable.class);
+		new PersistentEntities(iterable);
+
+		verifyNoInteractions(iterable);
 	}
 
 	@Test // DATACMNS-458
