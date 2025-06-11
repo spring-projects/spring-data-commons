@@ -48,6 +48,7 @@ import org.springframework.web.util.UriUtils;
  * @author Nick Williams
  * @author Mark Paluch
  * @author Vedran Pavic
+ * @author Petar Heyken
  */
 class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
@@ -211,6 +212,16 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 				.isEqualTo(Sort.by(new Order(DESC, "firstname").ignoreCase(), new Order(DESC, "lastname").ignoreCase()));
 	}
 
+	@Test // GH-3152
+	void returnsDefaultNullHandling() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "");
+
+		assertThat(resolveSort(request, getParameterOfMethod("simpleDefaultWithDirectionAndNullHandling"))).isEqualTo(
+				Sort.by(new Order(DESC, "firstname").nullsLast(), new Order(DESC, "lastname").nullsLast()));
+	}
+
 	@Test // DATACMNS-379
 	void parsesCommaParameterForSort() throws Exception {
 
@@ -271,6 +282,52 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 		var parameter = getParameterOfMethod("supportedMethod");
 
 		assertSupportedAndResolvedTo(new ServletWebRequest(request), parameter, Sort.by("foo").descending());
+	}
+
+	@Test // GH-3152
+	void sortParamHandlesMultiplePropertiesWithSortOrderAndIgnoreCaseAndNullsLast() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "property1,property2,DESC,IgnoreCase,NullsLast");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(DESC, "property1").ignoreCase().nullsLast(),
+				new Order(DESC, "property2").ignoreCase().nullsLast()));
+	}
+
+	@Test // GH-3152
+	void sortParamHandlesSinglePropertyWithIgnoreCaseAndNullsLast() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,IgnoreCase,NullsLast");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(ASC, "property").ignoreCase().nullsLast()));
+	}
+
+	@Test // GH-3152
+	void sortParamHandlesSinglePropertyWithNullsFirst() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,nullsfirst");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(ASC, "property").nullsFirst()));
+	}
+
+	@Test // GH-3152
+	void sortParamHandlesSinglePropertyWithSortOrderAndWithNullsFirst() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC,nullsfirst");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(DESC, "property").nullsFirst()));
+	}
+
+	@Test // GH-3152
+	void sortParamHandlesSinglePropertyWithSortOrderAndWithNullsNative() throws Exception {
+
+		final var request = new MockHttpServletRequest();
+		request.addParameter("sort", "property,DESC,nullsnative");
+
+		assertThat(resolveSort(request, PARAMETER)).isEqualTo(Sort.by(new Order(DESC, "property").nullsNative()));
 	}
 
 	private static Sort resolveSort(HttpServletRequest request, MethodParameter parameter) throws Exception {
@@ -334,6 +391,9 @@ class SortHandlerMethodArgumentResolverUnitTests extends SortDefaultUnitTests {
 
 		void simpleDefaultWithDirectionCaseInsensitive(
 				@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC, caseSensitive = false) Sort sort);
+
+		void simpleDefaultWithDirectionAndNullHandling(
+			@SortDefault(sort = { "firstname", "lastname" }, direction = Direction.DESC, nullHandling = Sort.NullHandling.NULLS_LAST) Sort sort);
 
 		void containeredDefault(@SortDefaults(@SortDefault({ "foo", "bar" })) Sort sort);
 

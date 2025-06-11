@@ -30,6 +30,7 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.annotation.RepeatableContainers;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.SortDefault.SortDefaults;
 import org.springframework.util.Assert;
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Vedran Pavic
  * @author Johannes Englmeier
+ * @author Petar Heyken
  * @see SortHandlerMethodArgumentResolver
  * @see ReactiveSortHandlerMethodArgumentResolver
  * @since 2.2
@@ -166,7 +168,14 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		List<Order> orders = new ArrayList<>(fields.length);
 		for (String field : fields) {
 
-			Order order = new Order(sortDefault.getEnum("direction", Sort.Direction.class), field);
+			Order order = new Order(sortDefault.getEnum("direction", Direction.class), field);
+
+			order = switch (sortDefault.getEnum("nullHandling", NullHandling.class)) {
+				case NATIVE -> order.nullsNative();
+				case NULLS_FIRST -> order.nullsFirst();
+				case NULLS_LAST -> order.nullsLast();
+			};
+
 			orders.add(sortDefault.getBoolean("caseSensitive") ? order : order.ignoreCase());
 		}
 
@@ -215,6 +224,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			}
 
 			SortOrderParser.parse(part, delimiter) //
+					.parseNullHandling() //
 					.parseIgnoreCase() //
 					.parseDirection() //
 					.forEachOrder(allOrders::add);
@@ -361,22 +371,28 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 	static class SortOrderParser {
 
 		private static final String IGNORECASE = "ignorecase";
+		private static final String NULLSNATIVE = "nullsnative";
+		private static final String NULLSFIRST = "nullsfirst";
+		private static final String NULLSLAST = "nullslast";
 
 		private final String[] elements;
 		private final int lastIndex;
 		private final Optional<Direction> direction;
 		private final Optional<Boolean> ignoreCase;
+		private final Optional<NullHandling> nullHandling;
 
 		private SortOrderParser(String[] elements) {
-			this(elements, elements.length, Optional.empty(), Optional.empty());
+			this(elements, elements.length, Optional.empty(), Optional.empty(), Optional.empty());
 		}
 
 		private SortOrderParser(String[] elements, int lastIndex, Optional<Direction> direction,
-				Optional<Boolean> ignoreCase) {
+				Optional<Boolean> ignoreCase, Optional<NullHandling> nullHandling) {
+
 			this.elements = elements;
 			this.lastIndex = Math.max(0, lastIndex);
 			this.direction = direction;
 			this.ignoreCase = ignoreCase;
+			this.nullHandling = nullHandling;
 		}
 
 		/**
@@ -396,15 +412,33 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 		}
 
 		/**
+		 * Parse the {@link NullHandling} portion of the sort specification.
+		 *
+		 * @return a new parsing state object.
+		 */
+		public SortOrderParser parseNullHandling() {
+
+			Optional<NullHandling> nullHandling = lastIndex > 0 ?
+					fromOptionalNullHandlingString(elements[lastIndex - 1]) :
+					Optional.empty();
+
+			return new SortOrderParser(elements, lastIndex - (nullHandling.isPresent() ? 1 : 0), direction, ignoreCase,
+					nullHandling);
+		}
+
+		/**
 		 * Parse the {@code ignoreCase} portion of the sort specification.
 		 *
 		 * @return a new parsing state object.
 		 */
 		public SortOrderParser parseIgnoreCase() {
 
-			Optional<Boolean> ignoreCase = lastIndex > 0 ? fromOptionalString(elements[lastIndex - 1]) : Optional.empty();
+			Optional<Boolean> ignoreCase = lastIndex > 0 ?
+					fromOptionalIgnoreCaseString(elements[lastIndex - 1]) :
+					Optional.empty();
 
-			return new SortOrderParser(elements, lastIndex - (ignoreCase.isPresent() ? 1 : 0), direction, ignoreCase);
+			return new SortOrderParser(elements, lastIndex - (ignoreCase.isPresent() ? 1 : 0), direction, ignoreCase,
+					nullHandling);
 		}
 
 		/**
@@ -417,7 +451,8 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			Optional<Direction> direction = lastIndex > 0 ? Direction.fromOptionalString(elements[lastIndex - 1])
 					: Optional.empty();
 
-			return new SortOrderParser(elements, lastIndex - (direction.isPresent() ? 1 : 0), direction, ignoreCase);
+			return new SortOrderParser(elements, lastIndex - (direction.isPresent() ? 1 : 0), direction, ignoreCase,
+					nullHandling);
 		}
 
 		/**
@@ -432,7 +467,24 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			}
 		}
 
-		private Optional<Boolean> fromOptionalString(String value) {
+		private Optional<NullHandling> fromOptionalNullHandlingString(String value) {
+
+			if (NULLSNATIVE.equalsIgnoreCase(value)) {
+				return Optional.of(NullHandling.NATIVE);
+			}
+
+			if (NULLSFIRST.equalsIgnoreCase(value)) {
+				return Optional.of(NullHandling.NULLS_FIRST);
+			}
+
+			if (NULLSLAST.equalsIgnoreCase(value)) {
+				return Optional.of(NullHandling.NULLS_LAST);
+			}
+
+			return Optional.empty();
+		}
+
+		private Optional<Boolean> fromOptionalIgnoreCaseString(String value) {
 			return IGNORECASE.equalsIgnoreCase(value) ? Optional.of(true) : Optional.empty();
 		}
 
@@ -443,6 +495,14 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 			}
 
 			Order order = direction.map(it -> new Order(it, property)).orElseGet(() -> Order.by(property));
+
+			if (nullHandling.isPresent()) {
+				order = switch (nullHandling.get()) {
+					case NATIVE -> order.nullsNative();
+					case NULLS_FIRST -> order.nullsFirst();
+					case NULLS_LAST -> order.nullsLast();
+				};
+			}
 
 			if (ignoreCase.isPresent()) {
 				return Optional.of(order.ignoreCase());
