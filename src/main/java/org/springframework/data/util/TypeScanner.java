@@ -98,6 +98,7 @@ public interface TypeScanner {
 	 * @return new instance of {@link TypeScanner}.
 	 * @see #forTypesAnnotatedWith(Collection)
 	 */
+	@SuppressWarnings("unchecked")
 	default TypeScanner forTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
 		return forTypesAnnotatedWith(Arrays.asList(annotations));
 	}
@@ -114,7 +115,7 @@ public interface TypeScanner {
 	 * Define what happens in the case of a {@link ClassNotFoundException}.
 	 *
 	 * @param action must not be {@literal null}.
-	 * @return
+	 * @return new instance of {@link TypeScanner}.
 	 */
 	TypeScanner onClassNotFound(Consumer<ClassNotFoundException> action);
 

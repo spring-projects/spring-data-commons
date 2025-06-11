@@ -116,7 +116,6 @@ final class PropertyValueConverterFactories {
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
 		public <DV, SV, C extends ValueConversionContext<?>> @Nullable PropertyValueConverter<DV, SV, C> getConverter(
 				Class<? extends PropertyValueConverter<DV, SV, C>> converterType) {
 
@@ -125,8 +124,7 @@ final class PropertyValueConverterFactories {
 			PropertyValueConverter<DV, SV, C> converter = beanFactory.getBeanProvider(converterType).getIfAvailable();
 
 			if (converter == null && beanFactory instanceof AutowireCapableBeanFactory) {
-				return (PropertyValueConverter<DV, SV, C>) ((AutowireCapableBeanFactory) beanFactory).createBean(converterType,
-						AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+				return ((AutowireCapableBeanFactory) beanFactory).createBean(converterType);
 			}
 
 			return converter;
@@ -227,8 +225,7 @@ final class PropertyValueConverterFactories {
 
 			@Contract("_, null -> null;_, !null -> !null")
 			<S, T, C extends ValueConversionContext<?>> @Nullable PropertyValueConverter<S, T, C> cache(
-					PersistentProperty<?> property,
-					@Nullable PropertyValueConverter<S, T, C> converter) {
+					PersistentProperty<?> property, @Nullable PropertyValueConverter<S, T, C> converter) {
 
 				perPropertyCache.putIfAbsent(property, Optional.ofNullable(converter));
 
