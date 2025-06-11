@@ -240,7 +240,24 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	@Nullable
 	private PersistentEntity<?, ?> getEntityIdentifiedBy(TypeInformation<?> type) {
 
+		Collection<PersistentEntity<?, ?>> entities = getPersistentEntities(type);
+
+		if (entities.size() > 1) {
+
+			String message = "Found multiple entities identified by " + type.getType() + ": ";
+			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
+			message += "; Introduce dedicated unique identifier types or explicitly define the target type in @Reference";
+
+			throw new IllegalStateException(message);
+		}
+
+		return entities.isEmpty() ? null : entities.iterator().next();
+	}
+
+	private Collection<PersistentEntity<?, ?>> getPersistentEntities(TypeInformation<?> type) {
+
 		Collection<PersistentEntity<?, ?>> entities = new ArrayList<>();
+
 		for (MappingContext<?, ? extends PersistentProperty<?>> context : getMappingContexts()) {
 
 			for (PersistentEntity<?, ? extends PersistentProperty<?>> persistentProperties : context
@@ -255,16 +272,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 			}
 		}
 
-		if (entities.size() > 1) {
-
-			String message = "Found multiple entities identified by " + type.getType() + ": ";
-			message += entities.stream().map(it -> it.getType().getName()).collect(Collectors.joining(", "));
-			message += "; Introduce dedicated unique identifier types or explicitly define the target type in @Reference";
-
-			throw new IllegalStateException(message);
-		}
-
-		return entities.isEmpty() ? null : entities.iterator().next();
+		return entities;
 	}
 
 	private Collection<? extends MappingContext<?, ? extends PersistentProperty<?>>> getMappingContexts() {
