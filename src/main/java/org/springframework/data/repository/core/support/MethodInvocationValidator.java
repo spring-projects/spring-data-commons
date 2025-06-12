@@ -29,8 +29,8 @@ import org.springframework.data.util.NullnessMethodInvocationValidator;
  * @author Christoph Strobl
  * @since 2.0
  * @see org.jspecify.annotations.NonNull
+ * @see org.springframework.core.Nullness
  * @see org.springframework.data.util.ReflectionUtils#isNullable(org.springframework.core.MethodParameter)
- * @see org.springframework.data.util.NullableUtils
  */
 public class MethodInvocationValidator extends NullnessMethodInvocationValidator {
 

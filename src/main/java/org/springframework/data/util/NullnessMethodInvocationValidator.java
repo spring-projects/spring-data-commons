@@ -46,8 +46,8 @@ import org.springframework.util.ObjectUtils;
  * @author Christoph Strobl
  * @since 3.5
  * @see org.jspecify.annotations.NonNull
+ * @see org.springframework.core.Nullness
  * @see ReflectionUtils#isNullable(MethodParameter)
- * @see NullableUtils
  * @link <a href="https://www.thedictionaryofobscuresorrows.com/word/nullness">Nullness</a>
  */
 public class NullnessMethodInvocationValidator implements MethodInterceptor {
@@ -63,14 +63,12 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 	 */
 	public static boolean supports(Class<?> type) {
 
-		if (type.getPackage() != null
-				&& type.getPackage().isAnnotationPresent(NullMarked.class)) {
+		if (type.getPackage() != null && type.getPackage().isAnnotationPresent(NullMarked.class)) {
 			return true;
 		}
 
 		return KotlinDetector.isKotlinPresent() && KotlinReflectionUtils.isSupportedKotlinClass(type)
-				|| NullableUtils.isNonNull(type, ElementType.METHOD)
-				|| NullableUtils.isNonNull(type, ElementType.PARAMETER);
+				|| NullableUtils.isNonNull(type, ElementType.METHOD) || NullableUtils.isNonNull(type, ElementType.PARAMETER);
 	}
 
 	@Override
@@ -195,17 +193,19 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
 		/**
 		 * Check method return nullability
+		 *
 		 * @param method
 		 * @return
 		 */
 		private static boolean allowNullableReturn(@Nullable Method method) {
 
-			if(method == null) {
+			if (method == null) {
 				return false;
 			}
 
-			KFunction<?> function = KotlinDetector.isKotlinType(method.getDeclaringClass()) ?
-				KotlinReflectionUtils.findKotlinFunction(method) : null;
+			KFunction<?> function = KotlinDetector.isKotlinType(method.getDeclaringClass())
+					? KotlinReflectionUtils.findKotlinFunction(method)
+					: null;
 			return function != null && function.getReturnType().isMarkedNullable();
 		}
 

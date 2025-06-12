@@ -1,5 +1,5 @@
 /**
  * Support for Kotlin Coroutines repositories.
  */
-@org.springframework.lang.NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.repository.kotlin;

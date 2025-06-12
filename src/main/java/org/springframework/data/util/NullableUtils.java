@@ -42,18 +42,18 @@ import org.springframework.util.MultiValueMap;
 /**
  * Utility methods to introspect nullability rules declared in packages, classes and methods.
  * <p>
- * Nullability rules are declared using {@link NonNullApi}, {@link Nullable}, and JSR-305
+ * Nullability rules are declared using {@code Nullable}, {@code NonNullApi}, and JSR-305
  * {@code javax.annotation.Nonnull} annotations. By default (no annotation use), a package and its types are considered
  * allowing {@literal null} values in return values and method parameters. Nullability rules are expressed by annotating
- * a package with a JSR-305 meta annotation such as Spring's {@link NonNullApi}. All types of the package inherit the
- * package rule. Subpackages do not inherit nullability rules and must be annotated themself.
+ * a package with a JSR-305 meta annotation such as Spring's {@code NonNullApi}. All types of the package inherit the
+ * package rule. Subpackages do not inherit nullability rules and must be annotated themselves.
  *
  * <pre class="code">
  * &#64;org.jspecify.annotations.NullMarked
  * package com.example;
  * </pre>
  *
- * {@link Nullable} selectively permits {@literal null} values for method return values or method parameters by
+ * {@code  Nullable} selectively permits {@literal null} values for method return values or method parameters by
  * annotating the method respectively the parameters:
  *
  * <pre class="code">
@@ -77,7 +77,10 @@ import org.springframework.util.MultiValueMap;
  * @since 2.0
  * @see NonNullApi
  * @see Nullable
+ * @deprecated since 4.0 in favor of {@link org.springframework.core.Nullness} fully using JSpecify annotations instead
+ *             of Spring Framework's own {@literal @Nullable} and {@literal @NonNullApi} annotations.
  */
+@Deprecated(since = "4.0")
 public abstract class NullableUtils {
 
 	private static final String NON_NULL_CLASS_NAME = "javax.annotation.Nonnull";
