@@ -29,13 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.TargetClassAware;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -397,7 +397,8 @@ class ProxyProjectionFactoryUnitTests {
 
 	interface CustomerProjectionWithNullables {
 
-		@Nullable String getFirstname();
+		@Nullable
+		String getFirstname();
 		String getLastname();
 	}
 

@@ -34,7 +34,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.config.basepackage.repo.PersonRepository;
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory;
@@ -59,7 +58,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata annotationMetadata = AnnotationMetadata.introspect(SampleConfiguration.class);
 		environment = new StandardEnvironment();
 		resourceLoader = new DefaultResourceLoader();
 		registry = mock(BeanDefinitionRegistry.class);
@@ -120,8 +119,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-502
 	void returnsEmptyStringForBasePackage() throws Exception {
 
-		var metadata = new StandardAnnotationMetadata(
-				getClass().getClassLoader().loadClass("TypeInDefaultPackage"), true);
+		var metadata = AnnotationMetadata.introspect(getClass().getClassLoader().loadClass("TypeInDefaultPackage"));
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositories.class, resourceLoader, environment, registry, null);
 
@@ -138,7 +136,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@Test // DATACMNS-542
 	void ignoresMissingRepositoryBaseClassNameAttribute() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigWithSampleAnnotation.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(ConfigWithSampleAnnotation.class);
 		RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				SampleAnnotation.class, resourceLoader, environment, registry, null);
 
@@ -190,7 +188,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		RootBeanDefinition bd = new RootBeanDefinition(DummyRepositoryFactory.class);
 		bd.getConstructorArgumentValues().addGenericArgumentValue(PersonRepository.class);
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(ConfigurationWithFragmentsContributor.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(ConfigurationWithFragmentsContributor.class);
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableRepositoriesWithContributor.class, resourceLoader, environment, registry, null);
 
@@ -204,8 +202,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		RootBeanDefinition bd = new RootBeanDefinition(DummyRepositoryFactory.class);
 		bd.getConstructorArgumentValues().addGenericArgumentValue(PersonRepository.class);
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(ReactiveConfigurationWithBeanNameGenerator.class,
-				true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(ReactiveConfigurationWithBeanNameGenerator.class);
 		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 				EnableReactiveRepositories.class, resourceLoader, environment, registry, null);
 
@@ -225,7 +222,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(type, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(type);
 		return new AnnotationRepositoryConfigurationSource(metadata, EnableRepositories.class, resourceLoader, environment,
 				registry, null);
 	}

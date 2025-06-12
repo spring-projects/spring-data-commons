@@ -20,6 +20,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
@@ -29,7 +31,6 @@ import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
-import org.springframework.lang.Nullable;
 
 /**
  * Dummy {@link AotRepositoryContext} used to simulate module specific repository implementation.

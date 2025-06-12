@@ -40,6 +40,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.util.ClassUtils;
@@ -61,7 +62,8 @@ class RepositoryContributorUnitTests {
 			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
 
 				return MethodContributor
-						.forQueryMethod(new QueryMethod(method, getRepositoryInformation(), getProjectionFactory()))
+						.forQueryMethod(
+								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
 						.withMetadata(new QueryMetadata() {
 
 							@Override
