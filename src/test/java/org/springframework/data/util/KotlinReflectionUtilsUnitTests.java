@@ -73,14 +73,12 @@ public class KotlinReflectionUtilsUnitTests {
 		assertThat(KotlinReflectionUtils.isSupportedKotlinClass(TypeCreatingSyntheticClassKt.class)).isFalse();
 	}
 
-	void runTest(String testName)
-			throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+	void runTest(String testName) throws ReflectiveOperationException {
 
-		var classLoader = new KotlinExcludingURLClassLoader(
-				((URLClassLoader) getClass().getClassLoader()).getURLs());
+		var classLoader = new KotlinExcludingURLClassLoader(((URLClassLoader) getClass().getClassLoader()).getURLs());
 		var testClass = ClassUtils.forName(getClass().getName(), classLoader);
 
-		ReflectionUtils.invokeMethod(testClass.getMethod(testName), testClass.newInstance());
+		ReflectionUtils.invokeMethod(testClass.getMethod(testName), testClass.getConstructor().newInstance());
 	}
 
 	static class KotlinExcludingURLClassLoader extends URLClassLoader {

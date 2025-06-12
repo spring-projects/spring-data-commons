@@ -395,7 +395,8 @@ class ProxyProjectionFactoryUnitTests {
 
 	interface CustomerProjectionWithNullables {
 
-		@Nullable String getFirstname();
+		@Nullable
+		String getFirstname();
 		String getLastname();
 	}
 

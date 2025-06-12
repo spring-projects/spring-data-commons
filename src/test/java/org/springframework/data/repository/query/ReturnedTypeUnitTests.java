@@ -194,7 +194,7 @@ class ReturnedTypeUnitTests {
 
 		var method = SampleRepository.class.getMethod(name, parameters);
 		return new QueryMethod(method, new DefaultRepositoryMetadata(SampleRepository.class),
-				new SpelAwareProxyProjectionFactory());
+				new SpelAwareProxyProjectionFactory(), DefaultParameters::new);
 	}
 
 	interface SampleRepository extends Repository<Sample, Long> {

@@ -224,7 +224,8 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 
 		// Not available in the payload
 		@JsonPath("$.lastname")
-		@Nullable String getLastname();
+		@Nullable
+		String getLastname();
 
 		// First one not available in the payload
 		@JsonPath({ "$.lastname", "$.firstname" })

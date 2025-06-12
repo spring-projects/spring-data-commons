@@ -68,33 +68,35 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("pagingMethodWithInvalidReturnType", Pageable.class);
 
-		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatIllegalStateException()
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // DATAJPA-59
 	void rejectsPagingMethodWithoutPageable() throws Exception {
 		var method = SampleRepository.class.getMethod("pagingMethodWithoutPageable");
 
-		assertThatIllegalArgumentException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // DATACMNS-64
 	void setsUpSimpleQueryMethodCorrectly() throws Exception {
 		var method = SampleRepository.class.getMethod("findByUsername", String.class);
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@Test // DATACMNS-61
 	void considersIterableMethodForCollectionQuery() throws Exception {
 		var method = SampleRepository.class.getMethod("sampleMethod");
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
 	@Test // DATACMNS-67
 	void doesNotConsiderPageMethodCollectionQuery() throws Exception {
 		var method = SampleRepository.class.getMethod("anotherSampleMethod", Pageable.class);
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 		assertThat(queryMethod.isPageQuery()).isTrue();
 		assertThat(queryMethod.isCollectionQuery()).isFalse();
 	}
@@ -102,7 +104,7 @@ class QueryMethodUnitTests {
 	@Test // GH-2151
 	void supportsImperativecursorQueries() throws Exception {
 		var method = SampleRepository.class.getMethod("cursorWindow", ScrollPosition.class);
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 
 		assertThat(queryMethod.isPageQuery()).isFalse();
 		assertThat(queryMethod.isScrollQuery()).isTrue();
@@ -112,7 +114,7 @@ class QueryMethodUnitTests {
 	@Test // GH-2151
 	void supportsReactiveCursorQueries() throws Exception {
 		var method = SampleRepository.class.getMethod("reactiveCursorWindow", ScrollPosition.class);
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 		assertThat(queryMethod.isPageQuery()).isFalse();
 
 		assertThat(queryMethod.isScrollQuery()).isTrue();
@@ -123,14 +125,16 @@ class QueryMethodUnitTests {
 	void rejectsInvalidReactiveCursorQueries() throws Exception {
 		var method = SampleRepository.class.getMethod("invalidReactiveCursorWindow", ScrollPosition.class);
 
-		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatIllegalStateException()
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // GH-2151
 	void rejectsCursorWindowMethodWithoutPageable() throws Exception {
 		var method = SampleRepository.class.getMethod("cursorWindowWithoutScrollPosition");
 
-		assertThatIllegalArgumentException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // GH-2151
@@ -138,14 +142,15 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("cursorWindowMethodWithInvalidReturnType", ScrollPosition.class);
 
-		assertThatIllegalStateException().isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatIllegalStateException()
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // DATACMNS-171
 	void detectsAnEntityBeingReturned() throws Exception {
 
 		var method = SampleRepository.class.getMethod("returnsEntitySubclass");
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 
 		assertThat(queryMethod.isQueryForEntity()).isTrue();
 	}
@@ -154,7 +159,7 @@ class QueryMethodUnitTests {
 	void detectsNonEntityBeingReturned() throws Exception {
 
 		var method = SampleRepository.class.getMethod("returnsProjection");
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 
 		assertThat(queryMethod.isQueryForEntity()).isFalse();
 	}
@@ -164,7 +169,7 @@ class QueryMethodUnitTests {
 
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("sliceOfUsers");
-		var queryMethod = new QueryMethod(method, repositoryMetadata, factory);
+		var queryMethod = new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new);
 
 		assertThat(queryMethod.isSliceQuery()).isTrue();
 		assertThat(queryMethod.isCollectionQuery()).isFalse();
@@ -177,7 +182,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("arrayOfUsers");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	@Test // DATACMNS-650
@@ -186,7 +192,7 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("streaming");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isStreamQuery()).isTrue();
 	}
 
 	@Test // DATACMNS-650
@@ -195,7 +201,7 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("streaming", Pageable.class);
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isStreamQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isStreamQuery()).isTrue();
 	}
 
 	@Test // DATACMNS-716
@@ -204,7 +210,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsCompletableFutureForSingleEntity");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isFalse();
 	}
 
 	@Test // DATACMNS-716
@@ -213,7 +220,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsCompletableFutureForEntityCollection");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	@Test // DATACMNS-716
@@ -222,7 +230,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsFutureForSingleEntity");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isFalse();
 	}
 
 	@Test // DATACMNS-716
@@ -231,7 +240,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsFutureForEntityCollection");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	/**
@@ -243,7 +253,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsSeq");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	/**
@@ -255,7 +266,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsFutureOfSeq");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	/**
@@ -267,7 +279,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsFutureOfOption");
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isFalse();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isFalse();
 	}
 
 	@Test // DATACMNS-1005
@@ -276,7 +289,8 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("returnsSeq", Pageable.class);
 
-		assertThat(new QueryMethod(method, repositoryMetadata, factory).isCollectionQuery()).isTrue();
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
 	}
 
 	@Test // DATACMNS-1300
@@ -285,7 +299,7 @@ class QueryMethodUnitTests {
 		var metadata = AbstractRepositoryMetadata.getMetadata(ContainerRepository.class);
 		var method = ContainerRepository.class.getMethod("someMethod");
 
-		assertThat(new QueryMethod(method, metadata, factory).isCollectionQuery()).isFalse();
+		assertThat(new QueryMethod(method, metadata, factory, DefaultParameters::new).isCollectionQuery()).isFalse();
 	}
 
 	@Test // DATACMNS-1762
@@ -294,7 +308,7 @@ class QueryMethodUnitTests {
 		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
 		var method = SampleRepository.class.getMethod("reactiveSlice");
 
-		var queryMethod = new QueryMethod(method, repositoryMetadata, factory);
+		var queryMethod = new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new);
 		var returnedType = queryMethod.getResultProcessor().getReturnedType();
 		assertThat(queryMethod.isSliceQuery()).isTrue();
 		assertThat(returnedType.getTypeToRead()).isEqualTo(User.class);
@@ -305,7 +319,7 @@ class QueryMethodUnitTests {
 	void considersEclipseCollectionCollectionQuery() throws Exception {
 
 		var method = SampleRepository.class.getMethod("returnsEclipseCollection");
-		var queryMethod = new QueryMethod(method, metadata, factory);
+		var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
@@ -315,7 +329,8 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("pageableAndSort", Pageable.class, Sort.class);
 
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatExceptionOfType(IllegalStateException.class)
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // GH-2827
@@ -323,7 +338,8 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("pageableAndLimit", Pageable.class, Limit.class);
 
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> new QueryMethod(method, metadata, factory));
+		assertThatExceptionOfType(IllegalStateException.class)
+				.isThrownBy(() -> new QueryMethod(method, metadata, factory, DefaultParameters::new));
 	}
 
 	@Test // GH-2827
@@ -331,7 +347,7 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("sortAndLimit", Sort.class, Limit.class);
 
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@Test // GH-2827
@@ -339,7 +355,7 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("scrollPositionAndLimit", ScrollPosition.class, Limit.class);
 
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@Test // GH-2827
@@ -347,7 +363,7 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("findTop5By", Limit.class);
 
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@Test // GH-2827
@@ -355,7 +371,7 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("findTop5By", Pageable.class);
 
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@Test // GH-2827
@@ -363,7 +379,7 @@ class QueryMethodUnitTests {
 
 		var method = SampleRepository.class.getMethod("scrollPositionAndSort", ScrollPosition.class, Sort.class);
 
-		new QueryMethod(method, metadata, factory);
+		new QueryMethod(method, metadata, factory, DefaultParameters::new);
 	}
 
 	@TestFactory // GH-2869
@@ -371,10 +387,7 @@ class QueryMethodUnitTests {
 			throws Exception {
 
 		var metadata = AbstractRepositoryMetadata.getMetadata(StreamableAggregateRepository.class);
-		var stream = Stream.of(
-				Map.entry("findBy", false),
-				Map.entry("findSubTypeBy", false),
-				Map.entry("findAllBy", true),
+		var stream = Stream.of(Map.entry("findBy", false), Map.entry("findSubTypeBy", false), Map.entry("findAllBy", true),
 				Map.entry("findOptionalBy", false));
 
 		return DynamicTest.stream(stream, //
@@ -382,7 +395,7 @@ class QueryMethodUnitTests {
 				it -> {
 
 					var method = StreamableAggregateRepository.class.getMethod(it.getKey());
-					var queryMethod = new QueryMethod(method, metadata, factory);
+					var queryMethod = new QueryMethod(method, metadata, factory, DefaultParameters::new);
 
 					assertThat(queryMethod.isCollectionQuery()).isEqualTo(it.getValue());
 				});

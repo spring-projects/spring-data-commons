@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.auditing.EnableAuditing;
 
 /**
@@ -48,7 +48,7 @@ class AuditingBeanDefinitionRegistrarSupportUnitTests {
 	void testRegisterBeanDefinitions() {
 
 		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfig.class);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfig.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 		verify(registry, times(1)).registerBeanDefinition(anyString(), any(BeanDefinition.class));
@@ -67,7 +67,7 @@ class AuditingBeanDefinitionRegistrarSupportUnitTests {
 	void rejectsNullRegistry() {
 
 		AuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfig.class);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfig.class);
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> registrar.registerBeanDefinitions(metadata, null));

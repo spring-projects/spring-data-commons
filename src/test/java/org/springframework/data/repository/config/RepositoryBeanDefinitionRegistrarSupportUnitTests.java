@@ -35,7 +35,6 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.mapping.Person;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.basepackage.FragmentImpl;
@@ -67,7 +66,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test
 	void registersBeanDefinitionForFoundBean() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfiguration.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 
@@ -81,7 +80,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // GH-2584
 	void shouldExposeFragmentsAsBean() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfiguration.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 		verify(registry, atLeast(1)).registerBeanDefinition(eq("commons.MyRepository.fragments#0"),
@@ -103,7 +102,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-1147
 	void registersBeanDefinitionWithoutFragmentImplementations() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(FragmentExclusionConfiguration.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(FragmentExclusionConfiguration.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 
@@ -114,7 +113,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-1172, GH-3090
 	void shouldLimitImplementationBasePackages() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(LimitsImplementationBasePackages.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(LimitsImplementationBasePackages.class);
 
 		registrar.registerBeanDefinitions(metadata, registry);
 
@@ -127,7 +126,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-360
 	void registeredProfileRepositoriesIfProfileActivated() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfiguration.class);
 		environment.setActiveProfiles("profile");
 
 		var registrar = new DummyRegistrar();
@@ -140,7 +139,7 @@ class RepositoryBeanDefinitionRegistrarSupportUnitTests {
 	@Test // DATACMNS-1497
 	void usesBeanNameGeneratorProvided() {
 
-		AnnotationMetadata metadata = new StandardAnnotationMetadata(SampleConfiguration.class, true);
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(SampleConfiguration.class);
 		BeanNameGenerator delegate = new AnnotationBeanNameGenerator();
 
 		var registrar = new DummyRegistrar();

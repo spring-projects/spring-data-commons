@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
@@ -32,7 +33,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
@@ -74,7 +74,7 @@ class RepositoryConfigurationExtensionSupportUnitTests {
 	@Test // DATACMNS-1174
 	void rejectsReactiveRepositories() {
 
-		AnnotationMetadata annotationMetadata = new StandardAnnotationMetadata(ReactiveConfiguration.class, true);
+		AnnotationMetadata annotationMetadata = AnnotationMetadata.introspect(ReactiveConfiguration.class);
 		Environment environment = new StandardEnvironment();
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		var registry = mock(BeanDefinitionRegistry.class);

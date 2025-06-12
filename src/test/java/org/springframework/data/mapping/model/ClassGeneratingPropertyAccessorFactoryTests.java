@@ -68,7 +68,8 @@ public class ClassGeneratingPropertyAccessorFactoryTests {
 		Class<Object> defaultPackageClass = (Class) Class.forName("TypeInDefaultPackage");
 
 		parameters
-				.add(new Object[] { defaultPackageClass.newInstance(), "", defaultPackageClass, "Class in default package" });
+				.add(new Object[] { defaultPackageClass.getConstructor().newInstance(), "", defaultPackageClass,
+						"Class in default package" });
 
 		return parameters;
 	}

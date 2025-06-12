@@ -34,6 +34,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
+@SuppressWarnings("deprecation")
 class NullableUtilsUnitTests {
 
 	@Test // DATACMNS-1154
