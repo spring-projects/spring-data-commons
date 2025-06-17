@@ -1,4 +1,4 @@
-= Spring Data Commons image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-commons%2F&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-commons/] image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data Core"]
+= Spring Data Commons image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data Core"]
 
 https://projects.spring.io/spring-data/[Spring Data Commons] is part of the umbrella Spring Data project that provides shared infrastructure across the Spring Data projects. It contains technology neutral repository interfaces as well as a metadata model for persisting Java classes.
 
@@ -93,10 +93,10 @@ Building the documentation builds also the project without running tests.
 
 [source,bash]
 ----
- $ ./mvnw clean install -Pdistribute
+ $ ./mvnw clean install -Pantora
 ----
 
-The generated documentation is available from `target/site/reference/html/index.html`.
+The generated documentation is available from `target/site/index.html`.
 
 == License
 
