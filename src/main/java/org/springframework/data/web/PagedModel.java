@@ -56,7 +56,6 @@ public class PagedModel<T> {
 		return page.getContent();
 	}
 
-	@Nullable
 	@JsonProperty("page")
 	public PageMetadata getMetadata() {
 		return new PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(),
