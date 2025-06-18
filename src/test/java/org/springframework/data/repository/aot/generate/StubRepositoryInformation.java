@@ -108,7 +108,7 @@ class StubRepositoryInformation implements RepositoryInformation {
 
 	@Override
 	public boolean isQueryMethod(Method method) {
-		return false;
+		return !isBaseClassMethod(method);
 	}
 
 	@Override

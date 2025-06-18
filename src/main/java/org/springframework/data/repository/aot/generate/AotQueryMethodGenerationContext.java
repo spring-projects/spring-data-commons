@@ -50,7 +50,7 @@ public class AotQueryMethodGenerationContext {
 	private final MethodMetadata targetMethodMetadata;
 	private final VariableNameFactory variableNameFactory;
 
-	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
+	protected AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
 			AotRepositoryFragmentMetadata targetTypeMetadata) {
 
 		this.method = method;

@@ -35,7 +35,7 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
-class AotRepositoryFragmentMetadata {
+public class AotRepositoryFragmentMetadata {
 
 	private final ClassName className;
 	private final Map<String, FieldSpec> fields = new HashMap<>(3);

@@ -24,13 +24,14 @@ import example.UserRepositoryExtension;
 import example.UserRepositoryExtensionImpl;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.data.aot.CodeContributionAssert;
@@ -90,6 +91,53 @@ class RepositoryContributorUnitTests {
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains(expectedTypeName);
+		});
+
+		new CodeContributionAssert(generationContext).contributesReflectionFor(expectedTypeName);
+	}
+
+	@Test // GH-3265
+	void writesCapturedQueryMetadataToResources() {
+
+		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
+		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
+
+			@Override
+			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
+
+				return MethodContributor
+						.forQueryMethod(
+								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
+						.withMetadata(new QueryMetadata() {
+
+							@Override
+							public Map<String, Object> serialize() {
+
+								return Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
+										Arrays.stream(method.getParameters()).map(Parameter::getName).toList());
+							}
+						}).contribute(context -> {
+
+							CodeBlock.Builder builder = CodeBlock.builder();
+							if (!ClassUtils.isVoidType(method.getReturnType())) {
+								builder.addStatement("return null");
+							}
+
+							return builder.build();
+						});
+			}
+		};
+
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		repositoryContributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
+
+		String expectedTypeName = "example.UserRepositoryImpl__Aot";
+
+		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
+			String content = compiled.getResourceFile().getContent();
+			assertThat(content).containsIgnoringWhitespaces("\"filter\": \"FILTER(doSomething > $1)\"")
+					.containsIgnoringWhitespaces("\"project\": [\n\"firstname\"\n]");
 		});
 
 		new CodeContributionAssert(generationContext).contributesReflectionFor(expectedTypeName);

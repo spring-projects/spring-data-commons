@@ -54,7 +54,7 @@ record AotRepositoryMethod(String name, String signature, @Nullable QueryMetadat
 		JSONObject query = new JSONObject();
 
 		for (Map.Entry<String, Object> entry : queryMetadata.serialize().entrySet()) {
-			query.put(entry.getKey(), entry.getValue());
+			query.put(entry.getKey(), JSONObject.wrap(entry.getValue()));
 		}
 
 		return query;
