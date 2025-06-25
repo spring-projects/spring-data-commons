@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
@@ -50,8 +49,8 @@ public class AotQueryMethodGenerationContext {
 	private final MethodMetadata targetMethodMetadata;
 	private final VariableNameFactory variableNameFactory;
 
-	protected AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
-			AotRepositoryFragmentMetadata targetTypeMetadata) {
+	protected AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method,
+			QueryMethod queryMethod, AotRepositoryFragmentMetadata targetTypeMetadata) {
 
 		this.method = method;
 		this.annotations = MergedAnnotations.from(method);
@@ -270,8 +269,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the parameter name for the {@link org.springframework.data.domain.Sort sort parameter} or {@code null} if
 	 *         the method does not declare a sort parameter.
 	 */
-	@Nullable
-	public String getSortParameterName() {
+	public @Nullable String getSortParameterName() {
 		return getParameterName(queryMethod.getParameters().getSortIndex());
 	}
 
@@ -279,8 +277,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the parameter name for the {@link org.springframework.data.domain.Pageable pageable parameter} or
 	 *         {@code null} if the method does not declare a pageable parameter.
 	 */
-	@Nullable
-	public String getPageableParameterName() {
+	public @Nullable String getPageableParameterName() {
 		return getParameterName(queryMethod.getParameters().getPageableIndex());
 	}
 
@@ -288,8 +285,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the parameter name for the {@link org.springframework.data.domain.Limit limit parameter} or {@code null} if
 	 *         the method does not declare a limit parameter.
 	 */
-	@Nullable
-	public String getLimitParameterName() {
+	public @Nullable String getLimitParameterName() {
 		return getParameterName(queryMethod.getParameters().getLimitIndex());
 	}
 
@@ -297,8 +293,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the parameter name for the {@link org.springframework.data.domain.ScrollPosition scroll position parameter}
 	 *         or {@code null} if the method does not declare a scroll position parameter.
 	 */
-	@Nullable
-	public String getScrollPositionParameterName() {
+	public @Nullable String getScrollPositionParameterName() {
 		return getParameterName(queryMethod.getParameters().getScrollPositionIndex());
 	}
 
@@ -306,9 +301,32 @@ public class AotQueryMethodGenerationContext {
 	 * @return the parameter name for the {@link Class dynamic projection parameter} or {@code null} if the method does
 	 *         not declare a dynamic projection parameter.
 	 */
-	@Nullable
-	public String getDynamicProjectionParameterName() {
+	public @Nullable String getDynamicProjectionParameterName() {
 		return getParameterName(queryMethod.getParameters().getDynamicProjectionIndex());
+	}
+
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Vector vector parameter} or {@code null}
+	 *         if the method does not declare a vector type parameter.
+	 */
+	public @Nullable String getVectorParameterName() {
+		return getParameterName(queryMethod.getParameters().getVectorIndex());
+	}
+
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Score score parameter} or {@code null} if
+	 *         the method does not declare a score type parameter.
+	 */
+	public @Nullable String getScoreParameterName() {
+		return getParameterName(queryMethod.getParameters().getScoreIndex());
+	}
+
+	/**
+	 * @return the parameter name for the {@link org.springframework.data.domain.Range score range parameter} or
+	 *         {@code null} if the method does not declare a score range type parameter.
+	 */
+	public @Nullable String getScoreRangeParameterName() {
+		return getParameterName(queryMethod.getParameters().getScoreRangeIndex());
 	}
 
 }

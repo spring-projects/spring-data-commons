@@ -25,7 +25,11 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.SearchResults;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.domain.Window;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -74,6 +78,19 @@ class AotQueryMethodGenerationContextUnitTests {
 		assertThat(ctx.getDynamicProjectionParameterName()).isNull();
 	}
 
+	@Test // GH-3265
+	void returnsCorrectParameterNamesForVectorSearch() throws NoSuchMethodException {
+
+		AotQueryMethodGenerationContext ctx = ctxFor("searchAllNearWithScore");
+
+		assertThat(ctx.getVectorParameterName()).isEqualTo("vEctOR");
+		assertThat(ctx.getScoreParameterName()).isEqualTo("distance");
+
+		ctx = ctxFor("searchAllNearInRange");
+
+		assertThat(ctx.getScoreRangeParameterName()).isEqualTo("rDistance");
+	}
+
 	AotQueryMethodGenerationContext ctxFor(String methodName) throws NoSuchMethodException {
 
 		Method target = null;
@@ -105,5 +122,9 @@ class AotQueryMethodGenerationContextUnitTests {
 		<T> Window<T> limitScrollPositionDynamicProjection(Limit l, ScrollPosition sp, Class<T> projection);
 
 		Page<String> pageable(Pageable p);
+
+		SearchResults<String> searchAllNearWithScore(Vector vEctOR, Score distance, Limit limit);
+
+		SearchResults<String> searchAllNearInRange(Vector vEctOR, Range<Score> rDistance, Limit limit);
 	}
 }
