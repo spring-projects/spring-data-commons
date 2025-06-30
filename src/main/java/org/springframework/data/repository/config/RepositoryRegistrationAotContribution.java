@@ -43,6 +43,8 @@ import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.aot.AotContext;
+import org.springframework.data.aot.AotMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
@@ -72,6 +74,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	private static final Log logger = LogFactory.getLog(RepositoryRegistrationAotContribution.class);
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
+
+	private final AotMappingContext aotMappingContext = new AotMappingContext();
 
 	private final RepositoryRegistrationAotProcessor aotProcessor;
 
@@ -275,32 +279,15 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
 				repositoryContext.getClassLoader());
 
-		// Repository Fragments
-		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
-
-			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
-			Optional<Class<?>> implementation = fragment.getImplementationClass();
-
-			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
-
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-
-				if (!repositoryFragmentType.isInterface()) {
-					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-				}
-			});
-
-			implementation.ifPresent(typeToRegister -> {
-				contribution.getRuntimeHints().reflection().registerType(typeToRegister, hint -> {
-
-					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-
-					if (!typeToRegister.isInterface()) {
-						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-					}
-				});
-			});
+		// TODO: what about embedded types or entity types that are entity types references from properties?
+		PersistentEntity<?, ?> persistentEntity = aotMappingContext
+				.getPersistentEntity(repositoryInformation.getDomainType());
+		if (persistentEntity != null) {
+			aotMappingContext.contribute(persistentEntity);
 		}
+
+		// Repository Fragments
+		contributeFragments(contribution);
 
 		// Repository Proxy
 		contribution.getRuntimeHints().proxies().registerJdkProxy(repositoryInformation.getRepositoryInterface(),
@@ -341,6 +328,34 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 						contributeProjection(type, contribution);
 					}
 				});
+	}
+
+	private void contributeFragments(GenerationContext contribution) {
+		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
+
+			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
+			Optional<Class<?>> implementation = fragment.getImplementationClass();
+
+			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
+
+				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+				if (!repositoryFragmentType.isInterface()) {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+				}
+			});
+
+			implementation.ifPresent(typeToRegister -> {
+				contribution.getRuntimeHints().reflection().registerType(typeToRegister, hint -> {
+
+					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+					if (!typeToRegister.isInterface()) {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					}
+				});
+			});
+		}
 	}
 
 	private boolean isComponentAnnotatedRepository(RepositoryInformation repositoryInformation) {

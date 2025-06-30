@@ -76,7 +76,8 @@ import org.springframework.util.StringUtils;
  * @author Johannes Englmeier
  * @since 1.13
  */
-public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
+public class ClassGeneratingPropertyAccessorFactory
+		implements PersistentPropertyAccessorFactory, PersistentEntityClassInitializer {
 
 	// Pooling of parameter arrays to prevent excessive object allocation.
 	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
@@ -89,20 +90,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			256, KotlinValueBoxingAdapter::getWrapper);
 
 	@Override
+	public void initialize(PersistentEntity<?, ?> entity) {
+		getPropertyAccessorConstructor(entity);
+	}
+
+	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
 
-		Constructor<?> constructor = constructorMap.get(entity);
-
-		if (constructor == null) {
-
-			Class<PersistentPropertyAccessor<?>> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
-					entity);
-			constructor = accessorClass.getConstructors()[0];
-
-			Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(this.constructorMap);
-			constructorMap.put(entity, constructor);
-			this.constructorMap = constructorMap;
-		}
+		Constructor<?> constructor = getPropertyAccessorConstructor(entity);
 
 		Object[] args = argumentCache.get();
 		args[0] = bean;
@@ -123,6 +118,24 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 	}
 
+	private Constructor<?> getPropertyAccessorConstructor(PersistentEntity<?, ?> entity) {
+
+		Constructor<?> constructor = constructorMap.get(entity);
+
+		if (constructor == null) {
+
+			Class<PersistentPropertyAccessor<?>> accessorClass = potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+					entity);
+			constructor = accessorClass.getConstructors()[0];
+
+			Map<PersistentEntity<?, ?>, Constructor<?>> constructorMap = new HashMap<>(this.constructorMap);
+			constructorMap.put(entity, constructor);
+			this.constructorMap = constructorMap;
+		}
+
+		return constructor;
+	}
+
 	/**
 	 * Checks whether an accessor class can be generated.
 	 *
@@ -135,6 +148,11 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	public boolean isSupported(PersistentEntity<?, ?> entity) {
 
 		Assert.notNull(entity, "PersistentEntity must not be null");
+
+		// already present in classloader
+		if (findAccessorClass(entity) != null) {
+			return true;
+		}
 
 		return isClassLoaderDefineClassAvailable(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
 	}
@@ -184,7 +202,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	/**
 	 * @param entity must not be {@literal null}.
 	 */
-	private synchronized Class<PersistentPropertyAccessor<?>> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
+	protected synchronized Class<PersistentPropertyAccessor<?>> potentiallyCreateAndRegisterPersistentPropertyAccessorClass(
 			PersistentEntity<?, ?> entity) {
 
 		Map<TypeInformation<?>, Class<PersistentPropertyAccessor<?>>> map = this.propertyAccessorClasses;
@@ -194,7 +212,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return propertyAccessorClass;
 		}
 
-		propertyAccessorClass = createAccessorClass(entity);
+		propertyAccessorClass = loadOrCreateAccessorClass(entity);
 
 		map = new HashMap<>(map);
 		map.put(entity.getTypeInformation(), propertyAccessorClass);
@@ -204,14 +222,27 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		return propertyAccessorClass;
 	}
 
-	@SuppressWarnings("unchecked")
-	private Class<PersistentPropertyAccessor<?>> createAccessorClass(PersistentEntity<?, ?> entity) {
+	@SuppressWarnings({ "unchecked" })
+	private Class<PersistentPropertyAccessor<?>> loadOrCreateAccessorClass(PersistentEntity<?, ?> entity) {
 
 		try {
+
+			Class<?> accessorClass = findAccessorClass(entity);
+			if (accessorClass != null) {
+				return (Class<PersistentPropertyAccessor<?>>) accessorClass;
+			}
+
 			return (Class<PersistentPropertyAccessor<?>>) PropertyAccessorClassGenerator.generateCustomAccessorClass(entity);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static @Nullable Class<?> findAccessorClass(PersistentEntity<?, ?> entity) {
+
+		String accessorClassName = PropertyAccessorClassGenerator.generateClassName(entity);
+
+		return org.springframework.data.util.ClassUtils.loadIfPresent(accessorClassName, entity.getType().getClassLoader());
 	}
 
 	/**
@@ -306,7 +337,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 		private static final String INIT = "<init>";
 		private static final String CLINIT = "<clinit>";
-		private static final String TAG = "_Accessor_";
+		private static final String TAG = "__Accessor_";
 		private static final String JAVA_LANG_OBJECT = "java/lang/Object";
 		private static final String JAVA_LANG_STRING = "java/lang/String";
 		private static final String JAVA_LANG_REFLECT_METHOD = "java/lang/reflect/Method";
@@ -347,7 +378,6 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			try {
 
 				return ReflectUtils.defineClass(className, bytecode, classLoader, type.getProtectionDomain(), type);
-
 			} catch (Exception o_O) {
 				throw new IllegalStateException(o_O);
 			}
@@ -1372,8 +1402,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return 5 + list.indexOf(item);
 		}
 
-		private static String generateClassName(PersistentEntity<?, ?> entity) {
-			return entity.getType().getName() + TAG + Integer.toString(entity.hashCode(), 36);
+		static String generateClassName(PersistentEntity<?, ?> entity) {
+			return entity.getType().getName() + TAG + Integer.toString(Math.abs(entity.getType().getName().hashCode()), 36);
 		}
 	}
 
