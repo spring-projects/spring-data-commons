@@ -51,7 +51,7 @@ import org.springframework.util.ClassUtils;
  * An {@link EntityInstantiator} that can generate byte code to speed-up dynamic object instantiation. Uses the
  * {@link PersistentEntity}'s {@link PreferredConstructor} to instantiate an instance of the entity by dynamically
  * generating factory methods with appropriate constructor invocations via ASM. If we cannot generate byte code for a
- * type, we gracefully fallback to the {@link ReflectionEntityInstantiator}.
+ * type, we gracefully fall back to the {@link ReflectionEntityInstantiator}.
  *
  * @author Thomas Darimont
  * @author Oliver Gierke
@@ -60,7 +60,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @since 1.11
  */
-class ClassGeneratingEntityInstantiator implements EntityInstantiator {
+class ClassGeneratingEntityInstantiator implements EntityInstantiator, PersistentEntityClassInitializer {
 
 	private static final Log LOGGER = LogFactory.getLog(ClassGeneratingEntityInstantiator.class);
 
@@ -88,8 +88,20 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	}
 
 	@Override
+	public void initialize(PersistentEntity<?, ?> entity) {
+		getEntityInstantiator(entity);
+	}
+
+	@Override
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
+
+		EntityInstantiator instantiator = getEntityInstantiator(entity);
+		return instantiator.createInstance(entity, provider);
+	}
+
+	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> EntityInstantiator getEntityInstantiator(
+			E entity) {
 
 		EntityInstantiator instantiator = this.entityInstantiators.get(entity.getTypeInformation());
 
@@ -97,7 +109,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 			instantiator = potentiallyCreateAndRegisterEntityInstantiator(entity);
 		}
 
-		return instantiator.createInstance(entity, provider);
+		return instantiator;
 	}
 
 	/**
@@ -170,10 +182,19 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	 */
 	boolean shouldUseReflectionEntityInstantiator(PersistentEntity<?, ?> entity) {
 
+		String accessorClassName = ObjectInstantiatorClassGenerator.generateClassName(entity);
+
+		// already present in classloader
+		if (ClassUtils.isPresent(accessorClassName, entity.getType().getClassLoader())) {
+			return false;
+		}
+
 		if (NativeDetector.inNativeImage()) {
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(String.format("graalvm.nativeimage - fall back to reflection for %s", entity.getName()));
+				LOGGER.debug(String.format(
+						"[org.graalvm.nativeimage.imagecode=true] and no AOT-generated EntityInstantiator for %s. Falling back to reflection.",
+						entity.getName()));
 			}
 
 			return true;
@@ -388,7 +409,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 	static class ObjectInstantiatorClassGenerator {
 
 		private static final String INIT = "<init>";
-		private static final String TAG = "_Instantiator_";
+		private static final String TAG = "__Instantiator_";
 		private static final String JAVA_LANG_OBJECT = Type.getInternalName(Object.class);
 		private static final String CREATE_METHOD_NAME = "newInstance";
 
@@ -431,8 +452,8 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator {
 		 * @param entity
 		 * @return
 		 */
-		private String generateClassName(PersistentEntity<?, ?> entity) {
-			return entity.getType().getName() + TAG + Integer.toString(entity.hashCode(), 36);
+		static String generateClassName(PersistentEntity<?, ?> entity) {
+			return entity.getType().getName() + TAG + Integer.toString(Math.abs(entity.getType().getName().hashCode()), 36);
 		}
 
 		/**

@@ -15,15 +15,18 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.AbstractAssert;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.JdkProxyHint;
+import org.springframework.aot.hint.TypeHint;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
@@ -33,6 +36,7 @@ import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
  *
  * @author Christoph Strobl
  * @author John Blum
+ * @author Mark Paluch
  * @since 3.0
  */
 @SuppressWarnings("UnusedReturnValue")
@@ -48,6 +52,19 @@ public class CodeContributionAssert extends AbstractAssert<CodeContributionAsser
 			assertThat(this.actual.getRuntimeHints()).describedAs("No reflection entry found for [%s]", type)
 					.matches(RuntimeHintsPredicates.reflection().onType(type));
 		}
+
+		return this;
+	}
+
+	public CodeContributionAssert contributesReflectionFor(TypeReference typeReference) {
+
+		assertThat(this.actual.getRuntimeHints()).describedAs(() -> {
+
+			return "Existing hints: " + System.lineSeparator() + this.actual().getRuntimeHints().reflection().typeHints()
+					.map(TypeHint::toString).map(" - "::concat).collect(Collectors.joining(System.lineSeparator()));
+
+		}).matches(RuntimeHintsPredicates.reflection().onType(typeReference),
+				String.format("No reflection entry found for [%s]", typeReference));
 
 		return this;
 	}
