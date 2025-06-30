@@ -40,6 +40,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.util.TypeContributor;
@@ -74,6 +76,8 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 
 	private final Log logger = LogFactory.getLog(getClass());
 
+	private final AotMappingContext aotMappingContext = new AotMappingContext();
+
 	private Map<String, RepositoryConfiguration<?>> configMap;
 
 	@Nullable
@@ -100,6 +104,8 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 	 * @param repositoryContext must not be {@literal null}.
 	 * @param generationContext must not be {@literal null}.
 	 */
+	// TODO: Can we merge #contribute, #registerReflectiveForAggregateRoot into RepositoryRegistrationAotContribution?
+	// hints and types are contributed from everywhere.
 	private void registerReflectiveForAggregateRoot(AotRepositoryContext repositoryContext,
 			GenerationContext generationContext) {
 
@@ -112,7 +118,16 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 		aggregateRootTypes.addAll(information.getAlternativeDomainTypes());
 
 		Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream())
-				.forEach(it -> registrar.registerRuntimeHints(hints, it));
+				.forEach(it -> {
+
+					// arent we already registering the types in RepositoryRegistrationAotContribution#contributeRepositoryInfo?
+					registrar.registerRuntimeHints(hints, it);
+
+					PersistentEntity<?, ?> persistentEntity = aotMappingContext.getPersistentEntity(it);
+					if (persistentEntity != null) {
+						aotMappingContext.contribute(persistentEntity);
+					}
+				});
 	}
 
 	private boolean isRepositoryBean(RegisteredBean bean) {

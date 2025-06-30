@@ -39,6 +39,8 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
+import org.springframework.data.aot.AotMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
@@ -62,27 +64,29 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
 
-	/**
-	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
-	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
-	 *
-	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
-	 *          which this contribution was created.
-	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
-	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
-	 * @see RepositoryRegistrationAotProcessor
-	 */
-	public static RepositoryRegistrationAotContribution fromProcessor(
-			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
-
-		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
-	}
+	private final AotMappingContext aotMappingContext = new AotMappingContext();
 
 	private AotRepositoryContext repositoryContext;
 
 	private BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
 
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
+
+    /**
+     * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
+     * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
+     *
+     * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
+     *          which this contribution was created.
+     * @return a new instance of {@link RepositoryRegistrationAotContribution}.
+     * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
+     * @see RepositoryRegistrationAotProcessor
+     */
+    public static RepositoryRegistrationAotContribution fromProcessor(
+        RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+
+        return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
+    }
 
 	/**
 	 * Constructs a new instance of the {@link RepositoryRegistrationAotContribution} initialized with the given, required
@@ -233,20 +237,15 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
 				repositoryContext.getClassLoader());
 
-		// Repository Fragments
-		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
-
-			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
-
-			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
-
-				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
-
-				if (!repositoryFragmentType.isInterface()) {
-					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
-				}
-			});
+		// TODO: what about embedded types or entity types that are entity types references from properties?
+		PersistentEntity<?, ?> persistentEntity = aotMappingContext
+				.getPersistentEntity(repositoryInformation.getDomainType());
+		if (persistentEntity != null) {
+			aotMappingContext.contribute(persistentEntity);
 		}
+
+		// Repository Fragments
+		contributeFragments(contribution);
 
 		// Repository Proxy
 		contribution.getRuntimeHints().proxies().registerJdkProxy(repositoryInformation.getRepositoryInterface(),
@@ -293,6 +292,34 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 						contributeProjection(type, contribution);
 					}
 				});
+	}
+
+	private void contributeFragments(GenerationContext contribution) {
+		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
+
+			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
+			Optional<Class<?>> implementation = fragment.getImplementation().map(it -> it.getClass());
+
+			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
+
+				hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+				if (!repositoryFragmentType.isInterface()) {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+				}
+			});
+
+			implementation.ifPresent(typeToRegister -> {
+				contribution.getRuntimeHints().reflection().registerType(typeToRegister, hint -> {
+
+					hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+
+					if (!typeToRegister.isInterface()) {
+						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					}
+				});
+			});
+		}
 	}
 
 	private boolean isComponentAnnotatedRepository(RepositoryInformation repositoryInformation) {
