@@ -56,7 +56,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
@@ -125,7 +124,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
-				? BeanWrapperPropertyAccessorFactory.INSTANCE
+				? new ReflectionFallbackPersistentPropertyAccessorFactory()
 				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,

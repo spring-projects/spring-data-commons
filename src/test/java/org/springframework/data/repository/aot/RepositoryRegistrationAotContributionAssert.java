@@ -18,15 +18,20 @@ package org.springframework.data.repository.aot;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.assertj.core.api.AbstractAssert;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
+import org.springframework.context.aot.ApplicationContextAotGenerator;
 import org.springframework.data.aot.CodeContributionAssert;
 import org.springframework.data.repository.config.RepositoryRegistrationAotContribution;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -113,9 +118,27 @@ public class RepositoryRegistrationAotContributionAssert
 
 		GenerationContext generationContext = new TestGenerationContext(Object.class);
 
-		this.actual.applyTo(generationContext, mockBeanRegistrationCode);
+		ApplicationContextAotGenerator generator = new ApplicationContextAotGenerator();
 
 		try {
+			Class<?> handlerClass = Class.forName("org.springframework.context.aot.CglibClassHandler");
+			Constructor<?> constructor = handlerClass.getDeclaredConstructors()[0];
+			constructor.setAccessible(true);
+			Object handler = BeanUtils.instantiateClass(constructor, generationContext);
+
+			Method withCglibClassHandler = generator.getClass().getDeclaredMethod("withCglibClassHandler", handlerClass,
+					Supplier.class);
+			withCglibClassHandler.setAccessible(true);
+			withCglibClassHandler.invoke(generator, handler, new Supplier<Object>() {
+
+				@Override
+				public Object get() {
+
+					actual.applyTo(generationContext, mockBeanRegistrationCode);
+					return null;
+				}
+			});
+
 			assertWith.accept(new CodeContributionAssert(generationContext));
 		} catch (Throwable o_O) {
 			fail(o_O.getMessage(), o_O);

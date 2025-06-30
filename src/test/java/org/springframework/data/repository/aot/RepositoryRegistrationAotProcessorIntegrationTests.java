@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.aot;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.*;
 
 import java.io.Serializable;
@@ -24,11 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.DecoratingProxy;
@@ -65,6 +59,7 @@ import org.springframework.transaction.interceptor.TransactionalProxy;
  * @author Christoph Strobl
  * @author John Blum
  */
+// TODO: This is verifying repository.config code. Move to repository.config package?
 public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 	@Test // GH-2593
@@ -296,8 +291,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 		assertThatContribution(repositoryBeanContribution) //
 				.codeContributionSatisfies(contribution -> {
 					contribution.contributesReflectionFor(Person.class);
-					contribution.contributesReflectionFor(
-							QConfigWithQuerydslPredicateExecutor_Person.class);
+					contribution.contributesReflectionFor(QConfigWithQuerydslPredicateExecutor_Person.class);
 				});
 	}
 
@@ -325,46 +319,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 		});
 	}
 
-	RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration) {
-		return computeAotConfiguration(configuration, new AnnotationConfigApplicationContext());
-	}
-
-	RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration,
-			AnnotationConfigApplicationContext applicationContext) {
-
-		applicationContext.register(configuration);
-		applicationContext.refreshForAotProcessing(new RuntimeHints());
-
-		return repositoryType -> {
-
-			String[] repositoryBeanNames = applicationContext.getBeanNamesForType(repositoryType);
-
-			assertThat(repositoryBeanNames)
-					.describedAs("Unable to find repository [%s] in configuration [%s]", repositoryType, configuration)
-					.hasSize(1);
-
-			String repositoryBeanName = repositoryBeanNames[0];
-
-			ConfigurableListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
-
-			RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
-					.getBean(RepositoryRegistrationAotProcessor.class);
-
-			repositoryAotProcessor.setBeanFactory(beanFactory);
-
-			RegisteredBean bean = RegisteredBean.of(beanFactory, repositoryBeanName);
-
-			BeanRegistrationAotContribution beanContribution = repositoryAotProcessor.processAheadOfTime(bean);
-
-			assertThat(beanContribution).isInstanceOf(RepositoryRegistrationAotContribution.class);
-
-			return (RepositoryRegistrationAotContribution) beanContribution;
-		};
-	}
-
-	@FunctionalInterface
-	interface RepositoryRegistrationAotContributionBuilder {
-		RepositoryRegistrationAotContribution forRepository(Class<?> repositoryInterface);
+	AotUtil.RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration) {
+		return AotUtil.contributionFor(configuration);
 	}
 
 	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = SampleRepository.class) },
