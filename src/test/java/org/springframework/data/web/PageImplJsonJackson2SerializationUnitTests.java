@@ -17,18 +17,16 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
-import org.springframework.data.web.config.SpringDataJackson3Configuration;
+import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.data.web.config.SpringDataWebSettings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -37,7 +35,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Drotbohm
  * @author Mark Paluch
  */
-class PageImplJsonSerializationUnitTests {
+class PageImplJsonJackson2SerializationUnitTests {
 
 	@Test // GH-3024
 	void serializesPageImplAsJson() {
@@ -62,8 +60,8 @@ class PageImplJsonSerializationUnitTests {
 
 		SpringDataWebSettings settings = new SpringDataWebSettings(mode);
 
-		ObjectMapper mapper = JsonMapper.builder().addModule(new SpringDataJackson3Configuration.PageModule(settings))
-				.build();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new SpringDataJacksonConfiguration.PageModule(settings));
 
 		assertThatNoException().isThrownBy(() -> {
 
