@@ -141,7 +141,8 @@ public @interface EnableSpringDataWebSupport {
 					.orElseGet(() -> SpringDataWebConfiguration.class.getName()));
 
 			resourceLoader//
-					.filter(it -> ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", it))//
+					.filter(it -> ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", it)
+							|| ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", it))//
 					.map(it -> SpringFactoriesLoader.loadFactoryNames(SpringDataJacksonModules.class, it))//
 					.ifPresent(it -> imports.addAll(it));
 

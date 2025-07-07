@@ -33,12 +33,13 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
+import org.springframework.data.web.ProjectingJacksonHttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -151,23 +152,35 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	}
 
 	@Override
-	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+	public void configureMessageConverters(HttpMessageConverters.Builder builder) {
 
-		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
-				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
+		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
 
-			ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+			if (ClassUtils.isPresent("tools.jackson.databind.ObjectReader", context.getClassLoader())) {
 
-			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
-			converter.setBeanFactory(context);
-			forwardBeanClassLoader(converter);
+				tools.jackson.databind.ObjectMapper mapper = context.getBeanProvider(tools.jackson.databind.ObjectMapper.class)
+						.getIfUnique(tools.jackson.databind.ObjectMapper::new);
 
-			converters.add(0, converter);
+				ProjectingJacksonHttpMessageConverter converter = new ProjectingJacksonHttpMessageConverter(mapper);
+				converter.setBeanFactory(context);
+				forwardBeanClassLoader(converter);
+
+				builder.additionalMessageConverter(converter);
+			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
+
+				ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+
+				ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
+				converter.setBeanFactory(context);
+				forwardBeanClassLoader(converter);
+
+				builder.additionalMessageConverter(converter);
+			}
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
-			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
+			builder.additionalMessageConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}

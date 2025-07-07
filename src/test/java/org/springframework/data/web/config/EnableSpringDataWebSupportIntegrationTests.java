@@ -19,10 +19,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.json.JsonMapper;
+
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -42,9 +46,8 @@ import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -52,7 +55,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.Module;
 
 /**
  * Integration tests for {@link EnableSpringDataWebSupport}.
@@ -124,7 +126,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	@Configuration
 	static class PageSampleConfig extends WebMvcConfigurationSupport {
 
-		@Autowired private List<Module> modules;
+		@Autowired private List<JacksonModule> modules;
 
 		@Bean
 		PageSampleController controller() {
@@ -132,10 +134,11 @@ class EnableSpringDataWebSupportIntegrationTests {
 		}
 
 		@Override
-		protected void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.json().modules(modules);
-			converters.add(0, new MappingJackson2HttpMessageConverter(builder.build()));
+		protected void configureMessageConverters(HttpMessageConverters.Builder builder) {
+			builder.jsonMessageConverter(new JacksonJsonHttpMessageConverter(
+					JsonMapper.builder().addModules(modules.toArray(new JacksonModule[0])).build()));
 		}
+
 	}
 
 	@EnableSpringDataWebSupport
@@ -188,7 +191,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 	}
 
 	@Test // DATACMNS-475
-	@ClassPathExclusions(packages = { "com.fasterxml.jackson.databind" })
+	@ClassPathExclusions(packages = { "com.fasterxml.jackson.databind", "tools.jackson.databind" })
 	void doesNotRegisterJacksonSpecificComponentsIfJacksonNotPresent() {
 
 		ApplicationContext context = WebTestUtils.createApplicationContext(SampleConfig.class);

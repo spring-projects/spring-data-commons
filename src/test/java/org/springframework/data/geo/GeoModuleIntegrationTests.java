@@ -17,15 +17,18 @@ package org.springframework.data.geo;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link GeoModule}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class GeoModuleIntegrationTests {
 
@@ -34,8 +37,7 @@ class GeoModuleIntegrationTests {
 	@BeforeEach
 	void setUp() {
 
-		this.mapper = new ObjectMapper();
-		this.mapper.registerModule(new GeoModule());
+		this.mapper = JsonMapper.builder().addModule(new GeoModule()).build();
 	}
 
 	@Test // DATACMNS-475

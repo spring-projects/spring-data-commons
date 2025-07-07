@@ -15,15 +15,17 @@
  */
 package org.springframework.data.geo;
 
+import tools.jackson.core.Version;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.module.SimpleModule;
+
 import java.io.Serial;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+
 
 /**
  * Custom module to deserialize the geo-spatial value objects using Jackson 2.

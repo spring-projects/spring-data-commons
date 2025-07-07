@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,21 @@
  */
 package org.springframework.data.repository.init;
 
+import tools.jackson.databind.ObjectMapper;
+
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.FactoryBean;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
- * {@link FactoryBean} to set up a {@link ResourceReaderRepositoryPopulator} with a {@link Jackson2ResourceReader}.
+ * {@link FactoryBean} to set up a {@link ResourceReaderRepositoryPopulator} with a {@link JacksonResourceReader}.
  *
+ * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
- * @since 1.6
- * @deprecated since 4.0, in favor of {@link JacksonRepositoryPopulatorFactoryBean}.
+ * @since 4.0
  */
-@Deprecated(since = "4.0", forRemoval = true)
-public class Jackson2RepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
+public class JacksonRepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
 	private @Nullable ObjectMapper mapper;
 
@@ -45,6 +44,6 @@ public class Jackson2RepositoryPopulatorFactoryBean extends AbstractRepositoryPo
 
 	@Override
 	protected ResourceReader getResourceReader() {
-		return new Jackson2ResourceReader(mapper);
+		return mapper == null ? new JacksonResourceReader() : new JacksonResourceReader(mapper);
 	}
 }

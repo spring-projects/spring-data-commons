@@ -40,7 +40,8 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 		hints.reflection().registerType(org.springframework.data.web.config.SpringDataWebSettings.class, hint -> hint
 				.withMembers(MemberCategory.INVOKE_DECLARED_METHODS).onReachableType(EnableSpringDataWebSupport.class));
 
-		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
+		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)
+				|| ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", classLoader)) {
 
 			// Page Model for Jackson Rendering
 			hints.reflection().registerType(org.springframework.data.web.PagedModel.class,
