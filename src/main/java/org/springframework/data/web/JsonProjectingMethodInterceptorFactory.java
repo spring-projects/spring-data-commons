@@ -131,18 +131,27 @@ public class JsonProjectingMethodInterceptorFactory implements MethodInterceptor
 		return false;
 	}
 
-	private static class InputMessageProjecting implements MethodInterceptor {
-
-		private final DocumentContext context;
-
-		public InputMessageProjecting(DocumentContext context) {
-			this.context = context;
-		}
+	private record InputMessageProjecting(DocumentContext context) implements MethodInterceptor {
 
 		@Override
 		public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 			Method method = invocation.getMethod();
+
+			switch (method.getName()) {
+				case "equals" -> {
+					// Only consider equal when proxies are identical.
+					return (invocation.getThis() == invocation.getArguments()[0]);
+				}
+				case "hashCode" -> {
+					// Use hashCode of EntityManager proxy.
+					return context.hashCode();
+				}
+				case "toString" -> {
+					return context.jsonString();
+				}
+			}
+
 			TypeInformation<?> returnType = TypeInformation.fromReturnTypeOf(method);
 			ResolvableType type = ResolvableType.forMethodReturnType(method);
 			boolean isCollectionResult = type.getRawClass() != null && Collection.class.isAssignableFrom(type.getRawClass());

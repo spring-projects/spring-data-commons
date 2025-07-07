@@ -15,7 +15,10 @@
  */
 package org.springframework.data.repository.init;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.*;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +32,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * A {@link ResourceReader} using Jackson to read JSON into objects.
  *
@@ -39,41 +39,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Johannes Englmeier
- * @since 1.6
- * @deprecated since 4.0, in favor of {@link JacksonResourceReader}.
+ * @since 4.0
  */
-@Deprecated(since = "4.0", forRemoval = true)
-public class Jackson2ResourceReader implements ResourceReader {
+public class JacksonResourceReader implements ResourceReader {
 
 	private static final String DEFAULT_TYPE_KEY = "_class";
-	private static final ObjectMapper DEFAULT_MAPPER = new ObjectMapper();
-
-	static {
-		DEFAULT_MAPPER.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-	}
+	private static final ObjectMapper DEFAULT_MAPPER = JsonMapper.builder()
+			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
 
 	private final ObjectMapper mapper;
 	private String typeKey = DEFAULT_TYPE_KEY;
 
 	/**
-	 * Creates a new {@link Jackson2ResourceReader}.
+	 * Creates a new {@link JacksonResourceReader}.
 	 */
-	public Jackson2ResourceReader() {
+	public JacksonResourceReader() {
 		this(DEFAULT_MAPPER);
 	}
 
 	/**
-	 * Creates a new {@link Jackson2ResourceReader} using the given {@link ObjectMapper}.
+	 * Creates a new {@link JacksonResourceReader} using the given {@link ObjectMapper}.
 	 *
 	 * @param mapper
 	 */
-	public Jackson2ResourceReader(@Nullable ObjectMapper mapper) {
-		this.mapper = mapper == null ? DEFAULT_MAPPER : mapper;
+	public JacksonResourceReader(ObjectMapper mapper) {
+		this.mapper = mapper;
 	}
 
 	/**
-	 * Configures the JSON document's key to lookup the type to instantiate the object. Defaults to
-	 * {@link Jackson2ResourceReader#DEFAULT_TYPE_KEY}.
+	 * Configures the JSON document's key to look up the type to instantiate the object. Defaults to
+	 * {@link JacksonResourceReader#DEFAULT_TYPE_KEY}.
 	 *
 	 * @param typeKey
 	 */
@@ -91,7 +86,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 
 		if (node.isArray()) {
 
-			Iterator<JsonNode> elements = node.elements();
+			Iterator<JsonNode> elements = node.iterator();
 			List<Object> result = new ArrayList<>();
 
 			while (elements.hasNext()) {
@@ -120,7 +115,7 @@ public class Jackson2ResourceReader implements ResourceReader {
 			throw new IllegalArgumentException(String.format("Could not find type for type key '%s'", typeKey));
 		}
 
-		String typeName = typeNode.asText();
+		String typeName = typeNode.asString();
 		Class<?> type = ClassUtils.resolveClassName(typeName, classLoader);
 
 		return mapper.readerFor(type).readValue(node);

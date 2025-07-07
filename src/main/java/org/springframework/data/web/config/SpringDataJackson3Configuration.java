@@ -15,6 +15,12 @@
  */
 package org.springframework.data.web.config;
 
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.std.ToStringSerializerBase;
+import tools.jackson.databind.util.StdConverter;
 
 import java.io.Serial;
 import java.util.List;
@@ -32,36 +38,25 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.util.ClassUtils;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializerBase;
-import com.fasterxml.jackson.databind.util.StdConverter;
-
 /**
- * JavaConfig class to export Jackson specific configuration.
+ * JavaConfig class to export Jackson 3-specific configuration.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
- * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
+ * @since 4.0
  */
-@SuppressWarnings("removal")
-@Deprecated(since = "4.0", forRemoval = true)
-public class SpringDataJacksonConfiguration implements SpringDataJacksonModules {
+public class SpringDataJackson3Configuration implements SpringDataJackson3Modules {
 
 	@Nullable
 	@Autowired(required = false) SpringDataWebSettings settings;
 
 	@Bean
-	public GeoModule jacksonGeoModule() {
+	public GeoModule jackson3GeoModule() {
 		return new GeoModule();
 	}
 
 	@Bean
-	public PageModule pageModule() {
+	public PageModule jackson3pageModule() {
 		return new PageModule(settings);
 	}
 
@@ -110,8 +105,6 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		 */
 		static class UnpagedAsInstanceSerializer extends ToStringSerializerBase {
 
-			private static final @Serial long serialVersionUID = -1213451755610144637L;
-
 			public UnpagedAsInstanceSerializer() {
 				super(Object.class);
 			}
@@ -134,11 +127,11 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		}
 
 		/**
-		 * A {@link BeanSerializerModifier} that logs a warning message if an instance of {@link Page} will be rendered.
+		 * A {@link ValueSerializerModifier} that logs a warning message if an instance of {@link Page} will be rendered.
 		 *
 		 * @author Oliver Drotbohm
 		 */
-		static class WarningLoggingModifier extends BeanSerializerModifier {
+		static class WarningLoggingModifier extends ValueSerializerModifier {
 
 			private static final Logger LOGGER = LoggerFactory.getLogger(WarningLoggingModifier.class);
 			private static final String MESSAGE = """
@@ -152,8 +145,8 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			private boolean warningRendered = false;
 
 			@Override
-			public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
-					List<BeanPropertyWriter> beanProperties) {
+			public List<BeanPropertyWriter> changeProperties(tools.jackson.databind.SerializationConfig config,
+					tools.jackson.databind.BeanDescription.Supplier beanDesc, List<BeanPropertyWriter> beanProperties) {
 
 				if (Page.class.isAssignableFrom(beanDesc.getBeanClass()) && !warningRendered) {
 
@@ -165,5 +158,4 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 	}
-
 }
