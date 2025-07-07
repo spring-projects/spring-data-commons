@@ -49,7 +49,7 @@ internal class KIterablePropertyPath<T, U>(
  * @author Tjeu Kayim
  * @author Mikhail Polivakha
  */
-internal fun asString(property: KProperty<*>): String {
+fun asString(property: KProperty<*>): String {
 	return when (property) {
 		is KPropertyPath<*, *> ->
 			"${asString(property.parent)}.${property.child.name}"
