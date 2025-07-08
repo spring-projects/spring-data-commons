@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  * {@link HttpMessageConverter} implementation to enable projected JSON binding to interfaces annotated with
  * {@link ProjectedPayload}.
  *
+ * @author Mark Paluch
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @soundtrack Richard Spaven - Ice Is Nice (Spaven's 5ive)
@@ -115,28 +116,38 @@ public class ProjectingJacksonHttpMessageConverter extends JacksonJsonHttpMessag
 	}
 
 	@Override
-	public boolean canRead(ResolvableType type, @Nullable MediaType mediaType) {
+	protected boolean supports(Class<?> clazz) {
 
-		if (!canRead(mediaType)) {
-			return false;
-		}
+		if (clazz.isInterface()) {
 
-		Class<?> rawType = type.resolve();
+			Boolean result = supportedTypesCache.get(clazz);
 
-		if (rawType == null) {
-			return false;
-		}
+			if (result != null) {
+				return result;
+			}
 
-		Boolean result = supportedTypesCache.get(rawType);
+			result = AnnotationUtils.findAnnotation(clazz, ProjectedPayload.class) != null;
+			supportedTypesCache.put(clazz, result);
 
-		if (result != null) {
 			return result;
 		}
 
-		result = rawType.isInterface() && AnnotationUtils.findAnnotation(rawType, ProjectedPayload.class) != null;
-		supportedTypesCache.put(rawType, result);
+		return false;
+	}
 
-		return result;
+	@Override
+	public boolean canRead(ResolvableType type, @Nullable MediaType mediaType) {
+
+		if (!super.canRead(type, mediaType)) {
+			return false;
+		}
+
+		Class<?> clazz = type.resolve();
+		if (clazz == null) {
+			return false;
+		}
+
+		return supports(clazz);
 	}
 
 	@Override

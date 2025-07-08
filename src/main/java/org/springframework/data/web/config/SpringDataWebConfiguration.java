@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -39,6 +40,7 @@ import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -154,6 +156,17 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void configureMessageConverters(HttpMessageConverters.Builder builder) {
 
+		List<HttpMessageConverter<?>> converters = new ArrayList<>();
+		configureMessageConverters(converters);
+
+		for (HttpMessageConverter<?> converter : converters) {
+			builder.additionalMessageConverter(converter);
+		}
+	}
+
+	@Override
+	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
 
 			if (ClassUtils.isPresent("tools.jackson.databind.ObjectReader", context.getClassLoader())) {
@@ -165,7 +178,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				builder.additionalMessageConverter(converter);
+				converters.add(0, converter);
 			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
 				ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
@@ -174,13 +187,13 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				builder.additionalMessageConverter(converter);
+				converters.add(0, converter);
 			}
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
-			builder.additionalMessageConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
+			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}
