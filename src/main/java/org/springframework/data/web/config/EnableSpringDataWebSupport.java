@@ -141,10 +141,14 @@ public @interface EnableSpringDataWebSupport {
 					.orElseGet(() -> SpringDataWebConfiguration.class.getName()));
 
 			resourceLoader//
-					.filter(it -> ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", it)
-							|| ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", it))//
+					.filter(it -> ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", it))//
 					.map(it -> SpringFactoriesLoader.loadFactoryNames(SpringDataJacksonModules.class, it))//
-					.ifPresent(it -> imports.addAll(it));
+					.ifPresent(imports::addAll);
+
+			resourceLoader//
+					.filter(it -> ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", it))//
+					.map(it -> SpringFactoriesLoader.loadFactoryNames(SpringDataJackson3Modules.class, it))//
+					.ifPresent(imports::addAll);
 
 			return imports.toArray(new String[imports.size()]);
 		}

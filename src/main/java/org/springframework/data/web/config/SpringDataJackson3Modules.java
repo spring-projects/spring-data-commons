@@ -15,15 +15,12 @@
  */
 package org.springframework.data.web.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Marker interface to describe configuration classes that ship Jackson modules that are supposed to be added to the
- * Jackson {@link ObjectMapper} configured for {@link EnableSpringDataWebSupport}.
+ * Jackson 3 {@link tools.jackson.databind.ObjectMapper} configured for {@link EnableSpringDataWebSupport}.
  *
  * @author Oliver Gierke
- * @since 1.13
- * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
+ * @author Mark Paluch
+ * @since 4.0
  */
-@Deprecated(since = "4.0", forRemoval = true)
-public interface SpringDataJacksonModules {}
+public interface SpringDataJackson3Modules {}

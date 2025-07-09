@@ -47,7 +47,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
@@ -181,7 +180,9 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converters.add(0, converter);
 			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-				ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+				com.fasterxml.jackson.databind.ObjectMapper mapper = context
+						.getBeanProvider(com.fasterxml.jackson.databind.ObjectMapper.class)
+						.getIfUnique(com.fasterxml.jackson.databind.ObjectMapper::new);
 
 				ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
 				converter.setBeanFactory(context);

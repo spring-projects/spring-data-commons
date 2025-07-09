@@ -290,9 +290,9 @@ By default, the assembler points to the controller method it was invoked in, but
 == Spring Data Jackson Modules
 
 The core module, and some of the store specific ones, ship with a set of Jackson Modules for types, like `org.springframework.data.geo.Distance` and `org.springframework.data.geo.Point`, used by the Spring Data domain. +
-Those Modules are imported once xref:repositories/core-extensions.adoc#core.web[web support] is enabled and `com.fasterxml.jackson.databind.ObjectMapper` is available.
+Those modules are imported once xref:repositories/core-extensions.adoc#core.web[web support] is enabled and `tools.jackson.databind.ObjectMapper` is available.
 
-During initialization `SpringDataJacksonModules`, like the `SpringDataJacksonConfiguration`, get picked up by the infrastructure, so that the declared ``com.fasterxml.jackson.databind.Module``s are made available to the Jackson `ObjectMapper`.
+During initialization `SpringDataJackson3Modules`, like the `SpringDataJackson3Configuration`, get picked up by the infrastructure, so that the declared ``tools.jackson.databind.JacksonModule``s are made available to the Jackson `ObjectMapper`.
 
 Data binding mixins for the following domain types are registered by the common infrastructure.
 
@@ -306,8 +306,13 @@ org.springframework.data.geo.Polygon
 
 [NOTE]
 ====
-The individual module may provide additional `SpringDataJacksonModules`. +
+The individual module may provide additional `SpringDataJackson3Modules`. +
 Please refer to the store specific section for more details.
+====
+
+[NOTE]
+====
+Jackson 2 support is deprecated and will be removed in a future release.
 ====
 
 [[core.web.binding]]
@@ -341,7 +346,7 @@ Nested projections are supported as described in xref:repositories/projections.a
 If the method returns a complex, non-interface type, a Jackson `ObjectMapper` is used to map the final value.
 
 For Spring MVC, the necessary converters are registered automatically as soon as `@EnableSpringDataWebSupport` is active and the required dependencies are available on the classpath.
-For usage with `RestTemplate`, register a `ProjectingJackson2HttpMessageConverter` (JSON) or `XmlBeamHttpMessageConverter` manually.
+For usage with `RestTemplate`, register a `ProjectingJacksonHttpMessageConverter` (JSON) or `XmlBeamHttpMessageConverter` manually.
 
 For more information, see the https://github.com/spring-projects/spring-data-examples/tree/main/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
 

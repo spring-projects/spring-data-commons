@@ -45,7 +45,7 @@ import org.springframework.data.web.PagedResourcesAssemblerArgumentResolver;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.WebTestUtils;
-import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
+import org.springframework.data.web.config.SpringDataJackson3Configuration.PageModule;
 import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;

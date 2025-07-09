@@ -15,33 +15,33 @@
  */
 package org.springframework.data.geo;
 
+import tools.jackson.core.Version;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.module.SimpleModule;
+
 import java.io.Serial;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
- * Custom module to deserialize the geo-spatial value objects using Jackson 2.
+ * Custom module to deserialize the geo-spatial value objects using Jackson 3.
  *
  * @author Oliver Gierke
- * @since 1.8
- * @deprecated since 4.0, use {@link GeoJacksonModule} instead.
+ * @author Mark Paluch
+ * @since 4.0
  */
 @SuppressWarnings("unused")
-@Deprecated(since = "4.0", forRemoval = true)
-public class GeoModule extends SimpleModule {
+public class GeoJacksonModule extends SimpleModule {
 
 	private static final @Serial long serialVersionUID = 1L;
 
 	/**
-	 * Creates a new {@link GeoModule} registering mixins for common geo-spatial types.
+	 * Creates a new {@link GeoJacksonModule} registering mixins for common geo-spatial types.
 	 */
-	public GeoModule() {
+	public GeoJacksonModule() {
 
 		super("Spring Data Geo Mixins", new Version(1, 0, 0, null, "org.springframework.data", "spring-data-commons-geo"));
 
