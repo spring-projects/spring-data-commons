@@ -43,8 +43,7 @@ public interface RepositoryConfigurationExtension {
 	 * @since 3.0
 	 */
 	default String getModuleIdentifier() {
-
-		return getModuleName().toLowerCase(Locale.ENGLISH).replace(' ', '-');
+		return getModuleName().toLowerCase(Locale.ROOT).replace(' ', '-');
 	}
 
 	/**

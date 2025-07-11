@@ -216,9 +216,6 @@ public class RepositoryConfigurationDelegate {
 							configurations.size() == 1 ? "" : "s"));
 		}
 
-		// TODO: AOT Processing -> guard this one with a flag so it's not always present
-		// TODO: With regard to AOT Processing, perhaps we need to be smart and detect whether "core" AOT components are
-		// (or rather configuration is) present on the classpath to enable Spring Data AOT component registration.
 		registerAotComponents(registry, extension, metadataByRepositoryBeanName);
 
 		return definitions;

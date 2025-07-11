@@ -87,23 +87,23 @@ public interface AotContext extends EnvironmentCapable {
 
 	/**
 	 * Checks if repository code generation is enabled for a given module by checking environment variables for general
-	 * enablement ({@link #GENERATED_REPOSITORIES_ENABLED}) and store specific ones following the pattern
-	 * {@literal spring.aot.repositories.&lt;module-name&gt;.enabled}.
+	 * enablement ({@link #GENERATED_REPOSITORIES_ENABLED}) and store-specific ones following the pattern
+	 * {@literal spring.aot.&lt;module-name&gt;.repositories.enabled}.
 	 * <p>
-	 * {@link #GENERATED_REPOSITORIES_ENABLED} acts as a kill switch, if disabled, store specific flags have no effect.
+	 * {@link #GENERATED_REPOSITORIES_ENABLED} acts as a main switch, if disabled, store specific flags have no effect.
 	 * <p>
-	 * Missing properties are interpreted as {@literal true}.
+	 * Unset properties are considered being {@literal true}.
 	 *
-	 * @param moduleName The name of the module. Can be {@literal null} or {@literal empty}, in which case it will only
-	 *          check the general {@link #GENERATED_REPOSITORIES_ENABLED} flag.
+	 * @param moduleName name of the module. Can be {@literal null} or {@literal empty}, in which case it will only check
+	 *          the general {@link #GENERATED_REPOSITORIES_ENABLED} flag.
 	 * @return indicator if repository code generation is enabled.
 	 * @since 5.0
 	 */
 	default boolean isGeneratedRepositoriesEnabled(@Nullable String moduleName) {
 
 		Environment environment = getEnvironment();
-		Boolean codeGenerationEnabled = environment.getProperty(GENERATED_REPOSITORIES_ENABLED, Boolean.class, true);
-		if (!codeGenerationEnabled) {
+
+		if (!environment.getProperty(GENERATED_REPOSITORIES_ENABLED, Boolean.class, true)) {
 			return false;
 		}
 
@@ -111,8 +111,8 @@ public interface AotContext extends EnvironmentCapable {
 			return true;
 		}
 
-		String modulePropertyName = GENERATED_REPOSITORIES_ENABLED.replace("enabled",
-				"%s.enabled".formatted(moduleName.toLowerCase(Locale.US)));
+		String modulePropertyName = GENERATED_REPOSITORIES_ENABLED.replace("repositories",
+				"%s.repositories".formatted(moduleName.toLowerCase(Locale.ROOT)));
 		return environment.getProperty(modulePropertyName, Boolean.class, true);
 	}
 

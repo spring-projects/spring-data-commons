@@ -49,13 +49,13 @@ class AotContextUnitTests {
 			ctx.withProperty(generalFlag, generalValue);
 		}
 		if (StringUtils.hasText(storeName) && StringUtils.hasText(storeValue)) {
-			ctx.withProperty("spring.aot.repositories.%s.enabled".formatted(storeName), storeValue);
+			ctx.withProperty("spring.aot.%s.repositories.enabled".formatted(storeName), storeValue);
 		}
 
 		Assertions.assertThat(ctx.isGeneratedRepositoriesEnabled(storeName)).isEqualTo(enabled);
 	}
 
-	class MockAotContext implements AotContext {
+	static class MockAotContext implements AotContext {
 
 		private final MockEnvironment environment;
 
