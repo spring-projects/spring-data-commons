@@ -16,26 +16,31 @@
 package org.springframework.data.web.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.classloadersupport.HidingClassLoader;
-import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
+import org.springframework.data.web.ProjectingJacksonHttpMessageConverter;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.instrument.classloading.ShadowingClassLoader;
 import org.springframework.util.ReflectionUtils;
+
 import org.xmlbeam.XBProjector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 
 /**
@@ -50,45 +55,48 @@ class SpringDataWebConfigurationIntegrationTests {
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
-		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
+		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
 
-		createConfigWithClassLoader(HidingClassLoader.hide(ObjectMapper.class),
-				it -> it.extendMessageConverters(converters));
+		createConfigWithClassLoader(
+				HidingClassLoader.hide(ObjectMapper.class, com.fasterxml.jackson.databind.ObjectMapper.class),
+				it -> it.configureMessageConverters(builder));
 
-		assertThat(converters).areNot(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
+		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
-		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
+		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
 
 		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class),
-				it -> it.extendMessageConverters(converters));
+				it -> it.configureMessageConverters(builder));
 
-		assertThat(converters).areNot(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
+		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
-		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
+		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
 
 		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
-		createConfigWithClassLoader(classLoader, it -> it.extendMessageConverters(converters));
+		createConfigWithClassLoader(classLoader, it -> it.configureMessageConverters(builder));
 
-		assertThat(converters).areNot(instanceWithClassName(XmlBeamHttpMessageConverter.class));
+		verify(builder, never()).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
 	void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
-		List<HttpMessageConverter<?>> converters = new ArrayList<HttpMessageConverter<?>>();
+		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
 
-		createConfigWithClassLoader(getClass().getClassLoader(), it -> it.extendMessageConverters(converters));
+		createConfigWithClassLoader(getClass().getClassLoader(), it -> it.configureMessageConverters(builder));
 
-		assertThat(converters).haveAtLeastOne(instanceWithClassName(XmlBeamHttpMessageConverter.class));
-		assertThat(converters).haveAtLeastOne(instanceWithClassName(ProjectingJackson2HttpMessageConverter.class));
+		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).additionalMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-1152
@@ -96,16 +104,19 @@ class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> {
 
-			List<HttpMessageConverter<?>> converters = new ArrayList<>();
-			it.extendMessageConverters(converters);
+			HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+			ArgumentCaptor<HttpMessageConverter> captor = ArgumentCaptor.forClass(HttpMessageConverter.class);
+
+			it.configureMessageConverters(builder);
+			verify(builder, atLeast(1)).additionalMessageConverter(captor.capture());
 
 			// Converters contains ProjectingJackson2HttpMessageConverter with custom ObjectMapper
-			assertThat(converters).anySatisfy(converter -> {
-				assertThat(converter).isInstanceOfSatisfying(ProjectingJackson2HttpMessageConverter.class, __ -> {
+
+			assertThat(captor.getAllValues()).anySatisfy(converter -> {
+				assertThat(converter).isInstanceOfSatisfying(ProjectingJacksonHttpMessageConverter.class, __ -> {
 					assertThat(__.getObjectMapper()).isSameAs(SomeConfiguration.MAPPER);
 				});
 			});
-
 		}, SomeConfiguration.class);
 	}
 
@@ -136,20 +147,6 @@ class SpringDataWebConfigurationIntegrationTests {
 		loader.excludeClass(configurationClass.getName());
 
 		return loader.loadClass(configurationClass.getName());
-	}
-
-	/**
-	 * Creates a {@link Condition} that checks if an object is an instance of a class with the same name as the provided
-	 * class. This is necessary since we are dealing with multiple classloaders which would make a simple instanceof fail
-	 * all the time
-	 *
-	 * @param expectedClass the class that is expected (possibly loaded by a different classloader).
-	 * @return a {@link Condition}
-	 */
-	private static Condition<Object> instanceWithClassName(Class<?> expectedClass) {
-
-		return new Condition<>(it -> it.getClass().getName().equals(expectedClass.getName()), //
-				"with class name %s", expectedClass.getName());
 	}
 
 	@Configuration
