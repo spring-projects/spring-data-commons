@@ -18,12 +18,12 @@ package org.springframework.data.aot;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -35,6 +35,7 @@ import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.util.TypeScanner;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * The context in which the AOT processing happens. Grants access to the {@link ConfigurableListableBeanFactory
@@ -82,6 +83,37 @@ public interface AotContext extends EnvironmentCapable {
 		Assert.notNull(environment, "Environment must not be null");
 
 		return new DefaultAotContext(beanFactory, environment);
+	}
+
+	/**
+	 * Checks if repository code generation is enabled for a given module by checking environment variables for general
+	 * enablement ({@link #GENERATED_REPOSITORIES_ENABLED}) and store specific ones following the pattern
+	 * {@literal spring.aot.repositories.&lt;module-name&gt;.enabled}.
+	 * <p>
+	 * {@link #GENERATED_REPOSITORIES_ENABLED} acts as a kill switch, if disabled, store specific flags have no effect.
+	 * <p>
+	 * Missing properties are interpreted as {@literal true}.
+	 *
+	 * @param moduleName The name of the module. Can be {@literal null} or {@literal empty}, in which case it will only
+	 *          check the general {@link #GENERATED_REPOSITORIES_ENABLED} flag.
+	 * @return indicator if repository code generation is enabled.
+	 * @since 5.0
+	 */
+	default boolean isGeneratedRepositoriesEnabled(@Nullable String moduleName) {
+
+		Environment environment = getEnvironment();
+		Boolean codeGenerationEnabled = environment.getProperty(GENERATED_REPOSITORIES_ENABLED, Boolean.class, true);
+		if (!codeGenerationEnabled) {
+			return false;
+		}
+
+		if (!StringUtils.hasText(moduleName)) {
+			return true;
+		}
+
+		String modulePropertyName = GENERATED_REPOSITORIES_ENABLED.replace("enabled",
+				"%s.enabled".formatted(moduleName.toLowerCase(Locale.US)));
+		return environment.getProperty(modulePropertyName, Boolean.class, true);
 	}
 
 	/**
