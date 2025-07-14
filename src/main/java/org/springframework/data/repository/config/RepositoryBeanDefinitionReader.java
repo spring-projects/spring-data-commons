@@ -184,7 +184,8 @@ class RepositoryBeanDefinitionReader {
 		Assert.state(beanDefinition.getBeanClassName() != null, "No Repository BeanFactory set");
 
 		Class<?> repositoryFactoryBean = forName(beanDefinition.getBeanClassName());
-		Constructor<?> constructor = ClassUtils.getConstructorIfAvailable(repositoryFactoryBean, Class.class);
+		Constructor<?> constructor = org.springframework.data.util.ClassUtils
+				.getDeclaredConstructorIfAvailable(repositoryFactoryBean, Class.class);
 
 		if (constructor == null) {
 			throw new IllegalStateException("No constructor accepting Class in " + repositoryFactoryBean.getName());

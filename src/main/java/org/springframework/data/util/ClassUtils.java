@@ -15,9 +15,12 @@
  */
 package org.springframework.data.util;
 
+import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.util.Assert;
 
 /**
  * Utility class to work with classes.
@@ -70,6 +73,29 @@ public abstract class ClassUtils {
 		try {
 			return org.springframework.util.ClassUtils.forName(name, classLoader);
 		} catch (Exception o_O) {
+			return null;
+		}
+	}
+
+	/**
+	 * Determine whether the given class has a public constructor with the given signature, and return it if available
+	 * (else return {@code null}).
+	 * <p>
+	 * Essentially translates {@code NoSuchMethodException} to {@code null}.
+	 *
+	 * @param clazz the clazz to analyze
+	 * @param paramTypes the parameter types of the method
+	 * @return the constructor, or {@code null} if not found
+	 * @see Class#getDeclaredConstructor
+	 * @since 4.0
+	 */
+	public static <T> @Nullable Constructor<T> getDeclaredConstructorIfAvailable(Class<T> clazz, Class<?>... paramTypes) {
+
+		Assert.notNull(clazz, "Class must not be null");
+
+		try {
+			return clazz.getDeclaredConstructor(paramTypes);
+		} catch (NoSuchMethodException ex) {
 			return null;
 		}
 	}
