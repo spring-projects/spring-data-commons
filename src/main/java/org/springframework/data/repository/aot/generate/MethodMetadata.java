@@ -41,6 +41,7 @@ import org.springframework.javapoet.TypeName;
 class MethodMetadata {
 
 	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
+	private final Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
 	private final Map<String, String> localVariables = new LinkedHashMap<>();
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
@@ -66,6 +67,7 @@ class MethodMetadata {
 			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
 
 			addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
+			methodParameters.put(methodParameter.getParameterName(), methodParameter);
 		}
 	}
 
@@ -83,6 +85,10 @@ class MethodMetadata {
 
 	Map<String, ParameterSpec> getMethodArguments() {
 		return methodArguments;
+	}
+
+	Map<String, MethodParameter> getMethodParameters() {
+		return methodParameters;
 	}
 
 	@Nullable

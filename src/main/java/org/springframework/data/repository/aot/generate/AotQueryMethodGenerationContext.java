@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
@@ -63,6 +65,17 @@ public class AotQueryMethodGenerationContext {
 
 	MethodMetadata getTargetMethodMetadata() {
 		return targetMethodMetadata;
+	}
+
+	/**
+	 * Lookup the {@link MethodParameter} by its {@link MethodParameter#getParameterName()}.
+	 *
+	 * @param name the name of the parameter to look up.
+	 * @return the found method parameter or {@literal null} if no parameter with the given name exists.
+	 */
+	@Nullable
+	public MethodParameter getMethodParameter(String name) {
+		return getTargetMethodMetadata().getMethodParameters().get(name);
 	}
 
 	public RepositoryInformation getRepositoryInformation() {
