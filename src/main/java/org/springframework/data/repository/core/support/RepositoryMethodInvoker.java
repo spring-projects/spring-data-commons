@@ -23,12 +23,14 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
-
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
@@ -38,6 +40,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.KotlinReflectionUtils;
 import org.springframework.data.util.ReactiveWrappers;
+import org.springframework.util.StringUtils;
 
 /**
  * Invoker for repository methods. Used to invoke query methods and fragment methods. This invoker considers Kotlin
@@ -47,12 +50,14 @@ import org.springframework.data.util.ReactiveWrappers;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @since 2.4
- * @see #forFragmentMethod(Method, Object, Method)
+ * @see #forFragmentMethod(Class, Method, Object, Method)
  * @see #forRepositoryQuery(Method, RepositoryQuery)
  * @see RepositoryQuery
  * @see RepositoryComposition
  */
 abstract class RepositoryMethodInvoker {
+
+	private static final Log logger = LogFactory.getLog(RepositoryMethodInvoker.class);
 
 	private final Method method;
 	private final Class<?> returnedType;
@@ -129,8 +134,9 @@ abstract class RepositoryMethodInvoker {
 	 * @param baseMethod the base method to call on fragment {@code instance}.
 	 * @return {@link RepositoryMethodInvoker} to call a fragment {@link Method}.
 	 */
-	static RepositoryMethodInvoker forFragmentMethod(Method declaredMethod, Object instance, Method baseMethod) {
-		return new RepositoryFragmentMethodInvoker(declaredMethod, instance, baseMethod);
+	static RepositoryMethodInvoker forFragmentMethod(@Nullable Class<?> repositoryInterface, Method declaredMethod,
+			Object instance, Method baseMethod) {
+		return new RepositoryFragmentMethodInvoker(repositoryInterface, declaredMethod, instance, baseMethod);
 	}
 
 	/**
@@ -202,7 +208,13 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryQueryMethodInvoker extends RepositoryMethodInvoker {
 		public RepositoryQueryMethodInvoker(Method method, RepositoryQuery repositoryQuery) {
-			super(method, repositoryQuery::execute);
+			super(method, (params) -> {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Invoking [%s].".formatted(method));
+				}
+
+				return repositoryQuery.execute(params);
+			});
 		}
 	}
 
@@ -213,8 +225,7 @@ abstract class RepositoryMethodInvoker {
 
 		@SuppressWarnings("unchecked")
 		Publisher<Object> decorate(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
-				@Nullable Object[] args,
-				Object result) {
+				@Nullable Object[] args, Object result) {
 
 			if (result instanceof Mono) {
 				return Mono.usingWhen(
@@ -256,14 +267,24 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryFragmentMethodInvoker extends RepositoryMethodInvoker {
 
-		public RepositoryFragmentMethodInvoker(Method declaredMethod, Object instance, Method baseClassMethod) {
-			this(CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod, instance,
-					baseClassMethod);
+		public RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface, Method declaredMethod, Object instance,
+				Method baseClassMethod) {
+			this(repositoryInterface, CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod,
+					instance, baseClassMethod);
 		}
 
-		public RepositoryFragmentMethodInvoker(CoroutineAdapterInformation adapterInformation, Method declaredMethod,
-				Object instance, Method baseClassMethod) {
+		public RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface,
+				CoroutineAdapterInformation adapterInformation, Method declaredMethod, Object instance,
+				Method baseClassMethod) {
 			super(declaredMethod, args -> {
+
+				if (logger.isTraceEnabled()) {
+					logger.trace("Invoking [%s.%s(%s)] on fragment [%s]".formatted(
+							repositoryInterface != null ? repositoryInterface.getSimpleName()
+									: baseClassMethod.getDeclaringClass().getSimpleName(),
+							baseClassMethod.getName(), methodParmetersToString(baseClassMethod), instance.getClass().getName()));
+				}
+
 				try {
 					if (adapterInformation.shouldAdaptReactiveToSuspended()) {
 						/*
@@ -282,6 +303,11 @@ abstract class RepositoryMethodInvoker {
 					throw new RuntimeException(e);
 				}
 			});
+		}
+
+		private static String methodParmetersToString(Method baseClassMethod) {
+			return StringUtils.arrayToCommaDelimitedString(
+					Arrays.stream(baseClassMethod.getParameterTypes()).map(Class::getSimpleName).toArray());
 		}
 
 		/**
@@ -367,8 +393,7 @@ abstract class RepositoryMethodInvoker {
 		private final @Nullable Throwable error;
 
 		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, @Nullable Long endTime,
-				State state,
-				@Nullable Throwable exception) {
+				State state, @Nullable Throwable exception) {
 
 			this.repositoryInterface = repositoryInterface;
 			this.startTime = startTime;

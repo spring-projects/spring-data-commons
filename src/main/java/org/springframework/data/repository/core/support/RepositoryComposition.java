@@ -535,7 +535,7 @@ public class RepositoryComposition {
 
 			if (repositoryMethodInvoker == null) {
 
-				repositoryMethodInvoker = RepositoryMethodInvoker.forFragmentMethod(invokedMethod, optional.get(),
+				repositoryMethodInvoker = RepositoryMethodInvoker.forFragmentMethod(repositoryInterface, invokedMethod, optional.get(),
 						methodToCall);
 				invocationMetadataCache.put(invokedMethod, repositoryMethodInvoker);
 			}

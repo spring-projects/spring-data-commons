@@ -412,6 +412,11 @@ interface MovieRepository extends CrudRepository<Movie, String>, SearchExtension
 }
 ----
 
+[TIP]
+====
+You can enable trace logging for `org.springframework.data.repository.core.support.RepositoryMethodInvoker` if you are unsure or want to monitor which target method is called.
+====
+
 [[repositories.customize-base-repository]]
 == Customize the Base Repository
 
