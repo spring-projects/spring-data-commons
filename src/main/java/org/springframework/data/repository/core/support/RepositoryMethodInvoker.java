@@ -146,7 +146,7 @@ abstract class RepositoryMethodInvoker {
 	 * @param baseClassMethod the base method to call on fragment {@code instance}.
 	 * @return
 	 */
-	public static boolean canInvoke(Method declaredMethod, Method baseClassMethod) {
+	static boolean canInvoke(Method declaredMethod, Method baseClassMethod) {
 		return RepositoryFragmentMethodInvoker.CoroutineAdapterInformation.create(declaredMethod, baseClassMethod)
 				.canInvoke();
 	}
@@ -159,8 +159,9 @@ abstract class RepositoryMethodInvoker {
 	 * @return
 	 * @throws Exception
 	 */
-	public @Nullable Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
-			@Nullable Object[] args) throws Exception {
+	@Nullable
+	Object invoke(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster, @Nullable Object[] args)
+			throws Exception {
 		return doInvoke(repositoryInterface, multicaster, args);
 	}
 
@@ -267,13 +268,13 @@ abstract class RepositoryMethodInvoker {
 	 */
 	private static class RepositoryFragmentMethodInvoker extends RepositoryMethodInvoker {
 
-		public RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface, Method declaredMethod, Object instance,
+		RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface, Method declaredMethod, Object instance,
 				Method baseClassMethod) {
 			this(repositoryInterface, CoroutineAdapterInformation.create(declaredMethod, baseClassMethod), declaredMethod,
 					instance, baseClassMethod);
 		}
 
-		public RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface,
+		RepositoryFragmentMethodInvoker(@Nullable Class<?> repositoryInterface,
 				CoroutineAdapterInformation adapterInformation, Method declaredMethod, Object instance,
 				Method baseClassMethod) {
 			super(declaredMethod, args -> {
@@ -338,7 +339,7 @@ abstract class RepositoryMethodInvoker {
 			 * @param baseClassMethod
 			 * @return
 			 */
-			public static CoroutineAdapterInformation create(Method declaredMethod, Method baseClassMethod) {
+			static CoroutineAdapterInformation create(Method declaredMethod, Method baseClassMethod) {
 
 				if (!KotlinDetector.isKotlinReflectPresent()) {
 					return new CoroutineAdapterInformation(false, false, false, declaredMethod.getParameterCount(),
@@ -402,21 +403,21 @@ abstract class RepositoryMethodInvoker {
 			this.error = exception instanceof InvocationTargetException ? exception.getCause() : exception;
 		}
 
-		public static RepositoryMethodInvocationCaptor captureInvocationOn(Class<?> repositoryInterface) {
+		static RepositoryMethodInvocationCaptor captureInvocationOn(Class<?> repositoryInterface) {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, System.nanoTime(), null, State.RUNNING, null);
 		}
 
-		public RepositoryMethodInvocationCaptor error(Throwable exception) {
+		RepositoryMethodInvocationCaptor error(Throwable exception) {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.ERROR,
 					exception);
 		}
 
-		public RepositoryMethodInvocationCaptor success() {
+		RepositoryMethodInvocationCaptor success() {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.SUCCESS,
 					null);
 		}
 
-		public RepositoryMethodInvocationCaptor canceled() {
+		RepositoryMethodInvocationCaptor canceled() {
 			return new RepositoryMethodInvocationCaptor(repositoryInterface, startTime, System.nanoTime(), State.CANCELED,
 					null);
 		}
