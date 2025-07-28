@@ -102,6 +102,30 @@ XML::
 
 The preceding example includes all interfaces ending with `SomeRepository` and excludes those ending with `SomeOtherRepository` from being instantiated.
 
+[[repositories.create-instances.hooks-and-callbacks]]
+== Configuration Hooks and Callbacks
+
+Sometimes it is necessary to apply additional customizations to the `RepositoryFactory` created by `FactoryBean` registered in the applications context.
+To do so one needs to post process the `RepositoryFactoryBean`, to eg. register a `RepositoryMethodInvocationListener` - a component notified every time a repository method was called.
+
+[source,java]
+----
+public class RepoMetricsPostProcessor implements BeanPostProcessor {
+
+  @Override
+  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    if (bean instanceof RepositoryFactoryBeanSupport<?, ?, ?> repositoryFactoryBean) {
+      repositoryFactoryBean.addRepositoryFactoryCustomizer(repositoryFactory -> {
+        repositoryFactory.addInvocationListener(invocationResult -> {
+          // custom logic
+        });
+      });
+    }
+    return bean;
+  }
+}
+----
+
 [[repositories.create-instances.standalone]]
 == Standalone Usage
 
