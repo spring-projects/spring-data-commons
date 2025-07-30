@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractEntityInformation<T, ID> implements EntityInformation<T, ID> {
 
+	public static final long NEW_ID = 0L;
 	private final Class<T> domainClass;
 
 	public AbstractEntityInformation(Class<T> domainClass) {
@@ -50,7 +51,7 @@ public abstract class AbstractEntityInformation<T, ID> implements EntityInformat
 		}
 
 		if (id instanceof Number n) {
-			return n.longValue() == 0L;
+			return n.longValue() == NEW_ID;
 		}
 
 		throw new IllegalArgumentException(String.format("Unsupported primitive id type %s", idType));

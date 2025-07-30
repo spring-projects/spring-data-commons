@@ -49,7 +49,7 @@ class AbstractEntityInformationUnitTests {
 	}
 
 	@Test // DATACMNS-357
-	void detectsNewStateForPrimitiveIds() {
+	void detectsNewStateForZeroIds() {
 
 		var fooEn = new CustomEntityInformation<PrimitiveIdEntity, Serializable>(
 				PrimitiveIdEntity.class);
@@ -59,6 +59,16 @@ class AbstractEntityInformationUnitTests {
 
 		entity.id = 5L;
 		assertThat(fooEn.isNew(entity)).isFalse();
+	}
+
+	@Test // DATACMNS-357
+	void detectsNewStateForPrimitiveIds() {
+
+		var fooEn = new CustomEntityInformation<PrimitiveWithIdEntity, Serializable>(
+				PrimitiveWithIdEntity.class);
+
+		var entity = new PrimitiveWithIdEntity(0L);
+		assertThat(fooEn.isNew(entity)).isTrue();
 	}
 
 	@Test // DATACMNS-357
@@ -83,6 +93,16 @@ class AbstractEntityInformationUnitTests {
 		assertThatIllegalArgumentException()//
 				.isThrownBy(() -> information.isNew(new UnsupportedPrimitiveIdEntity()))//
 				.withMessageContaining(boolean.class.getName());
+	}
+
+	static class PrimitiveWithIdEntity {
+
+		@Id long id;
+
+
+		public PrimitiveWithIdEntity(long id) {
+			this.id = id;
+		}
 	}
 
 	static class PrimitiveIdEntity {
