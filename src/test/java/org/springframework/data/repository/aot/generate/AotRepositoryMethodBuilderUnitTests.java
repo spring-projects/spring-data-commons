@@ -15,20 +15,24 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 import example.UserRepository;
 import example.UserRepository.User;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
-
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.TypeInformation;
@@ -45,10 +49,12 @@ class AotRepositoryMethodBuilderUnitTests {
 
 	@BeforeEach
 	void beforeEach() {
+
 		repositoryInformation = Mockito.mock(RepositoryInformation.class);
 		methodGenerationContext = Mockito.mock(AotQueryMethodGenerationContext.class);
 
 		when(methodGenerationContext.getRepositoryInformation()).thenReturn(repositoryInformation);
+		when(methodGenerationContext.getExpressionMarker()).thenReturn(new ExpressionMarker());
 	}
 
 	@Test // GH-3279
@@ -86,5 +92,38 @@ class AotRepositoryMethodBuilderUnitTests {
 		assertThat(builder.buildMethod().toString()) //
 				.containsPattern("public .*List<.*User> findByFirstnameIn\\(") //
 				.containsPattern(".*List<.*String> firstnames\\)");
+	}
+
+	@ParameterizedTest // GH-3279
+	@MethodSource(value = { "expressionMarkers" })
+	void generatesExpressionMarkerIfInUse(ExpressionMarker expressionMarker) throws NoSuchMethodException {
+
+		Method method = UserRepository.class.getMethod("findByFirstname", String.class);
+		when(methodGenerationContext.getMethod()).thenReturn(method);
+		when(methodGenerationContext.getReturnType()).thenReturn(ResolvableType.forClass(User.class));
+		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
+		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
+		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
+		methodMetadata.addParameter(ParameterSpec.builder(String.class, "firstname").build());
+		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
+		when(methodGenerationContext.getExpressionMarker()).thenReturn(expressionMarker);
+
+		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
+		String methodCode = builder.buildMethod().toString();
+		if (expressionMarker.isInUse()) {
+			assertThat(methodCode).contains("class ExpressionMarker{};");
+		} else {
+			assertThat(methodCode).doesNotContain("class ExpressionMarker{};");
+		}
+	}
+
+	static Stream<Arguments> expressionMarkers() {
+
+		ExpressionMarker unused = new ExpressionMarker();
+
+		ExpressionMarker used = new ExpressionMarker();
+		used.marker();
+
+		return Stream.of(Arguments.of(unused), Arguments.of(used));
 	}
 }

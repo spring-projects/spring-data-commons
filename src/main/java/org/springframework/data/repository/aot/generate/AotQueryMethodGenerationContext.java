@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -50,6 +49,7 @@ public class AotQueryMethodGenerationContext {
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
 	private final MethodMetadata targetMethodMetadata;
 	private final VariableNameFactory variableNameFactory;
+	private final ExpressionMarker expressionMarker;
 
 	protected AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method,
 			QueryMethod queryMethod, AotRepositoryFragmentMetadata targetTypeMetadata) {
@@ -61,6 +61,7 @@ public class AotQueryMethodGenerationContext {
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
 		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
+		this.expressionMarker = new ExpressionMarker();
 	}
 
 	MethodMetadata getTargetMethodMetadata() {
@@ -342,4 +343,13 @@ public class AotQueryMethodGenerationContext {
 		return getParameterName(queryMethod.getParameters().getScoreRangeIndex());
 	}
 
+	/**
+	 * Obtain the {@link ExpressionMarker} for the current method. Will add a local class within the method that can be
+	 * referenced via {@link ExpressionMarker#enclosingMethod()}.
+	 * 
+	 * @return the {@link ExpressionMarker} for this particular method.
+	 */
+	public ExpressionMarker getExpressionMarker() {
+		return expressionMarker;
+	}
 }

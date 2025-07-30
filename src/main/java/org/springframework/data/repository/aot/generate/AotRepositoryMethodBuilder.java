@@ -96,6 +96,9 @@ class AotRepositoryMethodBuilder {
 				context.getMethod().getName(), StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata()
 						.getMethodArguments().values().stream().map(it -> it.type().toString()).collect(Collectors.toList())));
 		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
+		if(context.getExpressionMarker().isInUse()) {
+			builder.addCode(context.getExpressionMarker().declaration());
+		}
 		builder.addCode(methodBody);
 		customizer.accept(context, builder);
 
