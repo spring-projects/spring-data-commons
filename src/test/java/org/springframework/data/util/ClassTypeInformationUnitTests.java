@@ -45,6 +45,24 @@ import org.springframework.lang.Nullable;
  */
 public class ClassTypeInformationUnitTests {
 
+	@Test // GH-3340
+	void typeInformationConstantsShouldNotBeNull() {
+
+		assertThat(ClassTypeInformation.COLLECTION).isNotNull();
+		assertThat(TypeInformation.COLLECTION).isNotNull();
+		assertThat(TypeInformation.LIST).isNotNull();
+		assertThat(TypeInformation.SET).isNotNull();
+		assertThat(TypeInformation.MAP).isNotNull();
+		assertThat(TypeInformation.OBJECT).isNotNull();
+		assertThat(ClassTypeInformation.OBJECT).isNotNull();
+
+		assertThat(TypeInformation.COLLECTION).isEqualTo(ClassTypeInformation.COLLECTION);
+		assertThat(TypeInformation.LIST).isEqualTo(ClassTypeInformation.LIST);
+		assertThat(TypeInformation.SET).isEqualTo(ClassTypeInformation.SET);
+		assertThat(TypeInformation.MAP).isEqualTo(ClassTypeInformation.MAP);
+		assertThat(TypeInformation.OBJECT).isEqualTo(ClassTypeInformation.OBJECT);
+	}
+
 	@Test
 	public void discoversTypeForSimpleGenericField() {
 

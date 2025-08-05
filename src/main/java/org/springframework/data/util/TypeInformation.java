@@ -42,11 +42,11 @@ import org.springframework.util.Assert;
 @SuppressWarnings({ "deprecation", "rawtypes" })
 public interface TypeInformation<S> {
 
-	TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
-	TypeInformation<List> LIST = ClassTypeInformation.LIST;
-	TypeInformation<Set> SET = ClassTypeInformation.SET;
-	TypeInformation<Map> MAP = ClassTypeInformation.MAP;
-	TypeInformation<Object> OBJECT = ClassTypeInformation.OBJECT;
+	TypeInformation<Collection> COLLECTION = new ClassTypeInformation(Collection.class);
+	TypeInformation<List> LIST = new ClassTypeInformation(List.class);
+	TypeInformation<Set> SET = new ClassTypeInformation(Set.class);
+	TypeInformation<Map> MAP = new ClassTypeInformation(Map.class);
+	TypeInformation<Object> OBJECT = new ClassTypeInformation(Object.class);
 
 	/**
 	 * Creates a new {@link TypeInformation} from the given {@link ResolvableType}.
