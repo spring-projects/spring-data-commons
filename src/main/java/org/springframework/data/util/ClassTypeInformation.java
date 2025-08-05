@@ -61,6 +61,10 @@ public class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private final Class<S> type;
 
+	ClassTypeInformation(Class<?> type) {
+		this(ResolvableType.forType(type));
+	}
+
 	ClassTypeInformation(ResolvableType type) {
 		super(type);
 		this.type = (Class<S>) type.resolve(Object.class);
