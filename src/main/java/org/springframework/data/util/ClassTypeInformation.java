@@ -15,7 +15,6 @@
  */
 package org.springframework.data.util;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,22 +39,11 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	private static final ConcurrentLruCache<Class<?>, ResolvableType> resolvableTypeCache = new ConcurrentLruCache<>(128,
 			ResolvableType::forClass);
 
-	public static final ClassTypeInformation<Collection> COLLECTION;
-	public static final ClassTypeInformation<List> LIST;
-	public static final ClassTypeInformation<Set> SET;
-	public static final ClassTypeInformation<Map> MAP;
-	public static final ClassTypeInformation<Object> OBJECT;
-
-	static {
-
-		OBJECT = from(Object.class);
-		COLLECTION = from(Collection.class);
-		LIST = from(List.class);
-		SET = from(Set.class);
-		MAP = from(Map.class);
-	}
-
 	private final Class<S> type;
+
+	ClassTypeInformation(Class<?> type) {
+		this(ResolvableType.forType(type));
+	}
 
 	ClassTypeInformation(ResolvableType type) {
 		super(type);
@@ -68,12 +56,33 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	 * @return
 	 */
 	public static <S> ClassTypeInformation<S> from(Class<S> type) {
+
+		if (type == Object.class) {
+			return (ClassTypeInformation<S>) TypeInformation.OBJECT;
+		} else if (type == List.class) {
+			return (ClassTypeInformation<S>) TypeInformation.LIST;
+		} else if (type == Set.class) {
+			return (ClassTypeInformation<S>) TypeInformation.SET;
+		} else if (type == Map.class) {
+			return (ClassTypeInformation<S>) TypeInformation.MAP;
+		}
+
 		return from(resolvableTypeCache.get(type));
 	}
 
 	static <S> ClassTypeInformation<S> from(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
+
+		if (type.getType() == Object.class) {
+			return (ClassTypeInformation<S>) TypeInformation.OBJECT;
+		} else if (type.getType() == List.class) {
+			return (ClassTypeInformation<S>) TypeInformation.LIST;
+		} else if (type.getType() == Set.class) {
+			return (ClassTypeInformation<S>) TypeInformation.SET;
+		} else if (type.getType() == Map.class) {
+			return (ClassTypeInformation<S>) TypeInformation.MAP;
+		}
 
 		return (ClassTypeInformation<S>) cache.get(type);
 	}

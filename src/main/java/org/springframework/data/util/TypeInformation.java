@@ -42,11 +42,11 @@ import org.springframework.util.Assert;
  */
 public interface TypeInformation<S> {
 
-	TypeInformation<Collection> COLLECTION = ClassTypeInformation.COLLECTION;
-	TypeInformation<List> LIST = ClassTypeInformation.LIST;
-	TypeInformation<Set> SET = ClassTypeInformation.SET;
-	TypeInformation<Map> MAP = ClassTypeInformation.MAP;
-	TypeInformation<Object> OBJECT = ClassTypeInformation.OBJECT;
+	@SuppressWarnings("rawtypes") TypeInformation<Collection> COLLECTION = new ClassTypeInformation<>(Collection.class);
+	@SuppressWarnings("rawtypes") TypeInformation<List> LIST = new ClassTypeInformation<>(List.class);
+	@SuppressWarnings("rawtypes") TypeInformation<Set> SET = new ClassTypeInformation<>(Set.class);
+	@SuppressWarnings("rawtypes") TypeInformation<Map> MAP = new ClassTypeInformation<>(Map.class);
+	TypeInformation<Object> OBJECT = new ClassTypeInformation<>(Object.class);
 
 	/**
 	 * Creates a new {@link TypeInformation} from the given {@link ResolvableType}.
@@ -55,7 +55,7 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	public static TypeInformation<?> of(ResolvableType type) {
+	static TypeInformation<?> of(ResolvableType type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -70,7 +70,7 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	public static <S> TypeInformation<S> of(Class<S> type) {
+	static <S> TypeInformation<S> of(Class<S> type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -84,7 +84,7 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	public static TypeInformation<?> fromReturnTypeOf(Method method) {
+	static TypeInformation<?> fromReturnTypeOf(Method method) {
 
 		Assert.notNull(method, "Method must not be null");
 
@@ -99,7 +99,7 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	public static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> type) {
+	static TypeInformation<?> fromReturnTypeOf(Method method, @Nullable Class<?> type) {
 
 		ResolvableType intermediate = type == null ? ResolvableType.forMethodReturnType(method)
 				: ResolvableType.forMethodReturnType(method, type);
@@ -114,7 +114,7 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	public static TypeInformation<?> fromMethodParameter(MethodParameter parameter) {
+	static TypeInformation<?> fromMethodParameter(MethodParameter parameter) {
 		return TypeInformation.of(ResolvableType.forMethodParameter(parameter));
 	}
 
