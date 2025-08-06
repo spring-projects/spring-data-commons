@@ -80,7 +80,7 @@ class MethodMetadata {
 	}
 
 	void addParameter(ParameterSpec parameterSpec) {
-		this.methodArguments.put(parameterSpec.name, parameterSpec);
+		this.methodArguments.put(parameterSpec.name(), parameterSpec);
 	}
 
 	Map<String, ParameterSpec> getMethodArguments() {

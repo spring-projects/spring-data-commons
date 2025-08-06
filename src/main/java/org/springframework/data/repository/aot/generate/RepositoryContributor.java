@@ -31,8 +31,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeName;
-import org.springframework.util.StringUtils;
-import org.springframework.javapoet.TypeSpec;
 
 /**
  * Contributor for AOT repository fragments.
@@ -98,7 +96,7 @@ public class RepositoryContributor {
 		String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
 
 		JavaFile javaFile = aotBundle.javaFile();
-		String typeName = "%s.%s".formatted(javaFile.packageName, javaFile.typeSpec.name);
+		String typeName = "%s.%s".formatted(javaFile.packageName(), javaFile.typeSpec().name());
 		String repositoryJson;
 
 		try {

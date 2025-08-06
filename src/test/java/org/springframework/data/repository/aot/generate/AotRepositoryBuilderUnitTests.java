@@ -78,7 +78,7 @@ class AotRepositoryBuilderUnitTests {
 		repoBuilder.withConstructorCustomizer(ctor -> {
 			ctor.addParameter("param1", Metric.class);
 			ctor.addParameter("param2", String.class);
-			ctor.addParameter("ctorScoped", TypeName.OBJECT, false);
+			ctor.addParameter("ctorScoped", TypeName.get(Object.class), false);
 		});
 		assertThat(repoBuilder.build().javaFile().toString()) //
 				.contains("private final Metric param1;") //

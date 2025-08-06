@@ -83,10 +83,6 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 	public void addParameter(String parameterName, TypeName type, boolean createField) {
 
 		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
-
-		if (createField) {
-			this.metadata.addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
-		}
 	}
 
 	/**
@@ -113,7 +109,7 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 		customizer.customize(builder);
 
 		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
-			if (parameter.getValue().isForLocalField()) {
+			if (parameter.getValue().isBoundToField()) {
 				builder.addStatement("this.$N = $N", parameter.getKey(), parameter.getKey());
 			}
 		}

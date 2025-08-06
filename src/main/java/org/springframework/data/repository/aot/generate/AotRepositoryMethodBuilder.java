@@ -94,7 +94,7 @@ class AotRepositoryMethodBuilder {
 
 		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
 				context.getMethod().getName(), StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata()
-						.getMethodArguments().values().stream().map(it -> it.type.toString()).collect(Collectors.toList())));
+						.getMethodArguments().values().stream().map(it -> it.type().toString()).collect(Collectors.toList())));
 		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
 		builder.addCode(methodBody);
 		customizer.accept(context, builder);
