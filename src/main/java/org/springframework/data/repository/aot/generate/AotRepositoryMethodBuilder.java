@@ -17,6 +17,7 @@ package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,9 +26,9 @@ import javax.lang.model.element.Modifier;
 
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
+import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeVariableName;
-import org.springframework.util.StringUtils;
 
 /**
  * Builder for AOT repository query methods.
@@ -82,27 +83,38 @@ class AotRepositoryMethodBuilder {
 	public MethodSpec buildMethod() {
 
 		CodeBlock methodBody = contribution.apply(context);
+		MethodSpec.Builder builder = initializeMethodBuilder();
+
+		if (context.getExpressionMarker().isInUse()) {
+			builder.addCode(context.getExpressionMarker().declaration());
+		}
+
+		builder.addCode(methodBody);
+
+		customizer.accept(context, builder);
+
+		return builder.build();
+	}
+
+	private MethodSpec.Builder initializeMethodBuilder() {
 
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
 		builder.returns(TypeName.get(context.getReturnType().getType()));
 
 		TypeVariable<Method>[] tvs = context.getMethod().getTypeParameters();
-
 		for (TypeVariable<Method> tv : tvs) {
 			builder.addTypeVariable(TypeVariableName.get(tv));
 		}
 
+		MethodMetadata methodMetadata = context.getTargetMethodMetadata();
+		Map<String, ParameterSpec> methodArguments = methodMetadata.getMethodArguments();
 		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
-				context.getMethod().getName(), StringUtils.collectionToCommaDelimitedString(context.getTargetMethodMetadata()
-						.getMethodArguments().values().stream().map(it -> it.type().toString()).collect(Collectors.toList())));
-		context.getTargetMethodMetadata().getMethodArguments().forEach((name, spec) -> builder.addParameter(spec));
-		if(context.getExpressionMarker().isInUse()) {
-			builder.addCode(context.getExpressionMarker().declaration());
-		}
-		builder.addCode(methodBody);
-		customizer.accept(context, builder);
+				context.getMethod().getName(),
+				methodArguments.values().stream().map(it -> it.type().toString()).collect(Collectors.joining(", ")));
 
-		return builder.build();
+		methodArguments.forEach((name, spec) -> builder.addParameter(spec));
+
+		return builder;
 	}
 
 }

@@ -16,13 +16,17 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -40,8 +44,8 @@ import org.springframework.javapoet.TypeName;
  */
 class MethodMetadata {
 
-	private final Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
-	private final Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
+	private final Map<String, ParameterSpec> methodArguments;
+	private final Map<String, MethodParameter> methodParameters;
 	private final Map<String, String> localVariables = new LinkedHashMap<>();
 	private final ResolvableType actualReturnType;
 	private final ResolvableType returnType;
@@ -50,15 +54,24 @@ class MethodMetadata {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
 		this.actualReturnType = repositoryInformation.getReturnedDomainTypeInformation(method).toResolvableType();
-		this.initParameters(repositoryInformation, method, new DefaultParameterNameDiscoverer());
-	}
 
-	private void initParameters(RepositoryInformation repositoryInformation, Method method,
-			ParameterNameDiscoverer nameDiscoverer) {
+		Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
+		Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
 
 		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
+		ParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-		for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+		initializeMethodArguments(method, nameDiscoverer, repositoryInterface, methodArguments, methodParameters);
+
+		this.methodArguments = Collections.unmodifiableMap(methodArguments);
+		this.methodParameters = Collections.unmodifiableMap(methodParameters);
+	}
+
+	private static void initializeMethodArguments(Method method, ParameterNameDiscoverer nameDiscoverer,
+			ResolvableType repositoryInterface, Map<String, ParameterSpec> methodArguments,
+			Map<String, MethodParameter> methodParameters) {
+
+		for (Parameter parameter : method.getParameters()) {
 
 			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
 			methodParameter.initParameterNameDiscovery(nameDiscoverer);
@@ -66,8 +79,14 @@ class MethodMetadata {
 
 			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
 
-			addParameter(ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build());
-			methodParameters.put(methodParameter.getParameterName(), methodParameter);
+			ParameterSpec parameterSpec = ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build();
+
+			if (methodArguments.containsKey(parameterSpec.name())) {
+				throw new IllegalStateException("Parameter with name '" + parameterSpec.name() + "' already exists.");
+			}
+
+			methodArguments.put(parameterSpec.name(), parameterSpec);
+			methodParameters.put(parameterSpec.name(), methodParameter);
 		}
 	}
 
@@ -77,10 +96,6 @@ class MethodMetadata {
 
 	ResolvableType getActualReturnType() {
 		return actualReturnType;
-	}
-
-	void addParameter(ParameterSpec parameterSpec) {
-		this.methodArguments.put(parameterSpec.name(), parameterSpec);
 	}
 
 	Map<String, ParameterSpec> getMethodArguments() {
@@ -105,8 +120,9 @@ class MethodMetadata {
 		return null;
 	}
 
-	Map<String, String> getLocalVariables() {
-		return localVariables;
+	public String getOrCreateLocalVariable(String variableName,
+			Function<? super String, ? extends String> mappingFunction) {
+		return localVariables.computeIfAbsent(variableName, mappingFunction);
 	}
 
 }

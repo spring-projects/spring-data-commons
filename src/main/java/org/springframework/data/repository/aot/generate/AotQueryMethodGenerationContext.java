@@ -265,7 +265,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the variable name used in the generated code.
 	 */
 	public String localVariable(String variableName) {
-		return targetMethodMetadata.getLocalVariables().computeIfAbsent(variableName, variableNameFactory::generateName);
+		return targetMethodMetadata.getOrCreateLocalVariable(variableName, variableNameFactory::generateName);
 	}
 
 	/**
@@ -346,7 +346,7 @@ public class AotQueryMethodGenerationContext {
 	/**
 	 * Obtain the {@link ExpressionMarker} for the current method. Will add a local class within the method that can be
 	 * referenced via {@link ExpressionMarker#enclosingMethod()}.
-	 * 
+	 *
 	 * @return the {@link ExpressionMarker} for this particular method.
 	 */
 	public ExpressionMarker getExpressionMarker() {

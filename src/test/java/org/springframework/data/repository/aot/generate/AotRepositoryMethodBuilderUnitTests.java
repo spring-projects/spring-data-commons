@@ -15,10 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import example.UserRepository;
 import example.UserRepository.User;
@@ -33,11 +32,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.javapoet.ParameterSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
 
 /**
  * @author Christoph Strobl
@@ -66,7 +64,6 @@ class AotRepositoryMethodBuilderUnitTests {
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
-		methodMetadata.addParameter(ParameterSpec.builder(String.class, "firstname").build());
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 
 		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
@@ -84,8 +81,6 @@ class AotRepositoryMethodBuilderUnitTests {
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
-		methodMetadata
-				.addParameter(ParameterSpec.builder(ParameterizedTypeName.get(List.class, String.class), "firstnames").build());
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 
 		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
@@ -104,7 +99,6 @@ class AotRepositoryMethodBuilderUnitTests {
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
-		methodMetadata.addParameter(ParameterSpec.builder(String.class, "firstname").build());
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 		when(methodGenerationContext.getExpressionMarker()).thenReturn(expressionMarker);
 
