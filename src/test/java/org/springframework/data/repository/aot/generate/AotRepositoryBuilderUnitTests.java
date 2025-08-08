@@ -28,6 +28,7 @@ import javax.lang.model.element.Modifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.geo.Metric;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -37,6 +38,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.stereotype.Repository;
@@ -66,8 +68,8 @@ class AotRepositoryBuilderUnitTests {
 		assertThat(repoBuilder.build().javaFile().toString())
 				.contains("package %s;".formatted(UserRepository.class.getPackageName())) // same package as source repo
 				.contains("@Generated") // marked as generated source
-				.contains("public class %sImpl__Aot".formatted(UserRepository.class.getSimpleName())) // target name
-				.contains("public UserRepositoryImpl__Aot()"); // default constructor if not arguments to wire
+				.contains("public class %sImpl".formatted(UserRepository.class.getSimpleName())) // target name
+				.contains("public UserRepositoryImpl"); // default constructor if not arguments to wire
 	}
 
 	@Test // GH-3279
@@ -80,11 +82,11 @@ class AotRepositoryBuilderUnitTests {
 			ctor.addParameter("param2", String.class);
 			ctor.addParameter("ctorScoped", TypeName.get(Object.class), false);
 		});
-		assertThat(repoBuilder.build().javaFile().toString()) //
+		assertThat(repoBuilder.prepare(null).build().javaFile().toString()) //
 				.contains("private final Metric param1;") //
 				.contains("private final String param2;") //
 				.doesNotContain("private final Object ctorScoped;") //
-				.contains("public UserRepositoryImpl__Aot(Metric param1, String param2, Object ctorScoped)") //
+				.contains("public UserRepositoryImpl(Metric param1, String param2, Object ctorScoped)") //
 				.contains("this.param1 = param1") //
 				.contains("this.param2 = param2") //
 				.doesNotContain("this.ctorScoped = ctorScoped");
@@ -100,8 +102,9 @@ class AotRepositoryBuilderUnitTests {
 				code.addStatement("throw new $T($S)", IllegalStateException.class, "initialization error");
 			});
 		});
+		repoBuilder.prepare(null);
 		assertThat(repoBuilder.build().javaFile().toString()).containsIgnoringWhitespaces(
-				"UserRepositoryImpl__Aot() { throw new IllegalStateException(\"initialization error\"); }");
+				"UserRepositoryImpl() { throw new IllegalStateException(\"initialization error\"); }");
 	}
 
 	@Test // GH-3279
@@ -178,6 +181,24 @@ class AotRepositoryBuilderUnitTests {
 		assertThat(method.fragment()).isNotNull();
 		assertThat(method.fragment().signature()).isEqualTo(QuerydslPredicateExecutor.class.getName());
 		assertThat(method.fragment().implementation()).isEqualTo(DummyQuerydslPredicateExecutor.class.getName());
+	}
+
+	@Test // GH-3339
+	void usesTargetTypeName() {
+
+		AotRepositoryBuilder repoBuilder = AotRepositoryBuilder.forRepository(repositoryInformation, "Commons",
+			new SpelAwareProxyProjectionFactory());
+		repoBuilder.withConstructorCustomizer(ctor -> {
+			ctor.addParameter("param1", Metric.class);
+			ctor.addParameter("param2", String.class);
+			ctor.addParameter("ctorScoped", TypeName.get(Object.class), false);
+		});
+
+		TypeReference targetType = TypeReference.of("%s__AotPostfix".formatted(UserRepository.class.getCanonicalName()));
+
+		assertThat(repoBuilder.prepare(ClassName.bestGuess(targetType.getCanonicalName())).build().javaFile().toString()) //
+			.contains("class %s".formatted(targetType.getSimpleName())) //
+			.contains("public %s(Metric param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
 
 	interface UserRepository extends org.springframework.data.repository.Repository<User, String> {

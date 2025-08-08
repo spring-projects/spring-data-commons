@@ -24,6 +24,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.TypeName;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -50,6 +51,8 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 	 * @return the decorated code block.
 	 */
 	public CodeBlock decorate() {
+
+		Assert.notNull(repositoryContributor.getContributedTypeName(), "contributed type name must not be null");
 
 		CodeBlock.Builder builder = CodeBlock.builder();
 		// bring in properties as usual
@@ -78,7 +81,7 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 		}
 
 		builder.addStatement("return RepositoryComposition.RepositoryFragments.just(new $L($L))",
-				repositoryContributor.getContributedTypeName(),
+				repositoryContributor.getContributedTypeName().getCanonicalName(),
 				StringUtils.collectionToDelimitedString(repositoryContributor.requiredArgs().keySet(), ", "));
 		builder.unindent();
 		builder.add("}\n");

@@ -37,12 +37,10 @@ import org.springframework.javapoet.TypeName;
  */
 public class AotRepositoryFragmentMetadata {
 
-	private final ClassName className;
 	private final Map<String, FieldSpec> fields = new HashMap<>(3);
 	private final Map<String, ConstructorArgument> constructorArguments = new LinkedHashMap<>(3);
 
-	public AotRepositoryFragmentMetadata(ClassName className) {
-		this.className = className;
+	public AotRepositoryFragmentMetadata() {
 	}
 
 	/**
@@ -63,10 +61,6 @@ public class AotRepositoryFragmentMetadata {
 		}
 
 		return null;
-	}
-
-	public ClassName getTargetTypeName() {
-		return className;
 	}
 
 	/**

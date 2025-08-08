@@ -87,7 +87,7 @@ class RepositoryContributorUnitTests {
 		repositoryContributor.contribute(generationContext);
 		generationContext.writeGeneratedContent();
 
-		String expectedTypeName = "example.UserRepositoryImpl__Aot";
+		String expectedTypeName = "example.UserRepositoryImpl__AotRepository";
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains(expectedTypeName);
@@ -132,7 +132,7 @@ class RepositoryContributorUnitTests {
 		repositoryContributor.contribute(generationContext);
 		generationContext.writeGeneratedContent();
 
-		String expectedTypeName = "example.UserRepositoryImpl__Aot";
+		String expectedTypeName = "example.UserRepositoryImpl__AotRepository";
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			String content = compiled.getResourceFile().getContent();
@@ -154,7 +154,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(argThat(it -> it.getName().equals("findByFirstname")))).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributionFor("findByFirstname");
 	}
@@ -174,8 +176,11 @@ class RepositoryContributorUnitTests {
 				.thenReturn(true);
 		when(repositoryInformation.isQueryMethod(argThat(it -> !it.getName().equals("findByFirstname")))).thenReturn(true);
 
+		TestGenerationContext testGenerationContext = new TestGenerationContext(UserRepository.class);
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		contributor.contribute(testGenerationContext);
+		testGenerationContext.writeGeneratedContent();
+
 
 		contributor.verifyContributedMethods().isNotEmpty().doesNotContainKey("findByFirstname");
 	}
@@ -200,7 +205,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(argThat(it -> it.getName().equals("findByFirstname")))).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributedMethods().isNotEmpty().doesNotContainKey("findUserByExtensionMethod");
 	}
@@ -221,7 +228,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(any())).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributedMethods().containsKey("findByFirstname").hasSizeGreaterThan(1);
 	}
