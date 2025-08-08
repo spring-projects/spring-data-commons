@@ -30,7 +30,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 
 /**
