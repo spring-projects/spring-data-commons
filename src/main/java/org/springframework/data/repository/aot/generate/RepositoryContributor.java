@@ -20,16 +20,18 @@ import java.lang.reflect.Method;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
+import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.AotBundle;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.javapoet.JavaFile;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.TypeName;
 
 /**
@@ -42,8 +44,11 @@ import org.springframework.javapoet.TypeName;
 public class RepositoryContributor {
 
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
+	private static final String FEATURE_NAME = "AotRepository";
 
-	private final AotRepositoryBuilder builder;
+	private AotRepositoryBuilder builder;
+	private final AotRepositoryContext repositoryContext;
+	private @Nullable TypeReference contributedTypeName;
 
 	/**
 	 * Create a new {@code RepositoryContributor} for the given {@link AotRepositoryContext}.
@@ -51,7 +56,9 @@ public class RepositoryContributor {
 	 * @param repositoryContext
 	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
-		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
+
+		this.repositoryContext = repositoryContext;
+		builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
 				repositoryContext.getModuleName(), createProjectionFactory());
 	}
 
@@ -77,8 +84,8 @@ public class RepositoryContributor {
 		return builder.getRepositoryInformation();
 	}
 
-	public String getContributedTypeName() {
-		return builder.getGenerationMetadata().getTargetTypeName().toString();
+	public @Nullable TypeReference getContributedTypeName() {
+		return this.contributedTypeName;
 	}
 
 	public java.util.Map<String, TypeName> requiredArgs() {
@@ -87,44 +94,47 @@ public class RepositoryContributor {
 
 	public void contribute(GenerationContext generationContext) {
 
-		AotRepositoryBuilder.AotBundle aotBundle = builder.withClassCustomizer(this::customizeClass) //
+		builder.withClassCustomizer(this::customizeClass) //
 				.withConstructorCustomizer(this::customizeConstructor) //
-				.withQueryMethodContributor(this::contributeQueryMethod) //
-				.build();
+				.withQueryMethodContributor(this::contributeQueryMethod); //
 
-		Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
-		String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
+		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
+				ClassName.bestGuess(builder.intendedTargetClassName().getCanonicalName()), targetTypeSpec -> {
 
-		JavaFile javaFile = aotBundle.javaFile();
-		String typeName = "%s.%s".formatted(javaFile.packageName(), javaFile.typeSpec().name());
-		String repositoryJson;
+					AotBundle aotBundle = builder.build(targetTypeSpec);
+					{
+						Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
+						String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
+						String repositoryJson;
+						try {
+							repositoryJson = aotBundle.metadata().toJson().toString(2);
+						} catch (JSONException e) {
+							throw new RuntimeException(e);
+						}
 
-		try {
-			repositoryJson = aotBundle.metadata().toJson().toString(2);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
+						if (logger.isTraceEnabled()) {
+							logger.trace("""
+									------ AOT Repository.json: %s ------
+									%s
+									-------------------
+									""".formatted(repositoryJsonFileName, repositoryJson));
 
-		if (logger.isTraceEnabled()) {
-			logger.trace("""
-					------ AOT Repository.json: %s ------
-					%s
-					-------------------
-					""".formatted(repositoryJsonFileName, repositoryJson));
+							logger.trace("""
+									------ AOT Generated Repository: %s ------
+									%s
+									-------------------
+									""".formatted(null, aotBundle.javaFile()));
+						}
 
-			logger.trace("""
-					------ AOT Generated Repository: %s ------
-					%s
-					-------------------
-					""".formatted(typeName, javaFile));
-		}
+						generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
+					}
+				});
 
-		// generate the files
-		generationContext.getGeneratedFiles().addSourceFile(javaFile);
-		generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
+		builder.prepare(generatedClass.getName()); // initialize ctor argument resolution and set type name to target
+		this.contributedTypeName = GeneratedTypeReference.of(generatedClass.getName());
 
 		// generate native runtime hints - needed cause we're using the repository proxy
-		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName),
+		generationContext.getRuntimeHints().reflection().registerType(this.contributedTypeName,
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 	}
 

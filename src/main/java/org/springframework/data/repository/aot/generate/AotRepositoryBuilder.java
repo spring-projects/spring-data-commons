@@ -29,9 +29,9 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
-import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.Generated;
+import org.springframework.aot.generate.GeneratedTypeReference;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -39,7 +39,6 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
-import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
@@ -64,6 +63,8 @@ class AotRepositoryBuilder {
 	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
 	private @Nullable MethodContributorFactory methodContributorFactory;
 	private Consumer<AotRepositoryClassBuilder> classCustomizer;
+	private @Nullable TypeReference targetClassName;
+	private RepositoryConstructorBuilder constructorBuilder;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
 			ProjectionFactory projectionFactory) {
@@ -72,13 +73,9 @@ class AotRepositoryBuilder {
 		this.moduleName = moduleName;
 		this.projectionFactory = projectionFactory;
 
-		this.generationMetadata = new AotRepositoryFragmentMetadata(className());
-		this.generationMetadata.addField(FieldSpec
-				.builder(TypeName.get(Log.class), "logger", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
-				.initializer("$T.getLog($T.class)", TypeName.get(LogFactory.class), this.generationMetadata.getTargetTypeName())
-				.build());
-
+		this.generationMetadata = new AotRepositoryFragmentMetadata();
 		this.classCustomizer = (builder) -> {};
+		this.constructorBuilder = new RepositoryConstructorBuilder(generationMetadata);
 	}
 
 	/**
@@ -131,15 +128,24 @@ class AotRepositoryBuilder {
 		return this;
 	}
 
-	public AotBundle build() {
+	public AotRepositoryBuilder prepare(@Nullable ClassName targetClassName) {
+		if (targetClassName == null) {
+			withTargetClassName(null);
+		} else {
+			withTargetClassName(GeneratedTypeReference.of(targetClassName));
+		}
+		if (constructorCustomizer != null) {
+			constructorCustomizer.accept(constructorBuilder);
+		}
+		return this;
+	}
+
+	public AotBundle build(TypeSpec.Builder builder) {
 
 		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
 		RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
 
-		// start creating the type
-		TypeSpec.Builder builder = TypeSpec.classBuilder(this.generationMetadata.getTargetTypeName()) //
-				.addModifiers(Modifier.PUBLIC) //
-				.addAnnotation(Generated.class) //
+		builder.addModifiers(Modifier.PUBLIC) //
 				.addJavadoc("AOT generated $L repository implementation for {@link $T}.\n", moduleName,
 						repositoryInformation.getRepositoryInterface());
 
@@ -177,15 +183,31 @@ class AotRepositoryBuilder {
 		return new AotBundle(javaFile, metadata);
 	}
 
-	private MethodSpec buildConstructor() {
+	public AotBundle build() {
 
-		RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(
-				generationMetadata);
+		ClassName className = ClassName
+				.bestGuess((targetClassName != null ? targetClassName : intendedTargetClassName()).getCanonicalName());
+		return build(TypeSpec.classBuilder(className).addAnnotation(Generated.class));
+	}
 
-		if (constructorCustomizer != null) {
-			constructorCustomizer.accept(constructorBuilder);
+	public TypeReference intendedTargetClassName() {
+		return TypeReference.of("%s.%s".formatted(packageName(), typeName()));
+	}
+
+	public @Nullable TypeReference actualTargetClassName() {
+
+		if (targetClassName == null) {
+			return null;
 		}
+		return targetClassName;
+	}
 
+	AotRepositoryBuilder withTargetClassName(@Nullable TypeReference targetClassName) {
+		this.targetClassName = targetClassName;
+		return this;
+	}
+
+	private MethodSpec buildConstructor() {
 		return constructorBuilder.buildConstructor();
 	}
 
@@ -252,15 +274,11 @@ class AotRepositoryBuilder {
 		return generationMetadata;
 	}
 
-	private ClassName className() {
-		return new ClassNameGenerator(ClassName.get(packageName(), typeName())).generateClassName("Aot", null);
-	}
-
-	private String packageName() {
+	public String packageName() {
 		return repositoryInformation.getRepositoryInterface().getPackageName();
 	}
 
-	private String typeName() {
+	public String typeName() {
 		return "%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName());
 	}
 
@@ -279,7 +297,6 @@ class AotRepositoryBuilder {
 	public ProjectionFactory getProjectionFactory() {
 		return projectionFactory;
 	}
-
 
 	/**
 	 * Customizer interface to customize the AOT repository fragment constructor through
