@@ -48,7 +48,9 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
  * @author Christoph Strobl
  * @soundtrack Richard Spaven - Ice Is Nice (Spaven's 5ive)
  * @since 1.13
+ * @deprecated since 4.0, in favor of {@link ProjectingJacksonHttpMessageConverter}.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public class ProjectingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
