@@ -15,13 +15,7 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import example.UserRepository;
-
 import org.junit.jupiter.api.Test;
-import org.springframework.aot.test.generate.TestGenerationContext;
-import org.springframework.core.test.tools.TestCompiler;
 
 /**
  * @author Christoph Strobl
