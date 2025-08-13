@@ -38,7 +38,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.stereotype.Repository;
@@ -82,7 +81,7 @@ class AotRepositoryBuilderUnitTests {
 			ctor.addParameter("param2", String.class);
 			ctor.addParameter("ctorScoped", TypeName.get(Object.class), false);
 		});
-		assertThat(repoBuilder.prepare(null).build().javaFile().toString()) //
+		assertThat(repoBuilder.withClassName(null).build().javaFile().toString()) //
 				.contains("private final Metric param1;") //
 				.contains("private final String param2;") //
 				.doesNotContain("private final Object ctorScoped;") //
@@ -102,7 +101,7 @@ class AotRepositoryBuilderUnitTests {
 				code.addStatement("throw new $T($S)", IllegalStateException.class, "initialization error");
 			});
 		});
-		repoBuilder.prepare(null);
+		repoBuilder.withClassName(null);
 		assertThat(repoBuilder.build().javaFile().toString()).containsIgnoringWhitespaces(
 				"UserRepositoryImpl() { throw new IllegalStateException(\"initialization error\"); }");
 	}
@@ -196,7 +195,7 @@ class AotRepositoryBuilderUnitTests {
 
 		TypeReference targetType = TypeReference.of("%s__AotPostfix".formatted(UserRepository.class.getCanonicalName()));
 
-		assertThat(repoBuilder.prepare(ClassName.bestGuess(targetType.getCanonicalName())).build().javaFile().toString()) //
+		assertThat(repoBuilder.withClassName(targetType.getSimpleName()).build().javaFile().toString()) //
 			.contains("class %s".formatted(targetType.getSimpleName())) //
 			.contains("public %s(Metric param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}

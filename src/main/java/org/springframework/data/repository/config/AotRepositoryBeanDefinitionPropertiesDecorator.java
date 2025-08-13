@@ -52,7 +52,7 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 	 */
 	public CodeBlock decorate() {
 
-		Assert.notNull(repositoryContributor.getContributedTypeName(), "contributed type name must not be null");
+		Assert.notNull(repositoryContributor.getContributedTypeName(), "Contributed type name must not be null");
 
 		CodeBlock.Builder builder = CodeBlock.builder();
 		// bring in properties as usual

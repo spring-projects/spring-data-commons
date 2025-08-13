@@ -29,9 +29,8 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.Generated;
-import org.springframework.aot.generate.GeneratedTypeReference;
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -62,9 +61,9 @@ class AotRepositoryBuilder {
 
 	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
 	private @Nullable MethodContributorFactory methodContributorFactory;
+	private @Nullable String targetClassName;
 	private Consumer<AotRepositoryClassBuilder> classCustomizer;
-	private @Nullable TypeReference targetClassName;
-	private RepositoryConstructorBuilder constructorBuilder;
+	private final RepositoryConstructorBuilder constructorBuilder;
 
 	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
 			ProjectionFactory projectionFactory) {
@@ -128,15 +127,15 @@ class AotRepositoryBuilder {
 		return this;
 	}
 
-	public AotRepositoryBuilder prepare(@Nullable ClassName targetClassName) {
-		if (targetClassName == null) {
-			withTargetClassName(null);
-		} else {
-			withTargetClassName(GeneratedTypeReference.of(targetClassName));
-		}
-		if (constructorCustomizer != null) {
-			constructorCustomizer.accept(constructorBuilder);
-		}
+	/**
+	 * Configure the {@link Class#getSimpleName() simple class name} of the generated repository implementation.
+	 *
+	 * @param className the class name to use for the generated repository implementation. Defaults to the simple
+	 *          {@link RepositoryInformation#getRepositoryInterface()} class name suffixed with {@code Impl}
+	 * @return {@code this}.
+	 */
+	public AotRepositoryBuilder withClassName(@Nullable String className) {
+		this.targetClassName = className;
 		return this;
 	}
 
@@ -184,30 +183,19 @@ class AotRepositoryBuilder {
 	}
 
 	public AotBundle build() {
-
-		ClassName className = ClassName
-				.bestGuess((targetClassName != null ? targetClassName : intendedTargetClassName()).getCanonicalName());
-		return build(TypeSpec.classBuilder(className).addAnnotation(Generated.class));
+		return build(TypeSpec.classBuilder(getClassName()).addAnnotation(Generated.class));
 	}
 
-	public TypeReference intendedTargetClassName() {
-		return TypeReference.of("%s.%s".formatted(packageName(), typeName()));
-	}
-
-	public @Nullable TypeReference actualTargetClassName() {
-
-		if (targetClassName == null) {
-			return null;
-		}
-		return targetClassName;
-	}
-
-	AotRepositoryBuilder withTargetClassName(@Nullable TypeReference targetClassName) {
-		this.targetClassName = targetClassName;
-		return this;
+	public ClassName getClassName() {
+		return ClassName.get(packageName(), targetClassName != null ? targetClassName : typeName());
 	}
 
 	private MethodSpec buildConstructor() {
+
+		if (constructorCustomizer != null) {
+			constructorCustomizer.accept(constructorBuilder);
+		}
+
 		return constructorBuilder.buildConstructor();
 	}
 

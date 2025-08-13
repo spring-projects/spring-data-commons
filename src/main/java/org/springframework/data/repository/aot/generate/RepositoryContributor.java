@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GeneratedClass;
 import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
@@ -31,7 +32,6 @@ import org.springframework.data.repository.aot.generate.AotRepositoryBuilder.Aot
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.TypeName;
 
 /**
@@ -46,8 +46,7 @@ public class RepositoryContributor {
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
 	private static final String FEATURE_NAME = "AotRepository";
 
-	private AotRepositoryBuilder builder;
-	private final AotRepositoryContext repositoryContext;
+	private final AotRepositoryBuilder builder;
 	private @Nullable TypeReference contributedTypeName;
 
 	/**
@@ -57,7 +56,6 @@ public class RepositoryContributor {
 	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
 
-		this.repositoryContext = repositoryContext;
 		builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
 				repositoryContext.getModuleName(), createProjectionFactory());
 	}
@@ -98,39 +96,45 @@ public class RepositoryContributor {
 				.withConstructorCustomizer(this::customizeConstructor) //
 				.withQueryMethodContributor(this::contributeQueryMethod); //
 
+		// TODO: temporary fix until we have a better representation of constructor arguments
+		// decouple the description of arguments from the actual code used in the constructor initialization, super calls,
+		// etc.
+		RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(builder.getGenerationMetadata());
+		customizeConstructor(constructorBuilder);
+
 		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
-				ClassName.bestGuess(builder.intendedTargetClassName().getCanonicalName()), targetTypeSpec -> {
+				builder.getClassName(), targetTypeSpec -> {
+
+					// capture the actual type name early on so that we can use it in the constructor.
+					builder.withClassName(targetTypeSpec.build().name());
 
 					AotBundle aotBundle = builder.build(targetTypeSpec);
-					{
-						Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
-						String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
-						String repositoryJson;
-						try {
-							repositoryJson = aotBundle.metadata().toJson().toString(2);
-						} catch (JSONException e) {
-							throw new RuntimeException(e);
-						}
-
-						if (logger.isTraceEnabled()) {
-							logger.trace("""
-									------ AOT Repository.json: %s ------
-									%s
-									-------------------
-									""".formatted(repositoryJsonFileName, repositoryJson));
-
-							logger.trace("""
-									------ AOT Generated Repository: %s ------
-									%s
-									-------------------
-									""".formatted(null, aotBundle.javaFile()));
-						}
-
-						generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
+					Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
+					String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
+					String repositoryJson;
+					try {
+						repositoryJson = aotBundle.metadata().toJson().toString(2);
+					} catch (JSONException e) {
+						throw new RuntimeException(e);
 					}
+
+					if (logger.isTraceEnabled()) {
+						logger.trace("""
+								------ AOT Repository.json: %s ------
+								%s
+								-------------------
+								""".formatted(repositoryJsonFileName, repositoryJson));
+
+						logger.trace("""
+								------ AOT Generated Repository: %s ------
+								%s
+								-------------------
+								""".formatted(null, aotBundle.javaFile()));
+					}
+
+					generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
 				});
 
-		builder.prepare(generatedClass.getName()); // initialize ctor argument resolution and set type name to target
 		this.contributedTypeName = GeneratedTypeReference.of(generatedClass.getName());
 
 		// generate native runtime hints - needed cause we're using the repository proxy
