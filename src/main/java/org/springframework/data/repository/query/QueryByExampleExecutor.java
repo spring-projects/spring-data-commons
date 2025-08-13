@@ -18,6 +18,8 @@ package org.springframework.data.repository.query;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -105,5 +107,6 @@ public interface QueryByExampleExecutor<T> {
 	 * @return all entities matching the given {@link Example}.
 	 * @since 2.6
 	 */
-	<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
+	<S extends T, R extends @Nullable Object> R findBy(Example<S> example,
+			Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }
