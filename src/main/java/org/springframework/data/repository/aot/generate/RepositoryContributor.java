@@ -96,6 +96,12 @@ public class RepositoryContributor {
 				.withConstructorCustomizer(this::customizeConstructor) //
 				.withQueryMethodContributor(this::contributeQueryMethod); //
 
+		// TODO: temporary fix until we have a better representation of constructor arguments
+		// decouple the description of arguments from the actual code used in the constructor initialization, super calls,
+		// etc.
+		RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(builder.getGenerationMetadata());
+		customizeConstructor(constructorBuilder);
+
 		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
 				builder.getClassName(), targetTypeSpec -> {
 
