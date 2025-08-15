@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>3.4.9-SNAPSHOT</version>
+	<version>3.4.9</version>
 
 	<name>Spring Data Core</name>
 	<description>Core Spring concepts underpinning every Spring Data module.</description>
