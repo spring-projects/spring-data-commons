@@ -9,11 +9,11 @@ asciidoc:
     copyright-year: ${current.year}
     springversionshort: ${spring.short}
     springversion: ${spring}
-    spring-data-commons-docs-url: https://docs.spring.io/spring-data/commons/reference/{version}
-    spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/commons/reference/{version}/api/java
-    springdocsurl: https://docs.spring.io/spring-framework/reference/{springversionshort}
+    spring-data-commons-docs-url: '${documentation.baseurl}/commons/reference/{version}'
+    spring-data-commons-javadoc-base: '{spring-data-commons-docs-url}/api/java'
+    springdocsurl: '${documentation.baseurl}/spring-framework/reference/{springversionshort}'
     spring-framework-docs: '{springdocsurl}'
-    springjavadocurl: https://docs.spring.io/spring-framework/docs/${spring}/javadoc-api
+    springjavadocurl: '${documentation.spring-javadoc-url}'
     spring-framework-javadoc: '{springjavadocurl}'
     springhateoasversion: ${spring-hateoas}
     releasetrainversion: ${releasetrain}
