@@ -17,6 +17,8 @@ package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -25,14 +27,12 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ObjectUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 
 /**
@@ -59,8 +59,8 @@ class JsonProjectingMethodInterceptorFactoryUnitTests {
 		var projectionFactory = new SpelAwareProxyProjectionFactory();
 
 		var objectMapper = new ObjectMapper();
-		MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
-		JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
+		MappingProvider mappingProvider = new ProjectingJacksonHttpMessageConverter.JacksonMappingProvider(objectMapper);
+		JsonProvider jsonProvider = new ProjectingJacksonHttpMessageConverter.JacksonJsonProvider(objectMapper);
 		projectionFactory
 				.registerMethodInvokerFactory(new JsonProjectingMethodInterceptorFactory(jsonProvider, mappingProvider));
 
