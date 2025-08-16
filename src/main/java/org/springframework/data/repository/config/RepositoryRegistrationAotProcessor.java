@@ -44,6 +44,8 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.data.aot.AotMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -77,6 +79,8 @@ public class RepositoryRegistrationAotProcessor
 
 	private final Log logger = LogFactory.getLog(getClass());
 
+	private final AotMappingContext aotMappingContext = new AotMappingContext();
+
 	private @Nullable ConfigurableListableBeanFactory beanFactory;
 
 	private Environment environment = new StandardEnvironment();
@@ -87,6 +91,7 @@ public class RepositoryRegistrationAotProcessor
 	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
 		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
+
 
 	@Nullable
 	protected RepositoryContributor contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
@@ -109,6 +114,8 @@ public class RepositoryRegistrationAotProcessor
 	 * @param repositoryContext must not be {@literal null}.
 	 * @param generationContext must not be {@literal null}.
 	 */
+	// TODO: Can we merge #contribute, #registerReflectiveForAggregateRoot into RepositoryRegistrationAotContribution?
+	// hints and types are contributed from everywhere.
 	private void registerReflectiveForAggregateRoot(AotRepositoryContext repositoryContext,
 			GenerationContext generationContext) {
 
@@ -117,7 +124,16 @@ public class RepositoryRegistrationAotProcessor
 		RuntimeHints hints = generationContext.getRuntimeHints();
 
 		Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream())
-				.forEach(it -> registrar.registerRuntimeHints(hints, it));
+				.forEach(it -> {
+
+					// arent we already registering the types in RepositoryRegistrationAotContribution#contributeRepositoryInfo?
+					registrar.registerRuntimeHints(hints, it);
+
+					PersistentEntity<?, ?> persistentEntity = aotMappingContext.getPersistentEntity(it);
+					if (persistentEntity != null) {
+						aotMappingContext.contribute(persistentEntity);
+					}
+				});
 	}
 
 	private boolean isRepositoryBean(RegisteredBean bean) {
@@ -186,6 +202,7 @@ public class RepositoryRegistrationAotProcessor
 
 	protected void contributeType(Class<?> type, GenerationContext generationContext) {
 		TypeContributor.contribute(type, it -> true, generationContext);
+
 	}
 
 	protected Log getLogger() {
