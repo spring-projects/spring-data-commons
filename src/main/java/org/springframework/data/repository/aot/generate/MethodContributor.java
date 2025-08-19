@@ -147,7 +147,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	 */
 	public interface RepositoryMethodCustomizer {
 
-		void customize(AotQueryMethodGenerationContext context, MethodSpec.Builder builder);
+		void customize(AotQueryMethodGenerationContext context, CodeBlock.Builder builder);
 
 	}
 

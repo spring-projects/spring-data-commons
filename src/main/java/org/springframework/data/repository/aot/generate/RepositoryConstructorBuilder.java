@@ -15,15 +15,16 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.lang.model.element.Modifier;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
+import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
-import org.springframework.javapoet.TypeName;
 import org.springframework.util.Assert;
 
 /**
@@ -36,8 +37,8 @@ import org.springframework.util.Assert;
 class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 
 	private final AotRepositoryFragmentMetadata metadata;
-
 	private ConstructorCustomizer customizer = (builder) -> {};
+	private final Set<String> parametersAdded = new HashSet<>();
 
 	RepositoryConstructorBuilder(AotRepositoryFragmentMetadata metadata) {
 		this.metadata = metadata;
@@ -51,14 +52,7 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 	 */
 	@Override
 	public void addParameter(String parameterName, Class<?> type) {
-
-		ResolvableType resolvableType = ResolvableType.forClass(type);
-		if (!resolvableType.hasGenerics() || !resolvableType.hasResolvableGenerics()) {
-			addParameter(parameterName, TypeName.get(type));
-			return;
-		}
-
-		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
+		addParameter(parameterName, ResolvableType.forClass(type));
 	}
 
 	/**
@@ -68,7 +62,7 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 	 * @param type parameter type.
 	 */
 	@Override
-	public void addParameter(String parameterName, TypeName type) {
+	public void addParameter(String parameterName, ResolvableType type) {
 		addParameter(parameterName, type, true);
 	}
 
@@ -80,8 +74,8 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 	 * @param createField whether to create a field for the parameter and assign its value to the field.
 	 */
 	@Override
-	public void addParameter(String parameterName, TypeName type, boolean createField) {
-
+	public void addParameter(String parameterName, ResolvableType type, boolean createField) {
+		this.parametersAdded.add(parameterName);
 		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
 	}
 
@@ -106,7 +100,11 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 			builder.addParameter(parameter.getValue().typeName(), parameter.getKey());
 		}
 
-		customizer.customize(builder);
+		CodeBlock.Builder customCtorCode = CodeBlock.builder();
+		customizer.customize(customCtorCode);
+		if(!customCtorCode.isEmpty()) {
+			builder.addCode(customCtorCode.build());
+		}
 
 		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
 			if (parameter.getValue().isBoundToField()) {
@@ -117,4 +115,13 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 		return builder.build();
 	}
 
+	public void dispose() {
+
+		for (String parameterName : this.parametersAdded) {
+			ConstructorArgument removedArgument = this.metadata.getConstructorArguments().remove(parameterName);
+			if (removedArgument != null && removedArgument.isBoundToField()) {
+				this.metadata.getFields().remove(parameterName);
+			}
+		}
+	}
 }
