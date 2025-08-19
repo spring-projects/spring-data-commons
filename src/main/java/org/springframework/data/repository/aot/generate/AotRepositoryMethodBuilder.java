@@ -42,7 +42,7 @@ class AotRepositoryMethodBuilder {
 	private final AotQueryMethodGenerationContext context;
 
 	private Function<AotQueryMethodGenerationContext, CodeBlock> contribution = (context) -> CodeBlock.builder().build();
-	private BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer = (context, body) -> {};
+	private BiConsumer<AotQueryMethodGenerationContext, CodeBlock.Builder> customizer = (context, body) -> {};
 
 	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
 		this.context = context;
@@ -68,7 +68,7 @@ class AotRepositoryMethodBuilder {
 	 * @return
 	 */
 	public AotRepositoryMethodBuilder customize(
-			BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer) {
+			BiConsumer<AotQueryMethodGenerationContext, CodeBlock.Builder> customizer) {
 		this.customizer = customizer;
 		return this;
 	}
@@ -91,7 +91,9 @@ class AotRepositoryMethodBuilder {
 
 		builder.addCode(methodBody);
 
-		customizer.accept(context, builder);
+		CodeBlock.Builder customizerBlock = CodeBlock.builder();
+		customizer.accept(context, customizerBlock);
+		builder.addCode(customizerBlock.build());
 
 		return builder.build();
 	}

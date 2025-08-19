@@ -29,43 +29,43 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.Generated;
+import org.springframework.aot.generate.GeneratedTypeReference;
+import org.springframework.aot.hint.TypeReference;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.util.Lazy;
 import org.springframework.javapoet.ClassName;
+import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.util.Assert;
 
 /**
- * Builder for AOT repository fragments.
+ * Builder style creator for AOT repository fragments.
  *
  * @author Christoph Strobl
  * @author Mark Paluch
  */
-class AotRepositoryBuilder {
+class AotRepositoryCreator {
 
-	private static final Log logger = LogFactory.getLog(AotRepositoryBuilder.class);
+	private static final Log logger = LogFactory.getLog(AotRepositoryCreator.class);
 
 	private final RepositoryInformation repositoryInformation;
 	private final String moduleName;
 	private final ProjectionFactory projectionFactory;
 	private final AotRepositoryFragmentMetadata generationMetadata;
 
-	private @Nullable Consumer<AotRepositoryConstructorBuilder> constructorCustomizer;
-	private @Nullable MethodContributorFactory methodContributorFactory;
-	private @Nullable String targetClassName;
+	private @Nullable RepositoryConstructorBuilder constructorBuilder;
 	private Consumer<AotRepositoryClassBuilder> classCustomizer;
-	private final RepositoryConstructorBuilder constructorBuilder;
 
-	private AotRepositoryBuilder(RepositoryInformation repositoryInformation, String moduleName,
+	private AotRepositoryCreator(RepositoryInformation repositoryInformation, String moduleName,
 			ProjectionFactory projectionFactory) {
 
 		this.repositoryInformation = repositoryInformation;
@@ -74,7 +74,6 @@ class AotRepositoryBuilder {
 
 		this.generationMetadata = new AotRepositoryFragmentMetadata();
 		this.classCustomizer = (builder) -> {};
-		this.constructorBuilder = new RepositoryConstructorBuilder(generationMetadata);
 	}
 
 	/**
@@ -85,9 +84,9 @@ class AotRepositoryBuilder {
 	 * @param projectionFactory must not be {@literal null}.
 	 * @return
 	 */
-	public static AotRepositoryBuilder forRepository(RepositoryInformation information, String moduleName,
+	static AotRepositoryCreator forRepository(RepositoryInformation information, String moduleName,
 			ProjectionFactory projectionFactory) {
-		return new AotRepositoryBuilder(information, moduleName, projectionFactory);
+		return new AotRepositoryCreator(information, moduleName, projectionFactory);
 	}
 
 	/**
@@ -96,8 +95,7 @@ class AotRepositoryBuilder {
 	 * @param classCustomizer must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withClassCustomizer(Consumer<AotRepositoryClassBuilder> classCustomizer) {
-
+	AotRepositoryCreator customizeClass(Consumer<AotRepositoryClassBuilder> classCustomizer) {
 		this.classCustomizer = classCustomizer;
 		return this;
 	}
@@ -108,11 +106,26 @@ class AotRepositoryBuilder {
 	 * @param constructorCustomizer must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withConstructorCustomizer(
-			Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
+	@SuppressWarnings("NullAway")
+	AotRepositoryCreator customizeConstructor(Consumer<AotRepositoryConstructorBuilder> constructorCustomizer) {
 
-		this.constructorCustomizer = constructorCustomizer;
+		if (constructorBuilder != null) {
+			constructorBuilder.dispose();
+		}
+
+		RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(generationMetadata);
+		constructorCustomizer.accept(constructorBuilder);
+		this.constructorBuilder = constructorBuilder;
 		return this;
+	}
+
+	AotRepositoryCreator resolveQueryMethods() {
+		return resolveQueryMethods(new MethodContributorFactory() {
+			@Override
+			public @Nullable MethodContributor<? extends QueryMethod> create(Method method) {
+				return null;
+			}
+		});
 	}
 
 	/**
@@ -121,28 +134,38 @@ class AotRepositoryBuilder {
 	 * @param methodContributorFactory must not be {@literal null}.
 	 * @return {@code this}.
 	 */
-	public AotRepositoryBuilder withQueryMethodContributor(MethodContributorFactory methodContributorFactory) {
+	AotRepositoryCreator resolveQueryMethods(@Nullable MethodContributorFactory methodContributorFactory) {
 
-		this.methodContributorFactory = methodContributorFactory;
+		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
+				.sorted(Comparator.<Method, String> comparing(it -> {
+					return it.getDeclaringClass().getName();
+				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
+				.forEach(method -> {
+
+					RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
+					try {
+						resolveQueryMethod(method, methodContributorFactory, repositoryComposition, generationMetadata);
+					} catch (RuntimeException e) {
+						if (logger.isErrorEnabled()) {
+							logger.error("Failed to contribute Repository method [%s.%s]"
+									.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()), e);
+						}
+					}
+				});
 		return this;
 	}
 
-	/**
-	 * Configure the {@link Class#getSimpleName() simple class name} of the generated repository implementation.
-	 *
-	 * @param className the class name to use for the generated repository implementation. Defaults to the simple
-	 *          {@link RepositoryInformation#getRepositoryInterface()} class name suffixed with {@code Impl}
-	 * @return {@code this}.
-	 */
-	public AotRepositoryBuilder withClassName(@Nullable String className) {
-		this.targetClassName = className;
-		return this;
+	AotBundle create() {
+		return create(repositoryImplementationTypeName());
 	}
 
-	public AotBundle build(TypeSpec.Builder builder) {
+	AotBundle create(String targetTypeName) {
+		return create(TypeSpec.classBuilder(ClassName.bestGuess(targetTypeName)).addAnnotation(Generated.class));
+	}
+
+	AotBundle create(TypeSpec.Builder builder) {
 
 		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
-		RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
 
 		builder.addModifiers(Modifier.PUBLIC) //
 				.addJavadoc("AOT generated $L repository implementation for {@link $T}.\n", moduleName,
@@ -151,23 +174,42 @@ class AotRepositoryBuilder {
 		// create the constructor
 		builder.addMethod(buildConstructor());
 
-		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
-				.sorted(Comparator.<Method, String> comparing(it -> {
-					return it.getDeclaringClass().getName();
-				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
-				.forEach(method -> {
-					try {
-						contributeMethod(method, repositoryComposition, methodMetadata, builder);
-					} catch (RuntimeException e) {
-						if (logger.isErrorEnabled()) {
-							logger.error("Failed to contribute Repository method [%s.%s]"
-									.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()), e);
-						}
-					}
-				});
+		generationMetadata.getMethods().values().forEach(localMethod -> {
+
+			MethodContributor<? extends QueryMethod> methodContributor = localMethod.methodContributor();
+			AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
+					localMethod.source(), methodContributor.getQueryMethod(), generationMetadata);
+
+			MethodSpec methodSpec = methodContributor.contribute(context);
+			if (methodSpec != null) {
+				builder.addMethod(methodSpec);
+			}
+
+			// TODO: decouple json from method building and get rid of methodMetadata here?
+			methodMetadata.add(new AotRepositoryMethod(localMethod.source().getName(), localMethod.source().toGenericString(),
+					methodContributor.getMetadata(), null));
+		});
+
+		generationMetadata.getDelegateMethods().values().forEach(delegateMethod -> {
+
+			String signature = delegateMethod.fragment() != null
+					? delegateMethod.fragment().getSignatureContributor().getName()
+					: delegateMethod.source().getDeclaringClass().getName();
+			String implementation = delegateMethod.fragment() != null
+					? delegateMethod.fragment().getImplementationClass().map(Class::getName).orElse(null)
+					: null;
+			QueryMetadata query = delegateMethod.methodContributor() != null
+					? delegateMethod.methodContributor().getMetadata()
+					: null;
+
+			methodMetadata.add(new AotRepositoryMethod(delegateMethod.source().getName(), signature, query,
+					new AotFragmentTarget(signature, implementation)));
+		});
 
 		// write fields at the end so we make sure to capture things added by methods
-		generationMetadata.getFields().values().forEach(builder::addField);
+		generationMetadata.getFields().values().stream()
+				.map(field -> FieldSpec.builder(field.fieldType().getType(), field.fieldName(), field.modifiers()).build())
+				.forEach(builder::addField);
 
 		// finally customize the file itself
 		this.classCustomizer.accept(customizer -> {
@@ -176,27 +218,18 @@ class AotRepositoryBuilder {
 			customizer.customize(builder);
 		});
 
-		JavaFile javaFile = JavaFile.builder(packageName(), builder.build()).build();
-		AotRepositoryMetadata metadata = getAotRepositoryMetadata(methodMetadata);
-
-		return new AotBundle(javaFile, metadata);
+		return new AotBundle(repositoryInformation.getRepositoryInterface(),
+				Lazy.of(() -> JavaFile.builder(packageName(), builder.build()).build()),
+				Lazy.of(() -> getAotRepositoryMetadata(methodMetadata)));
 	}
 
-	public AotBundle build() {
-		return build(TypeSpec.classBuilder(getClassName()).addAnnotation(Generated.class));
-	}
-
-	public ClassName getClassName() {
-		return ClassName.get(packageName(), targetClassName != null ? targetClassName : typeName());
+	String repositoryImplementationTypeName() {
+		return "%s.%s".formatted(packageName(), typeName());
 	}
 
 	private MethodSpec buildConstructor() {
-
-		if (constructorCustomizer != null) {
-			constructorCustomizer.accept(constructorBuilder);
-		}
-
-		return constructorBuilder.buildConstructor();
+		return constructorBuilder != null ? constructorBuilder.buildConstructor()
+				: MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build();
 	}
 
 	private AotRepositoryMetadata getAotRepositoryMetadata(List<AotRepositoryMethod> methodMetadata) {
@@ -211,8 +244,8 @@ class AotRepositoryBuilder {
 				repositoryType, methodMetadata);
 	}
 
-	private void contributeMethod(Method method, RepositoryComposition repositoryComposition,
-			List<AotRepositoryMethod> methodMetadata, TypeSpec.Builder builder) {
+	private void resolveQueryMethod(Method method, @Nullable MethodContributorFactory contributorFactory,
+			RepositoryComposition repositoryComposition, AotRepositoryFragmentMetadata metadata) {
 
 		if (repositoryInformation.isCustomMethod(method)
 				|| (repositoryInformation.isBaseClassMethod(method) && !repositoryInformation.isQueryMethod(method))) {
@@ -220,7 +253,7 @@ class AotRepositoryBuilder {
 			RepositoryFragment<?> fragment = repositoryComposition.findFragment(method);
 
 			if (fragment != null) {
-				methodMetadata.add(getFragmentMetadata(method, fragment));
+				metadata.addDelegateMethod(method, fragment);
 				return;
 			}
 		}
@@ -229,37 +262,19 @@ class AotRepositoryBuilder {
 			return;
 		}
 
-		if (repositoryInformation.isQueryMethod(method) && methodContributorFactory != null) {
+		if (repositoryInformation.isQueryMethod(method) && contributorFactory != null) {
 
-			MethodContributor<? extends QueryMethod> contributor = methodContributorFactory.create(method);
+			MethodContributor<? extends QueryMethod> contributor = contributorFactory.create(method);
 
 			if (contributor != null) {
 
 				if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
-
-					AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation, method,
-							contributor.getQueryMethod(), generationMetadata);
-
-					builder.addMethod(contributor.contribute(context));
+					metadata.addRepositoryMethod(method, contributor);
+				} else {
+					metadata.addDelegateMethod(method, contributor);
 				}
-
-				methodMetadata
-						.add(new AotRepositoryMethod(method.getName(), method.toGenericString(), contributor.getMetadata(), null));
 			}
 		}
-	}
-
-	private AotRepositoryMethod getFragmentMetadata(Method method, RepositoryFragment<?> fragment) {
-
-		String signature = fragment.getSignatureContributor().getName();
-		String implementation = fragment.getImplementationClass().map(Class::getName).orElse(null);
-		AotFragmentTarget fragmentTarget = new AotFragmentTarget(signature, implementation);
-
-		return new AotRepositoryMethod(method.getName(), method.toGenericString(), null, fragmentTarget);
-	}
-
-	public AotRepositoryFragmentMetadata getGenerationMetadata() {
-		return generationMetadata;
 	}
 
 	public String packageName() {
@@ -270,10 +285,12 @@ class AotRepositoryBuilder {
 		return "%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName());
 	}
 
-	public Map<String, TypeName> getAutowireFields() {
-		Map<String, TypeName> autowireFields = new LinkedHashMap<>(generationMetadata.getConstructorArguments().size());
+	public Map<String, ResolvableType> getAutowireFields() {
+
+		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(
+				generationMetadata.getConstructorArguments().size());
 		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
-			autowireFields.put(entry.getKey(), entry.getValue().typeName());
+			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
 		}
 		return autowireFields;
 	}
@@ -319,7 +336,24 @@ class AotRepositoryBuilder {
 
 	}
 
-	record AotBundle(JavaFile javaFile, AotRepositoryMetadata metadata) {
+	record AotBundle(Class<?> sourceRepository, Lazy<JavaFile> javaFile, Lazy<AotRepositoryMetadata> metadata) {
+
+		String repositoryJsonFileName() {
+			return sourceRepository.getName().replace('.', '/') + ".json";
+		}
+
+		TypeReference generatedRepositoryTypeName() {
+			JavaFile file = javaFile.get();
+			return GeneratedTypeReference.of(ClassName.get(file.packageName(), file.typeSpec().name()));
+		}
+
+		String generatedCode() {
+			return javaFile().get().toString();
+		}
+
+		String generatedMetadata() {
+			return metadata().get().toJson().toString(2);
+		}
 	}
 
 }

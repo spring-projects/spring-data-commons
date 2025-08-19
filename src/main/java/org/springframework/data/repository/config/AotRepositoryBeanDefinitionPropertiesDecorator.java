@@ -15,10 +15,13 @@
  */
 package org.springframework.data.repository.config;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -28,7 +31,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Delegate to decorate AOT {@code BeanDefinition} properties.
+ * Delegate to decorate AOT {@code BeanDefinition} properties during AOT processing. Adds a {@link CodeBlock} for the
+ * fragment function that resolves {@link RepositoryContributor#requiredArgs()} from the {@link BeanFactory} and
+ * provides them to the generated repository fragment.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -36,19 +41,39 @@ import org.springframework.util.StringUtils;
  */
 class AotRepositoryBeanDefinitionPropertiesDecorator {
 
+	private static final Map<ResolvableType, String> RESERVED_TYPES;
+
 	private final Supplier<CodeBlock> inheritedProperties;
 	private final RepositoryContributor repositoryContributor;
 
+	static {
+
+		RESERVED_TYPES = new LinkedHashMap<>(2);
+		RESERVED_TYPES.put(ResolvableType.forClass(BeanFactory.class), "beanFactory");
+		RESERVED_TYPES.put(ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class), "context");
+	}
+
+	/**
+	 * @param inheritedProperties bean definition code (containing properties and such) already added via another
+	 *          component.
+	 * @param repositoryContributor the contributor providing the actual AOT repository implementation.
+	 */
 	public AotRepositoryBeanDefinitionPropertiesDecorator(Supplier<CodeBlock> inheritedProperties,
 			RepositoryContributor repositoryContributor) {
+
 		this.inheritedProperties = inheritedProperties;
 		this.repositoryContributor = repositoryContributor;
 	}
 
 	/**
 	 * Generate a decorated code block for bean properties.
+	 * <p>
+	 * <strong>NOTE:</strong> the {@link RepositoryContributor} must be able to provide the to be
+	 * {@link RepositoryContributor#getContributedTypeName() type name} of the generated repository implementation and
+	 * needs to have potential constructor arguments resolved.
 	 *
 	 * @return the decorated code block.
+	 * @throws IllegalArgumentException if {@link RepositoryContributor#getContributedTypeName()} is not set.
 	 */
 	public CodeBlock decorate() {
 
@@ -61,22 +86,29 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 		builder.add("beanDefinition.getPropertyValues().addPropertyValue(\"repositoryFragmentsFunction\", new $T() {\n",
 				RepositoryFactoryBeanSupport.RepositoryFragmentsFunction.class);
 		builder.indent();
-		builder.add("public $T getRepositoryFragments($T beanFactory, $T context) {\n",
-				RepositoryComposition.RepositoryFragments.class, BeanFactory.class,
-				RepositoryFactoryBeanSupport.FragmentCreationContext.class);
+
+		builder.add("public $T getRepositoryFragments(", RepositoryComposition.RepositoryFragments.class);
+		int counter = 0;
+		for (Entry<ResolvableType, String> entry : RESERVED_TYPES.entrySet()) {
+			builder.add("$T $L", entry.getKey().toClass(), entry.getValue());
+			if (++counter < RESERVED_TYPES.size()) {
+				builder.add(", ");
+			}
+		}
+		builder.add(") {\n");
+
 		builder.indent();
 
-		for (Map.Entry<String, TypeName> entry : repositoryContributor.requiredArgs().entrySet()) {
+		for (Map.Entry<String, ResolvableType> entry : repositoryContributor.requiredArgs().entrySet()) {
 
-			if (entry.getValue().equals(TypeName.get(RepositoryFactoryBeanSupport.FragmentCreationContext.class))) {
-
-				if (!entry.getKey().equals("context")) {
-					builder.addStatement("$T $L = context", entry.getValue(), entry.getKey(), entry.getValue());
-				}
-
+			TypeName argumentType = TypeName.get(entry.getValue().getType());
+			String reservedArgumentName = RESERVED_TYPES.get(entry.getValue());
+			if (reservedArgumentName == null) {
+				builder.addStatement("$1T $2L = beanFactory.getBean($1T.class)", argumentType, entry.getKey());
 			} else {
-				builder.addStatement("$T $L = beanFactory.getBean($T.class)", entry.getValue(), entry.getKey(),
-						entry.getValue());
+				if (!reservedArgumentName.equals(entry.getKey())) {
+					builder.addStatement("$T $L = $L", argumentType, entry.getKey(), reservedArgumentName);
+				}
 			}
 		}
 

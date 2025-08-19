@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import org.springframework.core.ResolvableType;
+import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.TypeName;
 
 /**
  * Builder for AOT Repository Constructors.
@@ -41,7 +42,7 @@ public interface AotRepositoryConstructorBuilder {
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
 	 */
-	default void addParameter(String parameterName, TypeName type) {
+	default void addParameter(String parameterName, ResolvableType type) {
 		addParameter(parameterName, type, true);
 	}
 
@@ -52,7 +53,18 @@ public interface AotRepositoryConstructorBuilder {
 	 * @param type parameter type.
 	 * @param createField whether to create a field for the parameter and assign its value to the field.
 	 */
-	void addParameter(String parameterName, TypeName type, boolean createField);
+	default void addParameter(String parameterName, Class<?> type, boolean createField) {
+		addParameter(parameterName, ResolvableType.forClass(type), createField);
+	}
+
+	/**
+	 * Add constructor parameter.
+	 *
+	 * @param parameterName name of the parameter.
+	 * @param type parameter type.
+	 * @param createField whether to create a field for the parameter and assign its value to the field.
+	 */
+	void addParameter(String parameterName, ResolvableType type, boolean createField);
 
 	/**
 	 * Add constructor customizer. Customizer is invoked after adding constructor arguments and before assigning
@@ -72,7 +84,7 @@ public interface AotRepositoryConstructorBuilder {
 		 *
 		 * @param builder the constructor builder to be customized.
 		 */
-		void customize(MethodSpec.Builder builder);
+		void customize(CodeBlock.Builder builder);
 
 	}
 

@@ -46,11 +46,11 @@ public class MethodCapturingRepositoryContributor extends RepositoryContributor 
 		return null;
 	}
 
-	void verifyContributionFor(String methodName) {
+	public void verifyContributionFor(String methodName) {
 		assertThat(capturedInvocations).containsKey(methodName);
 	}
 
-	MapAssert<String, List<Method>> verifyContributedMethods() {
+	public MapAssert<String, List<Method>> verifyContributedMethods() {
 		return assertThat(capturedInvocations);
 	}
 }

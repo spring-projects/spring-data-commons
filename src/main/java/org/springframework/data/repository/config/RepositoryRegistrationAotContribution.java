@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
@@ -389,6 +388,5 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				|| ClassUtils.isPrimitiveOrWrapper(type) //
 				|| ClassUtils.isPrimitiveArray(type); //
 	}
-
 
 }
