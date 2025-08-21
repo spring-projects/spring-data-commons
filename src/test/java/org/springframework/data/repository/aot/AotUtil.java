@@ -15,7 +15,7 @@
  */
 package org.springframework.data.repository.aot;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
@@ -42,35 +42,42 @@ class AotUtil {
 		applicationContext.register(configuration);
 		applicationContext.refreshForAotProcessing(new RuntimeHints());
 
-		return repositoryType -> {
+		return repositoryTypes -> {
 
-			String[] repositoryBeanNames = applicationContext.getBeanNamesForType(repositoryType);
+			BeanRegistrationAotContribution beanContribution = null;
 
-			assertThat(repositoryBeanNames)
-					.describedAs("Unable to find repository [%s] in configuration [%s]", repositoryType, configuration)
-					.hasSize(1);
+			for (Class<?> repositoryType : repositoryTypes) {
 
-			String repositoryBeanName = repositoryBeanNames[0];
+				String[] repositoryBeanNames = applicationContext.getBeanNamesForType(repositoryType);
 
-			ConfigurableListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
+				assertThat(repositoryBeanNames)
+						.describedAs("Unable to find repository [%s] in configuration [%s]", repositoryType, configuration)
+						.hasSize(1);
 
-			RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
-					.getBean(RepositoryRegistrationAotProcessor.class);
+				String repositoryBeanName = repositoryBeanNames[0];
 
-			repositoryAotProcessor.setBeanFactory(beanFactory);
+				ConfigurableListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
 
-			RegisteredBean bean = RegisteredBean.of(beanFactory, repositoryBeanName);
+				RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
+						.getBean(RepositoryRegistrationAotProcessor.class);
 
-			BeanRegistrationAotContribution beanContribution = repositoryAotProcessor.processAheadOfTime(bean);
+				repositoryAotProcessor.setBeanFactory(beanFactory);
+
+				RegisteredBean bean = RegisteredBean.of(beanFactory, repositoryBeanName);
+				beanContribution = repositoryAotProcessor.processAheadOfTime(bean);
+			}
 
 			assertThat(beanContribution).isInstanceOf(RepositoryRegistrationAotContribution.class);
-
 			return (RepositoryRegistrationAotContribution) beanContribution;
 		};
 	}
 
 	@FunctionalInterface
 	interface RepositoryRegistrationAotContributionBuilder {
-		RepositoryRegistrationAotContribution forRepository(Class<?> repositoryInterface);
+		default RepositoryRegistrationAotContribution forRepository(Class<?> repositoryInterface) {
+			return forRepositories(repositoryInterface);
+		}
+
+		RepositoryRegistrationAotContribution forRepositories(Class<?>... repositoryInterface);
 	}
 }

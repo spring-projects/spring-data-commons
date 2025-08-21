@@ -25,7 +25,6 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
@@ -36,9 +35,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.util.ClassUtils;
@@ -57,7 +54,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
 	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
-	private final AotMappingContext aotMappingContext = new AotMappingContext();
+	private AotContext aotContext;
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
 		this.moduleIdentifier = moduleIdentifier;
@@ -80,9 +77,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 			return null;
 		}
 
-		BeanFactory beanFactory = registeredBean.getBeanFactory();
-		return contribute(AotContext.from(beanFactory, this.environment.get()), resolveManagedTypes(registeredBean),
-				registeredBean);
+		this.aotContext = new DefaultAotContext(registeredBean.getBeanFactory(), environment.get());
+		return contribute(this.aotContext, resolveManagedTypes(registeredBean), registeredBean);
 	}
 
 	private ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
@@ -131,7 +127,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 */
 	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes,
 			RegisteredBean registeredBean) {
-		return new ManagedTypesRegistrationAotContribution(managedTypes, registeredBean, this::contributeType);
+		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean, this::contributeType);
 	}
 
 	/**
@@ -148,16 +144,12 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		Class<?> resolvedType = type.toClass();
-		TypeContributor.contribute(resolvedType, annotationNamespaces, generationContext);
-		QTypeContributor.contributeEntityPath(resolvedType, generationContext, resolvedType.getClassLoader());
+		aotContext.typeConfiguration(type).forDataBinding() //
+				.generateEntityInstantiator() //
+				.forQuerydsl() //
+				.contribute(generationContext); //
 
-		PersistentEntity<?, ?> entity = aotMappingContext.getPersistentEntity(resolvedType);
-		if (entity != null) {
-			aotMappingContext.contribute(entity);
-		}
-
-		TypeUtils.resolveUsedAnnotations(resolvedType).forEach(
+        		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
 	}
 

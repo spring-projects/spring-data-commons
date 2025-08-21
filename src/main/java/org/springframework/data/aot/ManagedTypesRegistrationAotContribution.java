@@ -74,14 +74,16 @@ import org.springframework.util.ReflectionUtils;
  */
 class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContribution {
 
+	private final AotContext aotContext;
 	private final ManagedTypes managedTypes;
 	private final Lazy<List<Class<?>>> sourceTypes;
 	private final BiConsumer<ResolvableType, GenerationContext> contributionAction;
 	private final RegisteredBean source;
 
-	public ManagedTypesRegistrationAotContribution(ManagedTypes managedTypes, RegisteredBean registeredBean,
+	public ManagedTypesRegistrationAotContribution(AotContext aotContext, ManagedTypes managedTypes, RegisteredBean registeredBean,
 			BiConsumer<ResolvableType, GenerationContext> contributionAction) {
 
+		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
 		this.sourceTypes = Lazy.of(managedTypes::toList);
 		this.contributionAction = contributionAction;

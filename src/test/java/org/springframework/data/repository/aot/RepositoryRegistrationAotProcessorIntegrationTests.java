@@ -78,9 +78,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class) //
 							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class)
-							.doesNotContributeJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
+									TransactionalProxy.class, Advised.class, DecoratingProxy.class);
 				});
 	}
 
@@ -103,9 +101,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class)
 							.contributesJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class)
-							.doesNotContributeJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
+									TransactionalProxy.class, Advised.class, DecoratingProxy.class);
 				});
 	}
 

@@ -79,4 +79,6 @@ public interface AotRepositoryContext extends AotContext {
 	 */
 	Set<Class<?>> getResolvedTypes();
 
+	Set<Class<?>> getUserDomainTypes();
+
 }

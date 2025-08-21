@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -43,10 +44,8 @@ import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.aot.AotContext;
-import org.springframework.data.aot.AotMappingContext;
-import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.projection.EntityProjectionIntrospector;
-import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.aot.generate.AotRepositoryBeanDefinitionPropertiesDecorator;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
@@ -57,7 +56,6 @@ import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.javapoet.CodeBlock;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -74,8 +72,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	private static final Log logger = LogFactory.getLog(RepositoryRegistrationAotContribution.class);
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
-
-	private final AotMappingContext aotMappingContext = new AotMappingContext();
 
 	private final RepositoryRegistrationAotProcessor aotProcessor;
 
@@ -259,61 +255,28 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		};
 	}
 
-	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
-		return Predicates.isTrue();
-	}
-
 	private void contributeRepositoryInfo(AotRepositoryContext repositoryContext, GenerationContext contribution) {
 
 		RepositoryInformation repositoryInformation = getRepositoryInformation();
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		contribution.getRuntimeHints().reflection()
-				.registerType(repositoryInformation.getRepositoryInterface(),
-						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
-				.registerType(repositoryInformation.getRepositoryBaseClass(), hint -> hint
-						.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface())
+				.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS) //
+				.repositoryProxy();
 
-		TypeContributor.contribute(repositoryInformation.getDomainType(), contribution);
-		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
-				repositoryContext.getClassLoader());
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass())
+				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 
-		// TODO: what about embedded types or entity types that are entity types references from properties?
-		PersistentEntity<?, ?> persistentEntity = aotMappingContext
-				.getPersistentEntity(repositoryInformation.getDomainType());
-		if (persistentEntity != null) {
-			aotMappingContext.contribute(persistentEntity);
-		}
+		repositoryContext.typeConfiguration(repositoryInformation.getDomainType()).forDataBinding().forQuerydsl();
+
+		// TODO: purposeful api for uses cases to have some internal logic
+		repositoryContext.getUserDomainTypes().stream() //
+				.map(repositoryContext::typeConfiguration) //
+				.forEach(AotTypeConfiguration::generateEntityInstantiator); //
 
 		// Repository Fragments
 		contributeFragments(contribution);
-
-		// Repository Proxy
-		contribution.getRuntimeHints().proxies().registerJdkProxy(repositoryInformation.getRepositoryInterface(),
-				SpringProxy.class, Advised.class, DecoratingProxy.class);
-
-		// Transactional Repository Proxy
-		// repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
-
-		// TODO: Is the following double JDK Proxy registration above necessary or would a single JDK Proxy
-		// registration suffice?
-		// In other words, simply having a single JDK Proxy registration either with or without
-		// the additional Serializable TypeReference?
-		// NOTE: Using a single JDK Proxy registration causes the
-		// simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() test case method to fail.
-		List<TypeReference> transactionalRepositoryProxyTypeReferences = transactionalRepositoryProxyTypeReferences(
-				repositoryInformation);
-
-		contribution.getRuntimeHints().proxies()
-				.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-
-		if (isComponentAnnotatedRepository(repositoryInformation)) {
-			transactionalRepositoryProxyTypeReferences.add(TypeReference.of(Serializable.class));
-			contribution.getRuntimeHints().proxies()
-					.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-		}
-		// });
 
 		// Kotlin
 		if (isKotlinCoroutineRepository(repositoryContext, repositoryInformation)) {
@@ -325,7 +288,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {
-						contributeProjection(type, contribution);
+						repositoryContext.typeConfiguration(type).usedAsProjectionInterface();
 					}
 				});
 	}
@@ -358,10 +321,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 	}
 
-	private boolean isComponentAnnotatedRepository(RepositoryInformation repositoryInformation) {
-		return AnnotationUtils.findAnnotation(repositoryInformation.getRepositoryInterface(), Component.class) != null;
-	}
-
 	private boolean isKotlinCoroutineRepository(AotRepositoryContext repositoryContext,
 			RepositoryInformation repositoryInformation) {
 
@@ -380,21 +339,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 						TypeReference.of("kotlin.Unit"), //
 						TypeReference.of("kotlin.Long"), //
 						TypeReference.of("kotlin.Boolean")));
-	}
-
-	private List<TypeReference> transactionalRepositoryProxyTypeReferences(RepositoryInformation repositoryInformation) {
-
-		return new ArrayList<>(Arrays.asList(TypeReference.of(repositoryInformation.getRepositoryInterface()),
-				TypeReference.of(Repository.class), //
-				TypeReference.of("org.springframework.transaction.interceptor.TransactionalProxy"), //
-				TypeReference.of("org.springframework.aop.framework.Advised"), //
-				TypeReference.of(DecoratingProxy.class)));
-	}
-
-	private void contributeProjection(Class<?> type, GenerationContext generationContext) {
-
-		generationContext.getRuntimeHints().proxies().registerJdkProxy(type, TargetAware.class, SpringProxy.class,
-				DecoratingProxy.class);
 	}
 
 	static boolean isJavaOrPrimitiveType(Class<?> type) {
