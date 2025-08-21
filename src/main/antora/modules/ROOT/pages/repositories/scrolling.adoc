@@ -11,16 +11,16 @@ Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of
 
 [source,java]
 ----
-Window<User> users = repository.findFirst10ByLastnameOrderByFirstname("Doe", ScrollPosition.offset());
-do {
-
+ScrollPosition position = ScrollPosition.offset();
+while (true) {
+  users = repository.findFirst10ByLastnameOrderByFirstname("Doe", position);
+  if (users.isEmpty()) break;
   for (User u : users) {
     // consume the user
   }
-
-  // obtain the next Scroll
-  users = repository.findFirst10ByLastnameOrderByFirstname("Doe", users.positionAt(users.size() - 1));
-} while (!users.isEmpty() && users.hasNext());
+  if (!users.hasNext()) break;
+  position = users.positionAt(users.size() - 1);
+}
 ----
 
 [NOTE]
