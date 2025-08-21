@@ -34,7 +34,8 @@ import org.springframework.data.util.TypeInformation;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotMappingContext extends
+public class AotMappingContext extends // TODO: hide this one and delegate to other component - can we use the
+																				// AotContext for it?
 		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.BasicPersistentProperty>, AotMappingContext.BasicPersistentProperty> {
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
@@ -55,6 +56,7 @@ public class AotMappingContext extends
 		propertyAccessorFactory.initialize(entity);
 	}
 
+	// TODO: can we extract some util for this using only type
 	@Override
 	protected <T> BasicPersistentEntity<?, BasicPersistentProperty> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
@@ -75,8 +77,18 @@ public class AotMappingContext extends
 		}
 
 		@Override
+		public boolean isAssociation() {
+			return false;
+		}
+
+		@Override
 		protected Association<BasicPersistentProperty> createAssociation() {
-			return null;
+			return new Association<>(this, null);
+		}
+
+		@Override
+		public Association<BasicPersistentProperty> getRequiredAssociation() {
+			return new Association<>(this, null);
 		}
 	}
 
