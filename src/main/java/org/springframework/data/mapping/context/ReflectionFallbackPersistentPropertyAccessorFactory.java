@@ -36,9 +36,13 @@ class ReflectionFallbackPersistentPropertyAccessorFactory implements PersistentP
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {
 
 		if (accessorFactory.isSupported(entity)) {
-			return accessorFactory.getPropertyAccessor(entity, bean);
+			PersistentPropertyAccessor<T> propertyAccessor = accessorFactory.getPropertyAccessor(entity, bean);
+			System.out.println("Accessor Factory: " + propertyAccessor.getClass().getName());
+			return propertyAccessor;
+
 		}
 
+		System.out.println("Fallback Accessor Factory :(");
 		return BeanWrapperPropertyAccessorFactory.INSTANCE.getPropertyAccessor(entity, bean);
 	}
 

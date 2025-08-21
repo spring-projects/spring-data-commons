@@ -15,10 +15,14 @@
  */
 package org.springframework.data.aot;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.mock.env.MockEnvironment;
@@ -81,6 +85,21 @@ class AotContextUnitTests {
 		@Override
 		public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
 			return Mockito.mock(IntrospectedBeanDefinition.class);
+		}
+
+		@Override
+		public InstantiationCreator instantiationCreator(TypeReference typeReference) {
+			return Mockito.mock(InstantiationCreator.class);
+		}
+
+		@Override
+		public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
+			return null;
+		}
+
+		@Override
+		public Collection<AotTypeConfiguration> typeConfigurations() {
+			return List.of();
 		}
 
 		@Override

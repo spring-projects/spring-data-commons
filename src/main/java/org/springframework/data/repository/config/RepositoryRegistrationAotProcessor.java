@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.BeansException;
@@ -44,8 +45,6 @@ import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.data.aot.AotMappingContext;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -78,8 +77,6 @@ public class RepositoryRegistrationAotProcessor
 		implements BeanRegistrationAotProcessor, BeanFactoryAware, EnvironmentAware, EnvironmentCapable {
 
 	private final Log logger = LogFactory.getLog(getClass());
-
-	private final AotMappingContext aotMappingContext = new AotMappingContext();
 
 	private @Nullable ConfigurableListableBeanFactory beanFactory;
 
@@ -129,10 +126,7 @@ public class RepositoryRegistrationAotProcessor
 					// arent we already registering the types in RepositoryRegistrationAotContribution#contributeRepositoryInfo?
 					registrar.registerRuntimeHints(hints, it);
 
-					PersistentEntity<?, ?> persistentEntity = aotMappingContext.getPersistentEntity(it);
-					if (persistentEntity != null) {
-						aotMappingContext.contribute(persistentEntity);
-					}
+					repositoryContext.instantiationCreator(TypeReference.of(it)).create();
 				});
 	}
 

@@ -22,14 +22,17 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -213,6 +216,20 @@ public interface AotContext extends EnvironmentCapable {
 	 */
 	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
 
+	InstantiationCreator instantiationCreator(TypeReference typeReference);
+
+	default AotTypeConfiguration typeConfiguration(ResolvableType resolvableType) {
+		return typeConfiguration(resolvableType.toClass());
+	}
+
+	default AotTypeConfiguration typeConfiguration(Class<?> type) {
+		return typeConfiguration(TypeReference.of(type));
+	}
+
+	AotTypeConfiguration typeConfiguration(TypeReference typeReference);
+
+	Collection<AotTypeConfiguration> typeConfigurations();
+
 	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence
 	 * of beans.
@@ -272,7 +289,6 @@ public interface AotContext extends EnvironmentCapable {
 		 * @return a {@link List} of bean names. The list is empty if the bean factory does not hold any beans of this type.
 		 */
 		List<String> getBeanNames();
-
 	}
 
 	/**
@@ -326,7 +342,11 @@ public interface AotContext extends EnvironmentCapable {
 		 */
 		@Nullable
 		Class<?> resolveType();
+	}
 
+	interface InstantiationCreator {
+		boolean isAvailable();
+		void create();
 	}
 
 }
