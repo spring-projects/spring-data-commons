@@ -41,7 +41,7 @@ import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.HttpMessageConverters.ServerBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -153,13 +153,13 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	}
 
 	@Override
-	public void configureMessageConverters(HttpMessageConverters.Builder builder) {
+	public void configureMessageConverters(ServerBuilder builder) {
 
 		List<HttpMessageConverter<?>> converters = new ArrayList<>();
 		configureMessageConverters(converters);
 
 		for (HttpMessageConverter<?> converter : converters) {
-			builder.additionalMessageConverter(converter);
+			builder.customMessageConverter(converter);
 		}
 	}
 

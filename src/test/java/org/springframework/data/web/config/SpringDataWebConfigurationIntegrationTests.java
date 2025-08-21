@@ -55,48 +55,48 @@ class SpringDataWebConfigurationIntegrationTests {
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(
 				HidingClassLoader.hide(ObjectMapper.class, com.fasterxml.jackson.databind.ObjectMapper.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
 		createConfigWithClassLoader(classLoader, it -> it.configureMessageConverters(builder));
 
-		verify(builder, never()).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder, never()).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
 	void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
-		verify(builder).additionalMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-1152
@@ -104,11 +104,11 @@ class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> {
 
-			HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+			HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 			ArgumentCaptor<HttpMessageConverter> captor = ArgumentCaptor.forClass(HttpMessageConverter.class);
 
 			it.configureMessageConverters(builder);
-			verify(builder, atLeast(1)).additionalMessageConverter(captor.capture());
+			verify(builder, atLeast(1)).customMessageConverter(captor.capture());
 
 			// Converters contains ProjectingJackson2HttpMessageConverter with custom ObjectMapper
 
