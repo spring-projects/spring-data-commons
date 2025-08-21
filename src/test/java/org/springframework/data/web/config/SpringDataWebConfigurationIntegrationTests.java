@@ -16,9 +16,11 @@
 package org.springframework.data.web.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,48 +57,48 @@ class SpringDataWebConfigurationIntegrationTests {
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJacksonNotPresent() {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(
 				HidingClassLoader.hide(ObjectMapper.class, com.fasterxml.jackson.databind.ObjectMapper.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadJacksonConverterWhenJaywayNotPresent() {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
 	@Test // DATACMNS-987
 	void shouldNotLoadXBeamConverterWhenXBeamNotPresent() throws Exception {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
 		createConfigWithClassLoader(classLoader, it -> it.configureMessageConverters(builder));
 
-		verify(builder, never()).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder, never()).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
 	void shouldLoadAllConvertersWhenDependenciesArePresent() throws Exception {
 
-		HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+		HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> it.configureMessageConverters(builder));
 
-		verify(builder).additionalMessageConverter(any(XmlBeamHttpMessageConverter.class));
-		verify(builder).additionalMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).customMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-1152
@@ -104,17 +106,17 @@ class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> {
 
-			HttpMessageConverters.Builder builder = mock(HttpMessageConverters.Builder.class);
+			HttpMessageConverters.ServerBuilder builder = mock(HttpMessageConverters.ServerBuilder.class);
 			ArgumentCaptor<HttpMessageConverter> captor = ArgumentCaptor.forClass(HttpMessageConverter.class);
 
 			it.configureMessageConverters(builder);
-			verify(builder, atLeast(1)).additionalMessageConverter(captor.capture());
+			verify(builder, atLeast(1)).customMessageConverter(captor.capture());
 
 			// Converters contains ProjectingJackson2HttpMessageConverter with custom ObjectMapper
 
 			assertThat(captor.getAllValues()).anySatisfy(converter -> {
 				assertThat(converter).isInstanceOfSatisfying(ProjectingJacksonHttpMessageConverter.class, __ -> {
-					assertThat(__.getObjectMapper()).isSameAs(SomeConfiguration.MAPPER);
+					assertThat(__.getMapper()).isSameAs(SomeConfiguration.MAPPER);
 				});
 			});
 		}, SomeConfiguration.class);
@@ -152,10 +154,10 @@ class SpringDataWebConfigurationIntegrationTests {
 	@Configuration
 	static class SomeConfiguration {
 
-		static ObjectMapper MAPPER = new ObjectMapper();
+		static JsonMapper MAPPER = new JsonMapper();
 
 		@Bean
-		ObjectMapper mapper() {
+		JsonMapper mapper() {
 			return MAPPER;
 		}
 	}
