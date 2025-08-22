@@ -15,11 +15,11 @@
  */
 package org.springframework.data.web.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -48,7 +48,21 @@ class WebRuntimeHintsUnitTests {
 
 	@Test // GH-3033, GH-3171
 	@ClassPathExclusions(packages = { "com.fasterxml.jackson.databind" })
-	void shouldRegisterRuntimeHintWithTypeNameWhenJacksonNotPresent() {
+	void shouldRegisterRuntimeHintWithTypeNameWhenJackson2NotPresent() {
+
+		ReflectionHints reflectionHints = new ReflectionHints();
+		RuntimeHints runtimeHints = mock(RuntimeHints.class);
+		when(runtimeHints.reflection()).thenReturn(reflectionHints);
+
+		new WebRuntimeHints().registerHints(runtimeHints, this.getClass().getClassLoader());
+
+		assertThat(runtimeHints).matches(RuntimeHintsPredicates.reflection()
+				.onType(TypeReference.of("org.springframework.data.web.config.SpringDataWebSettings")));
+	}
+
+	@Test // GH-3292
+	@ClassPathExclusions(packages = { "tools.jackson" })
+	void shouldRegisterRuntimeHintWithTypeNameWhenJackson3NotPresent() {
 
 		ReflectionHints reflectionHints = new ReflectionHints();
 		RuntimeHints runtimeHints = mock(RuntimeHints.class);
