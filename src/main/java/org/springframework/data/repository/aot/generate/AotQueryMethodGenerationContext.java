@@ -52,7 +52,20 @@ public class AotQueryMethodGenerationContext {
 	private final ExpressionMarker expressionMarker;
 
 	protected AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method,
-			QueryMethod queryMethod, AotRepositoryFragmentMetadata targetTypeMetadata) {
+			QueryMethod queryMethod) {
+
+		this.method = method;
+		this.annotations = MergedAnnotations.from(method);
+		this.queryMethod = queryMethod;
+		this.repositoryInformation = repositoryInformation;
+		this.targetTypeMetadata = new AotRepositoryFragmentMetadata();
+		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
+		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
+		this.expressionMarker = new ExpressionMarker();
+	}
+
+	AotQueryMethodGenerationContext(RepositoryInformation repositoryInformation, Method method, QueryMethod queryMethod,
+			AotRepositoryFragmentMetadata targetTypeMetadata) {
 
 		this.method = method;
 		this.annotations = MergedAnnotations.from(method);
@@ -352,4 +365,5 @@ public class AotQueryMethodGenerationContext {
 	public ExpressionMarker getExpressionMarker() {
 		return expressionMarker;
 	}
+
 }

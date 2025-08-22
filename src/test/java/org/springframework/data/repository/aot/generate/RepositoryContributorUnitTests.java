@@ -108,15 +108,9 @@ class RepositoryContributorUnitTests {
 				return MethodContributor
 						.forQueryMethod(
 								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
-						.withMetadata(new QueryMetadata() {
-
-							@Override
-							public Map<String, Object> serialize() {
-
-								return Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
-										Arrays.stream(method.getParameters()).map(Parameter::getName).toList());
-							}
-						}).contribute(context -> {
+						.withMetadata(() -> Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
+								Arrays.stream(method.getParameters()).map(Parameter::getName).toList()))
+						.contribute(context -> {
 
 							CodeBlock.Builder builder = CodeBlock.builder();
 							if (!ClassUtils.isVoidType(method.getReturnType())) {

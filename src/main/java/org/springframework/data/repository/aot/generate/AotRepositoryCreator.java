@@ -29,9 +29,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-import org.springframework.aot.generate.Generated;
-import org.springframework.aot.generate.GeneratedTypeReference;
-import org.springframework.aot.hint.TypeReference;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
@@ -42,7 +40,6 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.Lazy;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
-import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.util.Assert;
@@ -90,6 +87,120 @@ class AotRepositoryCreator {
 	}
 
 	/**
+	 * Get the {@link ClassName} for the AOT repository fragment.
+	 *
+	 * @return the {@link ClassName} for the AOT repository fragment.
+	 */
+	ClassName getClassName() {
+		return ClassName.get(packageName(),
+				"%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName()));
+	}
+
+	String packageName() {
+		return repositoryInformation.getRepositoryInterface().getPackageName();
+	}
+
+	Map<String, ResolvableType> getAutowireFields() {
+
+		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(
+				generationMetadata.getConstructorArguments().size());
+		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
+			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
+		}
+		return autowireFields;
+	}
+
+	RepositoryInformation getRepositoryInformation() {
+		return repositoryInformation;
+	}
+
+	ProjectionFactory getProjectionFactory() {
+		return projectionFactory;
+	}
+
+	/**
+	 * Create the AOT repository fragment and add constructors, methods and fields to the given {@link TypeSpec.Builder}.
+	 *
+	 * @param target the target {@link TypeSpec.Builder} to which the AOT repository fragment will be added.
+	 * @return an
+	 */
+	AotBundle create(TypeSpec.Builder target) {
+
+		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
+
+		target.addModifiers(Modifier.PUBLIC) //
+				.addJavadoc("AOT generated $L repository implementation for {@link $T}.\n", moduleName,
+						repositoryInformation.getRepositoryInterface());
+
+		// create the constructor
+		target.addMethod(buildConstructor());
+
+		generationMetadata.getMethods().values().forEach(localMethod -> {
+
+			MethodContributor<? extends QueryMethod> methodContributor = localMethod.methodContributor();
+			AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
+					localMethod.source(), methodContributor.getQueryMethod(), generationMetadata);
+
+			MethodSpec methodSpec = methodContributor.contribute(context);
+			if (methodSpec != null) {
+				target.addMethod(methodSpec);
+			}
+
+			// TODO: decouple json from method building and get rid of methodMetadata here?
+			methodMetadata.add(new AotRepositoryMethod(localMethod.source().getName(), localMethod.source().toGenericString(),
+					methodContributor.getMetadata(), null));
+		});
+
+		generationMetadata.getDelegateMethods().values().forEach(delegateMethod -> {
+
+			String signature = delegateMethod.fragment() != null
+					? delegateMethod.fragment().getSignatureContributor().getName()
+					: delegateMethod.source().getDeclaringClass().getName();
+			String implementation = delegateMethod.fragment() != null
+					? delegateMethod.fragment().getImplementationClass().map(Class::getName).orElse(null)
+					: null;
+			QueryMetadata query = delegateMethod.methodContributor() != null
+					? delegateMethod.methodContributor().getMetadata()
+					: null;
+
+			methodMetadata.add(new AotRepositoryMethod(delegateMethod.source().getName(), signature, query,
+					new AotFragmentTarget(signature, implementation)));
+		});
+
+		// write fields at the end so we make sure to capture things added by methods
+		generationMetadata.getFields().values().stream()
+				.map(field -> FieldSpec.builder(field.fieldType().getType(), field.fieldName(), field.modifiers()).build())
+				.forEach(target::addField);
+
+		// finally customize the file itself
+		this.classCustomizer.accept(customizer -> {
+
+			Assert.notNull(customizer, "ClassCustomizer must not be null");
+			customizer.customize(target);
+		});
+
+		return new AotBundle(repositoryInformation.getRepositoryInterface(),
+				Lazy.of(() -> getAotRepositoryMetadata(methodMetadata)));
+	}
+
+	private MethodSpec buildConstructor() {
+		return constructorBuilder != null ? constructorBuilder.buildConstructor()
+				: MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build();
+	}
+
+	private AotRepositoryMetadata getAotRepositoryMetadata(List<AotRepositoryMethod> methodMetadata) {
+
+		AotRepositoryMetadata.RepositoryType repositoryType = repositoryInformation.isReactiveRepository()
+				? AotRepositoryMetadata.RepositoryType.REACTIVE
+				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
+
+		String jsonModuleName = moduleName != null ? moduleName.replaceAll("Reactive", "").trim() : null;
+
+		return new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(), jsonModuleName,
+				repositoryType, methodMetadata);
+	}
+
+	/**
 	 * Configure a {@link AotRepositoryConstructorBuilder} customizer.
 	 *
 	 * @param classCustomizer must not be {@literal null}.
@@ -119,32 +230,22 @@ class AotRepositoryCreator {
 		return this;
 	}
 
-	AotRepositoryCreator resolveQueryMethods() {
-		return resolveQueryMethods(new MethodContributorFactory() {
-			@Override
-			public @Nullable MethodContributor<? extends QueryMethod> create(Method method) {
-				return null;
-			}
-		});
-	}
-
 	/**
-	 * Configure a {@link MethodContributor} factory.
+	 * Contribute repository methods using {@link MethodContributor} factory.
 	 *
 	 * @param methodContributorFactory must not be {@literal null}.
-	 * @return {@code this}.
 	 */
-	AotRepositoryCreator resolveQueryMethods(@Nullable MethodContributorFactory methodContributorFactory) {
+	void contributeMethods(@Nullable MethodContributorFactory methodContributorFactory) {
 
 		Arrays.stream(repositoryInformation.getRepositoryInterface().getMethods())
-				.sorted(Comparator.<Method, String> comparing(it -> {
-					return it.getDeclaringClass().getName();
-				}).thenComparing(Method::getName).thenComparing(Method::getParameterCount).thenComparing(Method::toString))
+				.sorted(Comparator.<Method, String> comparing(it -> it.getDeclaringClass().getName()) //
+						.thenComparing(Method::getName) //
+						.thenComparing(Method::getParameterCount) //
+						.thenComparing(Method::toString))
 				.forEach(method -> {
 
-					RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
 					try {
-						resolveQueryMethod(method, methodContributorFactory, repositoryComposition, generationMetadata);
+						contributeMethod(method, methodContributorFactory);
 					} catch (RuntimeException e) {
 						if (logger.isErrorEnabled()) {
 							logger.error("Failed to contribute Repository method [%s.%s]"
@@ -152,155 +253,64 @@ class AotRepositoryCreator {
 						}
 					}
 				});
-		return this;
 	}
 
-	AotBundle create() {
-		return create(repositoryImplementationTypeName());
-	}
-
-	AotBundle create(String targetTypeName) {
-		return create(TypeSpec.classBuilder(ClassName.bestGuess(targetTypeName)).addAnnotation(Generated.class));
-	}
-
-	AotBundle create(TypeSpec.Builder builder) {
-
-		List<AotRepositoryMethod> methodMetadata = new ArrayList<>();
-
-		builder.addModifiers(Modifier.PUBLIC) //
-				.addJavadoc("AOT generated $L repository implementation for {@link $T}.\n", moduleName,
-						repositoryInformation.getRepositoryInterface());
-
-		// create the constructor
-		builder.addMethod(buildConstructor());
-
-		generationMetadata.getMethods().values().forEach(localMethod -> {
-
-			MethodContributor<? extends QueryMethod> methodContributor = localMethod.methodContributor();
-			AotQueryMethodGenerationContext context = new AotQueryMethodGenerationContext(repositoryInformation,
-					localMethod.source(), methodContributor.getQueryMethod(), generationMetadata);
-
-			MethodSpec methodSpec = methodContributor.contribute(context);
-			if (methodSpec != null) {
-				builder.addMethod(methodSpec);
-			}
-
-			// TODO: decouple json from method building and get rid of methodMetadata here?
-			methodMetadata.add(new AotRepositoryMethod(localMethod.source().getName(), localMethod.source().toGenericString(),
-					methodContributor.getMetadata(), null));
-		});
-
-		generationMetadata.getDelegateMethods().values().forEach(delegateMethod -> {
-
-			String signature = delegateMethod.fragment() != null
-					? delegateMethod.fragment().getSignatureContributor().getName()
-					: delegateMethod.source().getDeclaringClass().getName();
-			String implementation = delegateMethod.fragment() != null
-					? delegateMethod.fragment().getImplementationClass().map(Class::getName).orElse(null)
-					: null;
-			QueryMetadata query = delegateMethod.methodContributor() != null
-					? delegateMethod.methodContributor().getMetadata()
-					: null;
-
-			methodMetadata.add(new AotRepositoryMethod(delegateMethod.source().getName(), signature, query,
-					new AotFragmentTarget(signature, implementation)));
-		});
-
-		// write fields at the end so we make sure to capture things added by methods
-		generationMetadata.getFields().values().stream()
-				.map(field -> FieldSpec.builder(field.fieldType().getType(), field.fieldName(), field.modifiers()).build())
-				.forEach(builder::addField);
-
-		// finally customize the file itself
-		this.classCustomizer.accept(customizer -> {
-
-			Assert.notNull(customizer, "ClassCustomizer must not be null");
-			customizer.customize(builder);
-		});
-
-		return new AotBundle(repositoryInformation.getRepositoryInterface(),
-				Lazy.of(() -> JavaFile.builder(packageName(), builder.build()).build()),
-				Lazy.of(() -> getAotRepositoryMetadata(methodMetadata)));
-	}
-
-	String repositoryImplementationTypeName() {
-		return "%s.%s".formatted(packageName(), typeName());
-	}
-
-	private MethodSpec buildConstructor() {
-		return constructorBuilder != null ? constructorBuilder.buildConstructor()
-				: MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build();
-	}
-
-	private AotRepositoryMetadata getAotRepositoryMetadata(List<AotRepositoryMethod> methodMetadata) {
-
-		AotRepositoryMetadata.RepositoryType repositoryType = repositoryInformation.isReactiveRepository()
-				? AotRepositoryMetadata.RepositoryType.REACTIVE
-				: AotRepositoryMetadata.RepositoryType.IMPERATIVE;
-
-		String jsonModuleName = moduleName != null ? moduleName.replaceAll("Reactive", "").trim() : null;
-
-		return new AotRepositoryMetadata(repositoryInformation.getRepositoryInterface().getName(), jsonModuleName,
-				repositoryType, methodMetadata);
-	}
-
-	private void resolveQueryMethod(Method method, @Nullable MethodContributorFactory contributorFactory,
-			RepositoryComposition repositoryComposition, AotRepositoryFragmentMetadata metadata) {
+	private void contributeMethod(Method method, @Nullable MethodContributorFactory contributorFactory) {
 
 		if (repositoryInformation.isCustomMethod(method)
 				|| (repositoryInformation.isBaseClassMethod(method) && !repositoryInformation.isQueryMethod(method))) {
 
+			RepositoryComposition repositoryComposition = repositoryInformation.getRepositoryComposition();
 			RepositoryFragment<?> fragment = repositoryComposition.findFragment(method);
 
 			if (fragment != null) {
-				metadata.addDelegateMethod(method, fragment);
+				generationMetadata.addDelegateMethod(method, fragment);
 				return;
 			}
 		}
 
 		if (method.isBridge() || method.isDefault() || java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+
+			if (logger.isTraceEnabled()) {
+				logger.trace("Skipping %s method [%s.%s] contribution".formatted(
+						(method.isBridge() ? "bridge" : method.isDefault() ? "default" : "static"),
+						repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+			}
 			return;
 		}
 
-		if (repositoryInformation.isQueryMethod(method) && contributorFactory != null) {
+		if (!repositoryInformation.isQueryMethod(method)) {
 
-			MethodContributor<? extends QueryMethod> contributor = contributorFactory.create(method);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Skipping method [%s.%s] contribution, not a query method"
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+			}
+			return;
+		}
 
-			if (contributor != null) {
+		if (contributorFactory == null) {
 
-				if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
-					metadata.addRepositoryMethod(method, contributor);
-				} else {
-					metadata.addDelegateMethod(method, contributor);
-				}
+			if (logger.isTraceEnabled()) {
+				logger.trace("Skipping method [%s.%s] contribution, no MethodContributorFactory available"
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+			}
+			return;
+		}
+
+		MethodContributor<? extends QueryMethod> contributor = contributorFactory.create(method);
+
+		if (contributor == null) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Skipping method [%s.%s] contribution, no MethodContributor available"
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
 			}
 		}
-	}
 
-	public String packageName() {
-		return repositoryInformation.getRepositoryInterface().getPackageName();
-	}
-
-	public String typeName() {
-		return "%sImpl".formatted(repositoryInformation.getRepositoryInterface().getSimpleName());
-	}
-
-	public Map<String, ResolvableType> getAutowireFields() {
-
-		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(
-				generationMetadata.getConstructorArguments().size());
-		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
-			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
+		if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
+			generationMetadata.addRepositoryMethod(method, contributor);
+		} else {
+			generationMetadata.addDelegateMethod(method, contributor);
 		}
-		return autowireFields;
-	}
-
-	public RepositoryInformation getRepositoryInformation() {
-		return repositoryInformation;
-	}
-
-	public ProjectionFactory getProjectionFactory() {
-		return projectionFactory;
 	}
 
 	/**
@@ -336,23 +346,10 @@ class AotRepositoryCreator {
 
 	}
 
-	record AotBundle(Class<?> sourceRepository, Lazy<JavaFile> javaFile, Lazy<AotRepositoryMetadata> metadata) {
+	record AotBundle(Class<?> sourceRepository, Lazy<AotRepositoryMetadata> metadata) {
 
 		String repositoryJsonFileName() {
 			return sourceRepository.getName().replace('.', '/') + ".json";
-		}
-
-		TypeReference generatedRepositoryTypeName() {
-			JavaFile file = javaFile.get();
-			return GeneratedTypeReference.of(ClassName.get(file.packageName(), file.typeSpec().name()));
-		}
-
-		String generatedCode() {
-			return javaFile().get().toString();
-		}
-
-		String generatedMetadata() {
-			return metadata().get().toJson().toString(2);
 		}
 	}
 

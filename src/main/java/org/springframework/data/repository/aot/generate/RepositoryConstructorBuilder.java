@@ -45,38 +45,16 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 	}
 
 	/**
-	 * Add constructor parameter and create a field storing its value.
-	 *
-	 * @param parameterName name of the parameter.
-	 * @param type parameter type.
-	 */
-	@Override
-	public void addParameter(String parameterName, Class<?> type) {
-		addParameter(parameterName, ResolvableType.forClass(type));
-	}
-
-	/**
-	 * Add constructor parameter and create a field storing its value.
-	 *
-	 * @param parameterName name of the parameter.
-	 * @param type parameter type.
-	 */
-	@Override
-	public void addParameter(String parameterName, ResolvableType type) {
-		addParameter(parameterName, type, true);
-	}
-
-	/**
 	 * Add constructor parameter.
 	 *
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
-	 * @param createField whether to create a field for the parameter and assign its value to the field.
+	 * @param bindToField whether to create a field for the parameter and assign its value to the field.
 	 */
 	@Override
-	public void addParameter(String parameterName, ResolvableType type, boolean createField) {
+	public void addParameter(String parameterName, ResolvableType type, boolean bindToField) {
 		this.parametersAdded.add(parameterName);
-		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
+		this.metadata.addConstructorArgument(parameterName, type, bindToField ? parameterName : null);
 	}
 
 	/**

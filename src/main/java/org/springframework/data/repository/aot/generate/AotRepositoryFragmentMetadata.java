@@ -37,16 +37,12 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotRepositoryFragmentMetadata {
+class AotRepositoryFragmentMetadata {
 
 	private final Map<String, LocalField> fields = new HashMap<>(3);
 	private final Map<String, ConstructorArgument> constructorArguments = new LinkedHashMap<>(3);
 	private final Map<String, LocalMethod> methods = new LinkedHashMap<>();
 	private final Map<String, DelegateMethod> delegateMethods = new LinkedHashMap<>();
-
-	public AotRepositoryFragmentMetadata() {
-
-	}
 
 	/**
 	 * Lookup a field name by exact type. Returns the first field that matches the type or {@literal null} if no field
@@ -134,6 +130,19 @@ public class AotRepositoryFragmentMetadata {
 		return delegateMethods;
 	}
 
+	static TypeName typeNameOf(ResolvableType type) {
+
+		if (type.equals(ResolvableType.NONE)) {
+			return TypeName.get(Object.class);
+		}
+
+		if (!type.hasResolvableGenerics()) {
+			return TypeName.get(type.getType());
+		}
+
+		return ParameterizedTypeName.get(type.toClass(), type.resolveGenerics());
+	}
+
 	/**
 	 * Constructor argument metadata.
 	 *
@@ -142,11 +151,6 @@ public class AotRepositoryFragmentMetadata {
 	 * @param fieldName
 	 */
 	public record ConstructorArgument(String parameterName, ResolvableType parameterType, @Nullable String fieldName) {
-
-		@Deprecated(forRemoval = true)
-		boolean isForLocalField() {
-			return isBoundToField();
-		}
 
 		boolean isBoundToField() {
 			return fieldName != null;
@@ -172,19 +176,6 @@ public class AotRepositoryFragmentMetadata {
 	public record DelegateMethod(Method source, @Nullable RepositoryFragment<?> fragment,
 			@Nullable MethodContributor<? extends QueryMethod> methodContributor) {
 
-	}
-
-	static TypeName typeNameOf(ResolvableType type) {
-
-		if (type.equals(ResolvableType.NONE)) {
-			return TypeName.get(Object.class);
-		}
-
-		if (!type.hasResolvableGenerics()) {
-			return TypeName.get(type.getType());
-		}
-
-		return ParameterizedTypeName.get(type.toClass(), type.resolveGenerics());
 	}
 
 }

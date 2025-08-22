@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +46,7 @@ import org.springframework.data.aot.AotContext;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.aot.generate.AotRepositoryBeanDefinitionPropertiesDecorator;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -118,8 +120,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			return null;
 		}
 
-		AotRepositoryContext repositoryContext = buildAotRepositoryContext(processor.getEnvironment(), repositoryBean,
-				repositoryMetadata);
+		AotRepositoryContext repositoryContext = buildAotRepositoryContext(processor.getEnvironment(), repositoryBean);
 
 		if (repositoryContext == null) {
 			return null;
@@ -148,8 +149,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			return null;
 		}
 
-		AotRepositoryContext repositoryContext = buildAotRepositoryContext(aotProcessor.getEnvironment(), repositoryBean,
-				repositoryMetadata);
+		AotRepositoryContext repositoryContext = buildAotRepositoryContext(aotProcessor.getEnvironment(), repositoryBean);
 
 		if (repositoryContext == null) {
 			return null;
@@ -178,8 +178,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		getRepositoryRegistrationAotProcessor().logTrace(message, arguments);
 	}
 
-	private static @Nullable AotRepositoryContext buildAotRepositoryContext(Environment environment, RegisteredBean bean,
-			RepositoryConfiguration<?> repositoryConfiguration) {
+	private static @Nullable AotRepositoryContext buildAotRepositoryContext(Environment environment,
+			RegisteredBean bean) {
 
 		RepositoryBeanDefinitionReader reader = new RepositoryBeanDefinitionReader(bean);
 		RepositoryConfiguration<?> configuration = reader.getConfiguration();
@@ -240,16 +240,15 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 					BeanRegistrationCode beanRegistrationCode, RootBeanDefinition beanDefinition,
 					Predicate<String> attributeFilter) {
 
-				if (repositoryContributor == null) { // no aot implementation -> go on as
+				Supplier<CodeBlock> inheritedProperties = () -> super.generateSetBeanDefinitionPropertiesCode(generationContext,
+						beanRegistrationCode, beanDefinition, attributeFilter);
 
-					return super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode, beanDefinition,
-							attributeFilter);
+				if (repositoryContributor == null) { // no aot implementation -> go on as
+					return inheritedProperties.get();
 				}
 
 				AotRepositoryBeanDefinitionPropertiesDecorator decorator = new AotRepositoryBeanDefinitionPropertiesDecorator(
-						() -> super.generateSetBeanDefinitionPropertiesCode(generationContext, beanRegistrationCode, beanDefinition,
-								attributeFilter),
-						repositoryContributor);
+						inheritedProperties, repositoryContributor);
 
 				return decorator.decorate();
 			}

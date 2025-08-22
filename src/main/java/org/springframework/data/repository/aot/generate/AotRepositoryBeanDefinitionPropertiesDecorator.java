@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.repository.config;
+package org.springframework.data.repository.aot.generate;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 
+import javax.lang.model.element.Modifier;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.javapoet.CodeBlock;
+import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.TypeSpec;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -39,7 +42,7 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @since 4.0
  */
-class AotRepositoryBeanDefinitionPropertiesDecorator {
+public class AotRepositoryBeanDefinitionPropertiesDecorator {
 
 	private static final Map<ResolvableType, String> RESERVED_TYPES;
 
@@ -57,9 +60,12 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 	 * @param inheritedProperties bean definition code (containing properties and such) already added via another
 	 *          component.
 	 * @param repositoryContributor the contributor providing the actual AOT repository implementation.
+	 * @throws IllegalArgumentException if {@link RepositoryContributor#getContributedTypeName()} is not set.
 	 */
 	public AotRepositoryBeanDefinitionPropertiesDecorator(Supplier<CodeBlock> inheritedProperties,
 			RepositoryContributor repositoryContributor) {
+
+		Assert.notNull(repositoryContributor.getContributedTypeName(), "Contributed type name must not be null");
 
 		this.inheritedProperties = inheritedProperties;
 		this.repositoryContributor = repositoryContributor;
@@ -73,54 +79,58 @@ class AotRepositoryBeanDefinitionPropertiesDecorator {
 	 * needs to have potential constructor arguments resolved.
 	 *
 	 * @return the decorated code block.
-	 * @throws IllegalArgumentException if {@link RepositoryContributor#getContributedTypeName()} is not set.
 	 */
 	public CodeBlock decorate() {
 
-		Assert.notNull(repositoryContributor.getContributedTypeName(), "Contributed type name must not be null");
-
 		CodeBlock.Builder builder = CodeBlock.builder();
+
 		// bring in properties as usual
 		builder.add(inheritedProperties.get());
 
-		builder.add("beanDefinition.getPropertyValues().addPropertyValue(\"repositoryFragmentsFunction\", new $T() {\n",
-				RepositoryFactoryBeanSupport.RepositoryFragmentsFunction.class);
-		builder.indent();
+		MethodSpec.Builder callbackMethod = MethodSpec.methodBuilder("getRepositoryFragments").addModifiers(Modifier.PUBLIC)
+				.returns(RepositoryComposition.RepositoryFragments.class);
 
-		builder.add("public $T getRepositoryFragments(", RepositoryComposition.RepositoryFragments.class);
-		int counter = 0;
 		for (Entry<ResolvableType, String> entry : RESERVED_TYPES.entrySet()) {
-			builder.add("$T $L", entry.getKey().toClass(), entry.getValue());
-			if (++counter < RESERVED_TYPES.size()) {
-				builder.add(", ");
-			}
+			callbackMethod.addParameter(entry.getKey().toClass(), entry.getValue());
 		}
-		builder.add(") {\n");
 
-		builder.indent();
+		callbackMethod.addCode(buildCallbackBody());
 
-		for (Map.Entry<String, ResolvableType> entry : repositoryContributor.requiredArgs().entrySet()) {
+		TypeSpec repositoryFragmentsFunction = TypeSpec.anonymousClassBuilder("")
+				.superclass(RepositoryFactoryBeanSupport.RepositoryFragmentsFunction.class).addMethod(callbackMethod.build())
+				.build();
+
+		builder.addStatement("beanDefinition.getPropertyValues().addPropertyValue($S, $L)", "repositoryFragmentsFunction",
+				repositoryFragmentsFunction);
+
+		return builder.build();
+	}
+
+	private CodeBlock buildCallbackBody() {
+
+		CodeBlock.Builder callback = CodeBlock.builder();
+
+		for (Entry<String, ResolvableType> entry : repositoryContributor.requiredArgs().entrySet()) {
 
 			TypeName argumentType = TypeName.get(entry.getValue().getType());
 			String reservedArgumentName = RESERVED_TYPES.get(entry.getValue());
 			if (reservedArgumentName == null) {
-				builder.addStatement("$1T $2L = beanFactory.getBean($1T.class)", argumentType, entry.getKey());
+				callback.addStatement("$1T $2L = beanFactory.getBean($1T.class)", argumentType, entry.getKey());
 			} else {
-				if (!reservedArgumentName.equals(entry.getKey())) {
-					builder.addStatement("$T $L = $L", argumentType, entry.getKey(), reservedArgumentName);
+
+				if (reservedArgumentName.equals(entry.getKey())) {
+					continue;
 				}
+
+				callback.addStatement("$T $L = $L", argumentType, entry.getKey(), reservedArgumentName);
 			}
 		}
 
-		builder.addStatement("return RepositoryComposition.RepositoryFragments.just(new $L($L))",
+		callback.addStatement("return $T.just(new $L($L))", RepositoryComposition.RepositoryFragments.class,
 				repositoryContributor.getContributedTypeName().getCanonicalName(),
 				StringUtils.collectionToDelimitedString(repositoryContributor.requiredArgs().keySet(), ", "));
-		builder.unindent();
-		builder.add("}\n");
-		builder.unindent();
-		builder.add("});\n");
 
-		return builder.build();
+		return callback.build();
 	}
 
 }

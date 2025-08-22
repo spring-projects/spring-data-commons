@@ -17,7 +17,6 @@ package org.springframework.data.repository.aot.generate;
 
 import java.util.function.Consumer;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.repository.query.QueryMethod;
@@ -65,6 +64,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 					b.contribute(contribution::contribute);
 				});
 			}
+
 		};
 	}
 
@@ -140,6 +140,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	public interface RepositoryMethodContribution {
 
 		CodeBlock contribute(AotQueryMethodGenerationContext context);
+
 	}
 
 	/**
@@ -180,7 +181,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 		}
 
 		@Override
-		public @NonNull MethodSpec contribute(AotQueryMethodGenerationContext context) {
+		public MethodSpec contribute(AotQueryMethodGenerationContext context) {
 
 			AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(context);
 			builderConsumer.accept(builder);

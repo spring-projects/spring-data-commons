@@ -17,7 +17,6 @@ package org.springframework.data.repository.aot.generate;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.javapoet.CodeBlock;
-import org.springframework.javapoet.MethodSpec;
 
 /**
  * Builder for AOT Repository Constructors.
@@ -34,7 +33,9 @@ public interface AotRepositoryConstructorBuilder {
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
 	 */
-	void addParameter(String parameterName, Class<?> type);
+	default void addParameter(String parameterName, Class<?> type) {
+		addParameter(parameterName, ResolvableType.forClass(type));
+	}
 
 	/**
 	 * Add constructor parameter and create a field storing its value.
@@ -51,10 +52,10 @@ public interface AotRepositoryConstructorBuilder {
 	 *
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
-	 * @param createField whether to create a field for the parameter and assign its value to the field.
+	 * @param bindToField whether to create a field for the parameter and assign its value to the field.
 	 */
-	default void addParameter(String parameterName, Class<?> type, boolean createField) {
-		addParameter(parameterName, ResolvableType.forClass(type), createField);
+	default void addParameter(String parameterName, Class<?> type, boolean bindToField) {
+		addParameter(parameterName, ResolvableType.forClass(type), bindToField);
 	}
 
 	/**
@@ -62,15 +63,15 @@ public interface AotRepositoryConstructorBuilder {
 	 *
 	 * @param parameterName name of the parameter.
 	 * @param type parameter type.
-	 * @param createField whether to create a field for the parameter and assign its value to the field.
+	 * @param bindToField whether to create a field for the parameter and assign its value to the field.
 	 */
-	void addParameter(String parameterName, ResolvableType type, boolean createField);
+	void addParameter(String parameterName, ResolvableType type, boolean bindToField);
 
 	/**
-	 * Add constructor customizer. Customizer is invoked after adding constructor arguments and before assigning
+	 * Add constructor body customizer. The customizer is invoked after adding constructor arguments and before assigning
 	 * constructor arguments to fields.
 	 *
-	 * @param customizer the customizer with direct access to the {@link MethodSpec.Builder constructor builder}.
+	 * @param customizer the customizer with direct access to the {@link CodeBlock.Builder constructor builder}.
 	 */
 	void customize(ConstructorCustomizer customizer);
 

@@ -15,9 +15,8 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import example.UserRepository.User;
 
@@ -28,6 +27,8 @@ import javax.lang.model.element.Modifier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.aot.generate.Generated;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.geo.Metric;
@@ -40,6 +41,7 @@ import org.springframework.data.repository.core.support.AnnotationRepositoryMeta
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
+import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.stereotype.Repository;
@@ -66,9 +68,9 @@ class AotRepositoryCreatorUnitTests {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
-		assertThat(repositoryCreator.create("%s.%s".formatted(UserRepository.class.getPackageName(), "UserRepositoryImpl"))
-				.generatedCode()).contains("package %s;".formatted(UserRepository.class.getPackageName())) // same package as
-																																																		// source repo
+
+		// same package as source repo
+		assertThat(generate(repositoryCreator)).contains("package %s;".formatted(UserRepository.class.getPackageName()))
 				.contains("@Generated") // marked as generated source
 				.contains("public class %sImpl".formatted(UserRepository.class.getSimpleName())) // target name
 				.contains("public UserRepositoryImpl"); // default constructor if not arguments to wire
@@ -84,9 +86,11 @@ class AotRepositoryCreatorUnitTests {
 			ctor.addParameter("param2", String.class);
 			ctor.addParameter("ctorScoped", ResolvableType.forType(Object.class), false);
 		});
-		assertThat(repositoryCreator
-				.create(TypeSpec.classBuilder(ClassName.get(UserRepository.class.getPackageName(), "UserRepositoryImpl")))
-				.generatedCode()) //
+
+		TypeSpec.Builder builder = TypeSpec
+				.classBuilder(ClassName.get(UserRepository.class.getPackageName(), "UserRepositoryImpl"));
+
+		assertThat(generate(builder, repositoryCreator)) //
 				.contains("private final Metric param1;") //
 				.contains("private final String param2;") //
 				.doesNotContain("private final Object ctorScoped;") //
@@ -106,7 +110,7 @@ class AotRepositoryCreatorUnitTests {
 				code.addStatement("throw new $T($S)", IllegalStateException.class, "initialization error");
 			});
 		});
-		assertThat(repositoryCreator.create().generatedCode()).containsIgnoringWhitespaces(
+		assertThat(generate(repositoryCreator)).containsIgnoringWhitespaces(
 				"UserRepositoryImpl() { throw new IllegalStateException(\"initialization error\"); }");
 	}
 
@@ -130,7 +134,7 @@ class AotRepositoryCreatorUnitTests {
 			});
 		});
 
-		assertThat(repositoryCreator.create().generatedCode()) //
+		assertThat(generate(repositoryCreator)) //
 				.contains("@Repository") //
 				.contains("private static Float f;") //
 				.contains("public Double d;") //
@@ -147,7 +151,7 @@ class AotRepositoryCreatorUnitTests {
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
 				new SpelAwareProxyProjectionFactory());
 
-		repositoryCreator.resolveQueryMethods((method) -> {
+		repositoryCreator.contributeMethods((method) -> {
 
 			return new MethodContributor<>(mock(QueryMethod.class), null) {
 
@@ -163,7 +167,7 @@ class AotRepositoryCreatorUnitTests {
 			};
 		});
 
-		assertThat(repositoryCreator.create().generatedCode()) //
+		assertThat(generate(repositoryCreator)) //
 				.containsIgnoringWhitespaces("void oops() { }");
 	}
 
@@ -174,9 +178,10 @@ class AotRepositoryCreatorUnitTests {
 				AnnotationRepositoryMetadata.getMetadata(QuerydslUserRepository.class), CrudRepository.class,
 				List.of(RepositoryFragment.structural(QuerydslPredicateExecutor.class, DummyQuerydslPredicateExecutor.class)));
 
-		AotRepositoryCreator builder = AotRepositoryCreator
-				.forRepository(repositoryInformation, "Commons", new SpelAwareProxyProjectionFactory()).resolveQueryMethods();
-		AotRepositoryCreator.AotBundle bundle = builder.create();
+		AotRepositoryCreator creator = AotRepositoryCreator
+				.forRepository(repositoryInformation, "Commons", new SpelAwareProxyProjectionFactory());
+		creator.contributeMethods(method -> null);
+		AotRepositoryCreator.AotBundle bundle = doCreate(creator);
 
 		AotRepositoryMethod method = bundle.metadata().get().methods().stream().filter(it -> it.name().equals("findBy"))
 				.findFirst().get();
@@ -199,7 +204,7 @@ class AotRepositoryCreatorUnitTests {
 
 		TypeReference targetType = TypeReference.of("%s__AotPostfix".formatted(UserRepository.class.getCanonicalName()));
 
-		assertThat(repositoryCreator.create(targetType.getSimpleName()).generatedCode()) //
+		assertThat(generate(ClassName.get(repositoryCreator.packageName(), targetType.getSimpleName()), repositoryCreator)) //
 				.contains("class %s".formatted(targetType.getSimpleName())) //
 				.contains("public %s(Metric param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
@@ -217,10 +222,41 @@ class AotRepositoryCreatorUnitTests {
 
 		TypeReference targetType = TypeReference.of("%s__AotPostfix".formatted(UserRepository.class.getCanonicalName()));
 
-		assertThat(repositoryCreator.create(targetType.getSimpleName()).generatedCode()) //
+		assertThat(generate(ClassName.get(repositoryCreator.packageName(), targetType.getSimpleName()), repositoryCreator)) //
 				.contains("class %s".formatted(targetType.getSimpleName())) //
 				.contains(
 						"public %s(List<Metric> param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
+	}
+
+	private AotRepositoryCreator.AotBundle doCreate(AotRepositoryCreator creator) {
+		return creator.create(getTypeSpecBuilder(creator));
+	}
+
+	private String generate(AotRepositoryCreator creator) {
+
+		TypeSpec.Builder builder = getTypeSpecBuilder(creator);
+		return generate(builder, creator);
+	}
+
+	private String generate(ClassName className, AotRepositoryCreator creator) {
+
+		TypeSpec.Builder builder = getTypeSpecBuilder(className);
+		return generate(builder, creator);
+	}
+
+	private String generate(TypeSpec.Builder builder, AotRepositoryCreator creator) {
+
+		creator.create(builder);
+
+		return JavaFile.builder(creator.packageName(), builder.build()).build().toString();
+	}
+
+	private static TypeSpec.Builder getTypeSpecBuilder(AotRepositoryCreator creator) {
+		return getTypeSpecBuilder(creator.getClassName());
+	}
+
+	private static TypeSpec.Builder getTypeSpecBuilder(ClassName className) {
+		return TypeSpec.classBuilder(className).addAnnotation(Generated.class);
 	}
 
 	interface UserRepository extends org.springframework.data.repository.Repository<User, String> {

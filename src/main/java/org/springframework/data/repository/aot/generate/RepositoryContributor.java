@@ -21,6 +21,7 @@ import java.util.Collections;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GeneratedClass;
 import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
@@ -33,7 +34,7 @@ import org.springframework.data.repository.aot.generate.AotRepositoryCreator.Aot
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.javapoet.ClassName;
+import org.springframework.javapoet.JavaFile;
 
 /**
  * Contributor for AOT repository fragments.
@@ -87,7 +88,8 @@ public class RepositoryContributor {
 	 * @return the {@link TypeReference} of the contributed type. Can be {@literal null} until
 	 *         {@link #contribute(GenerationContext)} is called to obtain the actual {@link GeneratedClass} instance.
 	 */
-	public @Nullable TypeReference getContributedTypeName() {
+	@Nullable
+	TypeReference getContributedTypeName() {
 		return this.contributedTypeName;
 	}
 
@@ -97,25 +99,31 @@ public class RepositoryContributor {
 	 * during application startup.
 	 * <p>
 	 * Can be overridden if required. Needs to match arguments of generated repository implementation.
-	 * 
+	 *
 	 * @return key/value pairs of required argument required to instantiate the generated fragment.
 	 */
 	// TODO: should we switch from ResolvableType to some custom value object to cover qualifiers?
-	public java.util.Map<String, ResolvableType> requiredArgs() {
+	java.util.Map<String, ResolvableType> requiredArgs() {
 		return Collections.unmodifiableMap(creator.getAutowireFields());
 	}
 
+	/**
+	 * Contribute the AOT repository fragment to the given {@link GenerationContext}. This method will prepare the
+	 * metadata, generate the source code and write it to the {@link GenerationContext}.
+	 *
+	 * @param generationContext must not be {@literal null}.
+	 */
 	public final void contribute(GenerationContext generationContext) {
 
 		// prepare and collect metadata
 		creator.customizeClass(this::customizeClass) //
 				.customizeConstructor(this::customizeConstructor) //
-				.resolveQueryMethods(this::contributeQueryMethod); //
+				.contributeMethods(this::contributeQueryMethod); //
 
 		// obtain the generated type and its target name.
 		// Writing the source is triggered by DefaultGenerationContext#writeGeneratedContent() at a later stage
 		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
-				ClassName.bestGuess(creator.repositoryImplementationTypeName()), targetTypeSpec -> {
+				creator.getClassName(), targetTypeSpec -> {
 
 					// write out the content
 					AotBundle aotBundle = creator.create(targetTypeSpec);
@@ -134,22 +142,25 @@ public class RepositoryContributor {
 								-------------------
 								""".formatted(aotBundle.repositoryJsonFileName(), repositoryJson));
 
+						JavaFile javaFile = JavaFile.builder(creator.packageName(), targetTypeSpec.build()).build();
+
 						logger.trace("""
 								------ AOT Generated Repository: %s ------
 								%s
 								-------------------
-								""".formatted(null, aotBundle.javaFile()));
+								""".formatted(null, javaFile));
 					}
 
 					generationContext.getGeneratedFiles().addResourceFile(aotBundle.repositoryJsonFileName(), repositoryJson);
-
-					// generate native runtime hints - needed cause we're using the repository proxy
-					generationContext.getRuntimeHints().reflection().registerType(aotBundle.generatedRepositoryTypeName(),
-							MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 				});
+
+		// generate native runtime hints
 
 		// make sure to capture the target file name
 		this.contributedTypeName = GeneratedTypeReference.of(generatedClass.getName());
+
+		generationContext.getRuntimeHints().reflection().registerType(this.contributedTypeName,
+				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 	}
 
 	/**
