@@ -28,13 +28,13 @@ import org.jspecify.annotations.NullUnmarked;
 
 /**
  * A dense indexed sequence of values. Values may be any mix of {@link JSONObject JSONObjects}, other {@link JSONArray
- * JSONArrays}, Strings, Booleans, Integers, Longs, Doubles, {@code null} or {@link JSONObject#NULL}. Values may not be
- * {@link Double#isNaN() NaNs}, {@link Double#isInfinite() infinities}, or of any type not listed here.
+ * JSONArrays}, Strings, Booleans, Integers, Longs, Doubles, {@literal null} or {@link JSONObject#NULL}. Values may not
+ * be {@link Double#isNaN() NaNs}, {@link Double#isInfinite() infinities}, or of any type not listed here.
  * <p>
  * {@code JSONArray} has the same type coercion behavior and optional/mandatory accessors as {@link JSONObject}. See
  * that class' documentation for details.
  * <p>
- * <strong>Warning:</strong> this class represents null in two incompatible ways: the standard Java {@code null}
+ * <strong>Warning:</strong> this class represents null in two incompatible ways: the standard Java {@literal null}
  * reference, and the sentinel value {@link JSONObject#NULL}. In particular, {@code get} fails if the requested index
  * holds the null reference, but succeeds if it holds {@code JSONObject.NULL}.
  * <p>
@@ -177,7 +177,7 @@ class JSONArray {
 	 * Appends {@code value} to the end of this array.
 	 *
 	 * @param value a {@link JSONObject}, {@link JSONArray}, String, Boolean, Integer, Long, Double,
-	 *          {@link JSONObject#NULL}, or {@code null}. May not be {@link Double#isNaN() NaNs} or
+	 *          {@link JSONObject#NULL}, or {@literal null}. May not be {@link Double#isNaN() NaNs} or
 	 *          {@link Double#isInfinite() infinities}. Unsupported values are not permitted and will cause the array to
 	 *          be in an inconsistent state.
 	 * @return this array.
@@ -250,7 +250,7 @@ class JSONArray {
 	 *
 	 * @param index the index to set the value to
 	 * @param value a {@link JSONObject}, {@link JSONArray}, String, Boolean, Integer, Long, Double,
-	 *          {@link JSONObject#NULL}, or {@code null}. May not be {@link Double#isNaN() NaNs} or
+	 *          {@link JSONObject#NULL}, or {@literal null}. May not be {@link Double#isNaN() NaNs} or
 	 *          {@link Double#isInfinite() infinities}.
 	 * @return this array.
 	 * @throws JSONException if processing of json failed
@@ -269,7 +269,7 @@ class JSONArray {
 	}
 
 	/**
-	 * Returns true if this array has no value at {@code index}, or if its value is the {@code null} reference or
+	 * Returns true if this array has no value at {@code index}, or if its value is the {@literal null} reference or
 	 * {@link JSONObject#NULL}.
 	 *
 	 * @param index the index to set the value to
@@ -285,8 +285,8 @@ class JSONArray {
 	 *
 	 * @param index the index to get the value from
 	 * @return the value at {@code index}.
-	 * @throws JSONException if this array has no value at {@code index}, or if that value is the {@code null} reference.
-	 *           This method returns normally if the value is {@code JSONObject#NULL}.
+	 * @throws JSONException if this array has no value at {@code index}, or if that value is the {@literal null}
+	 *           reference. This method returns normally if the value is {@code JSONObject#NULL}.
 	 */
 	public Object get(int index) throws JSONException {
 		try {
@@ -304,7 +304,7 @@ class JSONArray {
 	 * Returns the value at {@code index}, or null if the array has no value at {@code index}.
 	 *
 	 * @param index the index to get the value from
-	 * @return the value at {@code index} or {@code null}
+	 * @return the value at {@code index} or {@literal null}
 	 */
 	public Object opt(int index) {
 		if (index < 0 || index >= this.values.size()) {
@@ -552,7 +552,7 @@ class JSONArray {
 	 * JSONArray}. Returns null otherwise.
 	 *
 	 * @param index the index to get the value from
-	 * @return the array at {@code index} or {@code null}
+	 * @return the array at {@code index} or {@literal null}
 	 */
 	public JSONArray optJSONArray(int index) {
 		Object object = opt(index);
@@ -582,7 +582,7 @@ class JSONArray {
 	 * JSONObject}. Returns null otherwise.
 	 *
 	 * @param index the index to get the value from
-	 * @return the object at {@code index} or {@code null}
+	 * @return the object at {@code index} or {@literal null}
 	 */
 	public JSONObject optJSONObject(int index) {
 		Object object = opt(index);

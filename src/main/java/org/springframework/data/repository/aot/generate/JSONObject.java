@@ -29,8 +29,8 @@ import org.jspecify.annotations.NullUnmarked;
 /**
  * A modifiable set of name/value mappings. Names are unique, non-null strings. Values may be any mix of
  * {@link JSONObject JSONObjects}, {@link JSONArray JSONArrays}, Strings, Booleans, Integers, Longs, Doubles or
- * {@link #NULL}. Values may not be {@code null}, {@link Double#isNaN() NaNs}, {@link Double#isInfinite() infinities},
- * or of any type not listed here.
+ * {@link #NULL}. Values may not be {@literal null}, {@link Double#isNaN() NaNs}, {@link Double#isInfinite()
+ * infinities}, or of any type not listed here.
  * <p>
  * This class can coerce values to another type when requested.
  * <ul>
@@ -56,7 +56,7 @@ import org.jspecify.annotations.NullUnmarked;
  * if the requested name has no value or if the value cannot be coerced to the requested type.
  * </ul>
  * <p>
- * <strong>Warning:</strong> this class represents null in two incompatible ways: the standard Java {@code null}
+ * <strong>Warning:</strong> this class represents null in two incompatible ways: the standard Java {@literal null}
  * reference, and the sentinel value {@link JSONObject#NULL}. In particular, calling {@code put(name, null)} removes the
  * named entry from the object but {@code put(name, JSONObject.NULL)} stores an entry whose value is
  * {@code JSONObject.NULL}.
@@ -71,7 +71,7 @@ class JSONObject {
 	private static final Double NEGATIVE_ZERO = -0d;
 
 	/**
-	 * A sentinel value used to explicitly define a name with no value. Unlike {@code null}, names with this value:
+	 * A sentinel value used to explicitly define a name with no value. Unlike {@literal null}, names with this value:
 	 * <ul>
 	 * <li>show up in the {@link #names} array
 	 * <li>show up in the {@link #keys} iterator
@@ -80,8 +80,8 @@ class JSONObject {
 	 * <li>are included in the encoded JSON string.
 	 * </ul>
 	 * <p>
-	 * This value violates the general contract of {@link Object#equals} by returning true when compared to {@code null}.
-	 * Its {@link #toString} method returns "null".
+	 * This value violates the general contract of {@link Object#equals} by returning true when compared to
+	 * {@literal null}. Its {@link #toString} method returns "null".
 	 */
 	public static final Object NULL = new Object() {
 
@@ -242,11 +242,11 @@ class JSONObject {
 
 	/**
 	 * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same name. If the value is
-	 * {@code null}, any existing mapping for {@code name} is removed.
+	 * {@literal null}, any existing mapping for {@code name} is removed.
 	 *
 	 * @param name the name of the property
 	 * @param value a {@link JSONObject}, {@link JSONArray}, String, Boolean, Integer, Long, Double, {@link #NULL}, or
-	 *          {@code null}. May not be {@link Double#isNaN() NaNs} or {@link Double#isInfinite() infinities}.
+	 *          {@literal null}. May not be {@link Double#isNaN() NaNs} or {@link Double#isInfinite() infinities}.
 	 * @return this object.
 	 * @throws JSONException if an error occurs
 	 */
@@ -370,7 +370,7 @@ class JSONObject {
 	 * Returns the value mapped by {@code name}, or null if no such mapping exists.
 	 *
 	 * @param name the name of the property
-	 * @return the value or {@code null}
+	 * @return the value or {@literal null}
 	 */
 	public Object opt(String name) {
 		return this.nameValuePairs.get(name);
@@ -397,7 +397,7 @@ class JSONObject {
 	 * false otherwise.
 	 *
 	 * @param name the name of the property
-	 * @return the value or {@code null}
+	 * @return the value or {@literal null}
 	 */
 	public boolean optBoolean(String name) {
 		return optBoolean(name, false);
@@ -607,7 +607,7 @@ class JSONObject {
 	 * JSONArray}. Returns null otherwise.
 	 *
 	 * @param name the name of the property
-	 * @return the value or {@code null}
+	 * @return the value or {@literal null}
 	 */
 	public JSONArray optJSONArray(String name) {
 		Object object = opt(name);
@@ -637,7 +637,7 @@ class JSONObject {
 	 * JSONObject}. Returns null otherwise.
 	 *
 	 * @param name the name of the property
-	 * @return the value or {@code null}
+	 * @return the value or {@literal null}
 	 */
 	public JSONObject optJSONObject(String name) {
 		Object object = opt(name);
@@ -794,7 +794,7 @@ class JSONObject {
 	 * Wraps the given object if necessary.
 	 * <p>
 	 * If the object is null or, returns {@link #NULL}. If the object is a {@code JSONArray} or {@code JSONObject}, no
-	 * wrapping is necessary. If the object is {@code NULL}, no wrapping is necessary. If the object is an array or
+	 * wrapping is necessary. If the object is {@literal null}, no wrapping is necessary. If the object is an array or
 	 * {@code Collection}, returns an equivalent {@code JSONArray}. If the object is a {@code Map}, returns an equivalent
 	 * {@code JSONObject}. If the object is a primitive wrapper type or {@code String}, returns the object. Otherwise if
 	 * the object is from a {@code java} package, returns the result of {@code toString}. If wrapping fails, returns null.

@@ -249,7 +249,7 @@ public interface AotRepositoryConstructorBuilder {
 		}
 
 		/**
-		 * Obtain the reference name to obtain the parameter value from. Can be {@code null} if the parameter value is
+		 * Obtain the reference name to obtain the parameter value from. Can be {@literal null} if the parameter value is
 		 * solely obtained from the {@link #getCodeBlock() code block}.
 		 *
 		 * @return name of the reference or {@literal null} if absent.

@@ -179,7 +179,7 @@ public class AotQueryMethodGenerationContext {
 
 	/**
 	 * Returns the parameter name for the {@link Parameter#isBindable() bindable parameter} at the given
-	 * {@code parameterIndex} or {@code null} if the parameter cannot be determined by its index.
+	 * {@code parameterIndex} or {@literal null} if the parameter cannot be determined by its index.
 	 *
 	 * @param parameterIndex the zero-based parameter index as used in the query to reference bindable parameters.
 	 * @return the method parameter name.
@@ -225,7 +225,7 @@ public class AotQueryMethodGenerationContext {
 
 	/**
 	 * Returns the required parameter name for the {@link Parameter#isBindable() bindable parameter} at the given logical
-	 * {@code parameterName} or {@code null} if the parameter cannot be determined by its name.
+	 * {@code parameterName} or {@literal null} if the parameter cannot be determined by its name.
 	 *
 	 * @param parameterName the parameter name as used in the query to reference bindable parameters.
 	 * @return the method parameter name.
@@ -293,8 +293,8 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * @return the parameter name for the {@link org.springframework.data.domain.Sort sort parameter} or {@code null} if
-	 *         the method does not declare a sort parameter.
+	 * @return the parameter name for the {@link org.springframework.data.domain.Sort sort parameter} or {@literal null}
+	 *         if the method does not declare a sort parameter.
 	 */
 	public @Nullable String getSortParameterName() {
 		return getParameterName(queryMethod.getParameters().getSortIndex());
@@ -302,15 +302,15 @@ public class AotQueryMethodGenerationContext {
 
 	/**
 	 * @return the parameter name for the {@link org.springframework.data.domain.Pageable pageable parameter} or
-	 *         {@code null} if the method does not declare a pageable parameter.
+	 *         {@literal null} if the method does not declare a pageable parameter.
 	 */
 	public @Nullable String getPageableParameterName() {
 		return getParameterName(queryMethod.getParameters().getPageableIndex());
 	}
 
 	/**
-	 * @return the parameter name for the {@link org.springframework.data.domain.Limit limit parameter} or {@code null} if
-	 *         the method does not declare a limit parameter.
+	 * @return the parameter name for the {@link org.springframework.data.domain.Limit limit parameter} or {@literal null}
+	 *         if the method does not declare a limit parameter.
 	 */
 	public @Nullable String getLimitParameterName() {
 		return getParameterName(queryMethod.getParameters().getLimitIndex());
@@ -318,14 +318,14 @@ public class AotQueryMethodGenerationContext {
 
 	/**
 	 * @return the parameter name for the {@link org.springframework.data.domain.ScrollPosition scroll position parameter}
-	 *         or {@code null} if the method does not declare a scroll position parameter.
+	 *         or {@literal null} if the method does not declare a scroll position parameter.
 	 */
 	public @Nullable String getScrollPositionParameterName() {
 		return getParameterName(queryMethod.getParameters().getScrollPositionIndex());
 	}
 
 	/**
-	 * @return the parameter name for the {@link Class dynamic projection parameter} or {@code null} if the method does
+	 * @return the parameter name for the {@link Class dynamic projection parameter} or {@literal null} if the method does
 	 *         not declare a dynamic projection parameter.
 	 */
 	public @Nullable String getDynamicProjectionParameterName() {
@@ -333,16 +333,16 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
-	 * @return the parameter name for the {@link org.springframework.data.domain.Vector vector parameter} or {@code null}
-	 *         if the method does not declare a vector type parameter.
+	 * @return the parameter name for the {@link org.springframework.data.domain.Vector vector parameter} or
+	 *         {@literal null} if the method does not declare a vector type parameter.
 	 */
 	public @Nullable String getVectorParameterName() {
 		return getParameterName(queryMethod.getParameters().getVectorIndex());
 	}
 
 	/**
-	 * @return the parameter name for the {@link org.springframework.data.domain.Score score parameter} or {@code null} if
-	 *         the method does not declare a score type parameter.
+	 * @return the parameter name for the {@link org.springframework.data.domain.Score score parameter} or {@literal null}
+	 *         if the method does not declare a score type parameter.
 	 */
 	public @Nullable String getScoreParameterName() {
 		return getParameterName(queryMethod.getParameters().getScoreIndex());
@@ -350,7 +350,7 @@ public class AotQueryMethodGenerationContext {
 
 	/**
 	 * @return the parameter name for the {@link org.springframework.data.domain.Range score range parameter} or
-	 *         {@code null} if the method does not declare a score range type parameter.
+	 *         {@literal null} if the method does not declare a score range type parameter.
 	 */
 	public @Nullable String getScoreRangeParameterName() {
 		return getParameterName(queryMethod.getParameters().getScoreRangeIndex());
