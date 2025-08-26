@@ -110,6 +110,10 @@ class AotRepositoryCreator {
 		return autowireFields;
 	}
 
+	Map<String, ConstructorArgument> getConstructorArguments() {
+		return generationMetadata.getConstructorArguments();
+	}
+
 	RepositoryInformation getRepositoryInformation() {
 		return repositoryInformation;
 	}
@@ -304,6 +308,8 @@ class AotRepositoryCreator {
 				logger.trace("Skipping method [%s.%s] contribution, no MethodContributor available"
 						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
 			}
+
+			return;
 		}
 
 		if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
@@ -311,21 +317,6 @@ class AotRepositoryCreator {
 		} else {
 			generationMetadata.addDelegateMethod(method, contributor);
 		}
-	}
-
-	/**
-	 * Customizer interface to customize the AOT repository fragment constructor through
-	 * {@link AotRepositoryConstructorBuilder}.
-	 */
-	public interface ConstructorCustomizer {
-
-		/**
-		 * Apply customization ot the AOT repository fragment constructor.
-		 *
-		 * @param constructorBuilder the builder to be customized.
-		 */
-		void customize(AotRepositoryConstructorBuilder constructorBuilder);
-
 	}
 
 	/**

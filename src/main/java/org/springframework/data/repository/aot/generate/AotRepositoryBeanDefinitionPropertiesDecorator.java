@@ -15,7 +15,9 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
@@ -23,14 +25,18 @@ import java.util.function.Supplier;
 import javax.lang.model.element.Modifier;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -44,14 +50,15 @@ import org.springframework.util.StringUtils;
  */
 public class AotRepositoryBeanDefinitionPropertiesDecorator {
 
-	private static final Map<ResolvableType, String> RESERVED_TYPES;
+	static final Map<ResolvableType, String> RESERVED_TYPES;
 
 	private final Supplier<CodeBlock> inheritedProperties;
 	private final RepositoryContributor repositoryContributor;
 
 	static {
 
-		RESERVED_TYPES = new LinkedHashMap<>(2);
+		RESERVED_TYPES = new LinkedHashMap<>(3);
+		RESERVED_TYPES.put(ResolvableType.forClass(BeanDefinition.class), "beanDefinition");
 		RESERVED_TYPES.put(ResolvableType.forClass(BeanFactory.class), "beanFactory");
 		RESERVED_TYPES.put(ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class), "context");
 	}
@@ -90,9 +97,17 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 		MethodSpec.Builder callbackMethod = MethodSpec.methodBuilder("getRepositoryFragments").addModifiers(Modifier.PUBLIC)
 				.returns(RepositoryComposition.RepositoryFragments.class);
 
-		for (Entry<ResolvableType, String> entry : RESERVED_TYPES.entrySet()) {
-			callbackMethod.addParameter(entry.getKey().toClass(), entry.getValue());
-		}
+		ReflectionUtils.doWithMethods(RepositoryFactoryBeanSupport.RepositoryFragmentsFunction.class, it -> {
+
+			for (int i = 0; i < it.getParameterCount(); i++) {
+
+				MethodParameter parameter = new MethodParameter(it, i);
+				parameter.initParameterNameDiscovery(new DefaultParameterNameDiscoverer());
+
+				callbackMethod.addParameter(parameter.getParameterType(), parameter.getParameterName());
+			}
+
+		}, method -> method.getName().equals("getRepositoryFragments"));
 
 		callbackMethod.addCode(buildCallbackBody());
 
@@ -109,26 +124,33 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 	private CodeBlock buildCallbackBody() {
 
 		CodeBlock.Builder callback = CodeBlock.builder();
+		List<Object> arguments = new ArrayList<>();
 
-		for (Entry<String, ResolvableType> entry : repositoryContributor.requiredArgs().entrySet()) {
+		for (Entry<String, ConstructorArgument> entry : repositoryContributor.getConstructorArguments().entrySet()) {
 
-			TypeName argumentType = TypeName.get(entry.getValue().getType());
-			String reservedArgumentName = RESERVED_TYPES.get(entry.getValue());
-			if (reservedArgumentName == null) {
-				callback.addStatement("$1T $2L = beanFactory.getBean($1T.class)", argumentType, entry.getKey());
-			} else {
+			ConstructorArgument argument = entry.getValue();
+			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin = argument.parameterOrigin();
 
-				if (reservedArgumentName.equals(entry.getKey())) {
-					continue;
+			String ref = parameterOrigin.getReference();
+			CodeBlock codeBlock = parameterOrigin.getCodeBlock();
+
+			if (StringUtils.hasText(ref)) {
+				arguments.add(ref);
+				if (!codeBlock.isEmpty()) {
+					callback.add(codeBlock);
 				}
-
-				callback.addStatement("$T $L = $L", argumentType, entry.getKey(), reservedArgumentName);
+			} else {
+				arguments.add(codeBlock);
 			}
 		}
 
-		callback.addStatement("return $T.just(new $L($L))", RepositoryComposition.RepositoryFragments.class,
-				repositoryContributor.getContributedTypeName().getCanonicalName(),
-				StringUtils.collectionToDelimitedString(repositoryContributor.requiredArgs().keySet(), ", "));
+		List<Object> args = new ArrayList<>();
+		args.add(RepositoryComposition.RepositoryFragments.class);
+		args.add(repositoryContributor.getContributedTypeName().getCanonicalName());
+		args.addAll(arguments);
+
+		callback.addStatement("return $T.just(new $L(%s%s))".formatted("$L".repeat(arguments.isEmpty() ? 0 : 1),
+				", $L".repeat(Math.max(0, arguments.size() - 1))), args.toArray());
 
 		return callback.build();
 	}

@@ -15,25 +15,27 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import org.springframework.lang.CheckReturnValue;
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.javapoet.CodeBlock;
 
 /**
- * Name factory for generating clash free variable names checking an intended name against predefined and already used
- * ones.
+ * Default implementation of {@link AotRepositoryConstructorBuilder.ParameterOrigin}.
  *
- * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 4.0
  */
-@FunctionalInterface
-interface VariableNameFactory {
+record DefaultParameterOrigin(@Nullable String reference,
+		CodeBlock codeBlock) implements AotRepositoryConstructorBuilder.ParameterOrigin {
 
-	/**
-	 * Compare and potentially generate a new name for the given intended variable name.
-	 *
-	 * @param intendedVariableName must not be {@literal null}.
-	 * @return the {@literal intendedVariableName} if no naming clash detected or a clash free generated name.
-	 */
-	@CheckReturnValue
-	String generateName(String intendedVariableName);
+	@Override
+	public @Nullable String getReference() {
+		return reference();
+	}
+
+	@Override
+	public CodeBlock getCodeBlock() {
+		return codeBlock();
+	}
 
 }

@@ -35,6 +35,7 @@ import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
+import org.springframework.javapoet.TypeSpec;
 
 /**
  * Contributor for AOT repository fragments.
@@ -108,6 +109,17 @@ public class RepositoryContributor {
 	}
 
 	/**
+	 * Get the required constructor arguments for the to be generated repository implementation.
+	 * <p>
+	 * Can be overridden if required. Needs to match arguments of generated repository implementation.
+	 *
+	 * @return key/value pairs of required argument required to instantiate the generated fragment.
+	 */
+	java.util.Map<String, AotRepositoryFragmentMetadata.ConstructorArgument> getConstructorArguments() {
+		return Collections.unmodifiableMap(creator.getConstructorArguments());
+	}
+
+	/**
 	 * Contribute the AOT repository fragment to the given {@link GenerationContext}. This method will prepare the
 	 * metadata, generate the source code and write it to the {@link GenerationContext}.
 	 *
@@ -142,13 +154,14 @@ public class RepositoryContributor {
 								-------------------
 								""".formatted(aotBundle.repositoryJsonFileName(), repositoryJson));
 
-						JavaFile javaFile = JavaFile.builder(creator.packageName(), targetTypeSpec.build()).build();
+						TypeSpec typeSpec = targetTypeSpec.build();
+						JavaFile javaFile = JavaFile.builder(creator.packageName(), typeSpec).build();
 
 						logger.trace("""
 								------ AOT Generated Repository: %s ------
 								%s
 								-------------------
-								""".formatted(null, javaFile));
+								""".formatted(typeSpec.name(), javaFile));
 					}
 
 					generationContext.getGeneratedFiles().addResourceFile(aotBundle.repositoryJsonFileName(), repositoryJson);

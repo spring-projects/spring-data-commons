@@ -18,9 +18,7 @@ package org.springframework.data.repository.aot.generate;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.util.Version;
@@ -41,6 +40,7 @@ import org.springframework.javapoet.CodeBlock;
  * Unit testa for {@link AotRepositoryBeanDefinitionPropertiesDecorator}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
@@ -48,7 +48,8 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	private static final String TYPE_NAME = "com.example.UserRepositoryImpl__AotRepository";
 	@Mock RepositoryContributor contributor;
 	CodeBlock.Builder inheritedSource;
-
+	AotRepositoryFragmentMetadata metadata = new AotRepositoryFragmentMetadata();
+	RepositoryConstructorBuilder constructorBuilder = new RepositoryConstructorBuilder(metadata);
 	AotRepositoryBeanDefinitionPropertiesDecorator decorator;
 
 	@BeforeEach
@@ -57,6 +58,8 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 		when(contributor.getContributedTypeName()).thenReturn(GeneratedTypeReference.of(ClassName.bestGuess(TYPE_NAME)));
 		inheritedSource = CodeBlock.builder();
 		decorator = new AotRepositoryBeanDefinitionPropertiesDecorator(() -> inheritedSource.build(), contributor);
+
+		when(contributor.getConstructorArguments()).thenReturn(metadata.getConstructorArguments());
 	}
 
 	@Test // GH-3344
@@ -64,7 +67,6 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 
 		inheritedSource.add("beanDefinition.getPropertyValues().addPropertyValue($S, $S)", "repositoryBaseClass",
 				"org.springframework.data.BaseRepository");
-		when(contributor.requiredArgs()).thenReturn(Map.of());
 
 		CodeBlock decorate = decorator.decorate();
 
@@ -75,8 +77,6 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 
 	@Test // GH-3344
 	void addsFragmentFunction() {
-
-		when(contributor.requiredArgs()).thenReturn(Map.of());
 
 		CodeBlock decorate = decorator.decorate();
 
@@ -90,8 +90,6 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	@Test // GH-3344
 	void addsPlainNoArgConstructorForEmptyArgs() {
 
-		when(contributor.requiredArgs()).thenReturn(Map.of());
-
 		CodeBlock decorate = decorator.decorate();
 
 		assertThat(decorate.toString()) //
@@ -101,12 +99,9 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	@Test // GH-3344
 	void resolvesAndAddsArgumentsForCtor() {
 
-		Map<String, ResolvableType> ctorArgs = new LinkedHashMap<>(3);
-		ctorArgs.put("plain", ResolvableType.forClass(Version.class));
-		ctorArgs.put("noGenericsDefined", ResolvableType.forClass(List.class));
-		ctorArgs.put("withGenerics", ResolvableType.forClassWithGenerics(Set.class, String.class));
-
-		when(contributor.requiredArgs()).thenReturn(ctorArgs);
+		constructorBuilder.addParameter("plain", ResolvableType.forClass(Version.class));
+		constructorBuilder.addParameter("noGenericsDefined", ResolvableType.forClass(List.class));
+		constructorBuilder.addParameter("withGenerics", ResolvableType.forClassWithGenerics(Set.class, String.class));
 
 		CodeBlock decorate = decorator.decorate();
 
@@ -119,9 +114,32 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	}
 
 	@Test // GH-3344
+	void resolvesValueFromCodeblock() {
+
+		constructorBuilder.addParameter("byTypeAndName", ResolvableType.forClass(Version.class), customizer -> {
+			customizer.origin(new RuntimeBeanReference("foo", Version.class));
+		});
+
+		constructorBuilder.addParameter("byName", ResolvableType.forClass(Version.class), customizer -> {
+			customizer.origin(new RuntimeBeanReference("bar"));
+		});
+
+		constructorBuilder.addParameter("foo", Integer.class,
+				customizer -> customizer.origin(ctx -> AotRepositoryConstructorBuilder.ParameterOrigin.of(CodeBlock.of("1"))));
+
+		CodeBlock decorate = decorator.decorate();
+
+		assertThat(decorate.toString()) //
+				.containsSubsequence("Version byTypeAndName = beanFactory.getBean(\"foo\"", "Version.class)") //
+				.containsSubsequence("Version byName = ", "Version) beanFactory.getBean(\"bar\"") //
+				.containsSubsequence("return ", "RepositoryFragments.just(new %s(byTypeAndName, byName, 1));" //
+						.formatted(TYPE_NAME));
+	}
+
+	@Test // GH-3344
 	void passesOnBeanFactoryIfRequested() {
 
-		when(contributor.requiredArgs()).thenReturn(Map.of("beanFactory", ResolvableType.forClass(BeanFactory.class)));
+		constructorBuilder.addParameter("beanFactory", BeanFactory.class);
 
 		CodeBlock decorate = decorator.decorate();
 
@@ -133,8 +151,7 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	@Test // GH-3344
 	void passesOnContextIfRequested() {
 
-		when(contributor.requiredArgs()).thenReturn(
-				Map.of("context", ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class)));
+		constructorBuilder.addParameter("context", RepositoryFactoryBeanSupport.FragmentCreationContext.class);
 
 		CodeBlock decorate = decorator.decorate();
 
@@ -146,27 +163,23 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	@Test // GH-3344
 	void passesOnContextWithDifferentNameIfRequested() {
 
-		when(contributor.requiredArgs()).thenReturn(
-				Map.of("theContext", ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class)));
+		constructorBuilder.addParameter("theContext", RepositoryFactoryBeanSupport.FragmentCreationContext.class);
 
 		CodeBlock decorate = decorator.decorate();
 
 		assertThat(decorate.toString()) //
 				.doesNotContain("FragmentCreationContext theContext = beanFactory.getBean(") //
-				.containsSubsequence("FragmentCreationContext theContext = context") //
-				.containsSubsequence("return ", "RepositoryFragments.just(new %s(theContext));".formatted(TYPE_NAME));
+				.containsSubsequence("return ", "RepositoryFragments.just(new %s(context));".formatted(TYPE_NAME));
 	}
 
 	@Test // GH-3344
 	void passesOnBeanFactoryDifferentNameIfRequested() {
 
-		when(contributor.requiredArgs()).thenReturn(Map.of("myBeanFactory", ResolvableType.forClass(BeanFactory.class)));
+		constructorBuilder.addParameter("myBeanFactory", BeanFactory.class);
 
 		CodeBlock decorate = decorator.decorate();
 
 		assertThat(decorate.toString()) //
-				.doesNotContain("BeanFactory myBeanFactory = beanFactory.getBean(") //
-				.containsSubsequence("BeanFactory myBeanFactory = beanFactory") //
-				.containsSubsequence("return ", "RepositoryFragments.just(new %s(myBeanFactory));".formatted(TYPE_NAME));
+				.containsSubsequence("return ", "RepositoryFragments.just(new %s(beanFactory));".formatted(TYPE_NAME));
 	}
 }

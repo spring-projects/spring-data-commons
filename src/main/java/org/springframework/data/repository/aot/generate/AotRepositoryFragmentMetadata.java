@@ -20,10 +20,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
@@ -89,16 +91,21 @@ class AotRepositoryFragmentMetadata {
 	 *
 	 * @param parameterName name of the constructor parameter to add. Must be unique.
 	 * @param type type of the constructor parameter.
-	 * @param fieldName name of the field to bind the constructor parameter to, or {@literal null} if no field should be
-	 *          created.
+	 * @param argumentSupplier supplier to create the constructor argument.
 	 */
-	public void addConstructorArgument(String parameterName, ResolvableType type, @Nullable String fieldName) {
+	public void addConstructorArgument(String parameterName, ResolvableType type,
+			Supplier<ConstructorArgument> argumentSupplier) {
 
-		this.constructorArguments.putIfAbsent(parameterName, new ConstructorArgument(parameterName, type, fieldName));
+		this.constructorArguments.computeIfAbsent(parameterName, it -> {
 
-		if (fieldName != null) {
-			addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
-		}
+			ConstructorArgument constructorArgument = argumentSupplier.get();
+
+			if (constructorArgument.isBoundToField()) {
+				addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
+			}
+
+			return constructorArgument;
+		});
 	}
 
 	public void addRepositoryMethod(Method source, MethodContributor<? extends QueryMethod> methodContributor) {
@@ -148,12 +155,13 @@ class AotRepositoryFragmentMetadata {
 	 *
 	 * @param parameterName
 	 * @param parameterType
-	 * @param fieldName
+	 * @param bindToField
 	 */
-	public record ConstructorArgument(String parameterName, ResolvableType parameterType, @Nullable String fieldName) {
+	public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
+			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin) {
 
 		boolean isBoundToField() {
-			return fieldName != null;
+			return bindToField;
 		}
 
 		TypeName typeName() {
