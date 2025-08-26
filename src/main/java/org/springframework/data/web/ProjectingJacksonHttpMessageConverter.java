@@ -18,6 +18,7 @@ package org.springframework.data.web;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -40,7 +40,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.util.Assert;
@@ -72,7 +71,7 @@ public class ProjectingJacksonHttpMessageConverter extends JacksonJsonHttpMessag
 	 * Creates a new {@link ProjectingJacksonHttpMessageConverter} using a default {@link ObjectMapper}.
 	 */
 	public ProjectingJacksonHttpMessageConverter() {
-		this.projectionFactory = initProjectionFactory(getObjectMapper());
+		this.projectionFactory = initProjectionFactory(getMapper());
 	}
 
 	/**
@@ -80,7 +79,7 @@ public class ProjectingJacksonHttpMessageConverter extends JacksonJsonHttpMessag
 	 *
 	 * @param mapper must not be {@literal null}.
 	 */
-	public ProjectingJacksonHttpMessageConverter(ObjectMapper mapper) {
+	public ProjectingJacksonHttpMessageConverter(JsonMapper mapper) {
 
 		super(mapper);
 

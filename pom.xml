@@ -34,6 +34,7 @@
 		<xmlbeam>1.4.26</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 		<kotlin.api.target>1.8</kotlin.api.target>
+		<spring-hateoas>3.0.0-GH-2357-SNAPSHOT</spring-hateoas>
 	</properties>
 
 	<dependencies>

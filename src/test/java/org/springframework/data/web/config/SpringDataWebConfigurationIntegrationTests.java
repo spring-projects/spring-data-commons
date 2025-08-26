@@ -16,9 +16,11 @@
 package org.springframework.data.web.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +29,6 @@ import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +39,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.instrument.classloading.ShadowingClassLoader;
 import org.springframework.util.ReflectionUtils;
-
 import org.xmlbeam.XBProjector;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -114,7 +114,7 @@ class SpringDataWebConfigurationIntegrationTests {
 
 			assertThat(captor.getAllValues()).anySatisfy(converter -> {
 				assertThat(converter).isInstanceOfSatisfying(ProjectingJacksonHttpMessageConverter.class, __ -> {
-					assertThat(__.getObjectMapper()).isSameAs(SomeConfiguration.MAPPER);
+					assertThat(__.getMapper()).isSameAs(SomeConfiguration.MAPPER);
 				});
 			});
 		}, SomeConfiguration.class);
@@ -152,10 +152,10 @@ class SpringDataWebConfigurationIntegrationTests {
 	@Configuration
 	static class SomeConfiguration {
 
-		static ObjectMapper MAPPER = new ObjectMapper();
+		static JsonMapper MAPPER = new JsonMapper();
 
 		@Bean
-		ObjectMapper mapper() {
+		JsonMapper mapper() {
 			return MAPPER;
 		}
 	}

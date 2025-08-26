@@ -28,12 +28,11 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.geo.GeoModule;
+import org.springframework.data.geo.GeoJacksonModule;
 import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.util.ClassUtils;
@@ -47,12 +46,11 @@ import org.springframework.util.ClassUtils;
  */
 public class SpringDataJackson3Configuration implements SpringDataJackson3Modules {
 
-	@Nullable
-	@Autowired(required = false) SpringDataWebSettings settings;
+	@Nullable @Autowired(required = false) SpringDataWebSettings settings;
 
 	@Bean
-	public GeoModule jackson3GeoModule() {
-		return new GeoModule();
+	public GeoJacksonModule jackson3GeoModule() {
+		return new GeoJacksonModule();
 	}
 
 	@Bean

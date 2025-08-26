@@ -15,11 +15,11 @@
  */
 package org.springframework.data.web.config;
 
-import java.util.ArrayList;
+import tools.jackson.databind.json.JsonMapper;
+
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,18 +40,16 @@ import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters.ServerBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
- * {@link SortHandlerMethodArgumentResolver}, {@link OffsetScrollPositionHandlerMethodArgumentResolver}
- * and {@link DomainClassConverter}.
+ * {@link SortHandlerMethodArgumentResolver}, {@link OffsetScrollPositionHandlerMethodArgumentResolver} and
+ * {@link DomainClassConverter}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -91,7 +89,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		this.sortResolverCustomizer = Lazy.of( //
 				() -> context.getBeanProvider(SortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 		this.offsetResolverCustomizer = Lazy.of( //
-				() -> context.getBeanProvider(OffsetScrollPositionHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+				() -> context.getBeanProvider(OffsetScrollPositionHandlerMethodArgumentResolverCustomizer.class)
+						.getIfAvailable());
 	}
 
 	@Override
@@ -155,29 +154,18 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	@Override
 	public void configureMessageConverters(ServerBuilder builder) {
 
-		List<HttpMessageConverter<?>> converters = new ArrayList<>();
-		configureMessageConverters(converters);
-
-		for (HttpMessageConverter<?> converter : converters) {
-			builder.customMessageConverter(converter);
-		}
-	}
-
-	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-
 		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
 
-			if (ClassUtils.isPresent("tools.jackson.databind.ObjectReader", context.getClassLoader())) {
+			if (ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-				tools.jackson.databind.ObjectMapper mapper = context.getBeanProvider(tools.jackson.databind.ObjectMapper.class)
-						.getIfUnique(tools.jackson.databind.ObjectMapper::new);
+				JsonMapper mapper = context.getBeanProvider(JsonMapper.class).getIfUnique(JsonMapper::new);
 
 				ProjectingJacksonHttpMessageConverter converter = new ProjectingJacksonHttpMessageConverter(mapper);
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				converters.add(0, converter);
+				builder.customMessageConverter(converter);
+
 			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
 				com.fasterxml.jackson.databind.ObjectMapper mapper = context
@@ -188,13 +176,13 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				converters.add(0, converter);
+				builder.customMessageConverter(converter);
 			}
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
-			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
+			builder.customMessageConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}
