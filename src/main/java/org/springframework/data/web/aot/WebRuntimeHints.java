@@ -23,6 +23,7 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.data.web.config.SpringDataJackson3Configuration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
 import org.springframework.util.ClassUtils;
 
@@ -30,9 +31,16 @@ import org.springframework.util.ClassUtils;
  * {@link RuntimeHintsRegistrar} providing hints for web usage.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 3.2.3
  */
 class WebRuntimeHints implements RuntimeHintsRegistrar {
+
+	private static final boolean JACKSON2_PRESENT = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper",
+			WebRuntimeHints.class.getClassLoader());
+
+	private static final boolean JACKSON3_PRESENT = ClassUtils.isPresent("tools.jackson.databind.ObjectMapper",
+			WebRuntimeHints.class.getClassLoader());
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
@@ -40,7 +48,7 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 		hints.reflection().registerType(org.springframework.data.web.config.SpringDataWebSettings.class, hint -> hint
 				.withMembers(MemberCategory.INVOKE_DECLARED_METHODS).onReachableType(EnableSpringDataWebSupport.class));
 
-		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
+		if (JACKSON2_PRESENT || JACKSON3_PRESENT) {
 
 			// Page Model for Jackson Rendering
 			hints.reflection().registerType(org.springframework.data.web.PagedModel.class,
@@ -49,24 +57,53 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 			hints.reflection().registerType(PagedModel.PageMetadata.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
 					MemberCategory.INVOKE_PUBLIC_METHODS);
 
-			// Type that might not be seen otherwise
-			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"),
-					hint -> hint.onReachableType(PageModule.class));
+			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"));
 
-			// Jackson Converters used via @JsonSerialize in SpringDataJacksonConfiguration
-			hints.reflection().registerType(
-					TypeReference
-							.of("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PageModelConverter"),
-					hint -> {
-						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
-						hint.onReachableType(PageModule.class);
-					});
-			hints.reflection().registerType(TypeReference.of(
-					"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PlainPageSerializationWarning"),
-					hint -> {
-						hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
-						hint.onReachableType(PageModule.class);
-					});
+			if (JACKSON2_PRESENT) {
+				contributeJackson2Hints(hints);
+			}
+
+			if (JACKSON3_PRESENT) {
+				contributeJackson3Hints(hints);
+			}
 		}
 	}
+
+	@SuppressWarnings("removal")
+	private static void contributeJackson2Hints(RuntimeHints hints) {
+
+		// Jackson Converters used via @JsonSerialize in SpringDataJacksonConfiguration
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PageModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(PageModule.class);
+				});
+		hints.reflection().registerType(TypeReference.of(
+				"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PlainPageSerializationWarning"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(PageModule.class);
+				});
+	}
+
+	private static void contributeJackson3Hints(RuntimeHints hints) {
+
+		// Jackson Converters used via @JsonSerialize in SpringDataJacksonConfiguration
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$PageModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
+				});
+		hints.reflection().registerType(TypeReference.of(
+				"org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$PlainPageSerializationWarning"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
+				});
+	}
+
 }

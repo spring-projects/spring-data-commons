@@ -15,10 +15,11 @@
  */
 package org.springframework.data.web.config;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,23 +34,22 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.ProjectingJackson2HttpMessageConverter;
+import org.springframework.data.web.ProjectingJacksonHttpMessageConverter;
 import org.springframework.data.web.ProxyingHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.data.web.XmlBeamHttpMessageConverter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters.ServerBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Configuration class to register {@link PageableHandlerMethodArgumentResolver},
- * {@link SortHandlerMethodArgumentResolver}, {@link OffsetScrollPositionHandlerMethodArgumentResolver}
- * and {@link DomainClassConverter}.
+ * {@link SortHandlerMethodArgumentResolver}, {@link OffsetScrollPositionHandlerMethodArgumentResolver} and
+ * {@link DomainClassConverter}.
  *
  * @since 1.6
  * @author Oliver Gierke
@@ -89,7 +89,8 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 		this.sortResolverCustomizer = Lazy.of( //
 				() -> context.getBeanProvider(SortHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
 		this.offsetResolverCustomizer = Lazy.of( //
-				() -> context.getBeanProvider(OffsetScrollPositionHandlerMethodArgumentResolverCustomizer.class).getIfAvailable());
+				() -> context.getBeanProvider(OffsetScrollPositionHandlerMethodArgumentResolverCustomizer.class)
+						.getIfAvailable());
 	}
 
 	@Override
@@ -151,23 +152,37 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 	}
 
 	@Override
-	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+	public void configureMessageConverters(ServerBuilder builder) {
 
-		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())
-				&& ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
+		if (ClassUtils.isPresent("com.jayway.jsonpath.DocumentContext", context.getClassLoader())) {
 
-			ObjectMapper mapper = context.getBeanProvider(ObjectMapper.class).getIfUnique(ObjectMapper::new);
+			if (ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
-			ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
-			converter.setBeanFactory(context);
-			forwardBeanClassLoader(converter);
+				JsonMapper mapper = context.getBeanProvider(JsonMapper.class).getIfUnique(JsonMapper::new);
 
-			converters.add(0, converter);
+				ProjectingJacksonHttpMessageConverter converter = new ProjectingJacksonHttpMessageConverter(mapper);
+				converter.setBeanFactory(context);
+				forwardBeanClassLoader(converter);
+
+				builder.customMessageConverter(converter);
+
+			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
+
+				com.fasterxml.jackson.databind.ObjectMapper mapper = context
+						.getBeanProvider(com.fasterxml.jackson.databind.ObjectMapper.class)
+						.getIfUnique(com.fasterxml.jackson.databind.ObjectMapper::new);
+
+				ProjectingJackson2HttpMessageConverter converter = new ProjectingJackson2HttpMessageConverter(mapper);
+				converter.setBeanFactory(context);
+				forwardBeanClassLoader(converter);
+
+				builder.customMessageConverter(converter);
+			}
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
-			converters.add(0, context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
+			builder.customMessageConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}
