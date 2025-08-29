@@ -32,8 +32,10 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
+import org.springframework.util.ClassUtils;
 
 /**
  * Metadata about an AOT Repository method.
@@ -53,7 +55,7 @@ class MethodMetadata {
 	MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
-		this.actualReturnType = repositoryInformation.getReturnedDomainTypeInformation(method).toResolvableType();
+		this.actualReturnType = resolvePrimaryIfNecessary(repositoryInformation.getReturnedDomainTypeInformation(method));
 
 		Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
 		Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
@@ -65,6 +67,11 @@ class MethodMetadata {
 
 		this.methodArguments = Collections.unmodifiableMap(methodArguments);
 		this.methodParameters = Collections.unmodifiableMap(methodParameters);
+	}
+
+	static ResolvableType resolvePrimaryIfNecessary(TypeInformation<?> type) {
+		return type.getType().isPrimitive() ? ResolvableType.forType(ClassUtils.resolvePrimitiveIfNecessary(type.getType()))
+				: type.toResolvableType();
 	}
 
 	private static void initializeMethodArguments(Method method, ParameterNameDiscoverer nameDiscoverer,

@@ -129,6 +129,13 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
+	 * @return the repository domain type.
+	 */
+	public Class<?> getDomainType() {
+		return getRepositoryInformation().getDomainType();
+	}
+
+	/**
 	 * @return the returned type without considering dynamic projections.
 	 */
 	public ReturnedType getReturnedType() {
@@ -156,6 +163,13 @@ public class AotQueryMethodGenerationContext {
 	 */
 	public TypeName getReturnTypeName() {
 		return TypeName.get(getReturnType().getType());
+	}
+
+	/**
+	 * @return the {@link TypeName} representing the actual (component) method return type.
+	 */
+	public TypeName getActualReturnTypeName() {
+		return TypeName.get(getActualReturnType().getType());
 	}
 
 	/**
