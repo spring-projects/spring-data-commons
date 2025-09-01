@@ -116,7 +116,7 @@ public class RepositoryRegistrationAotContributionAssert
 
 		BeanRegistrationCode mockBeanRegistrationCode = mock(BeanRegistrationCode.class);
 
-		GenerationContext generationContext = new TestGenerationContext(Object.class);
+		TestGenerationContext generationContext = new TestGenerationContext(Object.class);
 
 		ApplicationContextAotGenerator generator = new ApplicationContextAotGenerator();
 
@@ -138,7 +138,6 @@ public class RepositoryRegistrationAotContributionAssert
 					return null;
 				}
 			});
-
 			assertWith.accept(new CodeContributionAssert(generationContext));
 		} catch (Throwable o_O) {
 			fail(o_O.getMessage(), o_O);

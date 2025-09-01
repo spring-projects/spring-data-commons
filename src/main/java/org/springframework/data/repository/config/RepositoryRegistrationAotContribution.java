@@ -39,8 +39,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
-import org.springframework.data.aot.AotMappingContext;
-import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.aot.AotContext.InstantiationCreator;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
@@ -64,29 +63,27 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
 
-	private final AotMappingContext aotMappingContext = new AotMappingContext();
-
 	private AotRepositoryContext repositoryContext;
 
 	private BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
 
 	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
-    /**
-     * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
-     * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
-     *
-     * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
-     *          which this contribution was created.
-     * @return a new instance of {@link RepositoryRegistrationAotContribution}.
-     * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
-     * @see RepositoryRegistrationAotProcessor
-     */
-    public static RepositoryRegistrationAotContribution fromProcessor(
-        RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
+	/**
+	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
+	 * the given, required {@link RepositoryRegistrationAotProcessor} from which this contribution was created.
+	 *
+	 * @param repositoryRegistrationAotProcessor reference back to the {@link RepositoryRegistrationAotProcessor} from
+	 *          which this contribution was created.
+	 * @return a new instance of {@link RepositoryRegistrationAotContribution}.
+	 * @throws IllegalArgumentException if the {@link RepositoryRegistrationAotProcessor} is {@literal null}.
+	 * @see RepositoryRegistrationAotProcessor
+	 */
+	public static RepositoryRegistrationAotContribution fromProcessor(
+			RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor) {
 
-        return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
-    }
+		return new RepositoryRegistrationAotContribution(repositoryRegistrationAotProcessor);
+	}
 
 	/**
 	 * Constructs a new instance of the {@link RepositoryRegistrationAotContribution} initialized with the given, required
@@ -237,12 +234,12 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
 				repositoryContext.getClassLoader());
 
-		// TODO: what about embedded types or entity types that are entity types references from properties?
-		PersistentEntity<?, ?> persistentEntity = aotMappingContext
-				.getPersistentEntity(repositoryInformation.getDomainType());
-		if (persistentEntity != null) {
-			aotMappingContext.contribute(persistentEntity);
-		}
+		repositoryContext.getResolvedTypes().stream()
+				// exclude types from other domains, eg. a org.springframework.data.geo.Point being used in the model
+				.filter(it -> TypeContributor.isPartOf(it, Set.of(repositoryInformation.getDomainType().getPackageName()))) //
+				.map(TypeReference::of) //
+				.map(repositoryContext::instantiationCreator) //
+				.forEach(InstantiationCreator::create);
 
 		// Repository Fragments
 		contributeFragments(contribution);
@@ -372,5 +369,5 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	// used in the contributeType(..) method above?
 	public Predicate<Class<?>> typeFilter() { // like only document ones. // TODO: As in MongoDB?
 		return it -> true;
-	}
+	} // should be passed on to typecollector to allow better fitlering.
 }

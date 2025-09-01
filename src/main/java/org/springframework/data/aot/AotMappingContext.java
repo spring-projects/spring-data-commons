@@ -34,7 +34,7 @@ import org.springframework.data.util.TypeInformation;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotMappingContext extends // TODO: hide this one and delegate to other component - can we use the
+class AotMappingContext extends // TODO: hide this one and delegate to other component - can we use the
 																				// AotContext for it?
 		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.BasicPersistentProperty>, AotMappingContext.BasicPersistentProperty> {
 

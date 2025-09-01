@@ -20,12 +20,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.data.aot.AotMappingContext.BasicPersistentProperty;
+import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -36,6 +40,7 @@ import org.springframework.util.ClassUtils;
  */
 class DefaultAotContext implements AotContext {
 
+	private final AotMappingContext mappingContext = new AotMappingContext();
 	private final ConfigurableListableBeanFactory factory;
 
 	public DefaultAotContext(BeanFactory beanFactory) {
@@ -56,6 +61,11 @@ class DefaultAotContext implements AotContext {
 	@Override
 	public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
 		return new DefaultIntrospectedBeanDefinition(beanName);
+	}
+
+	@Override
+	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
+		return new DefaultInstantiationCreator(introspectType(typeReference.getName()));
 	}
 
 	class DefaultTypeIntrospector implements TypeIntrospector {
@@ -94,6 +104,31 @@ class DefaultAotContext implements AotContext {
 		public List<String> getBeanNames() {
 			return isTypePresent() ? Arrays.asList(factory.getBeanNamesForType(resolveRequiredType()))
 					: Collections.emptyList();
+		}
+
+	}
+
+	class DefaultInstantiationCreator implements InstantiationCreator {
+
+		Lazy<BasicPersistentEntity<?, BasicPersistentProperty>> entity;
+
+		public DefaultInstantiationCreator(TypeIntrospector typeIntrospector) {
+			this.entity = Lazy.of(() -> mappingContext
+				.getPersistentEntity(typeIntrospector.resolveRequiredType()));
+		}
+
+		@Override
+		public boolean isAvailable() {
+			return entity.getNullable() != null;
+		}
+
+		@Override
+		public void create() {
+
+			BasicPersistentEntity<?, BasicPersistentProperty> persistentEntity = entity.getNullable();
+			if (persistentEntity != null) {
+				mappingContext.contribute(persistentEntity);
+			}
 		}
 	}
 

@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.AotContext;
@@ -109,6 +110,11 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public AotContext.TypeIntrospector introspectType(String typeName) {
 		return aotContext.introspectType(typeName);
+	}
+
+	@Override
+	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
+		return aotContext.instantiationCreator(typeReference);
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -159,6 +160,8 @@ public interface AotContext {
 	 */
 	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
 
+	InstantiationCreator instantiationCreator(TypeReference typeReference);
+
 	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence
 	 * of beans.
@@ -218,7 +221,6 @@ public interface AotContext {
 		 * @return a {@link List} of bean names. The list is empty if the bean factory does not hold any beans of this type.
 		 */
 		List<String> getBeanNames();
-
 	}
 
 	/**
@@ -273,7 +275,11 @@ public interface AotContext {
 		 */
 		@Nullable
 		Class<?> resolveType();
+	}
 
+	interface InstantiationCreator {
+		boolean isAvailable();
+		void create();
 	}
 
 }

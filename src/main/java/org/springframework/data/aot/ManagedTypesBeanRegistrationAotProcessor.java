@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
@@ -33,7 +34,6 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
@@ -55,7 +55,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
 	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
-	private final AotMappingContext aotMappingContext = new AotMappingContext();
+	private AotContext aotContext;
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
 		this.moduleIdentifier = moduleIdentifier;
@@ -72,6 +72,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
 			return null;
 		}
+
+		this.aotContext = new DefaultAotContext(registeredBean.getBeanFactory());
 
 		BeanFactory beanFactory = registeredBean.getBeanFactory();
 		return contribute(AotContext.from(beanFactory), resolveManagedTypes(registeredBean), registeredBean);
@@ -145,10 +147,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		TypeContributor.contribute(resolvedType, annotationNamespaces, generationContext);
 		QTypeContributor.contributeEntityPath(resolvedType, generationContext, resolvedType.getClassLoader());
 
-		PersistentEntity<?, ?> entity = aotMappingContext.getPersistentEntity(resolvedType);
-		if (entity != null) {
-			aotMappingContext.contribute(entity);
-		}
+		aotContext.instantiationCreator(TypeReference.of(resolvedType)).create();
 
 		TypeUtils.resolveUsedAnnotations(resolvedType).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
