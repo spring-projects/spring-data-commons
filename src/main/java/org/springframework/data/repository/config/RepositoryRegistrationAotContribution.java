@@ -234,6 +234,11 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
 				repositoryContext.getClassLoader());
 
+		//TODO: alle to configure the filter so we can disbale this and potentially safeguard things regarding split packages
+		// read if from the Environment + document things
+		// some documentation fixes from jens in jdbc (look at the PR).
+
+		// TODO: purposeful api for uses cases to have some internal logic
 		repositoryContext.getResolvedTypes().stream()
 				// exclude types from other domains, eg. a org.springframework.data.geo.Point being used in the model
 				.filter(it -> TypeContributor.isPartOf(it, Set.of(repositoryInformation.getDomainType().getPackageName()))) //
