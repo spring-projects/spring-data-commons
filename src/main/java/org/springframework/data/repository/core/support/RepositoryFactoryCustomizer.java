@@ -16,10 +16,15 @@
 package org.springframework.data.repository.core.support;
 
 /**
- * Callback interface that can be used to to customize a {@link RepositoryFactorySupport repository factory}.
+ * Callback interface that can be used to customize a {@link RepositoryFactorySupport repository factory}.
+ * <p>
+ * <p>
+ * Can be registered as bean for automatic picking up by repository factories.
  *
  * @author Mark Paluch
  * @since 2.4
+ * @see ConditionalRepositoryFactoryCustomizer
+ * @see TypedRepositoryFactoryCustomizer
  */
 public interface RepositoryFactoryCustomizer {
 
@@ -29,4 +34,5 @@ public interface RepositoryFactoryCustomizer {
 	 * @param repositoryFactory repository factory to customize.
 	 */
 	void customize(RepositoryFactorySupport repositoryFactory);
+
 }

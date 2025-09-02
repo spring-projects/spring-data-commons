@@ -341,7 +341,25 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			this.factory.setRepositoryBaseClass(repositoryBaseClass);
 		}
 
-		this.repositoryFactoryCustomizers.forEach(customizer -> customizer.customize(this.factory));
+		if (beanFactory != null) {
+
+			beanFactory.getBeanProvider(TypedRepositoryFactoryCustomizer.class).orderedStream().forEachOrdered(customizer -> {
+				if (customizer.canCustomize(this.factory, this.repositoryInterface)) {
+					customizer.customize(this.factory);
+				}
+			});
+
+			beanFactory.getBeanProvider(RepositoryFactoryCustomizer.class).orderedStream().forEachOrdered(customizer -> {
+				if (!(customizer instanceof ConditionalRepositoryFactoryCustomizer conditional)
+						|| conditional.canCustomize(this.factory, this.repositoryInterface)) {
+					customizer.customize(this.factory);
+				}
+			});
+		}
+
+		this.repositoryFactoryCustomizers.forEach(customizer -> {
+			customizer.customize(this.factory);
+		});
 
 		RepositoryMetadata metadata = this.factory.getRepositoryMetadata(repositoryInterface);
 		RepositoryFragments repositoryFragments = getRepositoryFragments(metadata);
