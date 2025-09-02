@@ -38,6 +38,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.config.basepackage.repo.PersonRepository;
 import org.springframework.data.repository.core.support.DummyReactiveRepositoryFactory;
 import org.springframework.data.repository.core.support.DummyRepositoryFactory;
+import org.springframework.data.repository.core.support.RepositoryFragmentsContributor;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
@@ -197,6 +198,19 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	}
 
 	@Test // GH-3279
+	void skipsInterfaceFragmentsContributor() {
+
+		RootBeanDefinition bd = new RootBeanDefinition(DummyRepositoryFactory.class);
+		bd.getConstructorArgumentValues().addGenericArgumentValue(PersonRepository.class);
+
+		AnnotationMetadata metadata = AnnotationMetadata.introspect(ConfigurationWithFragmentsContributorInterface.class);
+		AnnotationRepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+				EnableRepositoriesWithContributor.class, resourceLoader, environment, registry, null);
+
+		assertThat(configurationSource.getRepositoryFragmentsContributorClassName()).isEmpty();
+	}
+
+	@Test // GH-3279
 	void omitsUnspecifiedFragmentsContributor() {
 
 		RootBeanDefinition bd = new RootBeanDefinition(DummyRepositoryFactory.class);
@@ -216,8 +230,9 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		bd.getConstructorArgumentValues().addGenericArgumentValue(ReactivePersonRepository.class);
 
 		assertThat(getConfigSource(ConfigurationWithBeanNameGenerator.class).generateBeanName(bd))
-			.isEqualTo(ReactivePersonRepository.class.getName());
-		assertThat(getConfigSource(DefaultConfiguration.class).generateBeanName(bd)).isEqualTo("annotationRepositoryConfigurationSourceUnitTests.ReactivePersonRepository");
+				.isEqualTo(ReactivePersonRepository.class.getName());
+		assertThat(getConfigSource(DefaultConfiguration.class).generateBeanName(bd))
+				.isEqualTo("annotationRepositoryConfigurationSourceUnitTests.ReactivePersonRepository");
 	}
 
 	private AnnotationRepositoryConfigurationSource getConfigSource(Class<?> type) {
@@ -247,6 +262,9 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 	@EnableRepositoriesWithContributor()
 	static class ConfigurationWithFragmentsContributor {}
 
+	@EnableRepositoriesWithContributor(fragmentsContributor = RepositoryFragmentsContributor.class)
+	static class ConfigurationWithFragmentsContributorInterface {}
+
 	@EnableReactiveRepositories(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
 	static class ReactiveConfigurationWithBeanNameGenerator {}
 
@@ -256,6 +274,7 @@ class AnnotationRepositoryConfigurationSourceUnitTests {
 		Filter[] includeFilters() default {};
 
 		Filter[] excludeFilters() default {};
+
 	}
 
 	@SampleAnnotation
