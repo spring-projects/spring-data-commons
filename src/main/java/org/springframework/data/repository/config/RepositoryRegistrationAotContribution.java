@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.config;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +26,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-import org.springframework.aop.SpringProxy;
-import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -36,20 +33,14 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.core.DecoratingProxy;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.aot.AotContext;
-import org.springframework.data.aot.AotContext.InstantiationCreator;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.projection.EntityProjectionIntrospector;
-import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
-import org.springframework.data.util.QTypeContributor;
-import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -215,6 +206,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
 		getModuleContribution().ifPresent(it -> it.accept(getRepositoryContext(), generationContext));
+		getRepositoryContext().typeConfigurations()
+				.forEach(typeConfiguration -> typeConfiguration.contribute(generationContext));
 	}
 
 	private void contributeRepositoryInfo(AotRepositoryContext repositoryContext, GenerationContext contribution) {
@@ -223,63 +216,27 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		// TODO: is this the way?
-		contribution.getRuntimeHints().reflection()
-				.registerType(repositoryInformation.getRepositoryInterface(),
-						hint -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS))
-				.registerType(repositoryInformation.getRepositoryBaseClass(), hint -> hint
-						.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface())
+				.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS) //
+				.repositoryProxy();
 
-		TypeContributor.contribute(repositoryInformation.getDomainType(), contribution);
-		QTypeContributor.contributeEntityPath(repositoryInformation.getDomainType(), contribution,
-				repositoryContext.getClassLoader());
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass())
+				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 
-		//TODO: alle to configure the filter so we can disbale this and potentially safeguard things regarding split packages
+		repositoryContext.typeConfiguration(repositoryInformation.getDomainType()).forDataBinding().forQuerydsl();
+		//
+		// TODO: alle to configure the filter so we can disbale this and potentially safeguard things regarding split
+		// packages
 		// read if from the Environment + document things
 		// some documentation fixes from jens in jdbc (look at the PR).
 
 		// TODO: purposeful api for uses cases to have some internal logic
-		repositoryContext.getResolvedTypes().stream()
-				// exclude types from other domains, eg. a org.springframework.data.geo.Point being used in the model
-				.filter(it -> TypeContributor.isPartOf(it, Set.of(repositoryInformation.getDomainType().getPackageName()))) //
-				.map(TypeReference::of) //
-				.map(repositoryContext::instantiationCreator) //
-				.forEach(InstantiationCreator::create);
+		repositoryContext.getUserDomainTypes().stream() //
+				.map(repositoryContext::typeConfiguration) //
+				.forEach(AotTypeConfiguration::generateEntityInstantiator); //
 
 		// Repository Fragments
 		contributeFragments(contribution);
-
-		// Repository Proxy
-		contribution.getRuntimeHints().proxies().registerJdkProxy(repositoryInformation.getRepositoryInterface(),
-				SpringProxy.class, Advised.class, DecoratingProxy.class);
-
-		// Transactional Repository Proxy
-		// repositoryContext.ifTransactionManagerPresent(transactionManagerBeanNames -> {
-
-		// TODO: Is the following double JDK Proxy registration above necessary or would a single JDK Proxy
-		// registration suffice?
-		// In other words, simply having a single JDK Proxy registration either with or without
-		// the additional Serializable TypeReference?
-		// NOTE: Using a single JDK Proxy registration causes the
-		// simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() test case method to fail.
-		List<TypeReference> transactionalRepositoryProxyTypeReferences = transactionalRepositoryProxyTypeReferences(
-				repositoryInformation);
-
-		contribution.getRuntimeHints().proxies()
-				.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-
-		if (isComponentAnnotatedRepository(repositoryInformation)) {
-			transactionalRepositoryProxyTypeReferences.add(TypeReference.of(Serializable.class));
-			contribution.getRuntimeHints().proxies()
-					.registerJdkProxy(transactionalRepositoryProxyTypeReferences.toArray(new TypeReference[0]));
-		}
-		// });
-
-		// Reactive Repositories
-		if (repositoryInformation.isReactiveRepository()) {
-			// TODO: do we still need this and how to configure it?
-			// registry.initialization().add(NativeInitializationEntry.ofBuildTimeType(configuration.getRepositoryInterface()));
-		}
 
 		// Kotlin
 		if (isKotlinCoroutineRepository(repositoryContext, repositoryInformation)) {
@@ -291,7 +248,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {
-						contributeProjection(type, contribution);
+						repositoryContext.typeConfiguration(type).usedAsProjectionInterface();
 					}
 				});
 	}
@@ -324,10 +281,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		}
 	}
 
-	private boolean isComponentAnnotatedRepository(RepositoryInformation repositoryInformation) {
-		return AnnotationUtils.findAnnotation(repositoryInformation.getRepositoryInterface(), Component.class) != null;
-	}
-
 	private boolean isKotlinCoroutineRepository(AotRepositoryContext repositoryContext,
 			RepositoryInformation repositoryInformation) {
 
@@ -346,21 +299,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 						TypeReference.of("kotlin.Unit"), //
 						TypeReference.of("kotlin.Long"), //
 						TypeReference.of("kotlin.Boolean")));
-	}
-
-	private List<TypeReference> transactionalRepositoryProxyTypeReferences(RepositoryInformation repositoryInformation) {
-
-		return new ArrayList<>(Arrays.asList(TypeReference.of(repositoryInformation.getRepositoryInterface()),
-				TypeReference.of(Repository.class), //
-				TypeReference.of("org.springframework.transaction.interceptor.TransactionalProxy"), //
-				TypeReference.of("org.springframework.aop.framework.Advised"), //
-				TypeReference.of(DecoratingProxy.class)));
-	}
-
-	private void contributeProjection(Class<?> type, GenerationContext generationContext) {
-
-		generationContext.getRuntimeHints().proxies().registerJdkProxy(type, TargetAware.class, SpringProxy.class,
-				DecoratingProxy.class);
 	}
 
 	static boolean isJavaOrPrimitiveType(Class<?> type) {

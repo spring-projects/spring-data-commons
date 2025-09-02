@@ -15,11 +15,22 @@
  */
 package org.springframework.data.aot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
+import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -30,6 +41,8 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.aot.AotMappingContext.BasicPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.QTypeContributor;
+import org.springframework.data.util.TypeContributor;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -42,6 +55,7 @@ class DefaultAotContext implements AotContext {
 
 	private final AotMappingContext mappingContext = new AotMappingContext();
 	private final ConfigurableListableBeanFactory factory;
+	private final Map<TypeReference, AotTypeConfiguration> typeConfigurations = new HashMap<>();
 
 	public DefaultAotContext(BeanFactory beanFactory) {
 		factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
@@ -66,6 +80,16 @@ class DefaultAotContext implements AotContext {
 	@Override
 	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
 		return new DefaultInstantiationCreator(introspectType(typeReference.getName()));
+	}
+
+	@Override
+	public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
+		return typeConfigurations.computeIfAbsent(typeReference, it -> new ContextualTypeConfiguration(typeReference));
+	}
+
+	@Override
+	public Collection<AotTypeConfiguration> typeConfigurations() {
+		return typeConfigurations.values();
 	}
 
 	class DefaultTypeIntrospector implements TypeIntrospector {
@@ -105,7 +129,6 @@ class DefaultAotContext implements AotContext {
 			return isTypePresent() ? Arrays.asList(factory.getBeanNamesForType(resolveRequiredType()))
 					: Collections.emptyList();
 		}
-
 	}
 
 	class DefaultInstantiationCreator implements InstantiationCreator {
@@ -113,8 +136,7 @@ class DefaultAotContext implements AotContext {
 		Lazy<BasicPersistentEntity<?, BasicPersistentProperty>> entity;
 
 		public DefaultInstantiationCreator(TypeIntrospector typeIntrospector) {
-			this.entity = Lazy.of(() -> mappingContext
-				.getPersistentEntity(typeIntrospector.resolveRequiredType()));
+			this.entity = Lazy.of(() -> mappingContext.getPersistentEntity(typeIntrospector.resolveRequiredType()));
 		}
 
 		@Override
@@ -169,6 +191,109 @@ class DefaultAotContext implements AotContext {
 		@Override
 		public Class<?> resolveType() {
 			return factory.getType(beanName, false);
+		}
+	}
+
+	class ContextualTypeConfiguration implements AotTypeConfiguration {
+
+		private final TypeReference type;
+		private boolean forDataBinding = false;
+		private final Set<MemberCategory> categories = new HashSet<>(5);
+		private boolean generateEntityInstantiator = false;
+		private boolean forQuerydsl = false;
+		private final List<List<TypeReference>> proxies = new ArrayList<>();
+		private Predicate<TypeReference> filter;
+
+		ContextualTypeConfiguration(TypeReference type) {
+			this.type = type;
+		}
+
+		@Override
+		public AotTypeConfiguration forDataBinding() {
+			this.forDataBinding = true;
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration forReflectiveAccess(MemberCategory... categories) {
+			this.categories.addAll(Arrays.asList(categories));
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration generateEntityInstantiator() {
+			this.generateEntityInstantiator = true;
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration proxyInterface(List<TypeReference> interfaces) {
+			this.proxies.add(interfaces);
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration forQuerydsl() {
+			this.forQuerydsl = true;
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration conditional(Predicate<TypeReference> filter) {
+
+			this.filter = filter;
+			return this;
+		}
+
+		@Override
+		public void contribute(GenerationContext generationContext) {
+
+			if (filter != null && !filter.test(this.type)) {
+				return;
+			}
+
+			if (!this.categories.isEmpty()) {
+				generationContext.getRuntimeHints().reflection().registerType(this.type,
+						categories.toArray(MemberCategory[]::new));
+			}
+
+			if (generateEntityInstantiator) {
+				instantiationCreator(type).create();
+			}
+
+			if (forDataBinding) {
+				if (!doIfPresent(resolved -> TypeContributor.contribute(resolved, Set.of(TypeContributor.DATA_NAMESPACE),
+						generationContext))) {
+					generationContext.getRuntimeHints().reflection().registerType(type,
+							MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS);
+				}
+			}
+
+			if (forQuerydsl) {
+				doIfPresent(
+						resolved -> QTypeContributor.contributeEntityPath(resolved, generationContext, resolved.getClassLoader()));
+			}
+
+			if (!proxies.isEmpty()) {
+				for (List<TypeReference> proxyInterfaces : proxies) {
+					generationContext.getRuntimeHints().proxies()
+							.registerJdkProxy(Stream.concat(Stream.of(type), proxyInterfaces.stream()).toArray(TypeReference[]::new));
+				}
+			}
+
+		}
+
+		private boolean doIfPresent(Consumer<Class<?>> consumer) {
+			if (!ClassUtils.isPresent(type.getName(), type.getClass().getClassLoader())) {
+				return false;
+			}
+			try {
+				Class<?> resolved = ClassUtils.forName(type.getName(), type.getClass().getClassLoader());
+				consumer.accept(resolved);
+				return true;
+			} catch (ClassNotFoundException e) {
+				return false;
+			}
 		}
 	}
 }

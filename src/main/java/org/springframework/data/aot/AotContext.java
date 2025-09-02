@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.util.TypeScanner;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -161,6 +163,18 @@ public interface AotContext {
 	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
 
 	InstantiationCreator instantiationCreator(TypeReference typeReference);
+
+	default AotTypeConfiguration typeConfiguration(ResolvableType resolvableType) {
+		return typeConfiguration(resolvableType.toClass());
+	}
+
+	default AotTypeConfiguration typeConfiguration(Class<?> type) {
+		return typeConfiguration(TypeReference.of(type));
+	}
+
+	AotTypeConfiguration typeConfiguration(TypeReference typeReference);
+
+	Collection<AotTypeConfiguration> typeConfigurations();
 
 	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence

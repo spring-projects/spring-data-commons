@@ -16,7 +16,9 @@
 package org.springframework.data.repository.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,9 +26,11 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.AotContext;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeCollector;
+import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 
 /**
@@ -108,6 +112,14 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
+	public Set<Class<?>> getUserDomainTypes() {
+
+		return getResolvedTypes().stream()
+				.filter(it -> TypeContributor.isPartOf(it, Set.of(repositoryInformation.getDomainType().getPackageName())))
+				.collect(Collectors.toSet());
+	}
+
+	@Override
 	public AotContext.TypeIntrospector introspectType(String typeName) {
 		return aotContext.introspectType(typeName);
 	}
@@ -115,6 +127,16 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
 		return aotContext.instantiationCreator(typeReference);
+	}
+
+	@Override
+	public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
+		return aotContext.typeConfiguration(typeReference);
+	}
+
+	@Override
+	public Collection<AotTypeConfiguration> typeConfigurations() {
+		return aotContext.typeConfigurations();
 	}
 
 	@Override
