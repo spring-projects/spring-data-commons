@@ -55,6 +55,9 @@ class DefaultAotContext implements AotContext {
 
 	private final AotMappingContext mappingContext = new AotMappingContext();
 	private final ConfigurableListableBeanFactory factory;
+
+	// TODO: should we reuse the config or potentially have multiple ones with different settings - somehow targets the
+	// filtering issue
 	private final Map<TypeReference, AotTypeConfiguration> typeConfigurations = new HashMap<>();
 
 	public DefaultAotContext(BeanFactory beanFactory) {

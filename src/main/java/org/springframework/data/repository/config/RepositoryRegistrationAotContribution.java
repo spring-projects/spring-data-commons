@@ -224,11 +224,6 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 
 		repositoryContext.typeConfiguration(repositoryInformation.getDomainType()).forDataBinding().forQuerydsl();
-		//
-		// TODO: alle to configure the filter so we can disbale this and potentially safeguard things regarding split
-		// packages
-		// read if from the Environment + document things
-		// some documentation fixes from jens in jdbc (look at the PR).
 
 		// TODO: purposeful api for uses cases to have some internal logic
 		repositoryContext.getUserDomainTypes().stream() //

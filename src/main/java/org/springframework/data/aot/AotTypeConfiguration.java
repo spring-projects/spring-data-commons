@@ -27,11 +27,11 @@ import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.DecoratingProxy;
+import org.springframework.core.env.Environment;
 import org.springframework.data.projection.TargetAware;
 
 /**
  * @author Christoph Strobl
- * @since 2025/09
  */
 public interface AotTypeConfiguration {
 
@@ -41,6 +41,7 @@ public interface AotTypeConfiguration {
 
 	AotTypeConfiguration generateEntityInstantiator();
 
+	// TODO: ? should this be a global condition for the entire configuration or do we need it for certain aspects ?
 	AotTypeConfiguration conditional(Predicate<TypeReference> filter);
 
 	default AotTypeConfiguration usedAsProjectionInterface() {
@@ -79,5 +80,31 @@ public interface AotTypeConfiguration {
 	AotTypeConfiguration forQuerydsl();
 
 	void contribute(GenerationContext generationContext);
+
+	static Predicate<TypeReference> userConfiguredCondition(Environment environment) {
+
+		return new Predicate<TypeReference>() {
+
+			private final List<String> allowedAccessorTypes = environment.getProperty("spring.data.aot.generate.accessor",
+					List.class, List.of());
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean test(TypeReference typeReference) {
+
+				if (!allowedAccessorTypes.isEmpty()) {
+					if (allowedAccessorTypes.contains("none") || allowedAccessorTypes.contains("false")
+							|| allowedAccessorTypes.contains("off")) {
+						return false;
+					}
+					if (!allowedAccessorTypes.contains(typeReference.getName())) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+		};
+	}
 
 }
