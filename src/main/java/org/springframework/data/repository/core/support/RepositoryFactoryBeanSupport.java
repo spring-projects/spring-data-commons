@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.aot.AbstractAotProcessor;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
@@ -260,8 +261,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
-		return (EntityInformation<S, ID>) getRequiredFactory()
-				.getEntityInformation(getRequiredRepositoryMetadata());
+		return (EntityInformation<S, ID>) getRequiredFactory().getEntityInformation(getRequiredRepositoryMetadata());
 	}
 
 	@Override
@@ -341,6 +341,14 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 			this.factory.setRepositoryBaseClass(repositoryBaseClass);
 		}
 
+		SpringFactoriesLoader.loadFactories(RepositoryFactoryCustomizer.class, classLoader).forEach(customizer -> {
+
+			if (!(customizer instanceof ConditionalRepositoryFactoryCustomizer conditional)
+					|| conditional.canCustomize(this.factory, this.repositoryInterface)) {
+				customizer.customize(this.factory);
+			}
+		});
+
 		if (beanFactory != null) {
 
 			beanFactory.getBeanProvider(TypedRepositoryFactoryCustomizer.class).orderedStream().forEachOrdered(customizer -> {
@@ -401,8 +409,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		RepositoryFragments fragments = RepositoryFragments.empty();
 		for (RepositoryFragmentsFunction function : functions) {
-			fragments = fragments.append(function.getRepositoryFragments(this.beanFactory,
-					creationContext));
+			fragments = fragments.append(function.getRepositoryFragments(this.beanFactory, creationContext));
 		}
 
 		return fragments;
@@ -426,8 +433,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		 * @param context the creation context.
 		 * @return the repository fragments to use.
 		 */
-		RepositoryFragments getRepositoryFragments(@Nullable BeanFactory beanFactory,
-				FragmentCreationContext context);
+		RepositoryFragments getRepositoryFragments(@Nullable BeanFactory beanFactory, FragmentCreationContext context);
 
 		/**
 		 * Factory method to create {@link RepositoryFragmentsFunction} for a resolved {@link RepositoryFragments} object.
