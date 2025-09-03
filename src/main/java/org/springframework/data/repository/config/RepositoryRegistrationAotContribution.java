@@ -39,6 +39,9 @@ import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragmentsDecorator;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -51,6 +54,7 @@ import org.springframework.data.repository.aot.generate.AotRepositoryBeanDefinit
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
@@ -67,7 +71,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @since 3.0
  */
-public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution {
+public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution, EnvironmentAware {
 
 	private static final Log logger = LogFactory.getLog(RepositoryRegistrationAotContribution.class);
 
@@ -77,7 +81,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private final AotRepositoryContext repositoryContext;
 
-	private @Nullable RepositoryContributor repositoryContributor;
+    private @Nullable RepositoryContributor repositoryContributor;
+	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> moduleContribution;
 
@@ -214,6 +219,11 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = Lazy.of(environment);
+	}
+
+	@Override
 	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
@@ -227,6 +237,8 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				this.repositoryContributor.contribute(generationContext);
 			}
 		}
+		getRepositoryContext().typeConfigurations()
+			.forEach(typeConfiguration -> typeConfiguration.contribute(environment.get(), generationContext));
 	}
 
 	@Override
@@ -261,19 +273,18 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface())
-				.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS) //
-				.repositoryProxy();
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface(),
+				config -> config.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS).repositoryProxy());
 
-		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass())
-				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass(), config -> config
+				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
-		repositoryContext.typeConfiguration(repositoryInformation.getDomainType()).forDataBinding().forQuerydsl();
+		repositoryContext.typeConfiguration(repositoryInformation.getDomainType(),
+				config -> config.forDataBinding().forQuerydsl());
 
 		// TODO: purposeful api for uses cases to have some internal logic
-		repositoryContext.getUserDomainTypes().stream() //
-				.map(repositoryContext::typeConfiguration) //
-				.forEach(AotTypeConfiguration::generateEntityInstantiator); //
+		repositoryContext.getUserDomainTypes() //
+				.forEach(it -> repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors));
 
 		// Repository Fragments
 		contributeFragments(contribution);
@@ -288,7 +299,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {
-						repositoryContext.typeConfiguration(type).usedAsProjectionInterface();
+						repositoryContext.typeConfiguration(type, AotTypeConfiguration::usedAsProjectionInterface);
 					}
 				});
 	}
@@ -297,7 +308,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
 
 			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
-			Optional<Class<?>> implementation = fragment.getImplementationClass();
+            Optional<Class<?>> implementation = fragment.getImplementationClass();
 
 			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
 

@@ -39,10 +39,10 @@ public interface AotTypeConfiguration {
 
 	AotTypeConfiguration forReflectiveAccess(MemberCategory... categories);
 
-	AotTypeConfiguration generateEntityInstantiator();
+	AotTypeConfiguration contributeAccessors();
 
 	// TODO: ? should this be a global condition for the entire configuration or do we need it for certain aspects ?
-	AotTypeConfiguration conditional(Predicate<TypeReference> filter);
+	AotTypeConfiguration filter(Predicate<Class<?>> filter);
 
 	default AotTypeConfiguration usedAsProjectionInterface() {
 		return proxyInterface(TargetAware.class, SpringProxy.class, DecoratingProxy.class);
@@ -69,42 +69,12 @@ public interface AotTypeConfiguration {
 
 	AotTypeConfiguration proxyInterface(List<TypeReference> proxyInterfaces);
 
-	default AotTypeConfiguration proxyInterface(TypeReference... proxyInterfaces) {
-		return proxyInterface(List.of(proxyInterfaces));
-	}
-
 	default AotTypeConfiguration proxyInterface(Class<?>... proxyInterfaces) {
 		return proxyInterface(Stream.of(proxyInterfaces).map(TypeReference::of).toList());
 	}
 
 	AotTypeConfiguration forQuerydsl();
 
-	void contribute(GenerationContext generationContext);
-
-	static Predicate<TypeReference> userConfiguredCondition(Environment environment) {
-
-		return new Predicate<TypeReference>() {
-
-			private final List<String> allowedAccessorTypes = environment.getProperty("spring.data.aot.generate.accessor",
-					List.class, List.of());
-
-			@Override
-			@SuppressWarnings("unchecked")
-			public boolean test(TypeReference typeReference) {
-
-				if (!allowedAccessorTypes.isEmpty()) {
-					if (allowedAccessorTypes.contains("none") || allowedAccessorTypes.contains("false")
-							|| allowedAccessorTypes.contains("off")) {
-						return false;
-					}
-					if (!allowedAccessorTypes.contains(typeReference.getName())) {
-						return false;
-					}
-				}
-
-				return true;
-			}
-		};
-	}
+	void contribute(Environment environment, GenerationContext generationContext);
 
 }

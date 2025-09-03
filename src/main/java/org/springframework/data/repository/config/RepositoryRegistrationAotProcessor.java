@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.BeansException;
@@ -42,6 +41,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -126,7 +126,7 @@ public class RepositoryRegistrationAotProcessor
 					// arent we already registering the types in RepositoryRegistrationAotContribution#contributeRepositoryInfo?
 					registrar.registerRuntimeHints(hints, it);
 
-					repositoryContext.instantiationCreator(TypeReference.of(it)).create();
+					repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors);
 				});
 	}
 
