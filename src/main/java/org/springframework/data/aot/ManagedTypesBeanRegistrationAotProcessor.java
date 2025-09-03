@@ -53,8 +53,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
-	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 	private AotContext aotContext;
+	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
 		this.moduleIdentifier = moduleIdentifier;
@@ -63,6 +63,11 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	@Nullable
 	public String getModuleIdentifier() {
 		return this.moduleIdentifier;
+	}
+
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = Lazy.of(environment);
 	}
 
 	@Override
@@ -144,10 +149,9 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		aotContext.typeConfiguration(type).forDataBinding() //
-				.generateEntityInstantiator() //
-				.forQuerydsl() //
-				.contribute(generationContext); //
+		aotContext.typeConfiguration(type, config -> config.forDataBinding() //
+				.contributeAccessors() //
+				.forQuerydsl().contribute(environment.get(), generationContext));
 
         		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));

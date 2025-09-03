@@ -15,96 +15,164 @@
  */
 package org.springframework.data.aot;
 
+import static org.mockito.Mockito.*;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.data.aot.types.Address;
+import org.springframework.data.aot.types.Customer;
+import org.springframework.data.aot.types.EmptyType1;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.StringUtils;
 
 /**
- * Tests for {@link AotContext}.
+ * Unit tests for {@link AotContext}.
  *
+ *
+ * @author Mark Paluch
  * @author Christoph Strobl
  */
+@MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
 class AotContextUnitTests {
 
-	@ParameterizedTest // GH-3322
-	@CsvSource({ //
-			"'spring.aot.repositories.enabled', '', '', '', true", //
-			"'spring.aot.repositories.enabled', 'true', '', '', true", //
-			"'spring.aot.repositories.enabled', 'false', '', '', false", //
-			"'spring.aot.repositories.enabled', '', 'commons', 'true', true", //
-			"'spring.aot.repositories.enabled', 'true', 'commons', 'true', true", //
-			"'spring.aot.repositories.enabled', '', 'commons', 'false', false", //
-			"'spring.aot.repositories.enabled', 'false', 'commons', 'true', false" //
-	})
-	void considersEnvironmentSettingsForGeneratedRepositories(String generalFlag, String generalValue, String storeName,
-			String storeValue, boolean enabled) {
+    @Mock BeanFactory beanFactory;
 
-		MockAotContext ctx = new MockAotContext();
-		if (StringUtils.hasText(generalFlag) && StringUtils.hasText(generalValue)) {
-			ctx.withProperty(generalFlag, generalValue);
-		}
-		if (StringUtils.hasText(storeName) && StringUtils.hasText(storeValue)) {
-			ctx.withProperty("spring.aot.%s.repositories.enabled".formatted(storeName), storeValue);
-		}
+    @Mock AotMappingContext mappingContext;
 
-		Assertions.assertThat(ctx.isGeneratedRepositoriesEnabled(storeName)).isEqualTo(enabled);
-	}
+    MockEnvironment mockEnvironment = new MockEnvironment();
 
-	static class MockAotContext implements AotContext {
+    @Test // GH-2595
+    void shouldContributeAccessorByDefault() {
 
-		private final MockEnvironment environment;
+        contributeAccessor(Address.class);
+        verify(mappingContext).contribute(Address.class);
+    }
 
-		public MockAotContext() {
-			this.environment = new MockEnvironment();
-		}
+    @Test // GH-2595
+    void shouldConsiderDisabledAccessors() {
 
-		MockAotContext withProperty(String key, String value) {
-			environment.setProperty(key, value);
-			return this;
-		}
+        mockEnvironment.setProperty("spring.aot.data.accessors.enabled", "false");
 
-		@Override
-		public ConfigurableListableBeanFactory getBeanFactory() {
-			return Mockito.mock(ConfigurableListableBeanFactory.class);
-		}
+        contributeAccessor(Address.class);
 
-		@Override
-		public TypeIntrospector introspectType(String typeName) {
-			return Mockito.mock(TypeIntrospector.class);
-		}
+        verifyNoInteractions(mappingContext);
+    }
 
-		@Override
-		public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
-			return Mockito.mock(IntrospectedBeanDefinition.class);
-		}
+    @Test // GH-2595
+    void shouldApplyExcludeFilters() {
 
-		@Override
-		public InstantiationCreator instantiationCreator(TypeReference typeReference) {
-			return Mockito.mock(InstantiationCreator.class);
-		}
+        mockEnvironment.setProperty("spring.aot.data.accessors.exclude",
+            Customer.class.getName() + " , " + EmptyType1.class.getName());
 
-		@Override
-		public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
-			return null;
-		}
+        contributeAccessor(Address.class, Customer.class, EmptyType1.class);
 
-		@Override
-		public Collection<AotTypeConfiguration> typeConfigurations() {
-			return List.of();
-		}
+        verify(mappingContext).contribute(Address.class);
+        verifyNoMoreInteractions(mappingContext);
+    }
 
-		@Override
-		public Environment getEnvironment() {
-			return environment;
-		}
-	}
+    @Test // GH-2595
+    void shouldApplyIncludeExcludeFilters() {
+
+        mockEnvironment.setProperty("spring.aot.data.accessors.include", Customer.class.getPackageName() + ".Add*");
+        mockEnvironment.setProperty("spring.aot.data.accessors.exclude", Customer.class.getPackageName() + ".**");
+
+        contributeAccessor(Address.class, Customer.class, EmptyType1.class);
+
+        verify(mappingContext).contribute(Address.class);
+        verifyNoMoreInteractions(mappingContext);
+    }
+
+    private void contributeAccessor(Class<?>... classes) {
+
+        DefaultAotContext context = new DefaultAotContext(beanFactory, mockEnvironment);
+
+        for (Class<?> aClass : classes) {
+            context.typeConfiguration(aClass, AotTypeConfiguration::contributeAccessors);
+        }
+
+        context.typeConfigurations().forEach(it -> it.contribute(mockEnvironment, new TestGenerationContext()));
+    }
+
+    @ParameterizedTest // GH-3322
+    @CsvSource({ //
+        "'spring.aot.repositories.enabled', '', '', '', true", //
+        "'spring.aot.repositories.enabled', 'true', '', '', true", //
+        "'spring.aot.repositories.enabled', 'false', '', '', false", //
+        "'spring.aot.repositories.enabled', '', 'commons', 'true', true", //
+        "'spring.aot.repositories.enabled', 'true', 'commons', 'true', true", //
+        "'spring.aot.repositories.enabled', '', 'commons', 'false', false", //
+        "'spring.aot.repositories.enabled', 'false', 'commons', 'true', false" //
+    })
+    void considersEnvironmentSettingsForGeneratedRepositories(String generalFlag, String generalValue, String storeName,
+        String storeValue, boolean enabled) {
+
+        MockAotContext ctx = new MockAotContext();
+        if (StringUtils.hasText(generalFlag) && StringUtils.hasText(generalValue)) {
+            ctx.withProperty(generalFlag, generalValue);
+        }
+        if (StringUtils.hasText(storeName) && StringUtils.hasText(storeValue)) {
+            ctx.withProperty("spring.aot.%s.repositories.enabled".formatted(storeName), storeValue);
+        }
+
+        Assertions.assertThat(ctx.isGeneratedRepositoriesEnabled(storeName)).isEqualTo(enabled);
+    }
+
+    static class MockAotContext implements AotContext {
+
+        private final MockEnvironment environment;
+
+        public MockAotContext() {
+            this.environment = new MockEnvironment();
+        }
+
+        MockAotContext withProperty(String key, String value) {
+            environment.setProperty(key, value);
+            return this;
+        }
+
+        @Override
+        public ConfigurableListableBeanFactory getBeanFactory() {
+            return Mockito.mock(ConfigurableListableBeanFactory.class);
+        }
+
+        @Override
+        public TypeIntrospector introspectType(String typeName) {
+            return Mockito.mock(TypeIntrospector.class);
+        }
+
+        @Override
+        public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
+            return Mockito.mock(IntrospectedBeanDefinition.class);
+        }
+
+        @Override
+        public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+
+        }
+
+        @Override
+        public Collection<AotTypeConfiguration> typeConfigurations() {
+            return List.of();
+        }
+
+        @Override
+        public Environment getEnvironment() {
+            return environment;
+        }
+    }
 }

@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.TypeReference;
@@ -216,18 +215,31 @@ public interface AotContext extends EnvironmentCapable {
 	 */
 	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
 
-	InstantiationCreator instantiationCreator(TypeReference typeReference);
-
-	default AotTypeConfiguration typeConfiguration(ResolvableType resolvableType) {
-		return typeConfiguration(resolvableType.toClass());
+	/**
+	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
+	 * given type.
+	 *
+	 * @param resolvableType the resolvable type to configure.
+	 * @param configurationConsumer configuration consumer function.
+	 */
+	default void typeConfiguration(ResolvableType resolvableType, Consumer<AotTypeConfiguration> configurationConsumer) {
+		typeConfiguration(resolvableType.toClass(), configurationConsumer);
 	}
 
-	default AotTypeConfiguration typeConfiguration(Class<?> type) {
-		return typeConfiguration(TypeReference.of(type));
-	}
+	/**
+	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
+	 * given type.
+	 *
+	 * @param type the type to configure.
+	 * @param configurationConsumer configuration consumer function.
+	 */
+	void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer);
 
-	AotTypeConfiguration typeConfiguration(TypeReference typeReference);
-
+	/**
+	 * Return all type configurations registered with this {@link AotContext}.
+	 *
+	 * @return all type configurations registered with this {@link AotContext}.
+	 */
 	Collection<AotTypeConfiguration> typeConfigurations();
 
 	/**
@@ -342,11 +354,6 @@ public interface AotContext extends EnvironmentCapable {
 		 */
 		@Nullable
 		Class<?> resolveType();
-	}
-
-	interface InstantiationCreator {
-		boolean isAvailable();
-		void create();
 	}
 
 }

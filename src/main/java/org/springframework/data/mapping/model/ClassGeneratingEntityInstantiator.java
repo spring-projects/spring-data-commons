@@ -60,7 +60,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @since 1.11
  */
-class ClassGeneratingEntityInstantiator implements EntityInstantiator, PersistentEntityClassInitializer {
+class ClassGeneratingEntityInstantiator implements EntityInstantiator, EntityInstantiatorSource {
 
 	private static final Log LOGGER = LogFactory.getLog(ClassGeneratingEntityInstantiator.class);
 
@@ -88,16 +88,16 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator, Persisten
 	}
 
 	@Override
-	public void initialize(PersistentEntity<?, ?> entity) {
-		getEntityInstantiator(entity);
-	}
-
-	@Override
 	public <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T createInstance(E entity,
 			ParameterValueProvider<P> provider) {
 
 		EntityInstantiator instantiator = getEntityInstantiator(entity);
 		return instantiator.createInstance(entity, provider);
+	}
+
+	@Override
+	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
+		return getEntityInstantiator(entity);
 	}
 
 	private <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> EntityInstantiator getEntityInstantiator(

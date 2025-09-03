@@ -40,13 +40,14 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.data.aot.AotMappingContext.BasicPersistentProperty;
-import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.util.Lazy;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Environment;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Default {@link AotContext} implementation.
@@ -56,17 +57,16 @@ import org.springframework.util.ClassUtils;
  */
 class DefaultAotContext implements AotContext {
 
-	private final AotMappingContext mappingContext = new AotMappingContext();
+	private final AotMappingContext mappingContext = new AotMappingContext();;
 	private final ConfigurableListableBeanFactory factory;
 
 	// TODO: should we reuse the config or potentially have multiple ones with different settings - somehow targets the
 	// filtering issue
-	private final Map<TypeReference, AotTypeConfiguration> typeConfigurations = new HashMap<>();
-
-	private final Environment environment;
+	private final Map<Class<?>, AotTypeConfiguration> typeConfigurations = new HashMap<>();
+    private final Environment environment;
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
-		factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
+		this.factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
 				: new DefaultListableBeanFactory(beanFactory);
 		this.environment = environment;
 	}
@@ -92,13 +92,8 @@ class DefaultAotContext implements AotContext {
 	}
 
 	@Override
-	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
-		return new DefaultInstantiationCreator(introspectType(typeReference.getName()));
-	}
-
-	@Override
-	public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
-		return typeConfigurations.computeIfAbsent(typeReference, it -> new ContextualTypeConfiguration(typeReference));
+	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+		configurationConsumer.accept(typeConfigurations.computeIfAbsent(type, it -> new ContextualTypeConfiguration(type)));
 	}
 
 	@Override
@@ -145,29 +140,6 @@ class DefaultAotContext implements AotContext {
 		}
 	}
 
-	class DefaultInstantiationCreator implements InstantiationCreator {
-
-		Lazy<BasicPersistentEntity<?, BasicPersistentProperty>> entity;
-
-		public DefaultInstantiationCreator(TypeIntrospector typeIntrospector) {
-			this.entity = Lazy.of(() -> mappingContext.getPersistentEntity(typeIntrospector.resolveRequiredType()));
-		}
-
-		@Override
-		public boolean isAvailable() {
-			return entity.getNullable() != null;
-		}
-
-		@Override
-		public void create() {
-
-			BasicPersistentEntity<?, BasicPersistentProperty> persistentEntity = entity.getNullable();
-			if (persistentEntity != null) {
-				mappingContext.contribute(persistentEntity);
-			}
-		}
-	}
-
 	class DefaultIntrospectedBeanDefinition implements IntrospectedBeanDefinition {
 
 		private final String beanName;
@@ -210,15 +182,15 @@ class DefaultAotContext implements AotContext {
 
 	class ContextualTypeConfiguration implements AotTypeConfiguration {
 
-		private final TypeReference type;
+		private final Class<?> type;
 		private boolean forDataBinding = false;
 		private final Set<MemberCategory> categories = new HashSet<>(5);
-		private boolean generateEntityInstantiator = false;
+		private boolean contributeAccessors = false;
 		private boolean forQuerydsl = false;
 		private final List<List<TypeReference>> proxies = new ArrayList<>();
-		private Predicate<TypeReference> filter;
+		private Predicate<Class<?>> filter;
 
-		ContextualTypeConfiguration(TypeReference type) {
+		ContextualTypeConfiguration(Class<?> type) {
 			this.type = type;
 		}
 
@@ -235,8 +207,8 @@ class DefaultAotContext implements AotContext {
 		}
 
 		@Override
-		public AotTypeConfiguration generateEntityInstantiator() {
-			this.generateEntityInstantiator = true;
+		public AotTypeConfiguration contributeAccessors() {
+			this.contributeAccessors = true;
 			return this;
 		}
 
@@ -253,14 +225,14 @@ class DefaultAotContext implements AotContext {
 		}
 
 		@Override
-		public AotTypeConfiguration conditional(Predicate<TypeReference> filter) {
+		public AotTypeConfiguration filter(Predicate<Class<?>> filter) {
 
 			this.filter = filter;
 			return this;
 		}
 
 		@Override
-		public void contribute(GenerationContext generationContext) {
+		public void contribute(Environment environment, GenerationContext generationContext) {
 
 			if (filter != null && !filter.test(this.type)) {
 				return;
@@ -271,43 +243,70 @@ class DefaultAotContext implements AotContext {
 						categories.toArray(MemberCategory[]::new));
 			}
 
-			if (generateEntityInstantiator) {
-				instantiationCreator(type).create();
-			}
+			if (contributeAccessors) {
 
-			if (forDataBinding) {
-				if (!doIfPresent(resolved -> TypeContributor.contribute(resolved, Set.of(TypeContributor.DATA_NAMESPACE),
-						generationContext))) {
-					generationContext.getRuntimeHints().reflection().registerType(type,
-							MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS);
+				boolean accessorsEnabled = environment.getProperty("spring.aot.data.accessors.enabled", Boolean.class, true);
+				String include = environment.getProperty("spring.aot.data.accessors.include", String.class, "");
+				String exclude = environment.getProperty("spring.aot.data.accessors.exclude", String.class, "");
+
+				if (shouldContributeAccessors(type, accessorsEnabled, include, exclude)) {
+					mappingContext.contribute(type);
 				}
 			}
 
+			if (forDataBinding) {
+
+				TypeContributor.contribute(type, Set.of(TypeContributor.DATA_NAMESPACE), generationContext);
+
+				generationContext.getRuntimeHints().reflection().registerType(type, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+						MemberCategory.INVOKE_DECLARED_METHODS);
+			}
+
 			if (forQuerydsl) {
-				doIfPresent(
-						resolved -> QTypeContributor.contributeEntityPath(resolved, generationContext, resolved.getClassLoader()));
+				QTypeContributor.contributeEntityPath(type, generationContext, factory.getBeanClassLoader());
 			}
 
 			if (!proxies.isEmpty()) {
 				for (List<TypeReference> proxyInterfaces : proxies) {
 					generationContext.getRuntimeHints().proxies()
-							.registerJdkProxy(Stream.concat(Stream.of(type), proxyInterfaces.stream()).toArray(TypeReference[]::new));
+							.registerJdkProxy(Stream.concat(Stream.of(TypeReference.of(type)), proxyInterfaces.stream())
+									.toArray(TypeReference[]::new));
 				}
 			}
 
 		}
 
-		private boolean doIfPresent(Consumer<Class<?>> consumer) {
-			if (!ClassUtils.isPresent(type.getName(), type.getClass().getClassLoader())) {
+		static boolean shouldContributeAccessors(Class<?> type, boolean enabled, String include, String exclude) {
+
+			if (!enabled) {
 				return false;
 			}
-			try {
-				Class<?> resolved = ClassUtils.forName(type.getName(), type.getClass().getClassLoader());
-				consumer.accept(resolved);
-				return true;
-			} catch (ClassNotFoundException e) {
-				return false;
+
+			AntPathMatcher antPathMatcher = new AntPathMatcher(".");
+
+			if (StringUtils.hasText(include)) {
+
+				String[] includes = include.split(",");
+
+				for (String includePattern : includes) {
+					if (antPathMatcher.match(includePattern.trim(), type.getName())) {
+						return true;
+					}
+				}
 			}
+
+			if (StringUtils.hasText(exclude)) {
+
+				String[] excludes = exclude.split(",");
+
+				for (String excludePattern : excludes) {
+					if (antPathMatcher.match(excludePattern.trim(), type.getName())) {
+						return false;
+					}
+				}
+			}
+
+			return true;
 		}
 	}
 }

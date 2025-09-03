@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.3
  */
-public class EntityInstantiators {
+public class EntityInstantiators implements EntityInstantiatorSource {
 
 	private final EntityInstantiator fallback;
 	private final Map<Class<?>, EntityInstantiator> customInstantiators;
@@ -84,6 +84,7 @@ public class EntityInstantiators {
 	 * @param entity must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
+	@Override
 	public EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
