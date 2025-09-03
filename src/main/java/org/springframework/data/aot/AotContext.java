@@ -54,6 +54,7 @@ import org.springframework.util.StringUtils;
 public interface AotContext extends EnvironmentCapable {
 
 	String GENERATED_REPOSITORIES_ENABLED = "spring.aot.repositories.enabled";
+	String GENERATED_REPOSITORIES_JSON_ENABLED = "spring.aot.repositories.metadata.enabled";
 
 	/**
 	 * Create an {@link AotContext} backed by the given {@link BeanFactory}.
@@ -114,6 +115,19 @@ public interface AotContext extends EnvironmentCapable {
 		String modulePropertyName = GENERATED_REPOSITORIES_ENABLED.replace("repositories",
 				"%s.repositories".formatted(moduleName.toLowerCase(Locale.ROOT)));
 		return environment.getProperty(modulePropertyName, Boolean.class, true);
+	}
+
+	/**
+	 * Checks if repository metadata file writing is enabled by checking environment variables for general
+	 * enablement ({@link #GENERATED_REPOSITORIES_JSON_ENABLED})
+	 * <p>
+	 * Unset properties are considered being {@literal true}.
+	 *
+	 * @return indicator if repository metadata should be written
+	 * @since 5.0
+	 */
+	default boolean isGeneratedRepositoriesMetadataEnabled() {
+		return getEnvironment().getProperty(GENERATED_REPOSITORIES_JSON_ENABLED, Boolean.class, true);
 	}
 
 	/**

@@ -15,14 +15,16 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.GeneratedFiles.Kind;
 import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
@@ -49,6 +51,7 @@ public class RepositoryContributor {
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
 	private static final String FEATURE_NAME = "AotRepository";
 
+	private final AotRepositoryContext repositoryContext;
 	private final AotRepositoryCreator creator;
 	private @Nullable TypeReference contributedTypeName;
 
@@ -59,6 +62,7 @@ public class RepositoryContributor {
 	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
 
+		this.repositoryContext = repositoryContext;
 		creator = AotRepositoryCreator.forRepository(repositoryContext.getRepositoryInformation(),
 				repositoryContext.getModuleName(), createProjectionFactory());
 	}
@@ -139,20 +143,18 @@ public class RepositoryContributor {
 
 					// write out the content
 					AotBundle aotBundle = creator.create(targetTypeSpec);
-					String repositoryJson;
-					try {
-						repositoryJson = aotBundle.metadata().get().toJson().toString(2);
-					} catch (JSONException e) {
-						throw new RuntimeException(e);
 
-					}
+					String repositoryJson = generateJsonMetadata(aotBundle);
+
 					if (logger.isTraceEnabled()) {
 
-						logger.trace("""
-								------ AOT Repository.json: %s ------
-								%s
-								-------------------
-								""".formatted(aotBundle.repositoryJsonFileName(), repositoryJson));
+						if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
+							logger.trace("""
+									------ AOT Repository.json: %s ------
+									%s
+									-------------------
+									""".formatted(aotBundle.repositoryJsonFileName(), repositoryJson));
+						}
 
 						TypeSpec typeSpec = targetTypeSpec.build();
 						JavaFile javaFile = JavaFile.builder(creator.packageName(), typeSpec).build();
@@ -164,7 +166,14 @@ public class RepositoryContributor {
 								""".formatted(typeSpec.name(), javaFile));
 					}
 
-					generationContext.getGeneratedFiles().addResourceFile(aotBundle.repositoryJsonFileName(), repositoryJson);
+					if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
+						generationContext.getGeneratedFiles().handleFile(Kind.RESOURCE, aotBundle.repositoryJsonFileName(),
+								fileHandler -> {
+									if (!fileHandler.exists()) {
+										fileHandler.create(() -> new ByteArrayInputStream(repositoryJson.getBytes(StandardCharsets.UTF_8)));
+									}
+								});
+					}
 				});
 
 		// generate native runtime hints
@@ -174,6 +183,20 @@ public class RepositoryContributor {
 
 		generationContext.getRuntimeHints().reflection().registerType(this.contributedTypeName,
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+	}
+
+	private String generateJsonMetadata(AotBundle aotBundle) {
+
+		String repositoryJson = "";
+
+		if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
+			try {
+				repositoryJson = aotBundle.metadata().get().toJson().toString(2);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return repositoryJson;
 	}
 
 	/**
