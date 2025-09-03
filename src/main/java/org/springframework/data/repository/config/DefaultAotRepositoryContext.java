@@ -18,11 +18,10 @@ package org.springframework.data.repository.config;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.data.aot.AotContext;
@@ -125,13 +124,8 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
-	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
-		return aotContext.instantiationCreator(typeReference);
-	}
-
-	@Override
-	public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
-		return aotContext.typeConfiguration(typeReference);
+	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+		aotContext.typeConfiguration(type, configurationConsumer);
 	}
 
 	@Override

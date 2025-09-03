@@ -18,9 +18,19 @@ package org.springframework.data.mapping.model;
 import org.springframework.data.mapping.PersistentEntity;
 
 /**
+ * Interface declaring a source for {@link EntityInstantiator} objects.
+ *
  * @author Mark Paluch
+ * @since 4.0
  */
-public interface PersistentEntityClassInitializer {
+@FunctionalInterface
+public interface EntityInstantiatorSource {
 
-	void initialize(PersistentEntity<?, ?> entity);
+	/**
+	 * Returns an {@link EntityInstantiator} for the given {@link PersistentEntity}.
+	 *
+	 * @return the {@link EntityInstantiator} for the given {@link PersistentEntity}.
+	 */
+	EntityInstantiator getInstantiatorFor(PersistentEntity<?, ?> entity);
+
 }

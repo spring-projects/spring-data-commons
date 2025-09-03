@@ -22,8 +22,8 @@ import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiator;
+import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
-import org.springframework.data.mapping.model.PersistentEntityClassInitializer;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
@@ -34,44 +34,49 @@ import org.springframework.data.util.TypeInformation;
  * @author Mark Paluch
  * @since 4.0
  */
-class AotMappingContext extends // TODO: hide this one and delegate to other component - can we use the
-																				// AotContext for it?
-		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.BasicPersistentProperty>, AotMappingContext.BasicPersistentProperty> {
+class AotMappingContext extends
+		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.AotPersistentProperty>, AotMappingContext.AotPersistentProperty> {
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
-	private final ClassGeneratingPropertyAccessorFactory propertyAccessorFactory = new ClassGeneratingPropertyAccessorFactory();
+	private final AotAccessorFactory propertyAccessorFactory = new AotAccessorFactory();
 
 	/**
 	 * Contribute entity instantiators and property accessors for the given {@link PersistentEntity} that are captured
 	 * through Spring's {@code CglibClassHandler}. Otherwise, this is a no-op if contributions are not ran through
 	 * {@code CglibClassHandler}.
 	 *
-	 * @param entity
+	 * @param entityType
 	 */
-	public void contribute(PersistentEntity<?, ?> entity) {
-		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-		if (instantiator instanceof PersistentEntityClassInitializer pec) {
-			pec.initialize(entity);
+	public void contribute(Class<?> entityType) {
+
+		BasicPersistentEntity<?, AotPersistentProperty> entity = getPersistentEntity(entityType);
+
+		if (entity != null) {
+
+			EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+			if (instantiator instanceof EntityInstantiatorSource source) {
+				source.getInstantiatorFor(entity);
+			}
+
+			propertyAccessorFactory.initialize(entity);
 		}
-		propertyAccessorFactory.initialize(entity);
 	}
 
-	// TODO: can we extract some util for this using only type
 	@Override
-	protected <T> BasicPersistentEntity<?, BasicPersistentProperty> createPersistentEntity(
+	protected <T> BasicPersistentEntity<?, AotPersistentProperty> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
 		return new BasicPersistentEntity<>(typeInformation);
 	}
 
 	@Override
-	protected BasicPersistentProperty createPersistentProperty(Property property,
-			BasicPersistentEntity<?, BasicPersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-		return new BasicPersistentProperty(property, owner, simpleTypeHolder);
+	protected AotPersistentProperty createPersistentProperty(Property property,
+			BasicPersistentEntity<?, AotPersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
+		return new AotPersistentProperty(property, owner, simpleTypeHolder);
 	}
 
-	static class BasicPersistentProperty extends AnnotationBasedPersistentProperty<BasicPersistentProperty> {
+	static class AotPersistentProperty extends AnnotationBasedPersistentProperty<AotPersistentProperty> {
 
-		public BasicPersistentProperty(Property property, PersistentEntity<?, BasicPersistentProperty> owner,
+		public AotPersistentProperty(Property property, PersistentEntity<?, AotPersistentProperty> owner,
 				SimpleTypeHolder simpleTypeHolder) {
 			super(property, owner, simpleTypeHolder);
 		}
@@ -82,13 +87,20 @@ class AotMappingContext extends // TODO: hide this one and delegate to other com
 		}
 
 		@Override
-		protected Association<BasicPersistentProperty> createAssociation() {
+		protected Association<AotPersistentProperty> createAssociation() {
 			return new Association<>(this, null);
 		}
 
 		@Override
-		public Association<BasicPersistentProperty> getRequiredAssociation() {
+		public Association<AotPersistentProperty> getAssociation() {
 			return new Association<>(this, null);
+		}
+	}
+
+	static class AotAccessorFactory extends ClassGeneratingPropertyAccessorFactory {
+
+		public void initialize(PersistentEntity<?, ?> entity) {
+			potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity);
 		}
 	}
 

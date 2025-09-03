@@ -76,7 +76,7 @@ import org.springframework.util.StringUtils;
  * @since 1.13
  */
 public class ClassGeneratingPropertyAccessorFactory
-		implements PersistentPropertyAccessorFactory, PersistentEntityClassInitializer {
+		implements PersistentPropertyAccessorFactory {
 
 	// Pooling of parameter arrays to prevent excessive object allocation.
 	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
@@ -87,11 +87,6 @@ public class ClassGeneratingPropertyAccessorFactory
 
 	private final ConcurrentLruCache<PersistentProperty<?>, Function<Object, Object>> wrapperCache = new ConcurrentLruCache<>(
 			256, KotlinValueBoxingAdapter::getWrapper);
-
-	@Override
-	public void initialize(PersistentEntity<?, ?> entity) {
-		getPropertyAccessorConstructor(entity);
-	}
 
 	@Override
 	public <T> PersistentPropertyAccessor<T> getPropertyAccessor(PersistentEntity<?, ?> entity, T bean) {

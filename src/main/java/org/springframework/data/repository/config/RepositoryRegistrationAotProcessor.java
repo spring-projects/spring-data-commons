@@ -26,9 +26,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.BeansException;
@@ -41,6 +41,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.util.TypeContributor;
@@ -120,7 +121,7 @@ public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotPr
 					// arent we already registering the types in RepositoryRegistrationAotContribution#contributeRepositoryInfo?
 					registrar.registerRuntimeHints(hints, it);
 
-					repositoryContext.instantiationCreator(TypeReference.of(it)).create();
+					repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors);
 				});
 	}
 

@@ -33,12 +33,16 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -48,17 +52,21 @@ import org.springframework.util.ClassUtils;
  * {@link BeanRegistrationAotContribution} used to contribute repository registrations.
  *
  * @author John Blum
+ * @author Christoph Strobl
+ * @author Mark Paluch
  * @since 3.0
  */
-public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution {
+public class RepositoryRegistrationAotContribution implements BeanRegistrationAotContribution, EnvironmentAware {
 
 	private static final String KOTLIN_COROUTINE_REPOSITORY_TYPE_NAME = "org.springframework.data.repository.kotlin.CoroutineCrudRepository";
+
+	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
 
 	private AotRepositoryContext repositoryContext;
 
 	private BiConsumer<AotRepositoryContext, GenerationContext> moduleContribution;
 
-	private final RepositoryRegistrationAotProcessor repositoryRegistrationAotProcessor;
+	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	/**
 	 * Factory method used to construct a new instance of {@link RepositoryRegistrationAotContribution} initialized with
@@ -143,7 +151,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		return this;
 	}
 
-	protected DefaultAotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
+	protected AotRepositoryContext buildAotRepositoryContext(RegisteredBean bean,
 			RepositoryConfiguration<?> repositoryMetadata) {
 
 		RepositoryInformation repositoryInformation = resolveRepositoryInformation(repositoryMetadata);
@@ -202,12 +210,17 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 	}
 
 	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = Lazy.of(environment);
+	}
+
+	@Override
 	public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
 
 		contributeRepositoryInfo(this.repositoryContext, generationContext);
 		getModuleContribution().ifPresent(it -> it.accept(getRepositoryContext(), generationContext));
 		getRepositoryContext().typeConfigurations()
-				.forEach(typeConfiguration -> typeConfiguration.contribute(generationContext));
+				.forEach(typeConfiguration -> typeConfiguration.contribute(environment.get(), generationContext));
 	}
 
 	private void contributeRepositoryInfo(AotRepositoryContext repositoryContext, GenerationContext contribution) {
@@ -216,19 +229,18 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 		logTrace("Contributing repository information for [%s]", repositoryInformation.getRepositoryInterface());
 
-		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface())
-				.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS) //
-				.repositoryProxy();
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryInterface(),
+				config -> config.forReflectiveAccess(MemberCategory.INVOKE_PUBLIC_METHODS).repositoryProxy());
 
-		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass())
-				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+		repositoryContext.typeConfiguration(repositoryInformation.getRepositoryBaseClass(), config -> config
+				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
-		repositoryContext.typeConfiguration(repositoryInformation.getDomainType()).forDataBinding().forQuerydsl();
+		repositoryContext.typeConfiguration(repositoryInformation.getDomainType(),
+				config -> config.forDataBinding().forQuerydsl());
 
 		// TODO: purposeful api for uses cases to have some internal logic
-		repositoryContext.getUserDomainTypes().stream() //
-				.map(repositoryContext::typeConfiguration) //
-				.forEach(AotTypeConfiguration::generateEntityInstantiator); //
+		repositoryContext.getUserDomainTypes() //
+				.forEach(it -> repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors));
 
 		// Repository Fragments
 		contributeFragments(contribution);
@@ -243,7 +255,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 				.filter(Class::isInterface).forEach(type -> {
 					if (EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy().test(type,
 							repositoryInformation.getDomainType())) {
-						repositoryContext.typeConfiguration(type).usedAsProjectionInterface();
+						repositoryContext.typeConfiguration(type, AotTypeConfiguration::usedAsProjectionInterface);
 					}
 				});
 	}
@@ -252,7 +264,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
 
 			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
-			Optional<Class<?>> implementation = fragment.getImplementation().map(it -> it.getClass());
+			Optional<Class<?>> implementation = fragment.getImplementation().map(Object::getClass);
 
 			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
 
