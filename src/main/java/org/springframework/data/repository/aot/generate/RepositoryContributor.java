@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +39,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.TypeSpec;
+import org.springframework.util.StringUtils;
 
 /**
  * Contributor for AOT repository fragments.
@@ -49,6 +51,7 @@ import org.springframework.javapoet.TypeSpec;
 public class RepositoryContributor {
 
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
+	private static final Log jsonLogger = LogFactory.getLog(RepositoryContributor.class.getName() + ".json");
 	private static final String FEATURE_NAME = "AotRepository";
 
 	private final AotRepositoryContext repositoryContext;
@@ -58,7 +61,7 @@ public class RepositoryContributor {
 	/**
 	 * Create a new {@code RepositoryContributor} for the given {@link AotRepositoryContext}.
 	 *
-	 * @param repositoryContext
+	 * @param repositoryContext context providing details about the repository to be generated.
 	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
 
@@ -144,29 +147,35 @@ public class RepositoryContributor {
 					// write out the content
 					AotBundle aotBundle = creator.create(targetTypeSpec);
 
-					String repositoryJson = generateJsonMetadata(aotBundle);
+					String repositoryJson = repositoryContext.isGeneratedRepositoriesMetadataEnabled()
+							? generateJsonMetadata(aotBundle)
+							: null;
 
 					if (logger.isTraceEnabled()) {
-
-						if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
-							logger.trace("""
-									------ AOT Repository.json: %s ------
-									%s
-									-------------------
-									""".formatted(aotBundle.repositoryJsonFileName(), repositoryJson));
-						}
 
 						TypeSpec typeSpec = targetTypeSpec.build();
 						JavaFile javaFile = JavaFile.builder(creator.packageName(), typeSpec).build();
 
 						logger.trace("""
-								------ AOT Generated Repository: %s ------
+
 								%s
-								-------------------
-								""".formatted(typeSpec.name(), javaFile));
+								""".formatted(formatTraceMessage("Generated Repository", typeSpec.name(),
+								prefixWithLineNumbers(javaFile.toString()).trim())));
 					}
 
-					if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
+					if (jsonLogger.isTraceEnabled()) {
+
+						if (StringUtils.hasText(repositoryJson)) {
+
+							jsonLogger.trace("""
+
+									%s
+									""".formatted(
+									formatTraceMessage("Repository.json", aotBundle.repositoryJsonFileName(), repositoryJson)));
+						}
+					}
+
+					if (StringUtils.hasText(repositoryJson)) {
 						generationContext.getGeneratedFiles().handleFile(Kind.RESOURCE, aotBundle.repositoryJsonFileName(),
 								fileHandler -> {
 									if (!fileHandler.exists()) {
@@ -183,6 +192,59 @@ public class RepositoryContributor {
 
 		generationContext.getRuntimeHints().reflection().registerType(this.contributedTypeName,
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+	}
+
+	/**
+	 * Format a trace message with a title, label, and content using ascii art style borders.
+	 *
+	 * @param title title of the block (e.g. "Generated Source").
+	 * @param label label that follows the title. Will be truncated if too long.
+	 * @param content the actual content to be displayed.
+	 * @return
+	 */
+	public static String formatTraceMessage(String title, String label, String content) {
+
+		int remainingLength = 64 - title.length();
+		String header = ("= %s: %-" + remainingLength + "." + remainingLength + "s =").formatted(title,
+				formatMaxLength(label, remainingLength - 1));
+
+		return """
+				======================================================================
+				%s
+				======================================================================
+				%s
+				======================================================================
+				""".formatted(header, content);
+	}
+
+	private static String formatMaxLength(String name, int length) {
+		return name.length() > length ? "…" + name.substring(name.length() - length) : name;
+	}
+
+	/**
+	 * Format the given contents by prefixing each line with its line number in a block comment.
+	 *
+	 * @param contents
+	 * @return
+	 */
+	public static String prefixWithLineNumbers(String contents) {
+
+		List<String> lines = contents.lines().toList();
+
+		int decimals = (int) Math.log10(Math.abs(lines.size())) + 1;
+		StringBuilder builder = new StringBuilder();
+
+		int lineNumber = 1;
+		for (String s : lines) {
+
+			String formattedLineNumber = String.format("/* %-" + decimals + "d */\t", lineNumber);
+
+			builder.append(formattedLineNumber).append(s).append(System.lineSeparator());
+
+			lineNumber++;
+		}
+
+		return builder.toString();
 	}
 
 	private String generateJsonMetadata(AotBundle aotBundle) {
