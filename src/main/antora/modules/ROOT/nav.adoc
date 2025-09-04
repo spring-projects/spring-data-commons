@@ -21,6 +21,7 @@
 * xref:custom-conversions.adoc[]
 * xref:entity-callbacks.adoc[]
 * xref:is-new-state-detection.adoc[]
+* xref:aot.adoc[]
 * xref:kotlin.adoc[]
 ** xref:kotlin/requirements.adoc[]
 ** xref:kotlin/null-safety.adoc[]

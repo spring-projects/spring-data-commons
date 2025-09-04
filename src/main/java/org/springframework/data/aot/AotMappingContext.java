@@ -28,7 +28,6 @@ import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.util.TypeInformation;
 
 /**

@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
@@ -53,7 +52,6 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
-	private AotContext aotContext;
 	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
@@ -71,19 +69,14 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	}
 
 	@Override
-	public void setEnvironment(Environment environment) {
-		this.environment = Lazy.of(() -> environment);
-	}
-
-	@Override
 	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
 		if (!isMatch(registeredBean.getBeanClass(), registeredBean.getBeanName())) {
 			return null;
 		}
 
-		this.aotContext = new DefaultAotContext(registeredBean.getBeanFactory(), environment.get());
-		return contribute(this.aotContext, resolveManagedTypes(registeredBean), registeredBean);
+		DefaultAotContext aotContext = new DefaultAotContext(registeredBean.getBeanFactory(), environment.get());
+		return contribute(aotContext, resolveManagedTypes(registeredBean), registeredBean);
 	}
 
 	private ManagedTypes resolveManagedTypes(RegisteredBean registeredBean) {
@@ -124,7 +117,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	/**
 	 * Hook to provide a customized flavor of {@link BeanRegistrationAotContribution}. By overriding this method calls to
-	 * {@link #contributeType(ResolvableType, GenerationContext)} might no longer be issued.
+	 * {@link #contributeType(ResolvableType, GenerationContext, AotContext)} might no longer be issued.
 	 *
 	 * @param aotContext never {@literal null}.
 	 * @param managedTypes never {@literal null}.
@@ -141,7 +134,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * @param type never {@literal null}.
 	 * @param generationContext never {@literal null}.
 	 */
-	protected void contributeType(ResolvableType type, GenerationContext generationContext) {
+	protected void contributeType(ResolvableType type, GenerationContext generationContext, AotContext aotContext) {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Contributing type information for [%s]", type.getType()));
@@ -153,7 +146,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 				.contributeAccessors() //
 				.forQuerydsl().contribute(environment.get(), generationContext));
 
-        		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
+		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
 	}
 

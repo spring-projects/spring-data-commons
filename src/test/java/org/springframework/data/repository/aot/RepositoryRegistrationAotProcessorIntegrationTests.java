@@ -15,12 +15,11 @@
  */
 package org.springframework.data.repository.aot;
 
-import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.*;
+import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.assertThatContribution;
 
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -109,8 +108,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	void simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
-				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class).forRepository(
-						ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class);
+				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class)
+				.forRepository(ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(
@@ -176,7 +175,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
 				ConfigWithCustomImplementation.class)
-						.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
+				.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class) //
@@ -225,15 +224,15 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
 				ConfigWithCustomRepositoryBaseClass.class)
-						.forRepository(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class);
+				.forRepository(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) //
 				.hasFragments() //
 				.codeContributionSatisfies(contribution -> { //
 					// interface
-					contribution
-							.contributesReflectionFor(SampleRepositoryFragmentsContributor.class) // repository structural fragment
+					contribution.contributesReflectionFor(SampleRepositoryFragmentsContributor.class) // repository structural
+																																														// fragment
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) // repository
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.RepoBaseClass.class) // base repo class
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.Person.class); // repository domain type
@@ -308,7 +307,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution contribution = computeAotConfiguration(
 				InheritedEventPublicationConfiguration.class)
-						.forRepository(InheritedEventPublicationConfiguration.SampleRepository.class);
+				.forRepository(InheritedEventPublicationConfiguration.SampleRepository.class);
 
 		assertThatContribution(contribution).codeContributionSatisfies(it -> {
 			it.contributesReflectionFor(AbstractAggregateRoot.class);
@@ -335,10 +334,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 		interface SampleRepository extends Repository<Sample, Object> {}
 	}
 
-	@EnableRepositories(
-			includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE,
-					value = InheritedEventPublicationConfiguration.SampleRepository.class) },
-			considerNestedRepositories = true)
+	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE,
+			value = InheritedEventPublicationConfiguration.SampleRepository.class) }, considerNestedRepositories = true)
 	public class InheritedEventPublicationConfiguration {
 
 		static class Sample extends AbstractAggregateRoot<Sample> {}

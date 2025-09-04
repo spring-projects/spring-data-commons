@@ -26,11 +26,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -41,8 +39,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.Environment;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.util.AntPathMatcher;
@@ -53,22 +49,27 @@ import org.springframework.util.StringUtils;
  * Default {@link AotContext} implementation.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.0
  */
 class DefaultAotContext implements AotContext {
 
-	private final AotMappingContext mappingContext = new AotMappingContext();;
+	private final AotMappingContext mappingContext;
 	private final ConfigurableListableBeanFactory factory;
 
-	// TODO: should we reuse the config or potentially have multiple ones with different settings - somehow targets the
-	// filtering issue
+	// TODO: should we reuse the config or potentially have multiple ones with different settings for the same type
 	private final Map<Class<?>, AotTypeConfiguration> typeConfigurations = new HashMap<>();
-    private final Environment environment;
+	private final Environment environment;
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
+		this(beanFactory, environment, new AotMappingContext());
+	}
+
+	DefaultAotContext(BeanFactory beanFactory, Environment environment, AotMappingContext mappingContext) {
 		this.factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
 				: new DefaultListableBeanFactory(beanFactory);
 		this.environment = environment;
+		this.mappingContext = mappingContext;
 	}
 
 	@Override
@@ -188,7 +189,6 @@ class DefaultAotContext implements AotContext {
 		private boolean contributeAccessors = false;
 		private boolean forQuerydsl = false;
 		private final List<List<TypeReference>> proxies = new ArrayList<>();
-		private Predicate<Class<?>> filter;
 
 		ContextualTypeConfiguration(Class<?> type) {
 			this.type = type;
@@ -225,18 +225,7 @@ class DefaultAotContext implements AotContext {
 		}
 
 		@Override
-		public AotTypeConfiguration filter(Predicate<Class<?>> filter) {
-
-			this.filter = filter;
-			return this;
-		}
-
-		@Override
 		public void contribute(Environment environment, GenerationContext generationContext) {
-
-			if (filter != null && !filter.test(this.type)) {
-				return;
-			}
 
 			if (!this.categories.isEmpty()) {
 				generationContext.getRuntimeHints().reflection().registerType(this.type,
@@ -255,11 +244,7 @@ class DefaultAotContext implements AotContext {
 			}
 
 			if (forDataBinding) {
-
 				TypeContributor.contribute(type, Set.of(TypeContributor.DATA_NAMESPACE), generationContext);
-
-				generationContext.getRuntimeHints().reflection().registerType(type, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-						MemberCategory.INVOKE_DECLARED_METHODS);
 			}
 
 			if (forQuerydsl) {
@@ -268,9 +253,8 @@ class DefaultAotContext implements AotContext {
 
 			if (!proxies.isEmpty()) {
 				for (List<TypeReference> proxyInterfaces : proxies) {
-					generationContext.getRuntimeHints().proxies()
-							.registerJdkProxy(Stream.concat(Stream.of(TypeReference.of(type)), proxyInterfaces.stream())
-									.toArray(TypeReference[]::new));
+					generationContext.getRuntimeHints().proxies().registerJdkProxy(
+							Stream.concat(Stream.of(TypeReference.of(type)), proxyInterfaces.stream()).toArray(TypeReference[]::new));
 				}
 			}
 

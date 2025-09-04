@@ -20,10 +20,9 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
-
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
@@ -79,13 +78,8 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
-	public InstantiationCreator instantiationCreator(TypeReference typeReference) {
-		return null;
-	}
+	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
 
-	@Override
-	public AotTypeConfiguration typeConfiguration(TypeReference typeReference) {
-		return null;
 	}
 
 	@Override

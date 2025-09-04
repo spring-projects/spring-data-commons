@@ -1,11 +1,11 @@
 /*
- * Copyright 2025. the original author or authors.
+ * Copyright 2025-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,6 @@ package org.springframework.data.aot;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.springframework.aop.SpringProxy;
@@ -31,27 +30,70 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.projection.TargetAware;
 
 /**
+ * Configuration object that captures various AOT configuration aspects of types within the data context by offering
+ * predefined methods to register native configuration necessary for data binding, projection proxy definitions, AOT
+ * cglib bytecode generation and other common tasks.
+ * <p>
+ * On {@link #contribute(Environment, GenerationContext)} the configuration is added to the {@link GenerationContext}.
+ * 
  * @author Christoph Strobl
+ * @since 4.0
  */
 public interface AotTypeConfiguration {
 
+	/**
+	 * Configure the referenced type for data binding. In case of {@link java.lang.annotation.Annotation} only data ones
+	 * are considered. For more fine grained control use {@link #forReflectiveAccess(MemberCategory...)}.
+	 *
+	 * @return this.
+	 */
 	AotTypeConfiguration forDataBinding();
 
+	/**
+	 * Configure the referenced type for reflective access by providing at least one {@link MemberCategory}.
+	 *
+	 * @param categories must not contain {@literal null}.
+	 * @return this.
+	 */
 	AotTypeConfiguration forReflectiveAccess(MemberCategory... categories);
 
+	/**
+	 * Contribute generated cglib accessors for the referenced type.
+	 * <p>
+	 * Can be disabled by user configuration ({@code spring.aot.data.accessors.enabled}). Honors in/exclusions set by user
+	 * configuration {@code spring.aot.data.accessors.include} / {@code spring.aot.data.accessors.exclude}
+	 *
+	 * @return this.
+	 */
 	AotTypeConfiguration contributeAccessors();
 
-	// TODO: ? should this be a global condition for the entire configuration or do we need it for certain aspects ?
-	AotTypeConfiguration filter(Predicate<Class<?>> filter);
-
+	/**
+	 * Configure the referenced type as a projection interface returned by eg. a query method.
+	 * <p>
+	 * Shortcut for {@link #proxyInterface(Class[]) proxyInterface(TargetAware, SpringProxy, DecoratingProxy)}
+	 * 
+	 * @return this.
+	 */
 	default AotTypeConfiguration usedAsProjectionInterface() {
 		return proxyInterface(TargetAware.class, SpringProxy.class, DecoratingProxy.class);
 	}
 
+	/**
+	 * Configure the referenced type as a spring proxy interface.
+	 * <p>
+	 * Shortcut for {@link #proxyInterface(Class[]) proxyInterface(SpringProxy, Advised, DecoratingProxy)}
+	 *
+	 * @return this.
+	 */
 	default AotTypeConfiguration springProxy() {
 		return proxyInterface(SpringProxy.class, Advised.class, DecoratingProxy.class);
 	}
 
+	/**
+	 * Configure the referenced type as a repository proxy.
+	 *
+	 * @return this.
+	 */
 	default AotTypeConfiguration repositoryProxy() {
 
 		springProxy();
@@ -67,14 +109,36 @@ public interface AotTypeConfiguration {
 		return this;
 	}
 
+	/**
+	 * Register a proxy for the referenced type that also implements the given proxyInterfaces.
+	 * 
+	 * @param proxyInterfaces additional interfaces the proxy implements. Order matters!
+	 * @return this.
+	 */
 	AotTypeConfiguration proxyInterface(List<TypeReference> proxyInterfaces);
 
+	/**
+	 * Register a proxy for the referenced type that also implements the given proxyInterfaces.
+	 *
+	 * @param proxyInterfaces additional interfaces the proxy implements. Order matters!
+	 * @return this.
+	 */
 	default AotTypeConfiguration proxyInterface(Class<?>... proxyInterfaces) {
 		return proxyInterface(Stream.of(proxyInterfaces).map(TypeReference::of).toList());
 	}
 
+	/**
+	 * Configure the referenced type for usage with Querydsl by registering hints for potential {@code Q} types.
+	 * 
+	 * @return this.
+	 */
 	AotTypeConfiguration forQuerydsl();
 
+	/**
+	 * Write the configuration to the given {@link GenerationContext}.
+	 * 
+	 * @param environment must not be {@literal null}.
+	 * @param generationContext must not be {@literal null}.
+	 */
 	void contribute(Environment environment, GenerationContext generationContext);
-
 }

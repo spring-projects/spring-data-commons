@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.annotation.Reflective;
@@ -41,10 +40,10 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -89,9 +88,9 @@ public class RepositoryRegistrationAotProcessor
 		return isRepositoryBean(bean) ? newRepositoryRegistrationAotContribution(bean) : null;
 	}
 
-
 	@Nullable
-	protected RepositoryContributor contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+	protected RepositoryContributor contribute(AotRepositoryContext repositoryContext,
+			GenerationContext generationContext) {
 
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it))
@@ -145,7 +144,7 @@ public class RepositoryRegistrationAotProcessor
 			return null;
 		}
 
-		//TODO: add the hook for customizing bean initialization code here!
+		// TODO: add the hook for customizing bean initialization code here!
 
 		return contribution.withModuleContribution((repositoryContext, generationContext) -> {
 			registerReflectiveForAggregateRoot(repositoryContext, generationContext);
@@ -196,7 +195,6 @@ public class RepositoryRegistrationAotProcessor
 
 	protected void contributeType(Class<?> type, GenerationContext generationContext) {
 		TypeContributor.contribute(type, it -> true, generationContext);
-
 	}
 
 	protected Log getLogger() {

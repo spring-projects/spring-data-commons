@@ -15,8 +15,9 @@
  */
 package org.springframework.data.repository.aot;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -27,7 +28,6 @@ import java.util.function.Supplier;
 
 import org.assertj.core.api.AbstractAssert;
 import org.junit.jupiter.api.function.ThrowingConsumer;
-import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
