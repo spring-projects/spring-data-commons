@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 
 import org.assertj.core.api.AbstractAssert;
 import org.junit.jupiter.api.function.ThrowingConsumer;
-import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;

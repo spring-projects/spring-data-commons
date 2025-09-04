@@ -28,7 +28,6 @@ import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -70,14 +69,12 @@ class AotMappingContext extends
 	@Override
 	protected <T> BasicPersistentEntity<?, AotPersistentProperty> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
-		logger.debug("I hate gradle: create persistent entity for type: " + typeInformation);
 		return new BasicPersistentEntity<>(typeInformation);
 	}
 
 	@Override
 	protected AotPersistentProperty createPersistentProperty(Property property,
 			BasicPersistentEntity<?, AotPersistentProperty> owner, SimpleTypeHolder simpleTypeHolder) {
-		logger.info("creating property: " + property.getName());
 		return new AotPersistentProperty(property, owner, simpleTypeHolder);
 	}
 

@@ -15,12 +15,10 @@
  */
 package org.springframework.data.repository.config;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -29,8 +27,6 @@ import java.util.function.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-import org.springframework.aop.SpringProxy;
-import org.springframework.aop.framework.Advised;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -39,13 +35,10 @@ import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragmentsDecorator;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.core.DecoratingProxy;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.env.Environment;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.projection.EntityProjectionIntrospector;
@@ -55,9 +48,6 @@ import org.springframework.data.repository.aot.generate.RepositoryContributor;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.Predicates;
-import org.springframework.data.util.QTypeContributor;
-import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.util.Assert;
@@ -81,7 +71,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 
 	private final AotRepositoryContext repositoryContext;
 
-    private @Nullable RepositoryContributor repositoryContributor;
+	private @Nullable RepositoryContributor repositoryContributor;
 	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
 
 	private @Nullable BiFunction<AotRepositoryContext, GenerationContext, @Nullable RepositoryContributor> moduleContribution;
@@ -238,7 +228,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 			}
 		}
 		getRepositoryContext().typeConfigurations()
-			.forEach(typeConfiguration -> typeConfiguration.contribute(environment.get(), generationContext));
+				.forEach(typeConfiguration -> typeConfiguration.contribute(environment.get(), generationContext));
 	}
 
 	@Override
@@ -308,7 +298,7 @@ public class RepositoryRegistrationAotContribution implements BeanRegistrationAo
 		for (RepositoryFragment<?> fragment : getRepositoryInformation().getFragments()) {
 
 			Class<?> repositoryFragmentType = fragment.getSignatureContributor();
-            Optional<Class<?>> implementation = fragment.getImplementationClass();
+			Optional<Class<?>> implementation = fragment.getImplementationClass();
 
 			contribution.getRuntimeHints().reflection().registerType(repositoryFragmentType, hint -> {
 

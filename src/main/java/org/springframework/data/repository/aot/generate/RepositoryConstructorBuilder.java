@@ -48,8 +48,11 @@ import org.springframework.util.Assert;
  */
 class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 
+	@SuppressWarnings("NullAway")
 	private final String beanFactory = AotRepositoryBeanDefinitionPropertiesDecorator.RESERVED_TYPES
 			.get(ResolvableType.forClass(BeanFactory.class));
+
+	@SuppressWarnings("NullAway")
 	private final String fragmentCreationContext = AotRepositoryBeanDefinitionPropertiesDecorator.RESERVED_TYPES
 			.get(ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class));
 

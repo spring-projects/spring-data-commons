@@ -23,7 +23,6 @@ import java.util.function.BiConsumer;
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.AccessControl;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
@@ -77,11 +76,11 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 	private final AotContext aotContext;
 	private final ManagedTypes managedTypes;
 	private final Lazy<List<Class<?>>> sourceTypes;
-	private final BiConsumer<ResolvableType, GenerationContext> contributionAction;
+	private final TypeRegistration contributionAction;
 	private final RegisteredBean source;
 
-	public ManagedTypesRegistrationAotContribution(AotContext aotContext, ManagedTypes managedTypes, RegisteredBean registeredBean,
-			BiConsumer<ResolvableType, GenerationContext> contributionAction) {
+	public ManagedTypesRegistrationAotContribution(AotContext aotContext, ManagedTypes managedTypes,
+			RegisteredBean registeredBean, TypeRegistration contributionAction) {
 
 		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
@@ -96,7 +95,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		List<Class<?>> types = sourceTypes.get();
 
 		if (!types.isEmpty()) {
-			TypeCollector.inspect(types).forEach(type -> contributionAction.accept(type, generationContext));
+			TypeCollector.inspect(types).forEach(type -> contributionAction.register(type, generationContext, aotContext));
 		}
 	}
 
@@ -116,6 +115,10 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 	@Override
 	public RegisteredBean getSource() {
 		return source;
+	}
+
+	interface TypeRegistration {
+		void register(ResolvableType type, GenerationContext generationContext, AotContext aotContext);
 	}
 
 	/**
@@ -145,7 +148,8 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		}
 
 		@Override
-		public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode, boolean allowDirectSupplierShortcut) {
+		public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext,
+				BeanRegistrationCode beanRegistrationCode, boolean allowDirectSupplierShortcut) {
 
 			GeneratedMethod generatedMethod = beanRegistrationCode.getMethods().add("Instance",
 					this::generateInstanceFactory);
