@@ -6,10 +6,10 @@ nav:
 ext:
   collector:
     - run:
-        command: ./mvnw validate process-resources -am -Pantora-process-resources
+        command: ./mvnw validate process-resources -pl :spring-data-commons-distribution -am -Pantora-process-resources
         local: true
       scan:
-        dir: target/classes/antora-resources/
+        dir: spring-data-commons-distribution/target/classes/
     - run:
         command: ./mvnw package -Pdistribute
         local: true

@@ -1,0 +1,3 @@
+org.springframework.data.util.CustomCollectionRegistrar=org.springframework.data.util.CustomCollections.VavrCollections, \
+ org.springframework.data.util.CustomCollections.EclipseCollections
+org.springframework.beans.BeanInfoFactory=org.springframework.data.util.KotlinBeanInfoFactory

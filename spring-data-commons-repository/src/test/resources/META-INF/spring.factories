@@ -1,0 +1,2 @@
+org.springframework.data.repository.config.basepackage.repo.PersonRepository=org.springframework.data.repository.config.spifragment.SpiContribution
+org.springframework.data.repository.config.spifragment.SpiFragment=org.springframework.data.repository.config.spifragment.SpiFragmentImpl
