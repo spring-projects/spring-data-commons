@@ -15,20 +15,13 @@
  */
 package org.springframework.data.repository.aot;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.*;
+import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.assertThatContribution;
 
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.DecoratingProxy;
@@ -65,6 +58,7 @@ import org.springframework.transaction.interceptor.TransactionalProxy;
  * @author Christoph Strobl
  * @author John Blum
  */
+// TODO: This is verifying repository.config code. Move to repository.config package?
 public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 	@Test // GH-2593
@@ -83,9 +77,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class) //
 							.contributesJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class)
-							.doesNotContributeJdkProxy(ConfigWithSimpleCrudRepository.MyRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
+									TransactionalProxy.class, Advised.class, DecoratingProxy.class);
 				});
 	}
 
@@ -108,9 +100,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 							.contributesJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, SpringProxy.class, Advised.class,
 									DecoratingProxy.class)
 							.contributesJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class)
-							.doesNotContributeJdkProxy(ConfigWithTransactionManagerPresent.MyTxRepo.class, Repository.class,
-									TransactionalProxy.class, Advised.class, DecoratingProxy.class, Serializable.class);
+									TransactionalProxy.class, Advised.class, DecoratingProxy.class);
 				});
 	}
 
@@ -118,8 +108,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 	void simpleRepositoryWithTxManagerNoKotlinNoReactiveButComponent() {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
-				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class).forRepository(
-						ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class);
+				ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.class)
+				.forRepository(ConfigWithTransactionManagerPresentAndAtComponentAnnotatedRepository.MyComponentTxRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(
@@ -185,7 +175,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
 				ConfigWithCustomImplementation.class)
-						.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
+				.forRepository(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomImplementation.RepositoryWithCustomImplementation.class) //
@@ -234,15 +224,15 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution repositoryBeanContribution = computeAotConfiguration(
 				ConfigWithCustomRepositoryBaseClass.class)
-						.forRepository(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class);
+				.forRepository(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class);
 
 		assertThatContribution(repositoryBeanContribution) //
 				.targetRepositoryTypeIs(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) //
 				.hasFragments() //
 				.codeContributionSatisfies(contribution -> { //
 					// interface
-					contribution
-							.contributesReflectionFor(SampleRepositoryFragmentsContributor.class) // repository structural fragment
+					contribution.contributesReflectionFor(SampleRepositoryFragmentsContributor.class) // repository structural
+																																														// fragment
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.CustomerRepositoryWithCustomBaseRepo.class) // repository
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.RepoBaseClass.class) // base repo class
 							.contributesReflectionFor(ConfigWithCustomRepositoryBaseClass.Person.class); // repository domain type
@@ -296,8 +286,7 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 		assertThatContribution(repositoryBeanContribution) //
 				.codeContributionSatisfies(contribution -> {
 					contribution.contributesReflectionFor(Person.class);
-					contribution.contributesReflectionFor(
-							QConfigWithQuerydslPredicateExecutor_Person.class);
+					contribution.contributesReflectionFor(QConfigWithQuerydslPredicateExecutor_Person.class);
 				});
 	}
 
@@ -318,53 +307,15 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 
 		RepositoryRegistrationAotContribution contribution = computeAotConfiguration(
 				InheritedEventPublicationConfiguration.class)
-						.forRepository(InheritedEventPublicationConfiguration.SampleRepository.class);
+				.forRepository(InheritedEventPublicationConfiguration.SampleRepository.class);
 
 		assertThatContribution(contribution).codeContributionSatisfies(it -> {
 			it.contributesReflectionFor(AbstractAggregateRoot.class);
 		});
 	}
 
-	RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration) {
-		return computeAotConfiguration(configuration, new AnnotationConfigApplicationContext());
-	}
-
-	RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration,
-			AnnotationConfigApplicationContext applicationContext) {
-
-		applicationContext.register(configuration);
-		applicationContext.refreshForAotProcessing(new RuntimeHints());
-
-		return repositoryType -> {
-
-			String[] repositoryBeanNames = applicationContext.getBeanNamesForType(repositoryType);
-
-			assertThat(repositoryBeanNames)
-					.describedAs("Unable to find repository [%s] in configuration [%s]", repositoryType, configuration)
-					.hasSize(1);
-
-			String repositoryBeanName = repositoryBeanNames[0];
-
-			ConfigurableListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
-
-			RepositoryRegistrationAotProcessor repositoryAotProcessor = applicationContext
-					.getBean(RepositoryRegistrationAotProcessor.class);
-
-			repositoryAotProcessor.setBeanFactory(beanFactory);
-
-			RegisteredBean bean = RegisteredBean.of(beanFactory, repositoryBeanName);
-
-			BeanRegistrationAotContribution beanContribution = repositoryAotProcessor.processAheadOfTime(bean);
-
-			assertThat(beanContribution).isInstanceOf(RepositoryRegistrationAotContribution.class);
-
-			return (RepositoryRegistrationAotContribution) beanContribution;
-		};
-	}
-
-	@FunctionalInterface
-	interface RepositoryRegistrationAotContributionBuilder {
-		RepositoryRegistrationAotContribution forRepository(Class<?> repositoryInterface);
+	AotUtil.RepositoryRegistrationAotContributionBuilder computeAotConfiguration(Class<?> configuration) {
+		return AotUtil.contributionFor(configuration);
 	}
 
 	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE, value = SampleRepository.class) },
@@ -383,10 +334,8 @@ public class RepositoryRegistrationAotProcessorIntegrationTests {
 		interface SampleRepository extends Repository<Sample, Object> {}
 	}
 
-	@EnableRepositories(
-			includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE,
-					value = InheritedEventPublicationConfiguration.SampleRepository.class) },
-			considerNestedRepositories = true)
+	@EnableRepositories(includeFilters = { @Filter(type = FilterType.ASSIGNABLE_TYPE,
+			value = InheritedEventPublicationConfiguration.SampleRepository.class) }, considerNestedRepositories = true)
 	public class InheritedEventPublicationConfiguration {
 
 		static class Sample extends AbstractAggregateRoot<Sample> {}

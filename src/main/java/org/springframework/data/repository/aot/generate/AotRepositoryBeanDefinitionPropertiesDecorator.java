@@ -123,6 +123,8 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 
 	private CodeBlock buildCallbackBody() {
 
+		Assert.state(repositoryContributor.getContributedTypeName() != null, "ContributedTypeName must not be null");
+
 		CodeBlock.Builder callback = CodeBlock.builder();
 		List<Object> arguments = new ArrayList<>();
 
@@ -146,7 +148,7 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 
 		List<Object> args = new ArrayList<>();
 		args.add(RepositoryComposition.RepositoryFragments.class);
-		args.add(repositoryContributor.getContributedTypeName().getCanonicalName());
+		args.add(repositoryContributor.getContributedTypeName().getName());
 		args.addAll(arguments);
 
 		callback.addStatement("return $T.just(new $L(%s%s))".formatted("$L".repeat(arguments.isEmpty() ? 0 : 1),

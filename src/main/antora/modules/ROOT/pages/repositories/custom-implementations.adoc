@@ -362,7 +362,6 @@ The `exposeMetadata` flag can be set directly on the repository factory bean via
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
-import org.springframework.lang.Nullable;
 
 @Configuration
 class MyConfiguration {

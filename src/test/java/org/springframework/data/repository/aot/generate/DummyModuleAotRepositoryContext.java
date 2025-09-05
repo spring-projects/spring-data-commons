@@ -17,14 +17,17 @@ package org.springframework.data.repository.aot.generate;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.test.tools.ClassFile;
+import org.springframework.data.aot.AotTypeConfiguration;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -76,6 +79,16 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
+	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+
+	}
+
+	@Override
+	public Collection<AotTypeConfiguration> typeConfigurations() {
+		return List.of();
+	}
+
+	@Override
 	public String getBeanName() {
 		return "dummyRepository";
 	}
@@ -102,6 +115,11 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 
 	@Override
 	public Set<Class<?>> getResolvedTypes() {
+		return Set.of();
+	}
+
+	@Override
+	public Set<Class<?>> getUserDomainTypes() {
 		return Set.of();
 	}
 

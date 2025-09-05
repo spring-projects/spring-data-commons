@@ -15,20 +15,21 @@
  */
 package org.springframework.data.projection;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import org.springframework.lang.Nullable;
 
 /**
  * Integration tests for projections.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class ProjectionIntegrationTests {
 
@@ -44,7 +45,26 @@ class ProjectionIntegrationTests {
 		assertThat(json.read("$.decoratedClass", String.class)).isNull();
 	}
 
+	@Test // GH-3170
+	void jacksonSerializationConsidersJspecifyNullableAnnotations() throws Exception {
+
+		var factory = new ProxyProjectionFactory();
+		var projection = factory.createProjection(SampleProjectionJSpecify.class);
+
+		var context = JsonPath.using(new ConfigurationBuilder().options(Option.SUPPRESS_EXCEPTIONS).build());
+		var json = context.parse(new ObjectMapper().writeValueAsString(projection));
+
+		assertThat(json.read("$.decoratedClass", String.class)).isNull();
+	}
+
+	@SuppressWarnings("deprecation")
 	interface SampleProjection {
-		@Nullable String getName();
+		@Nullable
+		String getName();
+	}
+
+	interface SampleProjectionJSpecify {
+		@org.jspecify.annotations.Nullable
+		String getName();
 	}
 }

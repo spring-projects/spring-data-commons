@@ -30,6 +30,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -228,6 +229,33 @@ public interface AotContext extends EnvironmentCapable {
 	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
 
 	/**
+	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
+	 * given type.
+	 *
+	 * @param resolvableType the resolvable type to configure.
+	 * @param configurationConsumer configuration consumer function.
+	 */
+	default void typeConfiguration(ResolvableType resolvableType, Consumer<AotTypeConfiguration> configurationConsumer) {
+		typeConfiguration(resolvableType.toClass(), configurationConsumer);
+	}
+
+	/**
+	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
+	 * given type.
+	 *
+	 * @param type the type to configure.
+	 * @param configurationConsumer configuration consumer function.
+	 */
+	void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer);
+
+	/**
+	 * Return all type configurations registered with this {@link AotContext}.
+	 *
+	 * @return all type configurations registered with this {@link AotContext}.
+	 */
+	Collection<AotTypeConfiguration> typeConfigurations();
+
+	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence
 	 * of beans.
 	 */
@@ -286,7 +314,6 @@ public interface AotContext extends EnvironmentCapable {
 		 * @return a {@link List} of bean names. The list is empty if the bean factory does not hold any beans of this type.
 		 */
 		List<String> getBeanNames();
-
 	}
 
 	/**
@@ -340,7 +367,6 @@ public interface AotContext extends EnvironmentCapable {
 		 */
 		@Nullable
 		Class<?> resolveType();
-
 	}
 
 }
