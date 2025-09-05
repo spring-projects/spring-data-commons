@@ -18,8 +18,9 @@ package org.springframework.data.repository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.springframework.aop.framework.ProxyFactory
 import org.springframework.data.repository.sample.User
 import java.util.*
 
@@ -28,8 +29,13 @@ import java.util.*
  *
  * @author Sebastien Deleuze
  * @author Mark Paluch
+ * @author Subin Kim
  */
 class CrudRepositoryExtensionsTests {
+
+    private interface UserRepository : CrudRepository<User, String> {
+        override fun findById(id: String): Optional<User>
+    }
 
 	var repository = mockk<CrudRepository<User, String>>()
 
@@ -44,4 +50,22 @@ class CrudRepositoryExtensionsTests {
 		assertThat(repository.findByIdOrNull("foo")).isNull()
 		verify(exactly = 2) { repository.findById("foo") }
 	}
+
+    @Test // GH-3326
+    fun `findByIdOrNull should trigger AOP proxy on overridden method`() {
+
+        val mockTarget = mockk<UserRepository>()
+        val user = User()
+        every { mockTarget.findById("1") } returns Optional.of(user)
+
+        val factory = ProxyFactory()
+        factory.setTarget(mockTarget)
+        factory.addInterface(UserRepository::class.java)
+        val proxy = factory.proxy as UserRepository
+
+        val result = proxy.findByIdOrNull("1")
+        assertThat(result).isEqualTo(user)
+
+        verify(exactly = 1) { mockTarget.findById("1") }
+    }
 }
