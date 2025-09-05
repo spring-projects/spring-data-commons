@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.support;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;

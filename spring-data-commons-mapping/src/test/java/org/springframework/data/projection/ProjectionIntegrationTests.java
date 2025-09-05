@@ -17,11 +17,12 @@ package org.springframework.data.projection;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.lang.Nullable;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;

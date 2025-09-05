@@ -15,6 +15,8 @@
  */
 package org.springframework.data.util;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ public class DataCmns511Tests {
 	@Test // DATACMNS-511
 	public void detectsEqualTypeVariableTypeInformationInstances() {
 
-		var createdBy = TypeInformation.of(AbstractRole.class).getProperty("createdBy");
+		TypeInformation<?> createdBy = TypeInformation.of(AbstractRole.class).getProperty("createdBy");
 
 		assertThat(createdBy.getProperty("roles").getActualType().getProperty("createdBy"))//
 				.satisfies(second -> {

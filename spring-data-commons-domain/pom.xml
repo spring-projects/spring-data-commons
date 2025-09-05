@@ -19,6 +19,7 @@
 	</parent>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons-core</artifactId>
@@ -27,13 +28,20 @@
 
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-core-test</artifactId>
-			<scope>test</scope>
+			<artifactId>spring-beans</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
+			<artifactId>spring-context</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Project Reactor -->
@@ -49,7 +57,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- TODO SPLIT Only used for SpringDataJaxb.PageDto -->
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
@@ -87,6 +94,7 @@
 			<artifactId>xmlunit</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 </project>

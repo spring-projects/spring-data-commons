@@ -50,6 +50,7 @@
 	</modules>
 
 	<dependencyManagement>
+
 		<dependencies>
 
 			<dependency>

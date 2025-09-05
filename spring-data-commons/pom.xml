@@ -18,6 +18,7 @@
 	</parent>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons-core</artifactId>
@@ -53,6 +54,7 @@
 			<artifactId>spring-data-commons-web</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 	</dependencies>
 
 </project>
