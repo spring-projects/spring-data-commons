@@ -23,24 +23,28 @@ If Ahead of Time compilation is enabled Spring Data can (depending on the actual
 * Repository Metadata in JSON format
 
 Each of the above is enabled by default.
-However there users may fine tune the configuration with following options.
+However, there users may fine tune the configuration with following options.
 
 [options = "autowidth",cols="1,1"]
 |===
-|spring.aot.data.accessors.enabled
-|boolean flag to control contribution of Bytecode for generated Type/Property Accessors
+|`spring.aot.data.accessors.enabled`
+|Boolean flag to control contribution of Bytecode for generated Type/Property Accessors
 
-|spring.aot.data.accessors.exclude
-|comma separated list of FQCN for which to skip contribution of Bytecode for generated Type/Property Accessors
+|`spring.aot.data.accessors.include`
+|Comma separated list of FQCN for which to contribute Bytecode for generated Type/Property Accessors.
+Ant-style include patterns matching package names (e.g. `com.acme.**`) or type names inclusion.
+Inclusion pattern matches are evaluated before exclusions for broad exclusion and selective inclusion.
 
-|spring.aot.data.accessors.include
-|comma separated list of FQCN for which to contribute Bytecode for generated Type/Property Accessors
+|`spring.aot.data.accessors.exclude`
+|Comma separated list of FQCN for which to skip contribution of Bytecode for generated Type/Property Accessors.
+Ant-style exclude patterns matching package names (e.g. `com.acme.**`) or type names exclusion.
+Exclusion pattern matches are evaluated after inclusions for broad exclusion and selective inclusion.
 
-|spring.aot.repositories.enabled
-|boolean flag to control contribution of Source Code for Repository Interfaces
+|`spring.aot.repositories.enabled`
+|Boolean flag to control contribution of Source Code for Repository Interfaces
 
-|spring.aot.[module-name].repositories.enabled
-|boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (eg. jdbc)
+|`spring.aot.[module-name].repositories.enabled`
+|Boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (eg. `jdbc`, `jpa`, `mongodb`, `cassandra`)
 |===
 
 [[aot.repositories]]

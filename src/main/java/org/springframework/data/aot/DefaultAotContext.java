@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
@@ -39,6 +40,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.QTypeContributor;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.util.AntPathMatcher;
@@ -234,11 +236,8 @@ class DefaultAotContext implements AotContext {
 
 			if (contributeAccessors) {
 
-				boolean accessorsEnabled = environment.getProperty("spring.aot.data.accessors.enabled", Boolean.class, true);
-				String include = environment.getProperty("spring.aot.data.accessors.include", String.class, "");
-				String exclude = environment.getProperty("spring.aot.data.accessors.exclude", String.class, "");
-
-				if (shouldContributeAccessors(type, accessorsEnabled, include, exclude)) {
+				AccessorContributionConfiguration configuration = AccessorContributionConfiguration.of(environment);
+				if (configuration.shouldContributeAccessors(type)) {
 					mappingContext.contribute(type);
 				}
 			}
@@ -257,20 +256,55 @@ class DefaultAotContext implements AotContext {
 							Stream.concat(Stream.of(TypeReference.of(type)), proxyInterfaces.stream()).toArray(TypeReference[]::new));
 				}
 			}
-
 		}
 
-		static boolean shouldContributeAccessors(Class<?> type, boolean enabled, String include, String exclude) {
+	}
+
+	/**
+	 * Configuration for accessor to determine whether accessors should be contributed for a given type.
+	 */
+	private record AccessorContributionConfiguration(boolean enabled, Lazy<String> include, Lazy<String> exclude) {
+
+		/**
+		 * {@code boolean }Environment property to enable/disable accessor contribution. Enabled by default.
+		 */
+		public static final String ACCESSORS_ENABLED = "spring.aot.data.accessors.enabled";
+
+		/**
+		 * {@code String} Environment property to define Ant-style include patterns (comma-separated) matching package names
+		 * (e.g. {@code com.acme.**}) or type names inclusion. Inclusion pattern matches are evaluated before exclusions for
+		 * broad exclusion and selective inclusion.
+		 */
+		public static final String INCLUDE_PATTERNS = "spring.aot.data.accessors.include";
+
+		/**
+		 * {@code String} Environment property to define Ant-style exclude patterns (comma-separated) matching package names
+		 * (e.g. {@code com.acme.**}) or type names exclusion. Exclusion pattern matches are evaluated after inclusions for
+		 * broad exclusion and selective inclusion.
+		 */
+		public static final String EXCLUDE_PATTERNS = "spring.aot.data.accessors.exclude";
+
+		private static final AntPathMatcher antPathMatcher = new AntPathMatcher(".");
+
+		private AccessorContributionConfiguration(boolean enabled, Supplier<String> include, Supplier<String> exclude) {
+			this(enabled, Lazy.of(include), Lazy.of(exclude));
+		}
+
+		public static AccessorContributionConfiguration of(Environment environment) {
+			return new AccessorContributionConfiguration(environment.getProperty(ACCESSORS_ENABLED, Boolean.class, true),
+					() -> environment.getProperty(INCLUDE_PATTERNS, String.class, ""),
+					() -> environment.getProperty(EXCLUDE_PATTERNS, String.class, ""));
+		}
+
+		boolean shouldContributeAccessors(Class<?> type) {
 
 			if (!enabled) {
 				return false;
 			}
 
-			AntPathMatcher antPathMatcher = new AntPathMatcher(".");
+			if (StringUtils.hasText(include.get())) {
 
-			if (StringUtils.hasText(include)) {
-
-				String[] includes = include.split(",");
+				String[] includes = include.get().split(",");
 
 				for (String includePattern : includes) {
 					if (antPathMatcher.match(includePattern.trim(), type.getName())) {
@@ -279,9 +313,9 @@ class DefaultAotContext implements AotContext {
 				}
 			}
 
-			if (StringUtils.hasText(exclude)) {
+			if (StringUtils.hasText(exclude.get())) {
 
-				String[] excludes = exclude.split(",");
+				String[] excludes = exclude.get().split(",");
 
 				for (String excludePattern : excludes) {
 					if (antPathMatcher.match(excludePattern.trim(), type.getName())) {
@@ -292,5 +326,7 @@ class DefaultAotContext implements AotContext {
 
 			return true;
 		}
+
 	}
+
 }
