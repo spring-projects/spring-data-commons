@@ -424,8 +424,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			entity = doAddPersistentEntity(typeInformation);
 
-		} catch (BeansException e) {
-			throw new MappingException(e.getMessage(), e);
+		} catch (RuntimeException e) {
+			throw new MappingException(
+					"Cannot create PersistentEntity for '%s'".formatted(typeInformation.getType().getName()), e);
 		} finally {
 			write.unlock();
 		}
@@ -763,17 +764,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		INSTANCE;
 
-		private static final Streamable<PropertyMatch> UNMAPPED_PROPERTIES;
+		private static final Collection<PropertyMatch> UNMAPPED_PROPERTIES;
 
 		static {
 
 			Set<PropertyMatch> matches = new HashSet<>();
 			matches.add(new PropertyMatch("class", null));
 			matches.add(new PropertyMatch("this\\$.*", null));
+			matches.add(new PropertyMatch("\\$\\$_.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
 			matches.add(new KotlinDataClassPropertyMatch(".*\\$delegate", null));
 
-			UNMAPPED_PROPERTIES = Streamable.of(matches);
+			UNMAPPED_PROPERTIES = matches;
 		}
 
 		@Override
@@ -783,8 +785,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			return UNMAPPED_PROPERTIES.stream()//
-					.noneMatch(it -> it.matches(field));
+			for (PropertyMatch property : UNMAPPED_PROPERTIES) {
+				if (property.matches(field)) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		/**

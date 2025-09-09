@@ -15,10 +15,14 @@
  */
 package org.springframework.data.aot;
 
-import java.lang.reflect.InaccessibleObjectException;
+import java.math.BigDecimal;
+import java.text.Format;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import java.util.function.Predicate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.AbstractMappingContext;
@@ -41,8 +45,6 @@ import org.springframework.data.util.TypeInformation;
 class AotMappingContext extends
 		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.AotPersistentProperty>, AotMappingContext.AotPersistentProperty> {
 
-	private static final Log logger = LogFactory.getLog(AotMappingContext.class);
-
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 	private final AotAccessorFactory propertyAccessorFactory = new AotAccessorFactory();
 
@@ -55,23 +57,41 @@ class AotMappingContext extends
 	 */
 	public void contribute(Class<?> entityType) {
 
-		try {
-			BasicPersistentEntity<?, AotPersistentProperty> entity = getPersistentEntity(entityType);
+		BasicPersistentEntity<?, AotPersistentProperty> entity = getPersistentEntity(entityType);
 
-			if (entity != null && !entity.getType().isArray()) {
+		if (entity != null) {
 
-				EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-				if (instantiator instanceof EntityInstantiatorSource source) {
-					source.getInstantiatorFor(entity);
-				}
-
-				propertyAccessorFactory.initialize(entity);
+			EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+			if (instantiator instanceof EntityInstantiatorSource source) {
+				source.getInstantiatorFor(entity);
 			}
-		} catch (InaccessibleObjectException exception) {
-			if(logger.isInfoEnabled()) {
-				logger.info("Unable to contribute bytecode accessor for [%s]".formatted(entityType), exception);
-			}
+
+			propertyAccessorFactory.initialize(entity);
 		}
+	}
+
+	@Override
+	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInformation) {
+
+		Class<?> type = typeInformation.getType();
+
+		if (type.isArray() || type.isPrimitive() || type.isEnum()) {
+			return false;
+		}
+
+		Predicate<Class<?>> isInPackage = packageMember -> type.getPackageName().startsWith(packageMember.getPackageName());
+
+		if (isInPackage.test(UUID.class) // java.util
+				|| isInPackage.test(BigDecimal.class) // java.math
+				|| isInPackage.test(LocalDateTime.class) // java.time
+				|| isInPackage.test(Format.class) // java.text
+				|| isInPackage.test(Point.class) // org.springframework.data.geo
+				|| isInPackage.test(Page.class) // org.springframework.data.domain
+				|| type.getPackageName().startsWith("javax")) {
+			return false;
+		}
+
+		return super.shouldCreatePersistentEntityFor(typeInformation);
 	}
 
 	@Override

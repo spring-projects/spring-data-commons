@@ -15,19 +15,43 @@
  */
 package org.springframework.data.aot;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.BitSet;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.util.TypeInformation;
 
 /**
+ * Unit tests for {@link AotMappingContext}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class AotMappingContextUnitTests {
 
+	AotMappingContext context = new AotMappingContext();
+
 	@Test // GH-2595
 	void obtainEntityWithReference() {
-		new AotMappingContext().getPersistentEntity(TypeInformation.of(DemoEntity.class));
+		context.getPersistentEntity(TypeInformation.of(DemoEntity.class));
+	}
+
+	@Test // GH-2595
+	void doesNotCreateEntityForBitSet() {
+
+		assertThat(context.getPersistentEntity(EntityWithBitSet.class)).isNotNull();
+		assertThat(context.getPersistentEntity(BitSet.class)).isNull();
+	}
+
+	@Test // GH-2595
+	void doesNotCreateEntityForJavaxReference() {
+
+		assertThat(context.getPersistentEntity(EntityWithReference.class)).isNotNull();
+		assertThat(context.getPersistentEntity(javax.naming.Reference.class)).isNull();
 	}
 
 	static class DemoEntity {
@@ -41,4 +65,17 @@ public class AotMappingContextUnitTests {
 	static class ReferencedEntity {
 		@Id String id;
 	}
+
+	static class EntityWithBitSet {
+
+		@Id String id;
+		BitSet bitset;
+	}
+
+	static class EntityWithReference {
+
+		@Id String id;
+		javax.naming.Reference reference;
+	}
+
 }

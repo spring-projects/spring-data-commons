@@ -35,6 +35,7 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.aot.AotProcessingException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -228,6 +229,16 @@ class DefaultAotContext implements AotContext {
 
 		@Override
 		public void contribute(Environment environment, GenerationContext generationContext) {
+
+			try {
+				doContribute(environment, generationContext);
+			} catch (RuntimeException e) {
+				throw new AotProcessingException("Cannot contribute Ahead-of-Time optimizations for '" + type.getName() + "'",
+						e);
+			}
+		}
+
+		private void doContribute(Environment environment, GenerationContext generationContext) {
 
 			if (!this.categories.isEmpty()) {
 				generationContext.getRuntimeHints().reflection().registerType(this.type,

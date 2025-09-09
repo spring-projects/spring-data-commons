@@ -35,7 +35,7 @@ import org.springframework.data.projection.TargetAware;
  * cglib bytecode generation and other common tasks.
  * <p>
  * On {@link #contribute(Environment, GenerationContext)} the configuration is added to the {@link GenerationContext}.
- * 
+ *
  * @author Christoph Strobl
  * @since 4.0
  */
@@ -43,7 +43,7 @@ public interface AotTypeConfiguration {
 
 	/**
 	 * Configure the referenced type for data binding. In case of {@link java.lang.annotation.Annotation} only data ones
-	 * are considered. For more fine grained control use {@link #forReflectiveAccess(MemberCategory...)}.
+	 * are considered. For more fine-grained control use {@link #forReflectiveAccess(MemberCategory...)}.
 	 *
 	 * @return this.
 	 */
@@ -71,7 +71,7 @@ public interface AotTypeConfiguration {
 	 * Configure the referenced type as a projection interface returned by eg. a query method.
 	 * <p>
 	 * Shortcut for {@link #proxyInterface(Class[]) proxyInterface(TargetAware, SpringProxy, DecoratingProxy)}
-	 * 
+	 *
 	 * @return this.
 	 */
 	default AotTypeConfiguration usedAsProjectionInterface() {
@@ -111,7 +111,7 @@ public interface AotTypeConfiguration {
 
 	/**
 	 * Register a proxy for the referenced type that also implements the given proxyInterfaces.
-	 * 
+	 *
 	 * @param proxyInterfaces additional interfaces the proxy implements. Order matters!
 	 * @return this.
 	 */
@@ -129,14 +129,14 @@ public interface AotTypeConfiguration {
 
 	/**
 	 * Configure the referenced type for usage with Querydsl by registering hints for potential {@code Q} types.
-	 * 
+	 *
 	 * @return this.
 	 */
 	AotTypeConfiguration forQuerydsl();
 
 	/**
 	 * Write the configuration to the given {@link GenerationContext}.
-	 * 
+	 *
 	 * @param environment must not be {@literal null}.
 	 * @param generationContext must not be {@literal null}.
 	 */
