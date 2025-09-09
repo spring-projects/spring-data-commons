@@ -15,6 +15,8 @@
  */
 package org.springframework.data.aot;
 
+import java.lang.reflect.InaccessibleObjectException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.mapping.Association;
@@ -53,16 +55,22 @@ class AotMappingContext extends
 	 */
 	public void contribute(Class<?> entityType) {
 
-		BasicPersistentEntity<?, AotPersistentProperty> entity = getPersistentEntity(entityType);
+		try {
+			BasicPersistentEntity<?, AotPersistentProperty> entity = getPersistentEntity(entityType);
 
-		if (entity != null) {
+			if (entity != null && !entity.getType().isArray()) {
 
-			EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-			if (instantiator instanceof EntityInstantiatorSource source) {
-				source.getInstantiatorFor(entity);
+				EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+				if (instantiator instanceof EntityInstantiatorSource source) {
+					source.getInstantiatorFor(entity);
+				}
+
+				propertyAccessorFactory.initialize(entity);
 			}
-
-			propertyAccessorFactory.initialize(entity);
+		} catch (InaccessibleObjectException exception) {
+			if(logger.isInfoEnabled()) {
+				logger.info("Unable to contribute bytecode accessor for [%s]".formatted(entityType), exception);
+			}
 		}
 	}
 
