@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.ParametersUnitTests.User;
 import org.springframework.data.util.TypeInformation;
 
