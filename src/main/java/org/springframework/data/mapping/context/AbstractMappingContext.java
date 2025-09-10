@@ -243,7 +243,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	@Override
 	@Nullable
 	public E getPersistentEntity(Class<?> type) {
-		LOGGER.info("obtain persistent entity for type: " + type);
 		return getPersistentEntity(TypeInformation.of(type));
 	}
 
