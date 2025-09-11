@@ -19,28 +19,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.javapoet.CodeBlock;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Utility class for generating Java code blocks using a fluent API. This class provides a structured and extensible
- * programming model to simplify the creation of method calls, return statements, and complex code structures. It is
- * designed to reduce conditional nesting and improve readability in code generation scenarios.
+ * Utility class for creating Java code blocks using a fluent API. This class provides a structured and extensible
+ * programming model to simplify the creation of method calls, return statements, and complex code structures on top of
+ * JavaPoet. It is designed to reduce conditional nesting and improve readability in code generation scenarios.
  * <p>
- * Built on top of JavaPoet, this class introduces additional abstractions such as {@link CodeBlockBuilder},
- * {@link InvocationBuilder}, and {@link TypedReturnBuilder} to facilitate the construction of dynamic code blocks.
- * These abstractions enable developers to create code with conditional logic, argument concatenation, and control flow
- * in a declarative and intuitive manner.
+ * This class introduces additional abstractions such as {@link CodeBlockBuilder}, {@link InvocationBuilder}, and
+ * {@link TypedReturnBuilder} to facilitate the construction of dynamic code blocks. These abstractions enable
+ * developers to create code with conditional logic, argument concatenation, and control flow in a declarative and
+ * intuitive manner.
  * <p>
  * This class is intended for internal use within the framework and is not meant to be used directly by application
  * developers.
@@ -84,7 +86,8 @@ public abstract class LordOfTheStrings {
 	 * Create a {@link InvocationBuilder} for building method invocation code.
 	 * <p>
 	 * The given {@code methodCall} may contain format specifiers as defined in Java Poet. It must additionally contain a
-	 * format specifier (last position) that is used to expand the method arguments, for example:
+	 * format specifier (last position) that is used to expand the method arguments when intending to provide arguments,
+	 * for example:
 	 *
 	 * <pre class="code">
 	 * Sort sort = …;
@@ -97,6 +100,11 @@ public abstract class LordOfTheStrings {
 	 * method.build();
 	 * </pre>
 	 *
+	 * The presence of arguments is detected when calling any {@link InvocationBuilder#argument} or
+	 * {@link InvocationBuilder#arguments} method. Providing an empty {@link CodeBlock} or {@link Iterable} activates
+	 * argument processing for easier handling when calling this static method. Note that the argument placeholder in
+	 * {@code methodCall} must be omitted if no arguments are added.
+	 *
 	 * @param methodCall the invocation (or method call) format string.
 	 * @param arguments the arguments for the method call.
 	 * @return a new {@code MethodCallBuilder}.
@@ -106,7 +114,18 @@ public abstract class LordOfTheStrings {
 	}
 
 	/**
-	 * Create a builder for a return statement targeting the given return type.
+	 * Create a builder for a return statement targeting the given return type. Any formats provided to
+	 * {@link ReturnBuilderSupport} must not contain the {@code return} keyword as this will be included when building the
+	 * resulting {@link CodeBlock}, for example:
+	 *
+	 * <pre class="code">
+	 * Method method = …;
+	 * CodeBlock block = LordOfTheStrings.returning(ResolvableType.forMethodReturnType(method))
+	 *     .whenBoxedLong("$T.valueOf(1)", Long.class)
+	 *     .whenLong("1L")
+	 *     .otherwise("0L")
+	 *     .build();
+	 * </pre>
 	 *
 	 * @param returnType the method return type.
 	 * @return a new {@code ReturnStatementBuilder}.
@@ -116,7 +135,18 @@ public abstract class LordOfTheStrings {
 	}
 
 	/**
-	 * Create a builder for a return statement targeting the given return type.
+	 * Create a builder for a return statement targeting the given return type. Any formats provided to
+	 * {@link ReturnBuilderSupport} must not contain the {@code return} keyword as this will be included when building the
+	 * resulting {@link CodeBlock}, for example:
+	 *
+	 * <pre class="code">
+	 * Method method = …;
+	 * CodeBlock block = LordOfTheStrings.returning(method.getReturnType())
+	 *     .whenBoxedLong("$T.valueOf(1)", Long.class)
+	 *     .whenLong("1L")
+	 *     .otherwise("0L")
+	 *     .build();
+	 * </pre>
 	 *
 	 * @param returnType the method return type.
 	 * @return a new {@code ReturnStatementBuilder}.
@@ -137,6 +167,7 @@ public abstract class LordOfTheStrings {
 		private final String name;
 		private final List<Object> nameArguments;
 		private final List<CodeTuple> arguments = new ArrayList<>();
+		private boolean hasArguments = false;
 
 		InvocationBuilder(String name, Object... arguments) {
 			this.name = name;
@@ -144,11 +175,12 @@ public abstract class LordOfTheStrings {
 		}
 
 		/**
-		 * Add a single argument to the method call.
+		 * Add a single argument as literal to the method call.
 		 *
 		 * @param argument the argument to add.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null ->fail; _ -> this")
 		public InvocationBuilder argument(String argument) {
 
 			Assert.hasText(argument, "Argument must not be null or empty");
@@ -161,11 +193,15 @@ public abstract class LordOfTheStrings {
 		 * @param arguments the collection of arguments to add.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_ -> this")
 		public InvocationBuilder arguments(Iterable<?> arguments) {
+
+			this.hasArguments = true;
 
 			for (Object argument : arguments) {
 				argument("$L", argument);
 			}
+
 			return this;
 		}
 
@@ -177,7 +213,10 @@ public abstract class LordOfTheStrings {
 		 * @param <T> the type of the arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public <T> InvocationBuilder arguments(Iterable<? extends T> arguments, Function<? super T, CodeBlock> consumer) {
+
+			this.hasArguments = true;
 
 			for (T argument : arguments) {
 				argument(consumer.apply(argument));
@@ -192,9 +231,12 @@ public abstract class LordOfTheStrings {
 		 * @param argument the {@link CodeBlock} to add.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null -> fail; _ -> this")
 		public InvocationBuilder argument(CodeBlock argument) {
 
 			Assert.notNull(argument, "CodeBlock must not be null");
+
+			this.hasArguments = true;
 
 			if (argument.isEmpty()) {
 				return this;
@@ -210,9 +252,12 @@ public abstract class LordOfTheStrings {
 		 * @param args the arguments for the format string.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _ -> fail; _, _ -> this")
 		public InvocationBuilder argument(String format, @Nullable Object... args) {
 
 			Assert.hasText(format, "Format must not be null or empty");
+
+			this.hasArguments = true;
 			this.arguments.add(new CodeTuple(format, args));
 			return this;
 		}
@@ -223,11 +268,11 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @return the constructed {@link CodeBlock}.
 		 */
+		@CheckReturnValue
 		public CodeBlock build() {
 
 			CodeBlock.Builder builder = CodeBlock.builder();
 			buildCall(builder);
-
 			return builder.build();
 		}
 
@@ -246,6 +291,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the arguments for the format string.
 		 * @return the constructed {@link CodeBlock}.
 		 */
+		@CheckReturnValue
 		public CodeBlock assignTo(String format, @Nullable Object... args) {
 
 			CodeBlock.Builder builder = CodeBlock.builder();
@@ -274,7 +320,7 @@ public abstract class LordOfTheStrings {
 
 			List<Object> allArguments = new ArrayList<>(nameArguments);
 
-			if (!argsBuilder.isEmpty()) {
+			if (hasArguments) {
 				allArguments.add(argsBuilder.build());
 			}
 
@@ -320,6 +366,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#add(String, Object...)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder add(String format, @Nullable Object... args) {
 
 			builder.add(format, args);
@@ -333,6 +380,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#addStatement(CodeBlock)
 		 */
+		@Contract("_ -> this")
 		public CodeBlockBuilder addStatement(CodeBlock codeBlock) {
 
 			builder.addStatement(codeBlock);
@@ -345,7 +393,10 @@ public abstract class LordOfTheStrings {
 		 * @param consumer the {@link Consumer} to configure the statement.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null -> fail; _ -> this")
 		public CodeBlockBuilder addStatement(Consumer<StatementBuilder> consumer) {
+
+			Assert.notNull(consumer, "Consumer must not be null");
 
 			StatementBuilder statementBuilder = new StatementBuilder();
 			consumer.accept(statementBuilder);
@@ -354,8 +405,8 @@ public abstract class LordOfTheStrings {
 
 				this.add("$[");
 
-				for (CodeTuple tuple : statementBuilder.tuples) {
-					builder.add(tuple.format(), tuple.args());
+				for (CodeBlock block : statementBuilder.blocks) {
+					builder.add(block);
 				}
 
 				this.add(";\n$]");
@@ -371,6 +422,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#addStatement(CodeBlock)
 		 */
+		@Contract("_ -> this")
 		public CodeBlockBuilder add(CodeBlock codeBlock) {
 
 			builder.add(codeBlock);
@@ -385,6 +437,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#addStatement(String, Object...)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder addStatement(String format, @Nullable Object... args) {
 
 			builder.addStatement(format, args);
@@ -399,6 +452,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#addNamed(String, Map)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder addNamed(String format, Map<String, ?> arguments) {
 
 			builder.addNamed(format, arguments);
@@ -413,6 +467,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#beginControlFlow(String, Object...)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder beginControlFlow(String controlFlow, @Nullable Object... args) {
 
 			builder.beginControlFlow(controlFlow, args);
@@ -427,6 +482,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#endControlFlow(String, Object...)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder endControlFlow(String controlFlow, @Nullable Object... args) {
 
 			builder.endControlFlow(controlFlow, args);
@@ -439,6 +495,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#endControlFlow()
 		 */
+		@Contract("-> this")
 		public CodeBlockBuilder endControlFlow() {
 
 			builder.endControlFlow();
@@ -453,6 +510,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#nextControlFlow(String, Object...)
 		 */
+		@Contract("_, _ -> this")
 		public CodeBlockBuilder nextControlFlow(String controlFlow, @Nullable Object... args) {
 
 			builder.nextControlFlow(controlFlow, args);
@@ -465,6 +523,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#indent()
 		 */
+		@Contract("-> this")
 		public CodeBlockBuilder indent() {
 
 			builder.indent();
@@ -477,6 +536,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 * @see CodeBlock.Builder#unindent()
 		 */
+		@Contract("-> this")
 		public CodeBlockBuilder unindent() {
 
 			builder.unindent();
@@ -488,6 +548,7 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @return the constructed {@link CodeBlock}.
 		 */
+		@CheckReturnValue
 		public CodeBlock build() {
 			return builder.build();
 		}
@@ -497,6 +558,7 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @return {@code this} builder.
 		 */
+		@Contract("-> this")
 		public CodeBlockBuilder clear() {
 
 			builder.clear();
@@ -516,7 +578,9 @@ public abstract class LordOfTheStrings {
 	 */
 	public static class StatementBuilder {
 
-		private final List<CodeTuple> tuples = new ArrayList<>();
+		private final List<CodeBlock> blocks = new ArrayList<>();
+
+		StatementBuilder() {}
 
 		/**
 		 * Determine whether this builder is empty.
@@ -524,7 +588,7 @@ public abstract class LordOfTheStrings {
 		 * @return {@code true} if the builder is empty; {@code false} otherwise.
 		 */
 		public boolean isEmpty() {
-			return tuples.isEmpty();
+			return blocks.isEmpty();
 		}
 
 		/**
@@ -547,7 +611,7 @@ public abstract class LordOfTheStrings {
 
 			return (format, args) -> {
 
-				if (state) {
+				if (!state) {
 					add(format, args);
 				}
 				return this;
@@ -561,8 +625,22 @@ public abstract class LordOfTheStrings {
 		 * @param args the arguments for the format string.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public StatementBuilder add(String format, @Nullable Object... args) {
-			tuples.add(new CodeTuple(format, args));
+			return add(CodeBlock.of(format, args));
+		}
+
+		/**
+		 * Add a {@link CodeBlock} to the statement builder.
+		 *
+		 * @param codeBlock the code block to add.
+		 * @return {@code this} builder.
+		 */
+		@Contract("null -> fail; _ -> this")
+		public StatementBuilder add(CodeBlock codeBlock) {
+
+			Assert.notNull(codeBlock, "CodeBlock must not be null");
+			blocks.add(codeBlock);
 			return this;
 		}
 
@@ -571,13 +649,14 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @param elements the elements to concatenate.
 		 * @param delim the delimiter to use between elements.
-		 * @param builderCustomizer the consumer to apply to each element and {@link CodeBlockBuilder}.
+		 * @param mapper the mapping function to apply to each element returning a {@link CodeBlock} to add.
 		 * @param <T> the type of the elements.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _ -> fail; _, _ -> this")
 		public <T> StatementBuilder addAll(Iterable<? extends T> elements, String delim,
-				BiConsumer<? super T, CodeBlockBuilder> builderCustomizer) {
-			return addAll(elements, t -> delim, builderCustomizer);
+				Function<? super T, CodeBlock> mapper) {
+			return addAll(elements, t -> delim, mapper);
 		}
 
 		/**
@@ -586,12 +665,15 @@ public abstract class LordOfTheStrings {
 		 * @param elements the elements to concatenate.
 		 * @param delim the function to determine the delimiter for each element. Delimiters are applied beginning with the
 		 *          second iteration element and obtain from the current element.
-		 * @param builderCustomizer the consumer to apply to each element and {@link CodeBlockBuilder}.
+		 * @param mapper the mapping function to apply to each element returning a {@link CodeBlock} to add.
 		 * @param <T> the type of the elements.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _, _ -> fail; _, _, _ -> this")
 		public <T> StatementBuilder addAll(Iterable<? extends T> elements, Function<? super T, String> delim,
-				BiConsumer<? super T, CodeBlockBuilder> builderCustomizer) {
+				Function<? super T, CodeBlock> mapper) {
+
+			Assert.notNull(elements, "Elements must not be null");
 
 			boolean first = true;
 			for (T element : elements) {
@@ -599,13 +681,10 @@ public abstract class LordOfTheStrings {
 				if (first) {
 					first = false;
 				} else {
-					tuples.add(new CodeTuple(delim.apply(element)));
+					blocks.add(CodeBlock.of(delim.apply(element)));
 				}
 
-				CodeBlockBuilder builder = new CodeBlockBuilder(CodeBlock.builder());
-				builderCustomizer.accept(element, builder);
-
-				tuples.add(new CodeTuple("$L", builder.build()));
+				add(mapper.apply(element));
 			}
 
 			return this;
@@ -624,7 +703,9 @@ public abstract class LordOfTheStrings {
 			 * @return the {@link StatementBuilder}.
 			 */
 			StatementBuilder then(String format, @Nullable Object... args);
+
 		}
+
 	}
 
 	/**
@@ -639,7 +720,7 @@ public abstract class LordOfTheStrings {
 		/**
 		 * Create a new builder.
 		 */
-		private ReturnBuilderSupport() {}
+		ReturnBuilderSupport() {}
 
 		/**
 		 * Add a return statement if the given condition is {@code true}.
@@ -649,6 +730,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _, _ -> this")
 		public ReturnBuilderSupport when(boolean condition, String format, @Nullable Object... args) {
 			this.rules.add(ruleOf(condition, format, args));
 			return this;
@@ -661,6 +743,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public ReturnBuilderSupport otherwise(String format, @Nullable Object... args) {
 			this.fallback.add(ruleOf(true, format, args));
 			return this;
@@ -682,19 +765,13 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @return the resulting {@code CodeBlock}
 		 */
+		@CheckReturnValue
 		public CodeBlock build() {
 
 			CodeBlock.Builder builder = CodeBlock.builder();
 
-			for (ReturnRule rule : rules) {
-				if (rule.condition()) {
-					builder.add("return");
-					rule.accept(builder);
-					return builder.build();
-				}
-			}
-
-			for (ReturnRule rule : fallback) {
+			for (ReturnRule rule : (Iterable<? extends ReturnRule>) () -> Stream
+					.concat(this.rules.stream(), this.fallback.stream()).iterator()) {
 				if (rule.condition()) {
 					builder.add("return");
 					rule.accept(builder);
@@ -714,6 +791,8 @@ public abstract class LordOfTheStrings {
 		 * @return {@code this} builder.
 		 */
 		static ReturnRule ruleOf(boolean condition, String format, @Nullable Object... args) {
+
+			Assert.notNull(format, "Format must not be null");
 
 			if (format.startsWith("return")) {
 				throw new IllegalArgumentException("Return value format '%s' must not contain 'return'".formatted(format));
@@ -746,8 +825,8 @@ public abstract class LordOfTheStrings {
 	}
 
 	/**
-	 * Builder for constructing return statements based on the target return type. The resulting {@link #build()
-	 * CodeBlock} must be added as a {@link CodeBlock.Builder#addStatement(CodeBlock)}.
+	 * Builder for constructing return statements based conditionally on the target return type. The resulting
+	 * {@link #build() CodeBlock} must be added as a {@link CodeBlock.Builder#addStatement(CodeBlock)}.
 	 */
 	public static class TypedReturnBuilder extends ReturnBuilderSupport {
 
@@ -758,7 +837,9 @@ public abstract class LordOfTheStrings {
 		 *
 		 * @param returnType the method return type
 		 */
-		private TypedReturnBuilder(ResolvableType returnType) {
+		TypedReturnBuilder(ResolvableType returnType) {
+
+			Assert.notNull(returnType, "Return type must not be null");
 
 			this.returnType = returnType;
 
@@ -775,21 +856,12 @@ public abstract class LordOfTheStrings {
 		 * @param resultToReturn the argument or variable name holding the result.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_ -> this")
 		public TypedReturnBuilder number(String resultToReturn) {
 			return whenBoxedLong("$1L != null ? $1L.longValue() : null", resultToReturn)
 					.whenLong("$1L != null ? $1L.longValue() : 0L", resultToReturn)
 					.whenBoxedInteger("$1L != null ? $1L.intValue() : null", resultToReturn)
 					.whenInt("$1L != null ? $1L.intValue() : 0", resultToReturn);
-		}
-
-		/**
-		 * Add a return statement if the return type is boolean (primitive or box type) returning {@code returnName}.
-		 *
-		 * @param returnName the argument or variable name holding the result.
-		 * @return {@code this} builder.
-		 */
-		public TypedReturnBuilder whenBooleanReturn(String returnName) {
-			return whenBoolean("$L", returnName);
 		}
 
 		/**
@@ -799,6 +871,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder whenBoolean(String format, @Nullable Object... args) {
 			return when(returnType.isAssignableFrom(boolean.class) || returnType.isAssignableFrom(Boolean.class), format,
 					args);
@@ -811,6 +884,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder whenBoxedLong(String format, @Nullable Object... args) {
 			return whenBoxed(long.class, format, args);
 		}
@@ -822,6 +896,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder whenLong(String format, @Nullable Object... args) {
 			return when(returnType.toClass() == long.class, format, args);
 		}
@@ -833,6 +908,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder whenBoxedInteger(String format, @Nullable Object... args) {
 			return whenBoxed(int.class, format, args);
 		}
@@ -844,6 +920,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder whenInt(String format, @Nullable Object... args) {
 			return when(returnType.toClass() == int.class, format, args);
 		}
@@ -856,7 +933,9 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _, _ -> fail; _, _, _ -> this")
 		public TypedReturnBuilder whenBoxed(Class<?> primitiveOrWrapper, String format, @Nullable Object... args) {
+
 			Class<?> primitiveWrapper = ClassUtils.resolvePrimitiveIfNecessary(primitiveOrWrapper);
 			return when(returnType.toClass() == primitiveWrapper, format, args);
 		}
@@ -869,6 +948,7 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _, _ -> fail; _, _, _ -> this")
 		public TypedReturnBuilder whenPrimitiveOrBoxed(Class<?> primitiveType, String format, @Nullable Object... args) {
 
 			Class<?> primitiveWrapper = ClassUtils.resolvePrimitiveIfNecessary(primitiveType);
@@ -885,7 +965,10 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _, _ -> fail; _, _, _ -> this")
 		public TypedReturnBuilder when(Class<?> returnType, String format, @Nullable Object... args) {
+
+			Assert.notNull(returnType, "Return type must not be null");
 			return when(this.returnType.isAssignableFrom(returnType), format, args);
 		}
 
@@ -897,6 +980,8 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Override
+		@Contract("_, _, _ -> this")
 		public TypedReturnBuilder when(boolean condition, String format, @Nullable Object... args) {
 			super.when(condition, format, args);
 			return this;
@@ -909,6 +994,7 @@ public abstract class LordOfTheStrings {
 		 * @param codeBlock the code block result to be returned.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_ -> this")
 		public TypedReturnBuilder optional(CodeBlock codeBlock) {
 			return optional("$L", codeBlock);
 		}
@@ -921,10 +1007,12 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Contract("null, _ -> fail; _, _ -> this")
 		public TypedReturnBuilder optional(String format, @Nullable Object... args) {
 
 			if (Optional.class.isAssignableFrom(returnType.toClass())) {
 
+				Assert.hasText(format, "Format must not be null or empty");
 				if (format.startsWith("return")) {
 					throw new IllegalArgumentException("Return value format '%s' must not contain 'return'".formatted(format));
 				}
@@ -948,6 +1036,7 @@ public abstract class LordOfTheStrings {
 		 * @param codeBlock the code block result to be returned.
 		 * @return {@code this} builder.
 		 */
+		@Contract("_ -> this")
 		public TypedReturnBuilder otherwise(CodeBlock codeBlock) {
 			return otherwise("$L", codeBlock);
 		}
@@ -959,6 +1048,8 @@ public abstract class LordOfTheStrings {
 		 * @param args the format arguments.
 		 * @return {@code this} builder.
 		 */
+		@Override
+		@Contract("_, _ -> this")
 		public TypedReturnBuilder otherwise(String format, @Nullable Object... args) {
 			super.otherwise(format, args);
 			return this;

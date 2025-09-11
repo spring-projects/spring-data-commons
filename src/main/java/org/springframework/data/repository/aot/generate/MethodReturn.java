@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
@@ -60,21 +61,19 @@ public class MethodReturn {
 
 		this.returnedType = returnedType;
 		this.returnType = returnType;
+		this.typeName = TypeNames.typeName(returnType);
+		this.className = TypeNames.className(returnType);
+
 		Class<?> returnClass = returnType.toClass();
-
-		this.typeName = TypeName.get(returnType.getType());
-		this.className = TypeName.get(returnClass);
-
 		TypeInformation<?> typeInformation = TypeInformation.of(returnType);
 		TypeInformation<?> actualType = typeInformation.isMap() ? typeInformation
 				: (typeInformation.getType().equals(Stream.class) ? typeInformation.getComponentType()
 						: typeInformation.getActualType());
 
 		if (actualType != null) {
-
 			this.actualType = actualType.toResolvableType();
-			this.actualTypeName = TypeName.get(actualType.toResolvableType().getType());
-			this.actualClassName = TypeName.get(actualType.getType());
+			this.actualTypeName = TypeNames.typeName(this.actualType);
+			this.actualClassName = TypeNames.className(this.actualType);
 			this.actualReturnClass = actualType.getType();
 		} else {
 			this.actualType = returnType;
