@@ -125,22 +125,22 @@ class JavaPoetUnitTests {
 	void shouldRenderConditionalLongReturn() {
 
 		CodeBlock block = LordOfTheStrings.returning(Long.class).whenLong("1L").whenBoxedLong("$T.valueOf(1)", Long.class)
-				.otherwise("😫").build();
+				.otherwise(":-[").build();
 		assertThat(block).hasToString("return java.lang.Long.valueOf(1)");
 
 		block = LordOfTheStrings.returning(Long.class).whenBoxedLong("$T.valueOf(1)", Long.class).whenLong("1L")
-				.otherwise("😫").build();
+				.otherwise(":-[").build();
 		assertThat(block).hasToString("return java.lang.Long.valueOf(1)");
 
 		block = LordOfTheStrings.returning(long.class).whenBoxedLong("$T.valueOf(1)", Long.class).whenLong("1L")
-				.otherwise("😫").build();
+				.otherwise(":-[").build();
 		assertThat(block).hasToString("return 1L");
 
-		block = LordOfTheStrings.returning(Long.class).whenBoxed(Long.class, "$T.valueOf(1)", Long.class).otherwise("😫")
+		block = LordOfTheStrings.returning(Long.class).whenBoxed(Long.class, "$T.valueOf(1)", Long.class).otherwise(":-[")
 				.build();
 		assertThat(block).hasToString("return java.lang.Long.valueOf(1)");
 
-		block = LordOfTheStrings.returning(Long.class).whenBoxed(long.class, "$T.valueOf(1)", Long.class).otherwise("😫")
+		block = LordOfTheStrings.returning(Long.class).whenBoxed(long.class, "$T.valueOf(1)", Long.class).otherwise(":-[")
 				.build();
 		assertThat(block).hasToString("return java.lang.Long.valueOf(1)");
 	}
@@ -149,44 +149,44 @@ class JavaPoetUnitTests {
 	void shouldRenderConditionalIntReturn() {
 
 		CodeBlock block = LordOfTheStrings.returning(Integer.class).whenBoxed(long.class, "$T.valueOf(1)", Long.class)
-				.otherwise("😫").build();
-		assertThat(block).hasToString("return 😫");
+				.otherwise(":-[").build();
+		assertThat(block).hasToString("return :-[");
 
-		block = LordOfTheStrings.returning(Integer.class).whenBoxedInteger("$T.valueOf(1)", Integer.class).otherwise("😫")
+		block = LordOfTheStrings.returning(Integer.class).whenBoxedInteger("$T.valueOf(1)", Integer.class).otherwise(":-[")
 				.build();
 		assertThat(block).hasToString("return java.lang.Integer.valueOf(1)");
 
 		block = LordOfTheStrings.returning(int.class).whenBoxedInteger("$T.valueOf(1)", Integer.class).whenInt("1")
-				.otherwise("😫").build();
+				.otherwise(":-[").build();
 		assertThat(block).hasToString("return 1");
 	}
 
 	@Test // GH-3357
 	void shouldRenderConditionalBooleanReturn() {
 
-		CodeBlock block = LordOfTheStrings.returning(boolean.class).whenBoolean("$L", true).otherwise("😫").build();
+		CodeBlock block = LordOfTheStrings.returning(boolean.class).whenBoolean("$L", true).otherwise(":-[").build();
 		assertThat(block).hasToString("return true");
 
-		block = LordOfTheStrings.returning(Boolean.class).whenBoolean("$L", true).otherwise("😫").build();
+		block = LordOfTheStrings.returning(Boolean.class).whenBoolean("$L", true).otherwise(":-[").build();
 		assertThat(block).hasToString("return true");
 	}
 
 	@Test // GH-3357
 	void shouldRenderConditionalNumericReturn() {
 
-		CodeBlock block = LordOfTheStrings.returning(boolean.class).number("someNumericVariable").otherwise("😫").build();
-		assertThat(block).hasToString("return 😫");
+		CodeBlock block = LordOfTheStrings.returning(boolean.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return :-[");
 
-		block = LordOfTheStrings.returning(long.class).number("someNumericVariable").otherwise("😫").build();
+		block = LordOfTheStrings.returning(long.class).number("someNumericVariable").otherwise(":-[").build();
 		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.longValue() : 0L");
 
-		block = LordOfTheStrings.returning(Long.class).number("someNumericVariable").otherwise("😫").build();
+		block = LordOfTheStrings.returning(Long.class).number("someNumericVariable").otherwise(":-[").build();
 		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.longValue() : null");
 
-		block = LordOfTheStrings.returning(int.class).number("someNumericVariable").otherwise("😫").build();
+		block = LordOfTheStrings.returning(int.class).number("someNumericVariable").otherwise(":-[").build();
 		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.intValue() : 0");
 
-		block = LordOfTheStrings.returning(Integer.class).number("someNumericVariable").otherwise("😫").build();
+		block = LordOfTheStrings.returning(Integer.class).number("someNumericVariable").otherwise(":-[").build();
 		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.intValue() : null");
 	}
 
