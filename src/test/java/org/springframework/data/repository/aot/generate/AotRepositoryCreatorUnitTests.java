@@ -27,6 +27,7 @@ import javax.lang.model.element.Modifier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 
 import org.springframework.aot.generate.Generated;
 import org.springframework.aot.hint.TypeReference;
@@ -153,7 +154,7 @@ class AotRepositoryCreatorUnitTests {
 
 		repositoryCreator.contributeMethods((method) -> {
 
-			return new MethodContributor<>(mock(QueryMethod.class), null) {
+			return new MethodContributor<>(mock(QueryMethod.class, Answers.RETURNS_MOCKS), null) {
 
 				@Override
 				public MethodSpec contribute(AotQueryMethodGenerationContext context) {
