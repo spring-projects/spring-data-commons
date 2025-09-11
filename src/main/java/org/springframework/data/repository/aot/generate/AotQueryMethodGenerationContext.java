@@ -47,6 +47,7 @@ public class AotQueryMethodGenerationContext {
 	private final QueryMethod queryMethod;
 	private final RepositoryInformation repositoryInformation;
 	private final AotRepositoryFragmentMetadata targetTypeMetadata;
+	private final MethodReturn methodReturn;
 	private final MethodMetadata targetMethodMetadata;
 	private final VariableNameFactory variableNameFactory;
 	private final ExpressionMarker expressionMarker;
@@ -60,6 +61,8 @@ public class AotQueryMethodGenerationContext {
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = new AotRepositoryFragmentMetadata();
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
+		this.methodReturn = new MethodReturn(queryMethod.getResultProcessor().getReturnedType(),
+				targetMethodMetadata.getReturnType());
 		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
 		this.expressionMarker = new ExpressionMarker();
 	}
@@ -73,6 +76,8 @@ public class AotQueryMethodGenerationContext {
 		this.repositoryInformation = repositoryInformation;
 		this.targetTypeMetadata = targetTypeMetadata;
 		this.targetMethodMetadata = new MethodMetadata(repositoryInformation, method);
+		this.methodReturn = new MethodReturn(queryMethod.getResultProcessor().getReturnedType(),
+				targetMethodMetadata.getReturnType());
 		this.variableNameFactory = LocalVariableNameFactory.forMethod(targetMethodMetadata);
 		this.expressionMarker = new ExpressionMarker();
 	}
@@ -136,6 +141,13 @@ public class AotQueryMethodGenerationContext {
 	}
 
 	/**
+	 * @return the method return information.
+	 */
+	public MethodReturn getMethodReturn() {
+		return methodReturn;
+	}
+
+	/**
 	 * @return the returned type without considering dynamic projections.
 	 */
 	public ReturnedType getReturnedType() {
@@ -146,6 +158,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the actual returned domain type.
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(Method)
 	 */
+	@Deprecated(forRemoval = true)
 	public ResolvableType getActualReturnType() {
 		return targetMethodMetadata.getActualReturnType();
 	}
@@ -154,6 +167,7 @@ public class AotQueryMethodGenerationContext {
 	 * @return the query method return type.
 	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(Method)
 	 */
+	@Deprecated(forRemoval = true)
 	public ResolvableType getReturnType() {
 		return targetMethodMetadata.getReturnType();
 	}
@@ -161,6 +175,7 @@ public class AotQueryMethodGenerationContext {
 	/**
 	 * @return the {@link TypeName} representing the method return type.
 	 */
+	@Deprecated(forRemoval = true)
 	public TypeName getReturnTypeName() {
 		return TypeName.get(getReturnType().getType());
 	}
@@ -168,6 +183,7 @@ public class AotQueryMethodGenerationContext {
 	/**
 	 * @return the {@link TypeName} representing the actual (component) method return type.
 	 */
+	@Deprecated(forRemoval = true)
 	public TypeName getActualReturnTypeName() {
 		return TypeName.get(getActualReturnType().getType());
 	}
