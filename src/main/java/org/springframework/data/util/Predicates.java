@@ -52,6 +52,16 @@ public interface Predicates {
 	Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
 
 	/**
+	 * A {@link Predicate} that introspects the declaring class of the member.
+	 *
+	 * @return a {@link Predicate} that introspects the declaring class of the member.
+	 * @since 4.0
+	 */
+	static <T extends Member> Predicate<T> declaringClass(Predicate<Class<?>> predicate) {
+		return t -> predicate.test(t.getDeclaringClass());
+	}
+
+	/**
 	 * A {@link Predicate} that yields always {@code true}.
 	 *
 	 * @return a {@link Predicate} that yields always {@code true}.

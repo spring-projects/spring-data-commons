@@ -8,3 +8,5 @@ org.springframework.aot.hint.RuntimeHintsRegistrar=\
 
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
 	org.springframework.data.aot.AuditingBeanRegistrationAotProcessor
+org.springframework.data.util.TypeCollector$TypeCollectorPredicateProvider=\
+	org.springframework.data.util.TypeCollector$DefaultTypeCollectorPredicateProvider
