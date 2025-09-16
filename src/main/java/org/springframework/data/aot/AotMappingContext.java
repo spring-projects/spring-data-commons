@@ -133,7 +133,9 @@ class AotMappingContext extends
 	static class AotAccessorFactory extends ClassGeneratingPropertyAccessorFactory {
 
 		public void initialize(PersistentEntity<?, ?> entity) {
-			potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity);
+			if (isSupported(entity)) {
+				potentiallyCreateAndRegisterPersistentPropertyAccessorClass(entity);
+			}
 		}
 	}
 

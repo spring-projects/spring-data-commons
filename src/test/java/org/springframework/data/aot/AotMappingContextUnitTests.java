@@ -54,6 +54,14 @@ public class AotMappingContextUnitTests {
 		assertThat(context.getPersistentEntity(javax.naming.Reference.class)).isNull();
 	}
 
+	@Test // GH-3361
+	void doesNotContributeGeneratedAccessorForUnsupportedType() {
+
+		assertThatNoException().isThrownBy(() -> {
+			context.contribute(ConcretePerson.class);
+		});
+	}
+
 	static class DemoEntity {
 
 		@Id String id;
@@ -76,6 +84,32 @@ public class AotMappingContextUnitTests {
 
 		@Id String id;
 		javax.naming.Reference reference;
+	}
+
+	static abstract class AbstractPerson {
+
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+	}
+
+	static class ConcretePerson extends AbstractPerson {
+
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 	}
 
 }
