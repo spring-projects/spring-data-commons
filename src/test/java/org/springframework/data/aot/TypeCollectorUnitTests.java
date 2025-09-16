@@ -22,7 +22,10 @@ import org.springframework.data.aot.types.*;
 import org.springframework.data.util.TypeCollector;
 
 /**
+ * Unit tests for {@link TypeCollector}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class TypeCollectorUnitTests {
 
@@ -64,6 +67,14 @@ public class TypeCollectorUnitTests {
 	@Test // GH-2744
 	void skipsCoreFrameworkType() {
 		assertThat(TypeCollector.inspect(org.springframework.core.AliasRegistry.class).list()).isEmpty();
+	}
+
+	@Test // GH-3362
+	void appliesFilterPredicate() {
+		assertThat(TypeCollector
+				.inspect(it -> it.filterTypes(cls -> cls == EmptyType1.class || cls == TypesInMethodSignatures.class),
+						TypesInMethodSignatures.class)
+				.list()).containsOnly(TypesInMethodSignatures.class, EmptyType1.class);
 	}
 
 }

@@ -94,8 +94,40 @@ public class TypeCollector {
 		return inspect(Arrays.asList(types));
 	}
 
+	/**
+	 * Inspect the given type and resolve those reachable via fields, methods, generics, ...
+	 *
+	 * @param types the types to inspect
+	 * @return a type model collector for the type
+	 */
 	public static ReachableTypes inspect(Collection<Class<?>> types) {
-		return new ReachableTypes(new TypeCollector(), types);
+		return inspect(it -> {}, types);
+	}
+
+	/**
+	 * Inspect the given type and resolve those reachable via fields, methods, generics, ...
+	 *
+	 * @param collectorCustomizer the customizer function to configure the {@link TypeCollector}.
+	 * @param types the types to inspect.
+	 * @return a type model collector for the type.
+	 * @since 4.0
+	 */
+	public static ReachableTypes inspect(Consumer<TypeCollector> collectorCustomizer, Class<?>... types) {
+		return inspect(collectorCustomizer, Arrays.asList(types));
+	}
+
+	/**
+	 * Inspect the given type and resolve those reachable via fields, methods, generics, ...
+	 *
+	 * @param collectorCustomizer the customizer function to configure the {@link TypeCollector}.
+	 * @param types the types to inspect.
+	 * @return a type model collector for the type.
+	 * @since 4.0
+	 */
+	public static ReachableTypes inspect(Consumer<TypeCollector> collectorCustomizer, Collection<Class<?>> types) {
+		TypeCollector typeCollector = new TypeCollector();
+		collectorCustomizer.accept(typeCollector);
+		return new ReachableTypes(typeCollector, types);
 	}
 
 	private void process(Class<?> root, Consumer<ResolvableType> consumer) {
@@ -225,22 +257,37 @@ public class TypeCollector {
 		return (Predicate) excludedFieldPredicate.negate();
 	}
 
+	/**
+	 * Container for reachable types starting from a set of root types.
+	 */
 	public static class ReachableTypes {
 
 		private final Iterable<Class<?>> roots;
 		private final Lazy<List<Class<?>>> reachableTypes = Lazy.of(this::collect);
 		private final TypeCollector typeCollector;
 
-		public ReachableTypes(TypeCollector typeCollector, Iterable<Class<?>> roots) {
+		ReachableTypes(TypeCollector typeCollector, Iterable<Class<?>> roots) {
 
 			this.typeCollector = typeCollector;
 			this.roots = roots;
 		}
 
-		public void forEach(Consumer<ResolvableType> consumer) {
-			roots.forEach(it -> typeCollector.process(it, consumer));
+		/**
+		 * Performs the given action for each element of the reachable types until all elements have been processed or the
+		 * action throws an exception. Actions are performed in the order of iteration, if that order is specified.
+		 * Exceptions thrown by the action are relayed to the caller.
+		 *
+		 * @param action The action to be performed for each element
+		 */
+		public void forEach(Consumer<ResolvableType> action) {
+			roots.forEach(it -> typeCollector.process(it, action));
 		}
 
+		/**
+		 * Return all reachable types as list of {@link Class classes}. The resulting list is unmodifiable.
+		 *
+		 * @return an unmodifiable list of reachable types.
+		 */
 		public List<Class<?>> list() {
 			return reachableTypes.get();
 		}
@@ -248,7 +295,7 @@ public class TypeCollector {
 		private List<Class<?>> collect() {
 			List<Class<?>> target = new ArrayList<>();
 			forEach(it -> target.add(it.toClass()));
-			return target;
+			return List.copyOf(target);
 		}
 	}
 

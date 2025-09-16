@@ -18,11 +18,12 @@ package org.springframework.data.aot;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.AccessControl;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
@@ -76,15 +77,18 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 	private final AotContext aotContext;
 	private final ManagedTypes managedTypes;
 	private final Lazy<List<Class<?>>> sourceTypes;
+	private final Consumer<TypeCollector> typeCollectorCustomizer;
 	private final TypeRegistration contributionAction;
 	private final RegisteredBean source;
 
 	public ManagedTypesRegistrationAotContribution(AotContext aotContext, ManagedTypes managedTypes,
-			RegisteredBean registeredBean, TypeRegistration contributionAction) {
+			RegisteredBean registeredBean, Consumer<TypeCollector> typeCollectorCustomizer,
+			TypeRegistration contributionAction) {
 
 		this.aotContext = aotContext;
 		this.managedTypes = managedTypes;
 		this.sourceTypes = Lazy.of(managedTypes::toList);
+		this.typeCollectorCustomizer = typeCollectorCustomizer;
 		this.contributionAction = contributionAction;
 		this.source = registeredBean;
 	}
@@ -95,17 +99,14 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 		List<Class<?>> types = sourceTypes.get();
 
 		if (!types.isEmpty()) {
-			TypeCollector.inspect(types).forEach(type -> contributionAction.register(type, generationContext, aotContext));
+			TypeCollector.inspect(typeCollectorCustomizer, types)
+					.forEach(type -> contributionAction.register(type, generationContext, aotContext));
 		}
 	}
 
 	@Override
 	public BeanRegistrationCodeFragments customizeBeanRegistrationCodeFragments(GenerationContext generationContext,
 			BeanRegistrationCodeFragments codeFragments) {
-
-		if (managedTypes == null) {
-			return codeFragments;
-		}
 
 		ManagedTypesInstanceCodeFragment fragment = new ManagedTypesInstanceCodeFragment(sourceTypes.get(), source,
 				codeFragments);

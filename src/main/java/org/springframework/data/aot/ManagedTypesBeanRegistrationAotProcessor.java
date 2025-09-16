@@ -18,6 +18,7 @@ package org.springframework.data.aot;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeCollector;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.util.ClassUtils;
@@ -125,9 +127,18 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 */
 	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes,
 			RegisteredBean registeredBean) {
-		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean, this::contributeType);
+		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean,
+				typeCollectorCustomizer(), this::contributeType);
 	}
 
+	/**
+	 * Customization hook to configure {@link TypeCollector}.
+	 *
+	 * @return a {@link Consumer} to customize the {@link TypeCollector}, must not be {@literal null}.
+	 */
+	protected Consumer<TypeCollector> typeCollectorCustomizer() {
+		return typeCollector -> {};
+	}
 	/**
 	 * Hook to contribute configuration for a given {@literal type}.
 	 *
@@ -142,12 +153,24 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		aotContext.typeConfiguration(type, config -> config.forDataBinding() //
-				.contributeAccessors() //
-				.forQuerydsl().contribute(environment.get(), generationContext));
+		configureTypeContribution(type.toClass(), aotContext);
+
+		aotContext.typeConfiguration(type, config -> {
+			config.contribute(environment.get(), generationContext);
+		});
 
 		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
+	}
+
+	/**
+	 * Customization hook to configure the {@link TypeContributor} used to register the given {@literal type}.
+	 *
+	 * @param type the class to configure the contribution for.
+	 * @param aotContext AOT context for type configuration.
+	 */
+	protected void configureTypeContribution(Class<?> type, AotContext aotContext) {
+		aotContext.typeConfiguration(type, config -> config.forDataBinding().contributeAccessors().forQuerydsl());
 	}
 
 	protected boolean isMatch(@Nullable Class<?> beanType, @Nullable String beanName) {
