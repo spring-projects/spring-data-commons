@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -91,6 +93,12 @@ class PropertyPathUnitTests {
 		assertThat(reference.getSegment()).isEqualTo("user");
 		assertThat(reference.hasNext()).isTrue();
 		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"user_ name", "user_ Name", "user. Name", "user. name"})
+	void testPathStartedWithWhitespaceAreNotValid(String source) {
+		assertThatThrownBy(() -> PropertyPath.from(source, Sample.class)).isInstanceOf(PropertyReferenceException.class);
 	}
 
 	@Test
