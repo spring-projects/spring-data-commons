@@ -23,8 +23,4 @@ See the {spring-data-commons-javadoc-base}/org/springframework/data/domain/Persi
 _Note: Properties of `Persistable` will get detected and persisted if you use `AccessType.PROPERTY`.
 To avoid that, use `@Transient`._
 
-|Providing a custom `EntityInformation` implementation
-|You can customize the `EntityInformation` abstraction used in the repository base implementation by creating a subclass of the module specific repository factory and overriding the `getEntityInformation(…)` method.
-You then have to register the custom implementation of module specific repository factory as a Spring bean.
-Note that this should rarely be necessary.
 |===
