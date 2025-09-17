@@ -139,6 +139,11 @@ public class RepositoryContributor {
 				.customizeConstructor(this::customizeConstructor) //
 				.contributeMethods(this::contributeQueryMethod); //
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("Contributing %s AOT repository implementation for '%s'".formatted(repositoryContext.getModuleName(),
+					repositoryContext.getRepositoryInformation().getRepositoryInterface().getName()));
+		}
+
 		// obtain the generated type and its target name.
 		// Writing the source is triggered by DefaultGenerationContext#writeGeneratedContent() at a later stage
 		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
