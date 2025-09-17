@@ -384,7 +384,7 @@ public class ClassGeneratingPropertyAccessorFactory
 		static byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-			cw.visit(Opcodes.V1_6, ACC_PUBLIC + ACC_SUPER, internalClassName, null, JAVA_LANG_OBJECT, IMPLEMENTED_INTERFACES);
+			cw.visit(Opcodes.V1_8, ACC_PUBLIC + ACC_SUPER, internalClassName, null, JAVA_LANG_OBJECT, IMPLEMENTED_INTERFACES);
 
 			List<PersistentProperty<?>> persistentProperties = getPersistentProperties(entity);
 
@@ -778,19 +778,18 @@ public class ClassGeneratingPropertyAccessorFactory
 		 *
 		 * <pre class="code">
 		 * public Object getProperty(PersistentProperty<?> property) {
-		 * 	Object bean = this.bean;
 		 * 	switch (property.getName().hashCode()) {
 		 * 		case 3355:
-		 * 			return id_fieldGetter.invoke(bean);
+		 * 			return id_fieldGetter.invoke(this.bean);
 		 * 		case 3356:
-		 * 			return bean.getField();
+		 * 			return this.bean.getField();
 		 * 		// …
 		 * 		case 3357:
-		 * 			return bean.field;
+		 * 			return this.bean.field;
 		 * 		// …
 		 * 	}
 		 * 	throw new UnsupportedOperationException(
-		 * 			String.format("No MethodHandle to get property %s", new Object[] { property }));
+		 * 			String.format("No accessor to get property %s", new Object[] { property }));
 		 * }
 		 * </pre>
 		 */
@@ -809,12 +808,6 @@ public class ClassGeneratingPropertyAccessorFactory
 			// Assert.notNull(property)
 			visitAssertNotNull(mv);
 
-			mv.visitVarInsn(ALOAD, 0);
-
-			mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
-
-			mv.visitVarInsn(ASTORE, 2);
-
 			visitGetPropertySwitch(entity, persistentProperties, internalClassName, mv);
 
 			mv.visitLabel(l1);
@@ -823,8 +816,6 @@ public class ClassGeneratingPropertyAccessorFactory
 			mv.visitLocalVariable(THIS_REF, referenceName(internalClassName), null, l0, l1, 0);
 			mv.visitLocalVariable("property", referenceName(PERSISTENT_PROPERTY),
 					"Lorg/springframework/data/mapping/PersistentProperty<*>;", l0, l1, 1);
-
-			mv.visitLocalVariable(BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, l0, l1, 2);
 
 			mv.visitMaxs(0, 0);
 			mv.visitEnd();
@@ -894,12 +885,14 @@ public class ClassGeneratingPropertyAccessorFactory
 					// $getter.invoke(bean)
 					mv.visitFieldInsn(GETSTATIC, internalClassName, getterName(property),
 							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 							String.format("(%s)%s", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 				} else {
 					// bean.get…
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 
 					int invokeOpCode = INVOKEVIRTUAL;
 					Class<?> declaringClass = getter.getDeclaringClass();
@@ -921,12 +914,14 @@ public class ClassGeneratingPropertyAccessorFactory
 					// $fieldGetter.invoke(bean)
 					mv.visitFieldInsn(GETSTATIC, internalClassName, fieldGetterName(property),
 							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 							String.format("(%s)%s", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 				} else {
 					// bean.field
-					mv.visitVarInsn(ALOAD, 2);
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 					mv.visitFieldInsn(GETFIELD, Type.getInternalName(field.getDeclaringClass()), field.getName(),
 							signatureTypeName(field.getType()));
 					autoboxIfNeeded(field.getType(), autoboxType(field.getType()), mv);
@@ -941,19 +936,18 @@ public class ClassGeneratingPropertyAccessorFactory
 		 *
 		 * <pre class="code">
 		 * public void setProperty(PersistentProperty<?> property, Optional<? extends Object> value) {
-		 * 	Object bean = this.bean;
 		 * 	switch (property.getName().hashCode()) {
 		 * 		case 3355:
-		 * 			$id_fieldSetter.invoke(bean, value);
+		 * 			$id_fieldSetter.invoke(this.bean, value);
 		 * 			return;
 		 * 		case 3357:
-		 * 			this.bean = $id_fieldWither.invoke(bean, value);
+		 * 			this.bean = $id_fieldWither.invoke(this.bean, value);
 		 * 			return;
 		 * 		case 3358:
-		 * 			this.bean = bean.withId(value);
+		 * 			this.bean = this.bean.withId(value);
 		 * 			return;
 		 * 		case 3359:
-		 * 			this.bean = PersonWithId.copy$default(bean, value, 0, null); // Kotlin
+		 * 			this.bean = PersonWithId.copy$default(this.bean, value, 0, null); // Kotlin
 		 * 			return;
 		 * 		// …
 		 * 	}
@@ -975,12 +969,6 @@ public class ClassGeneratingPropertyAccessorFactory
 
 			visitAssertNotNull(mv);
 
-			mv.visitVarInsn(ALOAD, 0);
-
-			mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
-
-			mv.visitVarInsn(ASTORE, 3);
-
 			visitSetPropertySwitch(entity, persistentProperties, internalClassName, mv);
 
 			Label l1 = new Label();
@@ -992,8 +980,6 @@ public class ClassGeneratingPropertyAccessorFactory
 			mv.visitLocalVariable("property", "Lorg/springframework/data/mapping/PersistentProperty;",
 					"Lorg/springframework/data/mapping/PersistentProperty<*>;", l0, l1, 1);
 			mv.visitLocalVariable("value", referenceName(JAVA_LANG_OBJECT), null, l0, l1, 2);
-
-			mv.visitLocalVariable(BEAN_FIELD, getAccessibleTypeReferenceName(entity), null, l0, l1, 3);
 
 			mv.visitMaxs(0, 0);
 			mv.visitEnd();
@@ -1089,15 +1075,17 @@ public class ClassGeneratingPropertyAccessorFactory
 		private static void visitWithProperty(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
 				MethodVisitor mv, String internalClassName, Method wither) {
 
-			if (generateMethodHandle(entity, wither)) {
+			// this. <- for later PUTFIELD
+			mv.visitVarInsn(ALOAD, 0);
 
-				// this. <- for later PUTFIELD
-				mv.visitVarInsn(ALOAD, 0);
+			if (generateMethodHandle(entity, wither)) {
 
 				// $wither.invoke(bean)
 				mv.visitFieldInsn(GETSTATIC, internalClassName, witherName(property),
 						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-				mv.visitVarInsn(ALOAD, 3);
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+
 				mv.visitVarInsn(ALOAD, 2);
 				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke", String.format("(%s%s)%s",
 						referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT), getAccessibleTypeReferenceName(entity)),
@@ -1107,11 +1095,9 @@ public class ClassGeneratingPropertyAccessorFactory
 				}
 			} else {
 
-				// this. <- for later PUTFIELD
+				// this.bean.set...(object)
 				mv.visitVarInsn(ALOAD, 0);
-
-				// bean.set...(object)
-				mv.visitVarInsn(ALOAD, 3);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 				mv.visitVarInsn(ALOAD, 2);
 
 				visitInvokeMethodSingleArg(mv, wither);
@@ -1146,7 +1132,8 @@ public class ClassGeneratingPropertyAccessorFactory
 			if (kotlinCopyMethod.shouldUsePublicCopyMethod(entity)) {
 
 				// PersonWithId.copy$(value)
-				mv.visitVarInsn(ALOAD, 3);
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 				mv.visitVarInsn(ALOAD, 2);
 
 				visitInvokeMethodSingleArg(mv, kotlinCopyMethod.getPublicCopyMethod());
@@ -1155,8 +1142,9 @@ public class ClassGeneratingPropertyAccessorFactory
 				Method copy = kotlinCopyMethod.getSyntheticCopyMethod();
 				Class<?>[] parameterTypes = copy.getParameterTypes();
 
-				// PersonWithId.copy$default..(bean, object, MASK, null)
-				mv.visitVarInsn(ALOAD, 3);
+				// PersonWithId.copy$default..(this.bean, object, MASK, null)
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 
 				KotlinCopyMethod.KotlinCopyByProperty copyByProperty = kotlinCopyMethod.forProperty(property)
 						.orElseThrow(() -> new IllegalStateException(
@@ -1200,7 +1188,7 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * or
 		 *
 		 * <pre class="code">
-		 * bean.setId(value);
+		 * this.bean.setId(value);
 		 * </pre>
 		 */
 		private static void visitSetProperty(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
@@ -1208,17 +1196,19 @@ public class ClassGeneratingPropertyAccessorFactory
 
 			if (generateMethodHandle(entity, setter)) {
 
-				// $setter.invoke(bean)
+				// $setter.invoke(this.bean)
 				mv.visitFieldInsn(GETSTATIC, internalClassName, setterName(property),
 						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-				mv.visitVarInsn(ALOAD, 3);
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 				mv.visitVarInsn(ALOAD, 2);
 				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 						String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 			} else {
 
-				// bean.set...(object)
-				mv.visitVarInsn(ALOAD, 3);
+				// this.bean.set...(object)
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 				mv.visitVarInsn(ALOAD, 2);
 
 				visitInvokeMethodSingleArg(mv, setter);
@@ -1229,7 +1219,7 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Generate:
 		 *
 		 * <pre class="code">
-		 * $id_fieldSetter.invoke(bean, value);
+		 * $id_fieldSetter.invoke(this.bean, value);
 		 * </pre>
 		 *
 		 * or
@@ -1244,16 +1234,18 @@ public class ClassGeneratingPropertyAccessorFactory
 			Field field = property.getField();
 			if (field != null) {
 				if (generateSetterMethodHandle(entity, field)) {
-					// $fieldSetter.invoke(bean, object)
+					// $fieldSetter.invoke(this.bean, object)
 					mv.visitFieldInsn(GETSTATIC, internalClassName, fieldSetterName(property),
 							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-					mv.visitVarInsn(ALOAD, 3);
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 					mv.visitVarInsn(ALOAD, 2);
 					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
 							String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
 				} else {
-					// bean.field
-					mv.visitVarInsn(ALOAD, 3);
+					// this.bean.field
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
 					mv.visitVarInsn(ALOAD, 2);
 
 					Class<?> fieldType = field.getType();

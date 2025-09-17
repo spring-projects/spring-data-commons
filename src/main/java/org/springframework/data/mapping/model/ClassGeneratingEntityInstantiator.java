@@ -469,7 +469,7 @@ class ClassGeneratingEntityInstantiator implements EntityInstantiator, EntityIns
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
-			cw.visit(Opcodes.V1_6, ACC_PUBLIC + ACC_SUPER, internalClassName.replace('.', '/'), null, JAVA_LANG_OBJECT,
+			cw.visit(Opcodes.V1_8, ACC_PUBLIC + ACC_SUPER, internalClassName.replace('.', '/'), null, JAVA_LANG_OBJECT,
 					IMPLEMENTED_INTERFACES);
 
 			visitDefaultConstructor(cw);
