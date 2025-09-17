@@ -384,13 +384,22 @@ public class ClassGeneratingPropertyAccessorFactory
 		static byte[] generateBytecode(String internalClassName, PersistentEntity<?, ?> entity) {
 
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-			cw.visit(Opcodes.V1_8, ACC_PUBLIC + ACC_SUPER, internalClassName, null, JAVA_LANG_OBJECT, IMPLEMENTED_INTERFACES);
+
+			String signature = referenceName(JAVA_LANG_OBJECT) + String.format("L%s<%s>;",
+					Type.getInternalName(PersistentPropertyAccessor.class), referenceName(entity.getType()));
+
+			cw.visit(Opcodes.V1_8, ACC_PUBLIC + ACC_SUPER, internalClassName, signature, JAVA_LANG_OBJECT,
+					IMPLEMENTED_INTERFACES);
 
 			List<PersistentProperty<?>> persistentProperties = getPersistentProperties(entity);
 
 			visitFields(entity, persistentProperties, cw);
 			visitDefaultConstructor(entity, internalClassName, cw);
-			visitStaticInitializer(entity, persistentProperties, internalClassName, cw);
+
+			if (requiresMethodHandleSetup(entity, persistentProperties)) {
+				visitStaticInitializer(entity, persistentProperties, internalClassName, cw);
+			}
+
 			visitBeanGetter(entity, internalClassName, cw);
 			visitSetProperty(entity, persistentProperties, internalClassName, cw);
 			visitGetProperty(entity, persistentProperties, internalClassName, cw);
@@ -515,9 +524,7 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * 	Method getter;
 		 * 	Method setter;
 		 * 	MethodHandles.Lookup lookup = MethodHandles.lookup();
-		 * 	Class class_1 = Class.forName("org.springframework.data.mapping.Person");
-		 * 	Class class_2 = Class.forName("org.springframework.data.mapping.PersonWithId");
-		 * 	Field field = class_2.getDeclaredField("id");
+		 * 	Field field = org.springframework.data.mapping.PersonWithId.class.getDeclaredField("id");
 		 * 	field.setAccessible(true);
 		 * 	$id_fieldGetter = lookup.unreflectGetter(field);
 		 * 	$id_fieldSetter = lookup.unreflectSetter(field);
@@ -539,37 +546,27 @@ public class ClassGeneratingPropertyAccessorFactory
 					String.format("()%s", referenceName(JAVA_LANG_INVOKE_METHOD_HANDLES_LOOKUP)), false);
 			mv.visitVarInsn(ASTORE, 0);
 
-			List<Class<?>> entityClasses = getPropertyDeclaratingClasses(persistentProperties);
-
-			for (Class<?> entityClass : entityClasses) {
-
-				mv.visitLdcInsn(entityClass.getName());
-				mv.visitMethodInsn(INVOKESTATIC, JAVA_LANG_CLASS, "forName",
-						String.format("(%s)%s", referenceName(JAVA_LANG_STRING), referenceName(JAVA_LANG_CLASS)), false);
-				mv.visitVarInsn(ASTORE, classVariableIndex5(entityClasses, entityClass));
-			}
-
 			for (PersistentProperty<?> property : persistentProperties) {
 
 				if (property.usePropertyAccess()) {
 
 					if (generateMethodHandle(entity, property.getGetter())) {
-						visitPropertyGetterInitializer(property, mv, entityClasses, internalClassName);
+						visitPropertyGetterInitializer(property, mv, internalClassName);
 					}
 
 					if (generateMethodHandle(entity, property.getSetter())) {
-						visitPropertySetterInitializer(property.getSetter(), property, mv, entityClasses, internalClassName,
+						visitPropertySetterInitializer(property.getSetter(), property, mv, internalClassName,
 								PropertyAccessorClassGenerator::setterName, 2);
 					}
 				}
 
 				if (property.isImmutable() && generateMethodHandle(entity, property.getWither())) {
-					visitPropertySetterInitializer(property.getWither(), property, mv, entityClasses, internalClassName,
+					visitPropertySetterInitializer(property.getWither(), property, mv, internalClassName,
 							PropertyAccessorClassGenerator::witherName, 4);
 				}
 
 				if (generateSetterMethodHandle(entity, property.getField())) {
-					visitFieldGetterSetterInitializer(property, mv, entityClasses, internalClassName);
+					visitFieldGetterSetterInitializer(property, mv, internalClassName);
 				}
 			}
 
@@ -582,14 +579,36 @@ public class ClassGeneratingPropertyAccessorFactory
 			mv.visitLocalVariable("getter", referenceName(JAVA_LANG_REFLECT_METHOD), null, l0, l1, 3);
 			mv.visitLocalVariable("wither", referenceName(JAVA_LANG_REFLECT_METHOD), null, l0, l1, 4);
 
-			for (Class<?> entityClass : entityClasses) {
-
-				int index = classVariableIndex5(entityClasses, entityClass);
-				mv.visitLocalVariable(String.format("class_%d", index), referenceName(JAVA_LANG_CLASS), null, l0, l1, index);
-			}
-
 			mv.visitMaxs(0, 0);
 			mv.visitEnd();
+		}
+
+		static boolean requiresMethodHandleSetup(PersistentEntity<?, ?> entity,
+				List<PersistentProperty<?>> persistentProperties) {
+
+			for (PersistentProperty<?> property : persistentProperties) {
+
+				if (property.usePropertyAccess()) {
+
+					if (generateMethodHandle(entity, property.getGetter())) {
+						return true;
+					}
+
+					if (generateMethodHandle(entity, property.getSetter())) {
+						return true;
+					}
+				}
+
+				if (property.isImmutable() && generateMethodHandle(entity, property.getWither())) {
+					return true;
+				}
+
+				if (generateSetterMethodHandle(entity, property.getField())) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/**
@@ -617,14 +636,14 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Generate property getter initializer.
 		 */
 		private static void visitPropertyGetterInitializer(PersistentProperty<?> property, MethodVisitor mv,
-				List<Class<?>> entityClasses, String internalClassName) {
+				String internalClassName) {
 
 			// getter = <entity>.class.getDeclaredMethod()
 			Method getter = property.getGetter();
 
 			if (getter != null) {
 
-				mv.visitVarInsn(ALOAD, classVariableIndex5(entityClasses, getter.getDeclaringClass()));
+				mv.visitLdcInsn(Type.getObjectType(Type.getInternalName(getter.getDeclaringClass())));
 				mv.visitLdcInsn(getter.getName());
 				mv.visitInsn(ICONST_0);
 				mv.visitTypeInsn(ANEWARRAY, JAVA_LANG_CLASS);
@@ -657,14 +676,14 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Generate property setter/wither initializer.
 		 */
 		private static void visitPropertySetterInitializer(@Nullable Method method, PersistentProperty<?> property,
-				MethodVisitor mv, List<Class<?>> entityClasses, String internalClassName,
+				MethodVisitor mv, String internalClassName,
 				Function<PersistentProperty<?>, String> setterNameFunction, int localVariableIndex) {
 
 			// method = <entity>.class.getDeclaredMethod()
 
 			if (method != null) {
 
-				mv.visitVarInsn(ALOAD, classVariableIndex5(entityClasses, method.getDeclaringClass()));
+				mv.visitLdcInsn(Type.getObjectType(Type.getInternalName(method.getDeclaringClass())));
 				mv.visitLdcInsn(method.getName());
 
 				mv.visitInsn(ICONST_1);
@@ -711,14 +730,14 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Generate field getter and setter initializers.
 		 */
 		private static void visitFieldGetterSetterInitializer(PersistentProperty<?> property, MethodVisitor mv,
-				List<Class<?>> entityClasses, String internalClassName) {
+				String internalClassName) {
 
 			// field = <entity>.class.getDeclaredField()
 
 			Field field = property.getField();
 			if (field != null) {
 
-				mv.visitVarInsn(ALOAD, classVariableIndex5(entityClasses, field.getDeclaringClass()));
+				mv.visitLdcInsn(Type.getObjectType(Type.getInternalName(field.getDeclaringClass())));
 				mv.visitLdcInsn(field.getName());
 				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_CLASS, "getDeclaredField",
 						String.format("(%s)%s", referenceName(JAVA_LANG_STRING), referenceName(JAVA_LANG_REFLECT_FIELD)), false);
