@@ -109,7 +109,7 @@ public class TypeCollector {
 	 */
 	@Contract("_ -> this")
 	public TypeCollector filterMethods(Predicate<Method> filter) {
-		this.methodFilter = filter.and(filter);
+		this.methodFilter = methodFilter.and(filter);
 		return this;
 	}
 
@@ -122,7 +122,7 @@ public class TypeCollector {
 	 */
 	@Contract("_ -> this")
 	public TypeCollector filterFields(Predicate<Field> filter) {
-		this.fieldFilter = filter.and(filter);
+		this.fieldFilter = fieldFilter.and(filter);
 		return this;
 	}
 
