@@ -52,7 +52,7 @@ import org.springframework.util.ReflectionUtils;
  * that returns {@code false}. Filters are {@link Predicate#and(Predicate) combined} so that multiple filters can be
  * taken into account. A type/field/method must pass all filters to be considered for further inspection.
  * <p>
- * The collector uses {@link AotServices} to discover implementations of {@link TypeCollectorPredicateProvider} so that
+ * The collector uses {@link AotServices} to discover implementations of {@link TypeCollectorFilters} so that
  * components using {@link TypeCollector} can contribute their own filtering logic to exclude types, fields, and methods
  * from being inspected.
  *
@@ -66,8 +66,8 @@ public class TypeCollector {
 
 	private static final Log logger = LogFactory.getLog(TypeCollector.class);
 
-	private static final AotServices<TypeCollectorPredicateProvider> providers = AotServices.factories()
-			.load(TypeCollectorPredicateProvider.class);
+	private static final AotServices<TypeCollectorFilters> providers = AotServices.factories()
+			.load(TypeCollectorFilters.class);
 
 	private Predicate<Class<?>> typeFilter = Predicates.isTrue();
 
@@ -76,7 +76,7 @@ public class TypeCollector {
 	private Predicate<Field> fieldFilter = Predicates.isTrue();
 
 	/**
-	 * Create a new {@link TypeCollector} applying all {@link TypeCollectorPredicateProvider} discovered through
+	 * Create a new {@link TypeCollector} applying all {@link TypeCollectorFilters} discovered through
 	 * {@link AotServices}.
 	 */
 	public TypeCollector() {
@@ -105,6 +105,7 @@ public class TypeCollector {
 	 *
 	 * @param filter filter predicate matching a {@link Class}.
 	 * @return {@code this} TypeCollector instance.
+	 * @since 4.0
 	 */
 	@Contract("_ -> this")
 	public TypeCollector filterMethods(Predicate<Method> filter) {
@@ -117,6 +118,7 @@ public class TypeCollector {
 	 *
 	 * @param filter filter predicate matching a {@link Class}.
 	 * @return {@code this} TypeCollector instance.
+	 * @since 4.0
 	 */
 	@Contract("_ -> this")
 	public TypeCollector filterFields(Predicate<Field> filter) {
@@ -351,7 +353,7 @@ public class TypeCollector {
 	 * @author Mark Paluch
 	 * @since 4.0
 	 */
-	public interface TypeCollectorPredicateProvider {
+	public interface TypeCollectorFilters {
 
 		/**
 		 * Return a predicate to filter types.
@@ -383,12 +385,12 @@ public class TypeCollector {
 	}
 
 	/**
-	 * Default implementation of {@link TypeCollectorPredicateProvider} that excludes types from certain packages and
+	 * Default implementation of {@link TypeCollectorFilters} that excludes types from certain packages and
 	 * filters out unwanted fields and methods.
 	 *
 	 * @since 4.0
 	 */
-	private static class DefaultTypeCollectorPredicateProvider implements TypeCollectorPredicateProvider {
+	private static class DefaultTypeCollectorFilters implements TypeCollectorFilters {
 
 		private static final Set<String> EXCLUDED_DOMAINS = Set.of("java", "sun.", "jdk.", "reactor.", "kotlinx.",
 				"kotlin.", "org.springframework.core.", "org.springframework.data.mapping.",
