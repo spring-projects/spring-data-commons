@@ -135,6 +135,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * Customization hook to configure {@link TypeCollector}.
 	 *
 	 * @return a {@link Consumer} to customize the {@link TypeCollector}, must not be {@literal null}.
+	 * @since 4.0
 	 */
 	protected Consumer<TypeCollector> typeCollectorCustomizer() {
 		return typeCollector -> {};
@@ -168,6 +169,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 *
 	 * @param type the class to configure the contribution for.
 	 * @param aotContext AOT context for type configuration.
+	 * @since 4.0
 	 */
 	protected void configureTypeContribution(Class<?> type, AotContext aotContext) {
 		aotContext.typeConfiguration(type, config -> config.forDataBinding().contributeAccessors().forQuerydsl());
