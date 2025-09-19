@@ -27,6 +27,39 @@ class ApplicationConfiguration {
 
 NOTE: The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use. The same applies to the definition of the `EntityManagerFactory` bean. See the sections covering the store-specific configuration.
 
+[[repositories.create-instances.java-config.placeholders-and-patterns]]
+=== Property Placeholders and Ant-style Patterns
+
+The `basePackages` and `value` attributes in `@Enable{store}Repositories` support `${…}` property placeholders which are resolved against the `Environment` as well as Ant-style package patterns such as `"org.example.+++**+++"`.
+
+The following example specifies the `app.scan.packages` property placeholder for the implicit `value` attribute in `@Enable{store}Repositories`.
+
+[tabs]
+======
+Java::
++
+[source,java,indent=0,subs="verbatim,quotes,attributes,specialchars"]
+----
+@Configuration
+@Enable{store}Repositories("${app.scan.packages}")    // <1>
+public class ApplicationConfiguration {
+  // …
+}
+----
+<1> `app.scan.packages` property placeholder to be resolved against the `Environment`
+
+Kotlin::
++
+[source,kotlin,indent=0,subs="verbatim,quotes,attributes,specialchars"]
+----
+@Enable{store}Repositories(["\${app.scan.packages}"]) // <1>
+class ApplicationConfiguration {
+  // …
+}
+----
+<1> `app.scan.packages` property placeholder to be resolved against the `Environment`
+======
+
 ifeval::[{include-xml-namespaces} != false]
 [[repositories.create-instances.spring]]
 [[repositories.create-instances.xml]]
