@@ -132,10 +132,11 @@ public class Lazy<T> implements Supplier<T> {
 			return value;
 		}
 
-		this.value = supplier.get();
+		T result = supplier.get();
+		this.value = result;
 		this.resolved = true;
 
-		return value;
+		return result;
 	}
 
 	/**
