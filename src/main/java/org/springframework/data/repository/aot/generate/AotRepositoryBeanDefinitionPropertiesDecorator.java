@@ -41,8 +41,8 @@ import org.springframework.util.StringUtils;
 
 /**
  * Delegate to decorate AOT {@code BeanDefinition} properties during AOT processing. Adds a {@link CodeBlock} for the
- * fragment function that resolves {@link RepositoryContributor#requiredArgs()} from the {@link BeanFactory} and
- * provides them to the generated repository fragment.
+ * fragment function that resolves {@link RepositoryContributor#getAotFragmentMetadata()} from the {@link BeanFactory}
+ * and provides them to the generated repository fragment.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -128,7 +128,8 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 		CodeBlock.Builder callback = CodeBlock.builder();
 		List<Object> arguments = new ArrayList<>();
 
-		for (Entry<String, ConstructorArgument> entry : repositoryContributor.getConstructorArguments().entrySet()) {
+		for (Entry<String, ConstructorArgument> entry : repositoryContributor.getAotFragmentMetadata()
+				.getConstructorArguments().entrySet()) {
 
 			ConstructorArgument argument = entry.getValue();
 			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin = argument.parameterOrigin();

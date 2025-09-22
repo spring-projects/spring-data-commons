@@ -17,7 +17,6 @@ package org.springframework.data.aot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -55,13 +55,13 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @since 3.0
  */
+@SuppressWarnings("removal")
 class DefaultAotContext implements AotContext {
 
 	private final AotMappingContext mappingContext;
 	private final ConfigurableListableBeanFactory factory;
 
-	// TODO: should we reuse the config or potentially have multiple ones with different settings for the same type
-	private final Map<Class<?>, AotTypeConfiguration> typeConfigurations = new HashMap<>();
+	private final Map<Class<?>, ContextualTypeConfiguration> typeConfigurations = new HashMap<>();
 	private final Environment environment;
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
@@ -101,10 +101,13 @@ class DefaultAotContext implements AotContext {
 	}
 
 	@Override
-	public Collection<AotTypeConfiguration> typeConfigurations() {
-		return typeConfigurations.values();
+	public void contributeTypeConfigurations(GenerationContext generationContext) {
+		typeConfigurations.forEach((type, configuration) -> {
+			configuration.contribute(this.environment, generationContext);
+		});
 	}
 
+	@SuppressWarnings("removal")
 	class DefaultTypeIntrospector implements TypeIntrospector {
 
 		private final String typeName;
@@ -144,6 +147,7 @@ class DefaultAotContext implements AotContext {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	class DefaultIntrospectedBeanDefinition implements IntrospectedBeanDefinition {
 
 		private final String beanName;
@@ -227,7 +231,6 @@ class DefaultAotContext implements AotContext {
 			return this;
 		}
 
-		@Override
 		public void contribute(Environment environment, GenerationContext generationContext) {
 
 			try {

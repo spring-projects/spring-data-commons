@@ -19,9 +19,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
@@ -30,9 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -100,18 +96,8 @@ class AotRepositoryCreator {
 		return repositoryInformation.getRepositoryInterface().getPackageName();
 	}
 
-	Map<String, ResolvableType> getAutowireFields() {
-
-		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(
-				generationMetadata.getConstructorArguments().size());
-		for (Map.Entry<String, ConstructorArgument> entry : generationMetadata.getConstructorArguments().entrySet()) {
-			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
-		}
-		return autowireFields;
-	}
-
-	Map<String, ConstructorArgument> getConstructorArguments() {
-		return generationMetadata.getConstructorArguments();
+	AotRepositoryFragmentMetadata getRepositoryMetadata() {
+		return generationMetadata;
 	}
 
 	RepositoryInformation getRepositoryInformation() {

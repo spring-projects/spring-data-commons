@@ -36,8 +36,12 @@ public interface AotRepositoryContext extends AotContext {
 
 	/**
 	 * @return the {@link String bean name} of the repository / factory bean.
+	 * @deprecated since 4.0, this doesn't really belong in here.
 	 */
-	String getBeanName();
+	@Deprecated(since = "4.0", forRemoval = true)
+	default String getBeanName() {
+		throw new UnsupportedOperationException(); // prepare for removal
+	}
 
 	/**
 	 * @return the Spring Data module name, see {@link RepositoryConfigurationExtension#getModuleName()}.
@@ -52,7 +56,10 @@ public interface AotRepositoryContext extends AotContext {
 
 	/**
 	 * @return a {@link Set} of {@link String base packages} to search for repositories.
+	 * @deprecated since 4.0, use {@link #getConfigurationSource()} and call
+	 *             {@link RepositoryConfigurationSource#getBasePackages()}
 	 */
+	@Deprecated(since = "4.0", forRemoval = true)
 	default Set<String> getBasePackages() {
 		return getConfigurationSource().getBasePackages().toSet();
 	}
@@ -78,7 +85,5 @@ public interface AotRepositoryContext extends AotContext {
 	 * @return all {@link Class types} reachable from the repository.
 	 */
 	Set<Class<?>> getResolvedTypes();
-
-	Set<Class<?>> getUserDomainTypes();
 
 }
