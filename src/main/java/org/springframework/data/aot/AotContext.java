@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -40,9 +42,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The context in which the AOT processing happens. Grants access to the {@link ConfigurableListableBeanFactory
- * beanFactory} and {@link ClassLoader}. Holds a few convenience methods to check if a type
- * {@link TypeIntrospector#isTypePresent() is present} and allows resolution of them through {@link TypeIntrospector}
- * and {@link IntrospectedBeanDefinition}.
+ * beanFactory} and {@link ClassLoader}.
  * <p>
  * Mainly for internal use within the framework.
  *
@@ -99,7 +99,7 @@ public interface AotContext extends EnvironmentCapable {
 	 * @param moduleName name of the module. Can be {@literal null} or {@literal empty}, in which case it will only check
 	 *          the general {@link #GENERATED_REPOSITORIES_ENABLED} flag.
 	 * @return indicator if repository code generation is enabled.
-	 * @since 5.0
+	 * @since 4.0
 	 */
 	default boolean isGeneratedRepositoriesEnabled(@Nullable String moduleName) {
 
@@ -119,13 +119,13 @@ public interface AotContext extends EnvironmentCapable {
 	}
 
 	/**
-	 * Checks if repository metadata file writing is enabled by checking environment variables for general
-	 * enablement ({@link #GENERATED_REPOSITORIES_JSON_ENABLED})
+	 * Checks if repository metadata file writing is enabled by checking environment variables for general enablement
+	 * ({@link #GENERATED_REPOSITORIES_JSON_ENABLED})
 	 * <p>
 	 * Unset properties are considered being {@literal true}.
 	 *
 	 * @return indicator if repository metadata should be written
-	 * @since 5.0
+	 * @since 4.0
 	 */
 	default boolean isGeneratedRepositoriesMetadataEnabled() {
 		return getEnvironment().getProperty(GENERATED_REPOSITORIES_JSON_ENABLED, Boolean.class, true);
@@ -177,8 +177,12 @@ public interface AotContext extends EnvironmentCapable {
 	 *
 	 * @param typeName {@link String name} of the {@link Class type} to evaluate; must not be {@literal null}.
 	 * @return the type introspector for further type-based introspection.
+	 * @deprecated since 4.0 as this isn't widely used and can be easily implemented within user code.
 	 */
-	TypeIntrospector introspectType(String typeName);
+	@Deprecated(since = "4.0", forRemoval = true)
+	default TypeIntrospector introspectType(String typeName) {
+		throw new UnsupportedOperationException(); // preparation for implementation removal.
+	}
 
 	/**
 	 * Returns a new {@link TypeScanner} used to scan for {@link Class types} that will be contributed to the AOT
@@ -201,7 +205,9 @@ public interface AotContext extends EnvironmentCapable {
 	 * @param packageNames {@link Collection} of {@link String package names} to scan.
 	 * @return a {@link Set} of {@link Class types} found during the scan.
 	 * @see #getTypeScanner()
+	 * @deprecated since 4.0, use {@link #getTypeScanner()} directly
 	 */
+	@Deprecated(since = "4.0", forRemoval = true)
 	default Set<Class<?>> scanPackageForTypes(Collection<Class<? extends Annotation>> identifyingAnnotations,
 			Collection<String> packageNames) {
 
@@ -214,7 +220,9 @@ public interface AotContext extends EnvironmentCapable {
 	 *
 	 * @param reference {@link BeanReference} to the managed bean.
 	 * @return the introspected bean definition.
+	 * @deprecated since 4.0, use {@link #getBeanFactory()} and interact with the bean factory directly.
 	 */
+	@Deprecated(since = "4.0", forRemoval = true)
 	default IntrospectedBeanDefinition introspectBeanDefinition(BeanReference reference) {
 		return introspectBeanDefinition(reference.getBeanName());
 	}
@@ -225,15 +233,20 @@ public interface AotContext extends EnvironmentCapable {
 	 *
 	 * @param beanName {@link String} containing the {@literal name} of the bean to evaluate; must not be {@literal null}.
 	 * @return the introspected bean definition.
+	 * @deprecated since 4.0, use {@link #getBeanFactory()} and interact with the bean factory directly.
 	 */
-	IntrospectedBeanDefinition introspectBeanDefinition(String beanName);
+	@Deprecated(since = "4.0", forRemoval = true)
+	default IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
+		throw new UnsupportedOperationException(); // preparation for implementation removal.
+	}
 
 	/**
 	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
-	 * given type.
+	 * given type. Repeated calls to the same type will result in merging the configuration.
 	 *
 	 * @param resolvableType the resolvable type to configure.
 	 * @param configurationConsumer configuration consumer function.
+	 * @since 4.0
 	 */
 	default void typeConfiguration(ResolvableType resolvableType, Consumer<AotTypeConfiguration> configurationConsumer) {
 		typeConfiguration(resolvableType.toClass(), configurationConsumer);
@@ -241,24 +254,29 @@ public interface AotContext extends EnvironmentCapable {
 
 	/**
 	 * Obtain a {@link AotTypeConfiguration} for the given {@link ResolvableType} to customize the AOT processing for the
-	 * given type.
+	 * given type. Repeated calls to the same type will result in merging the configuration.
 	 *
 	 * @param type the type to configure.
 	 * @param configurationConsumer configuration consumer function.
+	 * @since 4.0
 	 */
 	void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer);
 
 	/**
-	 * Return all type configurations registered with this {@link AotContext}.
+	 * Contribute type configurations to the given {@link GenerationContext}. This method is called once per
+	 * {@link GenerationContext} after all type configurations have been registered.
 	 *
-	 * @return all type configurations registered with this {@link AotContext}.
+	 * @param generationContext the context to contribute the type configurations to.
 	 */
-	Collection<AotTypeConfiguration> typeConfigurations();
+	void contributeTypeConfigurations(GenerationContext generationContext);
 
 	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence
 	 * of beans.
+	 *
+	 * @deprecated since 4.0 as this isn't widely used and can be easily implemented within user code.
 	 */
+	@Deprecated(since = "4.0", forRemoval = true)
 	interface TypeIntrospector {
 
 		/**
@@ -318,7 +336,10 @@ public interface AotContext extends EnvironmentCapable {
 
 	/**
 	 * Interface defining introspection methods for bean definitions.
+	 *
+	 * @deprecated since 4.0 as this isn't widely used and can be easily implemented within user code.
 	 */
+	@Deprecated(since = "4.0", forRemoval = true)
 	interface IntrospectedBeanDefinition {
 
 		/**

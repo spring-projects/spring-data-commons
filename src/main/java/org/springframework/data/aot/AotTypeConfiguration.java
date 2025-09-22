@@ -22,19 +22,15 @@ import java.util.stream.Stream;
 
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.DecoratingProxy;
-import org.springframework.core.env.Environment;
 import org.springframework.data.projection.TargetAware;
 
 /**
  * Configuration object that captures various AOT configuration aspects of types within the data context by offering
  * predefined methods to register native configuration necessary for data binding, projection proxy definitions, AOT
  * cglib bytecode generation and other common tasks.
- * <p>
- * On {@link #contribute(Environment, GenerationContext)} the configuration is added to the {@link GenerationContext}.
  *
  * @author Christoph Strobl
  * @since 4.0
@@ -134,11 +130,4 @@ public interface AotTypeConfiguration {
 	 */
 	AotTypeConfiguration forQuerydsl();
 
-	/**
-	 * Write the configuration to the given {@link GenerationContext}.
-	 *
-	 * @param environment must not be {@literal null}.
-	 * @param generationContext must not be {@literal null}.
-	 */
-	void contribute(Environment environment, GenerationContext generationContext);
 }

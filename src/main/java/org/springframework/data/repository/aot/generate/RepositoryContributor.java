@@ -18,19 +18,18 @@ package org.springframework.data.repository.aot.generate;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.generate.GeneratedClass;
 import org.springframework.aot.generate.GeneratedFiles.Kind;
 import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.aot.generate.AotRepositoryCreator.AotBundle;
@@ -66,7 +65,7 @@ public class RepositoryContributor {
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
 
 		this.repositoryContext = repositoryContext;
-		creator = AotRepositoryCreator.forRepository(repositoryContext.getRepositoryInformation(),
+		this.creator = AotRepositoryCreator.forRepository(repositoryContext.getRepositoryInformation(),
 				repositoryContext.getModuleName(), createProjectionFactory());
 	}
 
@@ -102,28 +101,10 @@ public class RepositoryContributor {
 	}
 
 	/**
-	 * Get the required constructor arguments for the to be generated repository implementation. Types will be obtained by
-	 * type from {@link org.springframework.beans.factory.BeanFactory} upon initialization of the generated fragment
-	 * during application startup.
-	 * <p>
-	 * Can be overridden if required. Needs to match arguments of generated repository implementation.
-	 *
-	 * @return key/value pairs of required argument required to instantiate the generated fragment.
+	 * @return the associated {@link AotRepositoryFragmentMetadata}.
 	 */
-	// TODO: should we switch from ResolvableType to some custom value object to cover qualifiers?
-	java.util.Map<String, ResolvableType> requiredArgs() {
-		return Collections.unmodifiableMap(creator.getAutowireFields());
-	}
-
-	/**
-	 * Get the required constructor arguments for the to be generated repository implementation.
-	 * <p>
-	 * Can be overridden if required. Needs to match arguments of generated repository implementation.
-	 *
-	 * @return key/value pairs of required argument required to instantiate the generated fragment.
-	 */
-	java.util.Map<String, AotRepositoryFragmentMetadata.ConstructorArgument> getConstructorArguments() {
-		return Collections.unmodifiableMap(creator.getConstructorArguments());
+	AotRepositoryFragmentMetadata getAotFragmentMetadata() {
+		return creator.getRepositoryMetadata();
 	}
 
 	/**

@@ -155,10 +155,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
 		configureTypeContribution(type.toClass(), aotContext);
-
-		aotContext.typeConfiguration(type, config -> {
-			config.contribute(environment.get(), generationContext);
-		});
+		aotContext.contributeTypeConfigurations(generationContext);
 
 		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));

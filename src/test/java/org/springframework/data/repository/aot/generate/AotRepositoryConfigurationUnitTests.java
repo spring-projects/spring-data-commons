@@ -69,7 +69,8 @@ class AotRepositoryConfigurationUnitTests {
 		assertThat(contributedTypeName).isNotNull();
 
 		// required constructor arguments need to be present at this point
-		Map<String, ResolvableType> requiredArgs = new LinkedHashMap<>(contributor.requiredArgs());
+		Map<String, ResolvableType> requiredArgs = new LinkedHashMap<>(
+				contributor.getAotFragmentMetadata().getAutowireFields());
 		assertThat(requiredArgs).hasSize(1);
 
 		// decorator kicks in and enhanced the BeanDefinition. No files written so far.
@@ -86,7 +87,7 @@ class AotRepositoryConfigurationUnitTests {
 
 		// make sure write operation for generated content did not change constructor nor type name
 		assertThat(contributor.getContributedTypeName()).isEqualTo(contributedTypeName);
-		assertThat(contributor.requiredArgs()).containsExactlyEntriesOf(requiredArgs);
+		assertThat(contributor.getAotFragmentMetadata().getAutowireFields()).containsExactlyEntriesOf(requiredArgs);
 
 		// file is actually present now
 		assertThat(generationContext.getGeneratedFiles().getGeneratedFiles(Kind.SOURCE))

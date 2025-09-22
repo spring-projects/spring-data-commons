@@ -17,8 +17,6 @@ package org.springframework.data.aot;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.assertj.core.api.Assertions;
@@ -28,6 +26,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
+
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -102,7 +102,7 @@ class AotContextUnitTests {
 			context.typeConfiguration(aClass, AotTypeConfiguration::contributeAccessors);
 		}
 
-		context.typeConfigurations().forEach(it -> it.contribute(mockEnvironment, new TestGenerationContext()));
+		context.contributeTypeConfigurations(new TestGenerationContext());
 	}
 
 	@ParameterizedTest // GH-3322
@@ -163,8 +163,8 @@ class AotContextUnitTests {
 		}
 
 		@Override
-		public Collection<AotTypeConfiguration> typeConfigurations() {
-			return List.of();
+		public void contributeTypeConfigurations(GenerationContext generationContext) {
+
 		}
 
 		@Override

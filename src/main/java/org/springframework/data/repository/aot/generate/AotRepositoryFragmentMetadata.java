@@ -129,6 +129,15 @@ class AotRepositoryFragmentMetadata {
 		return constructorArguments;
 	}
 
+	Map<String, ResolvableType> getAutowireFields() {
+
+		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(getConstructorArguments().size());
+		for (Map.Entry<String, ConstructorArgument> entry : getConstructorArguments().entrySet()) {
+			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
+		}
+		return autowireFields;
+	}
+
 	public Map<String, LocalMethod> getMethods() {
 		return methods;
 	}

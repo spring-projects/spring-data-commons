@@ -56,10 +56,9 @@ class AotRepositoryBeanDefinitionPropertiesDecoratorUnitTests {
 	void beforeEach() {
 
 		when(contributor.getContributedTypeName()).thenReturn(GeneratedTypeReference.of(ClassName.bestGuess(TYPE_NAME)));
+		when(contributor.getAotFragmentMetadata()).thenReturn(metadata);
 		inheritedSource = CodeBlock.builder();
 		decorator = new AotRepositoryBeanDefinitionPropertiesDecorator(() -> inheritedSource.build(), contributor);
-
-		when(contributor.getConstructorArguments()).thenReturn(metadata.getConstructorArguments());
 	}
 
 	@Test // GH-3344
