@@ -188,6 +188,50 @@ class JavaPoetUnitTests {
 
 		block = LordOfTheStrings.returning(Integer.class).number("someNumericVariable").otherwise(":-[").build();
 		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.intValue() : null");
+
+		block = LordOfTheStrings.returning(Short.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.shortValue() : null");
+
+		block = LordOfTheStrings.returning(short.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.shortValue() : 0");
+
+		block = LordOfTheStrings.returning(Byte.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.byteValue() : null");
+
+		block = LordOfTheStrings.returning(Float.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.floatValue() : null");
+
+		block = LordOfTheStrings.returning(float.class).number("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable != null ? someNumericVariable.floatValue() : 0f");
+	}
+
+	@Test // GH-3357
+	void shouldRenderConditionalSafeNumericReturn() {
+
+		CodeBlock block = LordOfTheStrings.returning(boolean.class).nonNullableNumber("someNumericVariable")
+				.otherwise(":-[").build();
+		assertThat(block).hasToString("return :-[");
+
+		block = LordOfTheStrings.returning(long.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.longValue()");
+
+		block = LordOfTheStrings.returning(Long.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.longValue()");
+
+		block = LordOfTheStrings.returning(Integer.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.intValue()");
+
+		block = LordOfTheStrings.returning(short.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.shortValue()");
+
+		block = LordOfTheStrings.returning(byte.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.byteValue()");
+
+		block = LordOfTheStrings.returning(Double.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.doubleValue()");
+
+		block = LordOfTheStrings.returning(Float.class).nonNullableNumber("someNumericVariable").otherwise(":-[").build();
+		assertThat(block).hasToString("return someNumericVariable.floatValue()");
 	}
 
 	@Test // GH-3357

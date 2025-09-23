@@ -858,10 +858,37 @@ public abstract class LordOfTheStrings {
 		 */
 		@Contract("_ -> this")
 		public TypedReturnBuilder number(String resultToReturn) {
+
 			return whenBoxedLong("$1L != null ? $1L.longValue() : null", resultToReturn)
 					.whenLong("$1L != null ? $1L.longValue() : 0L", resultToReturn)
 					.whenBoxedInteger("$1L != null ? $1L.intValue() : null", resultToReturn)
-					.whenInt("$1L != null ? $1L.intValue() : 0", resultToReturn);
+					.whenInt("$1L != null ? $1L.intValue() : 0", resultToReturn)
+					.whenBoxed(Byte.class, "$1L != null ? $1L.byteValue() : null", resultToReturn)
+					.when(byte.class, "$1L != null ? $1L.byteValue() : 0", resultToReturn)
+					.whenBoxed(Short.class, "$1L != null ? $1L.shortValue() : null", resultToReturn)
+					.when(short.class, "$1L != null ? $1L.shortValue() : 0", resultToReturn)
+					.whenBoxed(Double.class, "$1L != null ? $1L.doubleValue() : null", resultToReturn)
+					.when(double.class, "$1L != null ? $1L.doubleValue() : 0", resultToReturn)
+					.whenBoxed(Float.class, "$1L != null ? $1L.floatValue() : null", resultToReturn)
+					.when(float.class, "$1L != null ? $1L.floatValue() : 0f", resultToReturn);
+		}
+
+		/**
+		 * Add return statements for numeric types if the given {@code resultToReturn} points to a non-nullable
+		 * {@link Number}. Considers all primitive numeric types assuming that {@code resultToReturn} is never
+		 * {@literal null}.
+		 *
+		 * @param resultToReturn the argument or variable name holding the result.
+		 * @return {@code this} builder.
+		 */
+		@Contract("_ -> this")
+		public TypedReturnBuilder nonNullableNumber(String resultToReturn) {
+			return whenPrimitiveOrBoxed(long.class, "$1L.longValue()", resultToReturn)
+					.whenPrimitiveOrBoxed(int.class, "$1L.intValue()", resultToReturn)
+					.whenPrimitiveOrBoxed(short.class, "$1L.shortValue()", resultToReturn)
+					.whenPrimitiveOrBoxed(byte.class, "$1L.byteValue()", resultToReturn)
+					.whenPrimitiveOrBoxed(float.class, "$1L.floatValue()", resultToReturn)
+					.whenPrimitiveOrBoxed(double.class, "$1L.doubleValue()", resultToReturn);
 		}
 
 		/**
