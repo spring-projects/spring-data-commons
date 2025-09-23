@@ -155,7 +155,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		configureTypeHints(type.toClass(), aotContext);
+		configureTypeContribution(type.toClass(), aotContext);
 
 		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
@@ -168,7 +168,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * @param aotContext AOT context for type configuration.
 	 * @since 4.0
 	 */
-	protected void configureTypeHints(Class<?> type, AotContext aotContext) {
+	protected void configureTypeContribution(Class<?> type, AotContext aotContext) {
 		aotContext.typeConfiguration(type, config -> config.forDataBinding().contributeAccessors().forQuerydsl());
 	}
 

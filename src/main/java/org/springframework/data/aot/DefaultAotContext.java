@@ -33,6 +33,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.aot.AotProcessingException;
@@ -63,6 +64,7 @@ class DefaultAotContext implements AotContext {
 
 	private final Map<Class<?>, ContextualTypeConfiguration> typeConfigurations = new HashMap<>();
 	private final Environment environment;
+	private final ReflectiveRuntimeHintsRegistrar runtimeHintsRegistrar = new ReflectiveRuntimeHintsRegistrar();
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
 		this(beanFactory, environment, new AotMappingContext());
@@ -257,6 +259,7 @@ class DefaultAotContext implements AotContext {
 			}
 
 			if (forDataBinding) {
+				runtimeHintsRegistrar.registerRuntimeHints(generationContext.getRuntimeHints(), type);
 				TypeContributor.contribute(type, Set.of(TypeContributor.DATA_NAMESPACE), generationContext);
 			}
 

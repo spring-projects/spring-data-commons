@@ -26,12 +26,9 @@ import java.util.stream.Stream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
-import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
-import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -216,7 +213,8 @@ public class RepositoryRegistrationAotProcessor
 	 * @param generationContext the generation context.
 	 * @since 4.0
 	 */
-	private void configureTypeContributions(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+	protected void configureTypeContributions(AotRepositoryContext repositoryContext,
+			GenerationContext generationContext) {
 
 		RepositoryInformation information = repositoryContext.getRepositoryInformation();
 
@@ -246,22 +244,17 @@ public class RepositoryRegistrationAotProcessor
 	 * @param generationContext the generation context.
 	 * @since 4.0
 	 */
-	protected void configureDomainTypeContributions(AotRepositoryContext repositoryContext,
+	private void configureDomainTypeContributions(AotRepositoryContext repositoryContext,
 			GenerationContext generationContext) {
 
 		RepositoryInformation information = repositoryContext.getRepositoryInformation();
-		RuntimeHints hints = generationContext.getRuntimeHints();
 
-		// Domain types, related types, projections
-		ReflectiveRuntimeHintsRegistrar registrar = new ReflectiveRuntimeHintsRegistrar();
 		Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream())
 				.forEach(it -> {
-
-					registrar.registerRuntimeHints(hints, it);
 					configureTypeContribution(it, repositoryContext);
 				});
 
-		// TODO: Looks like a duplicate
+		// Domain types my be part of this, but it also contains reachable ones.
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> TypeContributor.isPartOf(it, Set.of(information.getDomainType().getPackageName())))
 				.forEach(it -> configureTypeContribution(it, repositoryContext));
