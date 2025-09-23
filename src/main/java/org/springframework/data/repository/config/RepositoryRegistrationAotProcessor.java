@@ -67,11 +67,11 @@ import org.springframework.util.ClassUtils;
  * not match due to customization of the factory bean by the user, at least the target repository type is provided via
  * the {@link FactoryBean#OBJECT_TYPE_ATTRIBUTE}.
  * <p>
- * With {@link RepositoryRegistrationAotProcessor#contributeRepositoryHints(AotRepositoryContext, GenerationContext)}
- * and {@link RepositoryRegistrationAotProcessor#contributeAotRepository(AotRepositoryContext)}, stores can provide
- * custom logic for contributing additional (e.g. reflection) configuration. By default, reflection configuration will
- * be added for types reachable from the repository declaration and query methods as well as all used {@link Annotation
- * annotations} from the {@literal org.springframework.data} namespace.
+ * With {@link #registerRepositoryCompositionHints(AotRepositoryContext, GenerationContext)} (specifically
+ * {@link #configureTypeContribution(Class, AotContext)} and {@link #contributeAotRepository(AotRepositoryContext)},
+ * stores can provide custom logic for contributing additional (e.g. reflection) configuration. By default, reflection
+ * configuration will be added for types reachable from the repository declaration and query methods as well as all used
+ * {@link Annotation annotations} from the {@literal org.springframework.data} namespace.
  * <p>
  * The processor is typically configured via {@link RepositoryConfigurationExtension#getRepositoryAotProcessor()} and
  * gets added by the {@link org.springframework.data.repository.config.RepositoryConfigurationDelegate}.
@@ -163,8 +163,8 @@ public class RepositoryRegistrationAotProcessor
 
 		BeanRegistrationAotContribution contribution = (generationContext, beanRegistrationCode) -> {
 
-			contributeRepositoryHints(repositoryContext, generationContext);
-			contributeTypes(repositoryContext, generationContext);
+			registerRepositoryCompositionHints(repositoryContext, generationContext);
+			configureTypeContributions(repositoryContext, generationContext);
 
 			repositoryContext.contributeTypeConfigurations(generationContext);
 		};
@@ -181,7 +181,7 @@ public class RepositoryRegistrationAotProcessor
 	 * @param generationContext the generation context.
 	 * @since 4.0
 	 */
-	protected void contributeRepositoryHints(AotRepositoryContext repositoryContext,
+	protected void registerRepositoryCompositionHints(AotRepositoryContext repositoryContext,
 			GenerationContext generationContext) {
 
 		RepositoryInformation repositoryInformation = repositoryContext.getRepositoryInformation();
@@ -200,7 +200,7 @@ public class RepositoryRegistrationAotProcessor
 				.forReflectiveAccess(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
 		// Repository Fragments
-		contributeFragments(repositoryInformation.getFragments(), generationContext);
+		registerFragmentsHints(repositoryInformation.getFragments(), generationContext);
 
 		// Kotlin
 		if (isKotlinCoroutineRepository(repositoryInformation)) {
@@ -209,19 +209,18 @@ public class RepositoryRegistrationAotProcessor
 	}
 
 	/**
-	 * Contribute types for reflection, proxies, etc. Customization hook for subclasses that wish to customize type
-	 * contribution hints.
+	 * Register type-specific hints and AOT artifacts for domain types, reachable types, projection interfaces derived
+	 * from query method return types, and annotations from {@literal org.springframework.data} packages.
 	 *
 	 * @param repositoryContext the repository context.
 	 * @param generationContext the generation context.
 	 * @since 4.0
 	 */
-	protected void contributeTypes(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
-
-		contributeDomainTypes(repositoryContext, generationContext);
-		contributeResolvedTypes(repositoryContext, generationContext);
+	private void configureTypeContributions(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
 
 		RepositoryInformation information = repositoryContext.getRepositoryInformation();
+
+		configureDomainTypeContributions(repositoryContext, generationContext);
 
 		// Repository query methods
 		information.getQueryMethods().stream().map(information::getReturnedDomainClass).filter(Class::isInterface)
@@ -238,42 +237,48 @@ public class RepositoryRegistrationAotProcessor
 	}
 
 	/**
-	 * Customization hook for subclasses that wish to customize domain type contribution hints.
+	 * Customization hook for subclasses that wish to customize domain type hint contributions.
+	 * <p>
+	 * Type hints are registered for the domain, alternative domain types, and types reachable from there
+	 * ({@link AotRepositoryContext#getResolvedTypes()})
 	 *
 	 * @param repositoryContext the repository context.
 	 * @param generationContext the generation context.
 	 * @since 4.0
 	 */
-	protected void contributeDomainTypes(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+	protected void configureDomainTypeContributions(AotRepositoryContext repositoryContext,
+			GenerationContext generationContext) {
 
 		RepositoryInformation information = repositoryContext.getRepositoryInformation();
-
 		RuntimeHints hints = generationContext.getRuntimeHints();
 
 		// Domain types, related types, projections
-		repositoryContext.typeConfiguration(information.getDomainType(), config -> config.forDataBinding().forQuerydsl());
-
 		ReflectiveRuntimeHintsRegistrar registrar = new ReflectiveRuntimeHintsRegistrar();
 		Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream())
 				.forEach(it -> {
 
-					// TODO cross check with #contributeResolvedTypes
 					registrar.registerRuntimeHints(hints, it);
-					repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors);
+					configureTypeContribution(it, repositoryContext);
 				});
-	}
 
-	private void contributeResolvedTypes(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
-
-		RepositoryInformation information = repositoryContext.getRepositoryInformation();
-
-		// TODO: These are twice.
+		// TODO: Looks like a duplicate
 		repositoryContext.getResolvedTypes().stream()
 				.filter(it -> TypeContributor.isPartOf(it, Set.of(information.getDomainType().getPackageName())))
-				.forEach(it -> repositoryContext.typeConfiguration(it, AotTypeConfiguration::contributeAccessors));
+				.forEach(it -> configureTypeContribution(it, repositoryContext));
 
 		repositoryContext.getResolvedTypes().stream().filter(it -> !isJavaOrPrimitiveType(it))
 				.forEach(it -> contributeType(it, generationContext));
+	}
+
+	/**
+	 * Customization hook to configure the {@link TypeContributor} used to register the given {@literal type}.
+	 *
+	 * @param type the class to configure the contribution for.
+	 * @param aotContext AOT context for type configuration.
+	 * @since 4.0
+	 */
+	protected void configureTypeContribution(Class<?> type, AotContext aotContext) {
+		aotContext.typeConfiguration(type, config -> config.forDataBinding().contributeAccessors().forQuerydsl());
 	}
 
 	/**
@@ -308,11 +313,11 @@ public class RepositoryRegistrationAotProcessor
 		TypeContributor.contribute(type, it -> true, context);
 	}
 
-	private void contributeFragments(Iterable<RepositoryFragment<?>> fragments, GenerationContext contribution) {
-		fragments.forEach(it -> contributeFragment(it, contribution));
+	private void registerFragmentsHints(Iterable<RepositoryFragment<?>> fragments, GenerationContext contribution) {
+		fragments.forEach(it -> registerFragmentHints(it, contribution));
 	}
 
-	private static void contributeFragment(RepositoryFragment<?> fragment, GenerationContext context) {
+	private static void registerFragmentHints(RepositoryFragment<?> fragment, GenerationContext context) {
 
 		Class<?> repositoryFragmentType = fragment.getSignatureContributor();
 		Optional<Class<?>> implementation = fragment.getImplementationClass();
