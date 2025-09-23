@@ -98,8 +98,10 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 
 		if (!types.isEmpty()) {
 			TypeCollector.inspect(typeCollectorCustomizer, types)
-					.forEach(type -> contributionAction.register(type, generationContext, aotContext));
+					.forEach(type -> contributionAction.register(type, aotContext, generationContext));
 		}
+
+		aotContext.contributeTypeConfigurations(generationContext);
 	}
 
 	@Override
@@ -117,7 +119,7 @@ class ManagedTypesRegistrationAotContribution implements RegisteredBeanAotContri
 	}
 
 	interface TypeRegistration {
-		void register(ResolvableType type, GenerationContext generationContext, AotContext aotContext);
+		void register(ResolvableType type, AotContext aotContext, GenerationContext generationContext);
 	}
 
 	/**

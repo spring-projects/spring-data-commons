@@ -119,7 +119,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	/**
 	 * Hook to provide a customized flavor of {@link BeanRegistrationAotContribution}. By overriding this method calls to
-	 * {@link #contributeType(ResolvableType, GenerationContext, AotContext)} might no longer be issued.
+	 * {@link #registerTypeHints(ResolvableType, AotContext, GenerationContext)} might no longer be issued.
 	 *
 	 * @param aotContext never {@literal null}.
 	 * @param managedTypes never {@literal null}.
@@ -128,7 +128,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	protected BeanRegistrationAotContribution contribute(AotContext aotContext, ManagedTypes managedTypes,
 			RegisteredBean registeredBean) {
 		return new ManagedTypesRegistrationAotContribution(aotContext, managedTypes, registeredBean,
-				typeCollectorCustomizer(), this::contributeType);
+				typeCollectorCustomizer(), this::registerTypeHints);
 	}
 
 	/**
@@ -140,13 +140,14 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	protected Consumer<TypeCollector> typeCollectorCustomizer() {
 		return typeCollector -> {};
 	}
+
 	/**
 	 * Hook to contribute configuration for a given {@literal type}.
 	 *
 	 * @param type never {@literal null}.
 	 * @param generationContext never {@literal null}.
 	 */
-	protected void contributeType(ResolvableType type, GenerationContext generationContext, AotContext aotContext) {
+	protected void registerTypeHints(ResolvableType type, AotContext aotContext, GenerationContext generationContext) {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Contributing type information for [%s]", type.getType()));
@@ -154,8 +155,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		Set<String> annotationNamespaces = Collections.singleton(TypeContributor.DATA_NAMESPACE);
 
-		configureTypeContribution(type.toClass(), aotContext);
-		aotContext.contributeTypeConfigurations(generationContext);
+		configureTypeHints(type.toClass(), aotContext);
 
 		TypeUtils.resolveUsedAnnotations(type.toClass()).forEach(
 				annotation -> TypeContributor.contribute(annotation.getType(), annotationNamespaces, generationContext));
@@ -168,7 +168,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 	 * @param aotContext AOT context for type configuration.
 	 * @since 4.0
 	 */
-	protected void configureTypeContribution(Class<?> type, AotContext aotContext) {
+	protected void configureTypeHints(Class<?> type, AotContext aotContext) {
 		aotContext.typeConfiguration(type, config -> config.forDataBinding().contributeAccessors().forQuerydsl());
 	}
 
