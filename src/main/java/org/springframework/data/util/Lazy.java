@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Simple value type to delay the creation of an object using a {@link Supplier} returning the produced object for
@@ -40,30 +39,14 @@ import org.springframework.util.ObjectUtils;
  */
 public class Lazy<T> implements Supplier<T> {
 
-	private static final Lazy<?> EMPTY = new Lazy<>(() -> null, null, true);
+	private static final Lazy<?> EMPTY = new Lazy<>(() -> null);
+
 	static final String UNRESOLVED = "[Unresolved]";
 
-	private final Supplier<? extends @Nullable T> supplier;
+	private final LazyDelegate<? extends @Nullable T> adapter;
 
-	private @Nullable T value;
-	private volatile boolean resolved;
-
-	private Lazy(Supplier<? extends @Nullable T> supplier) {
-		this(supplier, null, false);
-	}
-
-	/**
-	 * Creates a new {@code Lazy} for the given {@link Supplier}, value and whether it has been resolved or not.
-	 *
-	 * @param supplier must not be {@literal null}.
-	 * @param value can be {@literal null}.
-	 * @param resolved whether the value handed into the constructor represents a resolved value.
-	 */
-	private Lazy(Supplier<? extends @Nullable T> supplier, @Nullable T value, boolean resolved) {
-
-		this.supplier = supplier;
-		this.value = value;
-		this.resolved = resolved;
+	private Lazy(Supplier<? extends @Nullable T> adapter) {
+		this.adapter = new LazyDelegate<>(adapter);
 	}
 
 	/**
@@ -128,16 +111,7 @@ public class Lazy<T> implements Supplier<T> {
 	 */
 	@Nullable
 	public T getNullable() {
-
-		if (resolved) {
-			return value;
-		}
-
-		T result = supplier.get();
-		this.value = result;
-		this.resolved = true;
-
-		return result;
+		return adapter.getNullable();
 	}
 
 	/**
@@ -249,35 +223,22 @@ public class Lazy<T> implements Supplier<T> {
 			return false;
 		}
 
-		if (resolved != lazy.resolved) {
-			return false;
-		}
-
-		if (!ObjectUtils.nullSafeEquals(supplier, lazy.supplier)) {
-			return false;
-		}
-
-		return ObjectUtils.nullSafeEquals(value, lazy.value);
+		return adapter.equals(lazy.adapter);
 	}
 
 	@Override
 	public int hashCode() {
-
-		int result = ObjectUtils.nullSafeHashCode(supplier);
-
-		result = 31 * result + ObjectUtils.nullSafeHashCode(value);
-		result = 31 * result + (resolved ? 1 : 0);
-
-		return result;
+		return adapter.hashCode();
 	}
 
 	@Override
 	public String toString() {
 
-		if (!resolved) {
+		if (!adapter.isResolved()) {
 			return UNRESOLVED;
 		}
 
+		T value = getNullable();
 		return value == null ? "null" : value.toString();
 	}
 
@@ -293,6 +254,6 @@ public class Lazy<T> implements Supplier<T> {
 
 		Assert.notNull(fallback, "Fallback must not be null!");
 
-		return resolved ? toString() : fallback.get();
+		return adapter.isResolved() ? toString() : fallback.get();
 	}
 }
