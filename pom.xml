@@ -341,18 +341,55 @@
 
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
+
 			<plugin>
 				<groupId>org.antora</groupId>
 				<artifactId>antora-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-jar</id>
+						<configuration>
+							<archive>
+								<manifestEntries>
+									<Multi-Release>true</Multi-Release>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
+
+					<execution>
+						<id>jdk25</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<enablePreview>true</enablePreview>
+							<release>25</release>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java25
+								</compileSourceRoot>
+							</compileSourceRoots>
+							<multiReleaseOutput>true</multiReleaseOutput>
+						</configuration>
+					</execution>
+
 					<execution>
 						<id>java-test-compile</id>
 						<configuration>
@@ -366,8 +403,10 @@
 							</annotationProcessorPaths>
 						</configuration>
 					</execution>
+
 				</executions>
 			</plugin>
+
 		</plugins>
 	</build>
 
