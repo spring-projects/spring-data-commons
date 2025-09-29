@@ -17,6 +17,9 @@ package org.springframework.data.repository.query;
 
 import java.io.Serial;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -31,7 +34,6 @@ import org.springframework.data.repository.core.RepositoryCreationException;
 public final class QueryCreationException extends RepositoryCreationException {
 
 	private static final @Serial long serialVersionUID = -1238456123580L;
-	private static final String MESSAGE_TEMPLATE = "Could not create query for method [%s]; Could not find property '%s' on domain class '%s'";
 
 	private final Method method;
 
@@ -81,7 +83,8 @@ public final class QueryCreationException extends RepositoryCreationException {
 	public static QueryCreationException invalidProperty(QueryMethod method, String propertyName) {
 
 		return new QueryCreationException(
-				String.format(MESSAGE_TEMPLATE, method, propertyName, method.getDomainClass().getName()), method);
+				"Could not find property '%s' on domain class '%s'".formatted(propertyName, method.getDomainClass().getName()),
+				method);
 	}
 
 	/**
@@ -92,7 +95,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 * @return the {@link QueryCreationException}.
 	 */
 	public static QueryCreationException create(QueryMethod method, String message) {
-		return new QueryCreationException(createMessage(message, method.getMethod()), method);
+		return new QueryCreationException(message, method);
 	}
 
 	/**
@@ -134,13 +137,10 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public static QueryCreationException create(@Nullable String message, @Nullable Throwable cause,
 			Class<?> repositoryInterface, Method method) {
-		return new QueryCreationException(createMessage(message, method),
+		return new QueryCreationException(message,
 				cause, repositoryInterface, method);
 	}
 
-	private static String createMessage(@Nullable String message, Method method) {
-		return String.format("Could not create query for [%s]; Reason: %s", method, message);
-	}
 
 	/**
 	 * @return the method causing the exception.
@@ -148,6 +148,21 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public Method getMethod() {
 		return method;
+	}
+
+	@Override
+	public String getLocalizedMessage() {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(method.getDeclaringClass().getSimpleName()).append('.');
+		sb.append(method.getName());
+
+		sb.append(method.getName());
+		sb.append(Arrays.stream(method.getParameterTypes()) //
+				.map(Type::getTypeName) //
+				.collect(Collectors.joining(",", "(", ")")));
+
+		return "Cannot create query for method [%s]; %s".formatted(sb.toString(), getMessage());
 	}
 
 }

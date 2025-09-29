@@ -15,6 +15,8 @@
  */
 package org.springframework.data.repository.core;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
@@ -34,7 +36,7 @@ public class RepositoryCreationException extends InvalidDataAccessApiUsageExcept
 	 * @param msg the detail message.
 	 * @param repositoryInterface the repository interface.
 	 */
-	public RepositoryCreationException(String msg, Class<?> repositoryInterface) {
+	public RepositoryCreationException(@Nullable String msg, Class<?> repositoryInterface) {
 		super(msg);
 		this.repositoryInterface = repositoryInterface;
 	}
@@ -46,7 +48,7 @@ public class RepositoryCreationException extends InvalidDataAccessApiUsageExcept
 	 * @param cause the root cause from the data access API in use.
 	 * @param repositoryInterface the repository interface.
 	 */
-	public RepositoryCreationException(String msg, Throwable cause, Class<?> repositoryInterface) {
+	public RepositoryCreationException(@Nullable String msg, @Nullable Throwable cause, Class<?> repositoryInterface) {
 		super(msg, cause);
 		this.repositoryInterface = repositoryInterface;
 	}
@@ -54,4 +56,5 @@ public class RepositoryCreationException extends InvalidDataAccessApiUsageExcept
 	public Class<?> getRepositoryInterface() {
 		return repositoryInterface;
 	}
+
 }

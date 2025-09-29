@@ -539,7 +539,7 @@ class RepositoryFactorySupportUnitTests {
 		};
 
 		assertThatThrownBy(() -> factory.getRepository(WithQueryMethodUsingInvalidProperty.class))
-				.isInstanceOf(QueryCreationException.class).hasMessageContaining("findAllByName")
+				.isInstanceOf(QueryCreationException.class)
 				.hasMessageContaining("No property 'name' found for type 'Object'");
 	}
 
