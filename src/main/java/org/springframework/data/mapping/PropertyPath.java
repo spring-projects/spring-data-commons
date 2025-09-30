@@ -47,7 +47,7 @@ public class PropertyPath implements Streamable<PropertyPath> {
 
 	private static final String PARSE_DEPTH_EXCEEDED = "Trying to parse a path with depth greater than 1000; This has been disabled for security reasons to prevent parsing overflows";
 
-	private static final String DELIMITERS = "_\\.";
+	private static final String DELIMITERS = "_."; // dot not need to be escaped in the character group
 	private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 	private static final Pattern SPLITTER_FOR_QUOTED = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", "\\."));
 	private static final Pattern NESTED_PROPERTY_PATTERN = Pattern.compile("\\p{Lu}[\\p{Ll}\\p{Nd}]*$");
@@ -471,6 +471,10 @@ public class PropertyPath implements Streamable<PropertyPath> {
 				throw e;
 			}
 
+			if (source.isEmpty() || Character.isWhitespace(source.charAt(0))) {
+				throw e;
+			}
+
 			exception = e;
 		}
 
@@ -497,42 +501,5 @@ public class PropertyPath implements Streamable<PropertyPath> {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
-	private static final class Property {
-
-		private final TypeInformation<?> type;
-		private final String path;
-
-		private Property(TypeInformation<?> type, String path) {
-			this.type = type;
-			this.path = path;
-		}
-
-		@Override
-		public boolean equals(@Nullable Object obj) {
-
-			if (obj == this) {
-				return true;
-			}
-
-			if (!(obj instanceof Property that)) {
-				return false;
-			}
-
-			return Objects.equals(this.type, that.type) &&
-					Objects.equals(this.path, that.path);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(type, path);
-		}
-
-		@Override
-		public String toString() {
-
-			return "Key[" +
-					"type=" + type + ", " +
-					"path=" + path + ']';
-		}
-	}
+	private record Property(TypeInformation<?> type, String path) { }
 }
