@@ -16,6 +16,7 @@
 package org.springframework.data.javapoet;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.ClassUtils;
 
@@ -28,6 +29,7 @@ import org.springframework.util.ClassUtils;
  * Mainly for internal use within the framework
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 4.0
  */
 public abstract class TypeNames {
@@ -67,6 +69,30 @@ public abstract class TypeNames {
 
 	/**
 	 * Obtain a {@link TypeName} for the underlying type of the given {@link ResolvableType}. Can render a class name, a
+	 * type signature with resolved generics or a generic type variable.
+	 *
+	 * @param resolvableType the resolvable type represent.
+	 * @return the corresponding {@link TypeName}.
+	 */
+	public static TypeName resolvedTypeName(ResolvableType resolvableType) {
+
+		if (resolvableType.equals(ResolvableType.NONE)) {
+			return TypeName.get(Object.class);
+		}
+
+		if (!resolvableType.hasGenerics()) {
+			return TypeName.get(resolvableType.toClass());
+		}
+
+		if (resolvableType.hasResolvableGenerics()) {
+			return ParameterizedTypeName.get(resolvableType.toClass(), resolvableType.resolveGenerics());
+		}
+
+		return TypeName.get(resolvableType.getType());
+	}
+
+	/**
+	 * Obtain a {@link TypeName} for the underlying type of the given {@link ResolvableType}. Can render a class name, a
 	 * type signature or a generic type variable.
 	 *
 	 * @param resolvableType the resolvable type represent.
@@ -98,7 +124,7 @@ public abstract class TypeNames {
 	public static TypeName typeNameOrWrapper(ResolvableType resolvableType) {
 		return ClassUtils.isPrimitiveOrWrapper(resolvableType.toClass())
 				? TypeName.get(ClassUtils.resolvePrimitiveIfNecessary(resolvableType.toClass()))
-				: typeName(resolvableType);
+				: resolvedTypeName(resolvableType);
 	}
 
 	private TypeNames() {}

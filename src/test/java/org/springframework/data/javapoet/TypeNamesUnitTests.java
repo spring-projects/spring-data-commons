@@ -20,12 +20,16 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.TypeVariableName;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Christoph Strobl
@@ -58,5 +62,31 @@ class TypeNamesUnitTests {
 	void classNames(ResolvableType resolvableType, TypeName expected) {
 		assertThat(TypeNames.className(resolvableType)).isEqualTo(expected);
 	}
+
+	@Test
+	void typeNameQuirksForMethodParameters() {
+
+		ReflectionUtils.doWithMethods(Concrete.class, method -> {
+			if (!method.getName().contains("baseMethod")) {
+				return;
+			}
+
+			MethodParameter methodParameter = new MethodParameter(method, 0).withContainingClass(Concrete.class);
+			ResolvableType resolvableType = ResolvableType.forMethodParameter(methodParameter);
+
+			assertThat(TypeNames.typeName(resolvableType)).isEqualTo(TypeVariableName.get("T"));
+			assertThat(TypeNames.resolvedTypeName(resolvableType)).isEqualTo(TypeName.get(MyType.class));
+		});
+	}
+
+	interface GenericBase<T> {
+		java.util.List<T> baseMethod(T arg0);
+	}
+
+	interface Concrete extends GenericBase<MyType> {
+
+	}
+
+	class MyType {}
 
 }

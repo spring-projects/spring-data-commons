@@ -60,7 +60,6 @@ class AotRepositoryMethodBuilderUnitTests {
 
 		Method method = UserRepository.class.getMethod("findByFirstname", String.class);
 		when(methodGenerationContext.getMethod()).thenReturn(method);
-		when(methodGenerationContext.getReturnType()).thenReturn(ResolvableType.forClass(User.class));
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
@@ -76,11 +75,10 @@ class AotRepositoryMethodBuilderUnitTests {
 
 		Method method = UserRepository.class.getMethod("findByFirstnameIn", List.class);
 		when(methodGenerationContext.getMethod()).thenReturn(method);
-		when(methodGenerationContext.getReturnType())
-				.thenReturn(ResolvableType.forClassWithGenerics(List.class, User.class));
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
-		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
+		MethodMetadata methodMetadata = spy(new MethodMetadata(repositoryInformation, method));
+        when(methodMetadata.getReturnType()).thenReturn(ResolvableType.forClassWithGenerics(List.class, User.class));
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 
 		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
@@ -95,7 +93,6 @@ class AotRepositoryMethodBuilderUnitTests {
 
 		Method method = UserRepository.class.getMethod("findByFirstname", String.class);
 		when(methodGenerationContext.getMethod()).thenReturn(method);
-		when(methodGenerationContext.getReturnType()).thenReturn(ResolvableType.forClass(User.class));
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnType(any());
 		doReturn(TypeInformation.of(User.class)).when(repositoryInformation).getReturnedDomainTypeInformation(any());
 		MethodMetadata methodMetadata = new MethodMetadata(repositoryInformation, method);
