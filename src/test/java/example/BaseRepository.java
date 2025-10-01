@@ -1,11 +1,11 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,32 +15,14 @@
  */
 package example;
 
-import example.UserRepository.User;
-
-import java.util.List;
-
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * @author Christoph Strobl
  */
-public interface UserRepository extends BaseRepository<User, Long>, UserRepositoryExtension {
+@NoRepositoryBean
+public interface BaseRepository<T, ID> extends CrudRepository<T, ID> {
 
-	User findByFirstname(String firstname);
-
-	List<User> findByFirstnameIn(List<String> firstnames);
-
-	Long countAllByLastname(String lastname);
-
-	Long countAll();
-
-	void doSomething();
-
-	default Long theDefaultMethod() {
-		return countAll();
-	}
-
-	class User {
-		String firstname;
-	}
+    T findInBaseRepository(ID id);
 }

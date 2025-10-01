@@ -27,6 +27,7 @@ import javax.lang.model.element.Modifier;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ParameterizedTypeName;
@@ -147,26 +148,10 @@ class AotRepositoryFragmentMetadata {
 	}
 
 	static TypeName typeNameOf(ResolvableType type) {
+        return TypeNames.resolvedTypeName(type);
+    }
 
-		if (type.equals(ResolvableType.NONE)) {
-			return TypeName.get(Object.class);
-		}
-
-		if (!type.hasResolvableGenerics()) {
-			return TypeName.get(type.getType());
-		}
-
-		return ParameterizedTypeName.get(type.toClass(), type.resolveGenerics());
-	}
-
-	/**
-	 * Constructor argument metadata.
-	 *
-	 * @param parameterName
-	 * @param parameterType
-	 * @param bindToField
-	 */
-	public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
+    public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
 			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin) {
 
 		boolean isBoundToField() {
