@@ -15,12 +15,14 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import example.UserRepository.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.lang.model.element.Modifier;
@@ -28,7 +30,6 @@ import javax.lang.model.element.Modifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
-
 import org.springframework.aot.generate.Generated;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.ResolvableType;
@@ -40,6 +41,7 @@ import org.springframework.data.repository.config.AotRepositoryInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.AnnotationRepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.JavaFile;
@@ -179,8 +181,8 @@ class AotRepositoryCreatorUnitTests {
 				AnnotationRepositoryMetadata.getMetadata(QuerydslUserRepository.class), CrudRepository.class,
 				List.of(RepositoryFragment.structural(QuerydslPredicateExecutor.class, DummyQuerydslPredicateExecutor.class)));
 
-		AotRepositoryCreator creator = AotRepositoryCreator
-				.forRepository(repositoryInformation, "Commons", new SpelAwareProxyProjectionFactory());
+		AotRepositoryCreator creator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
+				new SpelAwareProxyProjectionFactory());
 		creator.contributeMethods(method -> null);
 		AotRepositoryCreator.AotBundle bundle = doCreate(creator);
 
@@ -229,6 +231,38 @@ class AotRepositoryCreatorUnitTests {
 						"public %s(List<Metric> param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
 
+	@Test // GH-3374
+	void skipsMethodWithUnresolvableGenericReturnType() {
+
+		SpelAwareProxyProjectionFactory spelAwareProxyProjectionFactory = new SpelAwareProxyProjectionFactory();
+		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
+				AnnotationRepositoryMetadata.getMetadata(UserRepository.class), CrudRepository.class,
+				List.of(RepositoryFragment.structural(QuerydslPredicateExecutor.class, DummyQuerydslPredicateExecutor.class)));
+
+		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
+				spelAwareProxyProjectionFactory);
+		repositoryCreator.contributeMethods(method -> {
+
+			QueryMethod queryMethod = new QueryMethod(method, repositoryInformation, spelAwareProxyProjectionFactory,
+					DefaultParameters::new);
+			return new MethodContributor<>(queryMethod, Map::of) {
+				@Override
+				public MethodSpec contribute(AotQueryMethodGenerationContext context) {
+					return MethodSpec.methodBuilder(context.getMethod().getName()).addCode("// 1 = 1").build();
+				}
+
+				@Override
+				public boolean contributesMethodSpec() {
+					return true;
+				}
+			};
+
+		});
+
+		// same package as source repo
+		assertThat(generate(repositoryCreator)).contains("someMethod()").doesNotContain("findByFirstname()");
+	}
+
 	private AotRepositoryCreator.AotBundle doCreate(AotRepositoryCreator creator) {
 		return creator.create(getTypeSpecBuilder(creator));
 	}
@@ -263,6 +297,8 @@ class AotRepositoryCreatorUnitTests {
 	interface UserRepository extends org.springframework.data.repository.Repository<User, String> {
 
 		String someMethod();
+
+		<T> List<T> findByFirstname(String firstname, Class<T> type);
 	}
 
 	interface QuerydslUserRepository

@@ -61,7 +61,7 @@ public class MethodReturn {
 
 		this.returnedType = returnedType;
 		this.returnType = returnType;
-		this.typeName = TypeNames.typeName(returnType);
+		this.typeName = TypeNames.resolvedTypeName(returnType);
 		this.className = TypeNames.className(returnType);
 
 		Class<?> returnClass = returnType.toClass();
@@ -72,7 +72,7 @@ public class MethodReturn {
 
 		if (actualType != null) {
 			this.actualType = actualType.toResolvableType();
-			this.actualTypeName = TypeNames.typeName(this.actualType);
+			this.actualTypeName = TypeNames.resolvedTypeName(this.actualType);
 			this.actualClassName = TypeNames.className(this.actualType);
 			this.actualReturnClass = actualType.getType();
 		} else {
