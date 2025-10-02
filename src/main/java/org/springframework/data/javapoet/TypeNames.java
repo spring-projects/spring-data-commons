@@ -16,6 +16,8 @@
 package org.springframework.data.javapoet;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.javapoet.ArrayTypeName;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.ClassUtils;
@@ -81,14 +83,25 @@ public abstract class TypeNames {
 		}
 
 		if (!resolvableType.hasGenerics()) {
-			return TypeName.get(resolvableType.toClass());
+			Class<?> resolvedType = resolvableType.toClass();
+			if (!resolvableType.isArray()) {
+				return TypeName.get(resolvedType);
+			}
+
+			if (resolvedType.isArray()) {
+				return TypeName.get(resolvedType);
+			}
+			if (resolvableType.isArray()) {
+				return ArrayTypeName.of(resolvedType);
+			}
+			return TypeName.get(resolvedType);
 		}
 
 		if (resolvableType.hasResolvableGenerics()) {
 			return ParameterizedTypeName.get(resolvableType.toClass(), resolvableType.resolveGenerics());
 		}
 
-		return TypeName.get(resolvableType.getType());
+		return ClassName.get(resolvableType.toClass());
 	}
 
 	/**
