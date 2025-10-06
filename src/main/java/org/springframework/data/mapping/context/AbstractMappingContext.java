@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
@@ -93,6 +94,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Mark Paluch
  * @author Mikael Klamra
  * @author Christoph Strobl
+ * @author Kamil Krzywański
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, BeanFactoryAware,
@@ -819,8 +821,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		static class PropertyMatch {
 
-			private final @Nullable String namePattern;
-			private final @Nullable String typeName;
+            private final @Nullable Pattern namePatternRegex;
+            private final @Nullable String typeName;
 
 			/**
 			 * Creates a new {@link PropertyMatch} for the given name pattern and type name. At least one of the parameters
@@ -833,8 +835,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				Assert.isTrue(!((namePattern == null) && (typeName == null)), "Either name pattern or type name must be given");
 
-				this.namePattern = namePattern;
-				this.typeName = typeName;
+                this.namePatternRegex = namePattern == null ? null : Pattern.compile(namePattern);
+                this.typeName = typeName;
 			}
 
 			/**
@@ -869,9 +871,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				Assert.notNull(name, "Name must not be null");
 				Assert.notNull(type, "Type must not be null");
 
-				if ((namePattern != null) && !name.matches(namePattern)) {
-					return false;
-				}
+                if (namePatternRegex != null && !namePatternRegex.matcher(name).matches()) {
+                    return false;
+                }
 
 				if ((typeName != null) && !type.getName().equals(typeName)) {
 					return false;
