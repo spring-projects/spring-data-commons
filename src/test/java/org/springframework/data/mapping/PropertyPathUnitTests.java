@@ -63,7 +63,7 @@ class PropertyPathUnitTests {
 
 		var reference = PropertyPath.from("userName", Bar.class);
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 		assertThat(reference.toDotPath()).isEqualTo("user.name");
 	}
 
@@ -81,7 +81,7 @@ class PropertyPathUnitTests {
 		var reference = PropertyPath.from("userName", Sample2.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 	}
 
 	@Test
@@ -90,7 +90,7 @@ class PropertyPathUnitTests {
 		var reference = PropertyPath.from("user_name", Sample.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 	}
 
 	@Test
@@ -100,7 +100,7 @@ class PropertyPathUnitTests {
 		assertThat(reference.getSegment()).isEqualTo("users");
 		assertThat(reference.isCollection()).isTrue();
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 	}
 
 	@Test
@@ -110,7 +110,7 @@ class PropertyPathUnitTests {
 		assertThat(reference.getSegment()).isEqualTo("userMap");
 		assertThat(reference.isCollection()).isFalse();
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 	}
 
 	@Test
@@ -120,7 +120,7 @@ class PropertyPathUnitTests {
 		assertThat(reference.getSegment()).isEqualTo("userArray");
 		assertThat(reference.isCollection()).isTrue();
 		assertThat(reference.hasNext()).isTrue();
-		assertThat(reference.next()).isEqualTo(new PropertyPath("name", FooBar.class));
+		assertThat(reference.next()).isEqualTo(new SimplePropertyPath("name", FooBar.class));
 	}
 
 	@Test
