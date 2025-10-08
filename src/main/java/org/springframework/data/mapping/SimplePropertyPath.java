@@ -150,16 +150,6 @@ class SimplePropertyPath implements PropertyPath {
 	}
 
 	@Override
-	public SimplePropertyPath nested(String path) {
-
-		Assert.hasText(path, "Path must not be null or empty");
-
-		String lookup = toDotPath().concat(".").concat(path);
-
-		return SimplePropertyPath.from(lookup, owningType);
-	}
-
-	@Override
 	public Iterator<PropertyPath> iterator() {
 
 		return new Iterator<>() {
