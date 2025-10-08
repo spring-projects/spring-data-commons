@@ -35,6 +35,19 @@ import org.springframework.util.Assert;
 public interface PropertyPath extends Streamable<PropertyPath> {
 
 	/**
+	 * Syntax sugar to create a {@link TypedPropertyPath} from an existing one, ideal for method handles.
+	 *
+	 * @param propertyPath
+	 * @return
+	 * @param <T> owning type.
+	 * @param <R> property type.
+	 * @since xxx
+	 */
+	public static <T, R> TypedPropertyPath<T, R> of(TypedPropertyPath<T, R> propertyPath) {
+		return TypedPropertyPath.of(propertyPath);
+	}
+
+	/**
 	 * Returns the owning type of the {@link PropertyPath}.
 	 *
 	 * @return the owningType will never be {@literal null}.
