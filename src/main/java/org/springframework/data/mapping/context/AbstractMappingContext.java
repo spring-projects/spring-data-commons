@@ -821,8 +821,8 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		static class PropertyMatch {
 
-            private final @Nullable Pattern namePatternRegex;
-            private final @Nullable String typeName;
+			private final @Nullable Pattern namePatternRegex;
+			private final @Nullable String typeName;
 
 			/**
 			 * Creates a new {@link PropertyMatch} for the given name pattern and type name. At least one of the parameters
@@ -833,10 +833,10 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 */
 			public PropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
 
-				Assert.isTrue(!((namePattern == null) && (typeName == null)), "Either name pattern or type name must be given");
+				Assert.isTrue(namePattern != null || typeName != null, "Either name pattern or type name must be given");
 
-                this.namePatternRegex = namePattern == null ? null : Pattern.compile(namePattern);
-                this.typeName = typeName;
+				this.namePatternRegex = namePattern == null ? null : Pattern.compile(namePattern);
+				this.typeName = typeName;
 			}
 
 			/**
@@ -871,11 +871,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				Assert.notNull(name, "Name must not be null");
 				Assert.notNull(type, "Type must not be null");
 
-                if (namePatternRegex != null && !namePatternRegex.matcher(name).matches()) {
-                    return false;
-                }
+				if (namePatternRegex != null && !namePatternRegex.matcher(name).matches()) {
+					return false;
+				}
 
-				if ((typeName != null) && !type.getName().equals(typeName)) {
+				if (typeName != null && !type.getName().equals(typeName)) {
 					return false;
 				}
 
@@ -916,7 +916,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				return super.matches(property);
 			}
+
 		}
+
 	}
 
 }
