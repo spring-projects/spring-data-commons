@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
 import org.springframework.data.util.Streamable;
@@ -95,6 +97,25 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	}
 
 	/**
+	 * Creates a new {@link Sort} for the given properties.
+	 *
+	 * @param properties must not be {@literal null}.
+	 * @return {@link Sort} for the given properties.
+	 * @since 4.1
+	 */
+	@SafeVarargs
+	public static <T> Sort by(TypedPropertyPath<T, ?>... properties) {
+
+		Assert.notNull(properties, "Properties must not be null");
+
+		return properties.length == 0 //
+				? Sort.unsorted() //
+				: new Sort(DEFAULT_DIRECTION,
+						Arrays.stream(properties).map(PropertyPath::toDotPath)
+						.collect(Collectors.toList()));
+	}
+
+	/**
 	 * Creates a new {@link Sort} for the given {@link Order}s.
 	 *
 	 * @param orders must not be {@literal null}.
@@ -126,6 +147,25 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @param direction must not be {@literal null}.
 	 * @param properties must not be {@literal null}.
 	 * @return {@link Sort} for the given {@link Direction} and properties.
+	 * @since 4.1
+	 */
+	@SafeVarargs
+	public static <T> Sort by(Direction direction, TypedPropertyPath<T, ?>... properties) {
+
+		Assert.notNull(direction, "Direction must not be null");
+		Assert.notNull(properties, "Properties must not be null");
+		Assert.isTrue(properties.length > 0, "At least one property must be given");
+
+		return by(Arrays.stream(properties).map(PropertyPath::toDotPath)
+				.map(it -> new Order(direction, it)).toList());
+	}
+
+	/**
+	 * Creates a new {@link Sort} for the given {@link Direction} and properties.
+	 *
+	 * @param direction must not be {@literal null}.
+	 * @param properties must not be {@literal null}.
+	 * @return {@link Sort} for the given {@link Direction} and properties.
 	 */
 	public static Sort by(Direction direction, String... properties) {
 
@@ -144,7 +184,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @param type must not be {@literal null}.
 	 * @return {@link TypedSort} for the given type.
 	 * @since 2.2
+	 * @deprecated since 4.1 in favor of {@link Sort#by(TypedPropertyPath[])}.
 	 */
+	@Deprecated(since = "4.1")
 	public static <T> TypedSort<T> sort(Class<T> type) {
 		return new TypedSort<>(type);
 	}
@@ -461,6 +503,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
+		 * Creates a new {@link Order} instance. Takes a property path. Direction defaults to
+		 * {@link Sort#DEFAULT_DIRECTION}.
+		 *
+		 * @param propertyPath must not be {@literal null} or empty.
+		 * @since 4.1
+		 */
+		public static <T, P> Order by(TypedPropertyPath<T, P> propertyPath) {
+			return by(propertyPath.toDotPath());
+		}
+
+		/**
 		 * Creates a new {@link Order} instance. Takes a single property. Direction defaults to
 		 * {@link Sort#DEFAULT_DIRECTION}.
 		 *
@@ -472,6 +525,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
+		 * Creates a new {@link Order} instance. Takes a property path. Direction is {@link Direction#ASC} and NullHandling
+		 * {@link NullHandling#NATIVE}.
+		 *
+		 * @param propertyPath must not be {@literal null} or empty.
+		 * @since 4.1
+		 */
+		public static <T, P> Order asc(TypedPropertyPath<T, P> propertyPath) {
+			return asc(propertyPath.toDotPath());
+		}
+
+		/**
 		 * Creates a new {@link Order} instance. Takes a single property. Direction is {@link Direction#ASC} and
 		 * NullHandling {@link NullHandling#NATIVE}.
 		 *
@@ -480,6 +544,17 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		 */
 		public static Order asc(String property) {
 			return new Order(Direction.ASC, property, DEFAULT_NULL_HANDLING);
+		}
+
+		/**
+		 * Creates a new {@link Order} instance. Takes a property path. Direction is {@link Direction#DESC} and NullHandling
+		 * {@link NullHandling#NATIVE}.
+		 *
+		 * @param propertyPath must not be {@literal null} or empty.
+		 * @since 4.1
+		 */
+		public static <T, P> Order desc(TypedPropertyPath<T, P> propertyPath) {
+			return desc(propertyPath.toDotPath());
 		}
 
 		/**
@@ -563,6 +638,19 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		}
 
 		/**
+		 * Returns a new {@link Order} with the {@code propertyPath} applied.
+		 *
+		 * @param propertyPath must not be {@literal null} or empty.
+		 * @return a new {@link Order} with the {@code propertyPath} applied.
+		 * @since 4.1
+		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
+		public <T, P> Order withProperty(TypedPropertyPath<T, P> propertyPath) {
+			return withProperty(propertyPath.toDotPath());
+		}
+
+		/**
 		 * Returns a new {@link Order} with the {@code property} name applied.
 		 *
 		 * @param property must not be {@literal null} or empty.
@@ -573,6 +661,20 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		@CheckReturnValue
 		public Order withProperty(String property) {
 			return new Order(this.direction, property, this.ignoreCase, this.nullHandling);
+		}
+
+		/**
+		 * Returns a new {@link Sort} instance for the given properties using {@link #getDirection()}.
+		 *
+		 * @param propertyPaths properties to sort by.
+		 * @return a new {@link Sort} instance for the given properties using {@link #getDirection()}.
+		 * @since 4.1
+		 */
+		@Contract("_ -> new")
+		@CheckReturnValue
+		public <T> Sort withProperties(TypedPropertyPath<T, ?>... propertyPaths) {
+			return Sort.by(this.direction,
+					Arrays.stream(propertyPaths).map(TypedPropertyPath::toDotPath).toArray(String[]::new));
 		}
 
 		/**
@@ -696,7 +798,9 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @author Oliver Gierke
 	 * @since 2.2
 	 * @soundtrack The Intersphere - Linger (The Grand Delusion)
+	 * @deprecated since 4.1 in favor of {@link Sort#by(org.springframework.data.core.TypedPropertyPath...)}
 	 */
+	@Deprecated(since = "4.1")
 	public static class TypedSort<T> extends Sort {
 
 		private static final @Serial long serialVersionUID = -3550403511206745880L;
