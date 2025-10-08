@@ -64,11 +64,11 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 
 		PropertyPath result = this;
 
-		while (result.hasNext()) {
+		while (result != null && result.hasNext()) {
 			result = result.next();
 		}
 
-		return result;
+		return result == null ? this : result;
 	}
 
 	/**
@@ -158,8 +158,8 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns an {@link Iterator <PropertyPath>} that iterates over all the partial property paths with the same leaf
-	 * type but decreasing length. For example:
+	 * Returns an {@link Iterator Iterator of PropertyPath} that iterates over all the partial property paths with the
+	 * same leaf type but decreasing length. For example:
 	 *
 	 * <pre class="code">
 	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
@@ -179,13 +179,12 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 
 	/**
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
-	 * Uses {@link SimplePropertyPath#SPLITTER} by default and {@link SimplePropertyPath#SPLITTER_FOR_QUOTED} for
+	 * Uses {@code (?:[%s]?([%s]*?[^%s]+))} by default and {@code (?:[%s]?([%s]*?[^%s]+))} for
 	 * {@link Pattern#quote(String) quoted} literals.
 	 * <p>
 	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
-	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
-	 * "userAddress.city" is preferred over "user.address.city".
-	 * </p>
+	 * properties is ambiguous longer property names are preferred. So for {@code userAddressCity} the interpretation
+	 * {@code userAddress.city} is preferred over {@code user.address.city}.
 	 *
 	 * @param source a String denoting the property path, must not be {@literal null}.
 	 * @param type the owning type of the property path, must not be {@literal null}.
@@ -197,13 +196,12 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 
 	/**
 	 * Extracts the {@link PropertyPath} chain from the given source {@link String} and {@link TypeInformation}. <br />
-	 * Uses {@link SimplePropertyPath#SPLITTER} by default and {@link SimplePropertyPath#SPLITTER_FOR_QUOTED} for
+	 * Uses {@code (?:[%s]?([%s]*?[^%s]+))} by default and {@code (?:[%s]?([%s]*?[^%s]+))} for
 	 * {@link Pattern#quote(String) quoted} literals.
 	 * <p>
 	 * Separate parts of the path may be separated by {@code "."} or by {@code "_"} or by camel case. When the match to
-	 * properties is ambiguous longer property names are preferred. So for "userAddressCity" the interpretation
-	 * "userAddress.city" is preferred over "user.address.city".
-	 * </p>
+	 * properties is ambiguous longer property names are preferred. So for {@code userAddressCity} the interpretation
+	 * {@code userAddress.city} is preferred over {@code user.address.city}.
 	 *
 	 * @param source a String denoting the property path, must not be {@literal null}.
 	 * @param type the owning type of the property path, must not be {@literal null}.
