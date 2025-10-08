@@ -15,6 +15,7 @@
  */
 package org.springframework.data.domain;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
@@ -83,6 +85,21 @@ public interface ExampleMatcher {
 	 *
 	 * @param ignoredPaths must not be {@literal null} and not empty.
 	 * @return new instance of {@link ExampleMatcher}.
+	 * @since 4.1
+	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
+	default <T> ExampleMatcher withIgnorePaths(TypedPropertyPath<T, ?>... ignoredPaths) {
+		return withIgnorePaths(Arrays.stream(ignoredPaths).map(TypedPropertyPath::toDotPath)
+				.toArray(String[]::new));
+	}
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code propertyPaths}. This instance is immutable
+	 * and unaffected by this method call.
+	 *
+	 * @param ignoredPaths must not be {@literal null} and not empty.
+	 * @return new instance of {@link ExampleMatcher}.
 	 */
 	@Contract("_ -> new")
 	@CheckReturnValue
@@ -129,6 +146,22 @@ public interface ExampleMatcher {
 	 * @param propertyPath must not be {@literal null}.
 	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
 	 * @return new instance of {@link ExampleMatcher}.
+	 * @since 4.1
+	 */
+	@Contract("_, _ -> new")
+	@CheckReturnValue
+	default <T, P> ExampleMatcher withMatcher(TypedPropertyPath<T, P> propertyPath,
+			MatcherConfigurer<GenericPropertyMatcher> matcherConfigurer) {
+		return withMatcher(propertyPath.toDotPath(), matcherConfigurer);
+	}
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @param matcherConfigurer callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
+	 * @return new instance of {@link ExampleMatcher}.
 	 */
 	@Contract("_, _ -> new")
 	@CheckReturnValue
@@ -153,7 +186,38 @@ public interface ExampleMatcher {
 	 */
 	@Contract("_, _ -> new")
 	@CheckReturnValue
+	default <T, P> ExampleMatcher withMatcher(TypedPropertyPath<T, P> propertyPath,
+			GenericPropertyMatcher genericPropertyMatcher) {
+		return withMatcher(propertyPath.toDotPath(), genericPropertyMatcher);
+	}
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code GenericPropertyMatcher} for the
+	 * {@code propertyPath}. This instance is immutable and unaffected by this method call.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @param genericPropertyMatcher callback to configure a {@link GenericPropertyMatcher}, must not be {@literal null}.
+	 * @return new instance of {@link ExampleMatcher}.
+	 */
+	@Contract("_, _ -> new")
+	@CheckReturnValue
 	ExampleMatcher withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher);
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code PropertyValueTransformer} for the
+	 * {@code propertyPath}.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @param propertyValueTransformer must not be {@literal null}.
+	 * @return new instance of {@link ExampleMatcher}.
+	 * @since 4.1
+	 */
+	@Contract("_, _ -> new")
+	@CheckReturnValue
+	default <T, P> ExampleMatcher withTransformer(TypedPropertyPath<T, P> propertyPath,
+			PropertyValueTransformer propertyValueTransformer) {
+		return withTransformer(propertyPath.toDotPath(), propertyValueTransformer);
+	}
 
 	/**
 	 * Returns a copy of this {@link ExampleMatcher} with the specified {@code PropertyValueTransformer} for the
@@ -166,6 +230,20 @@ public interface ExampleMatcher {
 	@Contract("_, _ -> new")
 	@CheckReturnValue
 	ExampleMatcher withTransformer(String propertyPath, PropertyValueTransformer propertyValueTransformer);
+
+	/**
+	 * Returns a copy of this {@link ExampleMatcher} with ignore case sensitivity for the {@code propertyPaths}. This
+	 * instance is immutable and unaffected by this method call.
+	 *
+	 * @param propertyPaths must not be {@literal null} and not empty.
+	 * @return new instance of {@link ExampleMatcher}.
+	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
+	default <T> ExampleMatcher withIgnoreCase(TypedPropertyPath<T, ?>... propertyPaths) {
+		return withIgnoreCase(Arrays.stream(propertyPaths).map(TypedPropertyPath::toDotPath)
+				.toArray(String[]::new));
+	}
 
 	/**
 	 * Returns a copy of this {@link ExampleMatcher} with ignore case sensitivity for the {@code propertyPaths}. This

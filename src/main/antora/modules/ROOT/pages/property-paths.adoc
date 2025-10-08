@@ -1,0 +1,205 @@
+[[property-paths]]
+= Property Paths
+
+This chapter covers the concept of property paths.
+Property paths are a form of navigation through domain classes to apply certain aspects in the context of interacting with the model.
+Application code provides property paths to data access components to express intents such as selection of properties within a query, forming predicates, or applying sorting.
+A property path originates from its owning type and can consist of one to many segments.
+
+[TIP]
+====
+Following domain-driven design principles the classes that form the backbone of your persistent domain model and that are accessed through Spring Data are called entities.
+An entry point to the object graph is called aggregate root.
+
+Understanding how to navigate and reference these properties is essential for working with repositories and query operations.
+====
+
+[[property-path-overview]]
+== Property Path Overview
+
+Property paths provide a simple, text-based mechanism to navigate domain model properties.
+This section introduces the fundamentals of property path navigation and demonstrates trade-offs between string-based and type-safe approaches.
+
+.Domain model example
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+class Person {
+  String firstname, lastname;
+  int age;
+  Address address;
+  List<Address> previousAddresses;
+
+  String getFirstname() { … } // other property accessors omitted for brevity
+
+}
+
+class Address {
+  String city, street;
+
+  // accessors omitted for brevity
+
+}
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+class Person {
+  var firstname: String? = null
+  var lastname: String? = null
+  var age: Int = 0
+  var address: Address? = null
+  var previousAddresses: List<Address> = emptyList()
+}
+
+class Address {
+  var city: String? = null
+  var street: String? = null
+}
+----
+======
+
+Property paths use dot-notation to express property references throughout Spring Data operations, such as sorting and filtering:
+
+.Dot-notation property references
+[source,java]
+----
+Sort.by("firstname", "address.city")
+----
+
+A property path consists of one or more segments separated by a dot (`.`).
+Methods accepting property paths support single-segment references (top-level properties) and multi-segment navigation unless otherwise indicated.
+
+Collection and array properties support transparent traversal to their component type, enabling direct reference to nested properties:
+
+----
+Sort.by("address.city")             <1>
+
+Sort.by("previousAddresses")        <2>
+
+Sort.by("previousAddresses.city")   <3>
+----
+
+<1> Navigate from the top-level `address` property to the `city` field.
+<2> Reference the entire `previousAddresses` collection (supported by certain technologies for collection-based sorting).
+<3> Navigate through the collection to sort by the `city` field of each address.
+
+String-based property paths offer simplicity and can be broadly applied but there are tradeoffs to consider:
+
+* **Flexibility**: Property paths are flexible and can be constructed from constant string, configuration or as result of user input.
+* **Untyped**: String paths do not carry compile-time type information.
+Typed as textual content they do not have a dependency on the underlying domain type.
+* **Refactoring risk**: Renaming domain properties requires often manual updates to string literals; IDEs cannot reliably track these references.
+
+To improve refactoring safety and type consistency, prefer type-safe property references using method references.
+This approach associates property paths with compile-time type information and enables compiler validation and IDE-driven refactoring.
+See <<type-safe-property-references>> for details.
+
+NOTE: For implementation details, refer to <<property-path-internals>> for more information.
+
+[[property-path-internals]]
+=== Property Path Internals
+
+The {spring-data-commons-javadoc-base}/org/springframework/data/core/package-summary.html[`org.springframework.data.core`] package is the basis for Spring Data's navigation across domain classes.
+The javadoc:org.springframework.data.core.TypeInformation[] interface provides type introspection capable of resolving the type of a property. javadoc:org.springframework.data.core.PropertyPath[] represents a textual navigation path through a domain class.
+
+Together they provide:
+
+* Generic type resolution and introspection
+* Property path creation and validation
+* Actual type resolution for complex properties such as collections and maps
+
+[[type-safe-property-references]]
+== Type-safe Property-References
+
+Type-safe property-references eliminate a common source of errors in data access code: Brittle, string-based property references.
+This section explains how method references can be used to express refactoring-safe property paths.
+
+While a property path is a simple representation of object navigation, String-based property paths are inherently fragile during refactoring as they can be easily missed with an increasing distance between the property definition and its usage.
+Type-safe alternatives derive property paths from method references, enabling the compiler to validate property names and IDEs to support refactoring operations.
+
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+// Inline usage with Sort
+Sort.by(Person::getFirstName, Person::getLastName);
+
+// Composed navigation
+Sort.by(TypedPropertyPath.of(Person::getAddress).then(Address::getCity),
+            Person::getLastName);
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+// Inline usage with Sort
+Sort.by(Person::firstName, Person::lastName)
+
+// Composed navigation
+Sort.by(Person::address / Address::city, Person::lastName)
+----
+======
+
+Type-safe property paths integrate seamlessly with query abstractions and criteria builders, enabling declarative query construction without string-based property references.
+
+Adopting type-safe property references aligns with modern Spring development principles.
+Providing declarative, type-safe, and fluent APIs leads to simpler reasoning about data access eliminating an entire category of potential bugs through IDE refactoring support and early feedback on invalid properties by the compiler.
+
+Lambda introspection is cached for efficiency enabling repeatable use.
+The JVM reuses static lambda instances contributing to minimal overhead of one-time parsing.
+
+You can use `TypedPropertyPath` on its own if you are looking for a type-safe variant which benefits from compiler validation and IDE support for cases that do not directly integrate with Spring Data APIs:
+
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+import static org.springframework.data.core.TypedPropertyPath.path;
+
+// Static import variant
+path(Person::getAddress)
+                 .then(Address::getCity);
+
+// Fluent composition
+TypedPropertyPath.of(Person::getAddress)
+                 .then(Address::getCity);
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+// Kotlin API
+TypedPropertyPath.of(Person::address / Address::city)
+
+// as extension function
+(Person::address / Address::city).toPath()
+----
+======
+
+[[type-safe-property-references-recommendations]]
+=== Type-safe Property-Reference API Recommendations
+
+When using (or building) APIs using type-safe property-references, consider the following recommendations:
+
+* **Use method references**: Accept method references (e.g., `Person::getFirstName`) instead of strings to leverage compile-time validation and IDE refactoring support.
+Method references are preferred as they share similary representations with both Java and Kotlin.
+Additionally, method references provide a better performance baseline compared to lambdas due to their simpler representation.
+* **Leverage the `T` type of `TypedPropertyPath`**: Whenever accepting a typed property path, consider using the generic type `T` of `TypedPropertyPath<T, P>`.
+Limiting property paths to a specific domain type that is used within the current operation reduces the potential of using unintended properties from other types. +
+ +
+Whenever accepting or providing multiple property paths, consider using `TypedPropertyPath<T, ?>` to allow for properties within the context of the owning type `T` to limit property paths to a common owning type.
+
+NOTE: When using Graal Native Image compilation, you need to provide reachability metadata for serializable `TypedPropertyPath` lambdas.
+When using lambda expressions instead of method references you will have to include the Java source code of the class containing the lambda expression in the native image configuration.

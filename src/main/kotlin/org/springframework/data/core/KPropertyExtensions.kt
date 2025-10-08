@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-present the original author or authors.
+ * Copyright 2018-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,51 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping
+package org.springframework.data.core
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
+
 /**
- * Abstraction of a property path consisting of [KProperty].
+ * Extension for [KProperty] providing an `toPath` function to render a [KProperty] in dot notation.
  *
- * @author Tjeu Kayim
  * @author Mark Paluch
- * @author Yoann de Martino
  * @since 2.5
+ * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-private class KPropertyPath<T, U>(
-	val parent: KProperty<U?>,
-	val child: KProperty1<U, T>
-) : KProperty<T> by child
+fun KProperty<*>.toDotPath(): String = asString(this)
 
 /**
- * Abstraction of a property path that consists of parent [KProperty],
- * and child property [KProperty], where parent [parent] has an [Iterable]
- * of children, so it represents 1-M mapping.
+ * Extension for [KProperty1] providing an `toPropertyPath` function to create a [TypedPropertyPath].
  *
- * @author Mikhail Polivakha
- * @since 3.5
+ * @author Mark Paluch
+ * @since 4.1
+ * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-internal class KIterablePropertyPath<T, U>(
-	val parent: KProperty<Iterable<U?>?>,
-	val child: KProperty1<U, T>
-) : KProperty<T> by child
-
-/**
- * Recursively construct field name for a nested property.
- * @author Tjeu Kayim
- * @author Mikhail Polivakha
- */
-fun asString(property: KProperty<*>): String {
-	return when (property) {
-		is KPropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-		is KIterablePropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-		else -> property.name
-	}
-}
+fun <T : Any, P> KProperty1<T, P>.toPropertyPath(): TypedPropertyPath<T, P> =
+	KTypedPropertyPath.of(this)
 
 /**
  * Builds [KPropertyPath] from Property References.
@@ -69,12 +48,12 @@ fun asString(property: KProperty<*>): String {
  * ```
  * @author Tjeu Kayim
  * @author Yoann de Martino
- * @since 2.5
+ * @since 4.1
  */
 @JvmName("div")
-@Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
-operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
-	KPropertyPath(this, other)
+@Suppress("UNCHECKED_CAST")
+operator fun <T, M, P> KProperty1<T, M?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
+	KSinglePropertyReference(this, other) as KProperty1<T, P>
 
 /**
  * Builds [KPropertyPath] from Property References.
@@ -90,9 +69,9 @@ operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
  * Author::books / Book::title contains "Bartleby"
  * ```
  * @author Mikhail Polivakha
- * @since 3.5
+ * @since 4.1
  */
 @JvmName("divIterable")
-@Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
-operator fun <T, U> KProperty<Collection<T?>?>.div(other: KProperty1<T, U>): KProperty<U> =
-	KIterablePropertyPath(this, other)
+@Suppress("UNCHECKED_CAST")
+operator fun <T, M, P> KProperty1<T, Collection<M?>?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
+	KIterablePropertyReference(this, other) as KProperty1<T, P>

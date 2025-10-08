@@ -121,6 +121,15 @@ class ExampleMatcherUnitTests {
 		assertThat(matcher.getIgnoredPaths()).hasSize(2);
 	}
 
+	@Test //
+	void ignoredPropertyPathsShouldReturnUniqueProperties() {
+
+		matcher = matching().withIgnorePaths(Person::getFirstname, Person::getLastname, Person::getFirstname);
+
+		assertThat(matcher.getIgnoredPaths()).contains("firstname", "lastname");
+		assertThat(matcher.getIgnoredPaths()).hasSize(2);
+	}
+
 	@Test // DATACMNS-810
 	void withCreatesNewInstance() {
 
@@ -160,11 +169,11 @@ class ExampleMatcherUnitTests {
 	void shouldCompareUsingHashCodeAndEquals() {
 
 		matcher = matching() //
-				.withIgnorePaths("foo", "bar", "baz") //
+				.withIgnorePaths(Random::getFoo, Random::getBar, Random::getBaz) //
 				.withNullHandler(NullHandler.IGNORE) //
 				.withIgnoreCase("ignored-case") //
-				.withMatcher("hello", GenericPropertyMatchers.contains().caseSensitive()) //
-				.withMatcher("world", GenericPropertyMatcher::endsWith);
+				.withMatcher(Random::getHello, GenericPropertyMatchers.contains().caseSensitive()) //
+				.withMatcher(Random::getWorld, GenericPropertyMatcher::endsWith);
 
 		var sameAsMatcher = matching() //
 				.withIgnorePaths("foo", "bar", "baz") //
@@ -182,8 +191,54 @@ class ExampleMatcherUnitTests {
 		assertThat(matcher).isEqualTo(sameAsMatcher).isNotEqualTo(different);
 	}
 
+	static class Random {
+
+		String foo;
+		String bar;
+		String baz;
+		String hello;
+		String world;
+
+		public String getFoo() {
+			return foo;
+		}
+
+		public String getBar() {
+			return bar;
+		}
+
+		public String getBaz() {
+			return baz;
+		}
+
+		public String getHello() {
+			return hello;
+		}
+
+		public String getWorld() {
+			return world;
+		}
+	}
+
 	static class Person {
 
 		String firstname;
+		String lastname;
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
 	}
 }
