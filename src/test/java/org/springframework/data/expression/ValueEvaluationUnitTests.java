@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Map;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +49,7 @@ public class ValueEvaluationUnitTests {
 		StandardEnvironment environment = new StandardEnvironment();
 		environment.getPropertySources().addFirst(propertySource);
 
-		record MyRecord(String foo, @org.jspecify.annotations.Nullable String bar) {
+		record MyRecord(String foo, @Nullable String bar) {
 
 		}
 
