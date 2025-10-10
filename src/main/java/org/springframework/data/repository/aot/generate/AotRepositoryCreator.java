@@ -16,17 +16,24 @@
 package org.springframework.data.repository.aot.generate;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -34,6 +41,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.MethodSpec;
@@ -299,7 +307,7 @@ class AotRepositoryCreator {
 			return;
 		}
 
-		if (hasUnresolvableGenerics(method)) {
+		if (ResolvableGenerics.of(method, repositoryInformation.getRepositoryInterface()).hasUnresolvableGenerics()) {
 
 			if (logger.isTraceEnabled()) {
 				logger.trace(
@@ -332,22 +340,208 @@ class AotRepositoryCreator {
 		generationMetadata.addRepositoryMethod(method, contributor);
 	}
 
-	private boolean hasUnresolvableGenerics(Method method) {
+	/**
+	 * Value object to determine whether generics in a given {@link Method} can be resolved. Resolvable generics are e.g.
+	 * declared on the method level (unbounded type variables, type variables using class boundaries). Considers
+	 * collections and map types.
+	 * <p>
+	 * Considers resolvable:
+	 * <ul>
+	 * <li>Unbounded method-level type parameters {@code <T> T foo(Class<T>)}</li>
+	 * <li>Bounded method-level type parameters that resolve to a class
+	 * {@code <T extends Serializable> T foo(Class<T>)}</li>
+	 * <li>Simple references to interface variables {@code T foo(), List<T> foo(…)}</li>
+	 * <li>Unbounded wildcards {@code User foo(GeoJson<?>)}</li>
+	 * </ul>
+	 * Considers non-resolvable:
+	 * <ul>
+	 * <li>Parametrized bounds referring to known variables on method-level type parameters
+	 * {@code <P extends T> T foo(Class<T>), List<? super T> foo()}</li>
+	 * <li>Generally unresolvable generics</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @author Mark Paluch
+	 */
+	record ResolvableGenerics(Method method, Class<?> implClass, Set<Type> resolvableTypeVariables,
+			Set<Type> unwantedMethodVariables) {
 
-		if (ResolvableType.forMethodReturnType(method, repositoryInformation.getRepositoryInterface())
-				.hasUnresolvableGenerics()) {
+		/**
+		 * Create a new {@code ResolvableGenerics} object for the given {@link Method}.
+		 *
+		 * @param method
+		 * @return
+		 */
+		public static ResolvableGenerics of(Method method, Class<?> implClass) {
+			return new ResolvableGenerics(method, implClass, getResolvableTypeVariables(method),
+					getUnwantedMethodVariables(method));
+		}
+
+		private static Set<Type> getResolvableTypeVariables(Method method) {
+
+			Set<Type> simpleTypeVariables = new HashSet<>();
+
+			for (TypeVariable<Method> typeParameter : method.getTypeParameters()) {
+				if (isClassBounded(typeParameter.getBounds())) {
+					simpleTypeVariables.add(typeParameter);
+				}
+			}
+
+			return simpleTypeVariables;
+		}
+
+		private static Set<Type> getUnwantedMethodVariables(Method method) {
+
+			Set<Type> unwanted = new HashSet<>();
+
+			for (TypeVariable<Method> typeParameter : method.getTypeParameters()) {
+				if (!isClassBounded(typeParameter.getBounds())) {
+					unwanted.add(typeParameter);
+				}
+			}
+			return unwanted;
+		}
+
+		/**
+		 * Check whether the {@link Method} has unresolvable generics when being considered in the context of the
+		 * implementation class.
+		 *
+		 * @return
+		 */
+		public boolean hasUnresolvableGenerics() {
+
+			ResolvableType resolvableType = ResolvableType.forMethodReturnType(method, implClass);
+
+			if (isUnresolvable(resolvableType)) {
+				return true;
+			}
+
+			for (int i = 0; i < method.getParameterCount(); i++) {
+				if (isUnresolvable(ResolvableType.forMethodParameter(method, i, implClass))) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private boolean isUnresolvable(TypeInformation<?> typeInformation) {
+			return isUnresolvable(typeInformation.toResolvableType());
+		}
+
+		private boolean isUnresolvable(ResolvableType resolvableType) {
+
+			if (isResolvable(resolvableType)) {
+				return false;
+			}
+
+			if (isUnwanted(resolvableType)) {
+				return true;
+			}
+
+			if (resolvableType.isAssignableFrom(Class.class)) {
+				return isUnresolvable(resolvableType.getGeneric(0));
+			}
+
+			TypeInformation<?> typeInformation = TypeInformation.of(resolvableType);
+			if (typeInformation.isMap() || typeInformation.isCollectionLike()) {
+
+				for (ResolvableType type : resolvableType.getGenerics()) {
+					if (isUnresolvable(type)) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			if (typeInformation.getActualType() != null && typeInformation.getActualType() != typeInformation) {
+				return isUnresolvable(typeInformation.getRequiredActualType());
+			}
+
+			return resolvableType.hasUnresolvableGenerics();
+		}
+
+		private boolean isResolvable(Type[] types) {
+
+			for (Type type : types) {
+
+				if (resolvableTypeVariables.contains(type)) {
+					continue;
+				}
+
+				if (isClass(type)) {
+					continue;
+				}
+
+				return false;
+			}
+
 			return true;
 		}
 
-		for (int i = 0; i < method.getParameterCount(); i++) {
+		private boolean isResolvable(ResolvableType resolvableType) {
 
-			if (ResolvableType.forMethodParameter(method, i, repositoryInformation.getRepositoryInterface())
-					.hasUnresolvableGenerics()) {
-				return true;
-			}
+			return testGenericType(resolvableType, it -> {
+
+				if (resolvableTypeVariables.contains(it)) {
+					return true;
+				}
+
+				if (it instanceof WildcardType wt) {
+					return isClassBounded(wt.getLowerBounds()) && isClassBounded(wt.getUpperBounds());
+				}
+
+				return false;
+			});
 		}
 
-		return false;
+		private boolean isUnwanted(ResolvableType resolvableType) {
+
+			return testGenericType(resolvableType, o -> {
+
+				if (o instanceof WildcardType wt) {
+					return !isResolvable(wt.getLowerBounds()) || !isResolvable(wt.getUpperBounds());
+				}
+
+				return unwantedMethodVariables.contains(o);
+			});
+		}
+
+		private static boolean testGenericType(ResolvableType resolvableType, Predicate<Type> predicate) {
+
+			if (predicate.test(resolvableType.getType())) {
+				return true;
+			}
+
+			ResolvableType[] generics = resolvableType.getGenerics();
+			for (ResolvableType generic : generics) {
+				if (testGenericType(generic, predicate)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static boolean isClassBounded(Type[] bounds) {
+
+			for (Type bound : bounds) {
+
+				if (isClass(bound)) {
+					continue;
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
+		private static boolean isClass(Type type) {
+			return type instanceof Class;
+		}
+
 	}
 
 	/**
