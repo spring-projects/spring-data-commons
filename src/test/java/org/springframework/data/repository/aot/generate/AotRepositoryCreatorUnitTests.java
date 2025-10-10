@@ -15,24 +15,31 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assumptions.*;
+import static org.mockito.Mockito.*;
 
 import example.UserRepository.User;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.stream.Stream;
 
 import javax.lang.model.element.Modifier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
+
 import org.springframework.aot.generate.Generated;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.domain.Range;
 import org.springframework.data.geo.Metric;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -66,7 +73,8 @@ class AotRepositoryCreatorUnitTests {
 		doReturn(UserRepository.class).when(repositoryInformation).getRepositoryInterface();
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void writesClassSkeleton() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -79,7 +87,8 @@ class AotRepositoryCreatorUnitTests {
 				.contains("public UserRepositoryImpl"); // default constructor if not arguments to wire
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void appliesCtorArguments() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -103,7 +112,8 @@ class AotRepositoryCreatorUnitTests {
 				.doesNotContain("this.ctorScoped = ctorScoped");
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void appliesCtorCodeBlock() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -117,7 +127,8 @@ class AotRepositoryCreatorUnitTests {
 				"UserRepositoryImpl() { throw new IllegalStateException(\"initialization error\"); }");
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void appliesClassCustomizations() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -145,7 +156,8 @@ class AotRepositoryCreatorUnitTests {
 				.containsIgnoringWhitespaces("void oops() { }");
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void appliesQueryMethodContributor() {
 
 		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
@@ -174,7 +186,8 @@ class AotRepositoryCreatorUnitTests {
 				.containsIgnoringWhitespaces("void oops() { }");
 	}
 
-	@Test // GH-3279
+	@Test
+	// GH-3279
 	void shouldContributeFragmentImplementationMetadata() {
 
 		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
@@ -194,7 +207,8 @@ class AotRepositoryCreatorUnitTests {
 		assertThat(method.fragment().implementation()).isEqualTo(DummyQuerydslPredicateExecutor.class.getName());
 	}
 
-	@Test // GH-3339
+	@Test
+	// GH-3339
 	void usesTargetTypeName() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -212,7 +226,8 @@ class AotRepositoryCreatorUnitTests {
 				.contains("public %s(Metric param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
 
-	@Test // GH-3339
+	@Test
+	// GH-3339
 	void usesGenericConstructorArguments() {
 
 		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
@@ -231,7 +246,8 @@ class AotRepositoryCreatorUnitTests {
 						"public %s(List<Metric> param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
 
-	@Test // GH-3374
+	@Test
+	// GH-3374
 	void skipsMethodWithUnresolvableGenericReturnType() {
 
 		SpelAwareProxyProjectionFactory spelAwareProxyProjectionFactory = new SpelAwareProxyProjectionFactory();
@@ -260,7 +276,55 @@ class AotRepositoryCreatorUnitTests {
 		});
 
 		// same package as source repo
-		assertThat(generate(repositoryCreator)).contains("someMethod()").doesNotContain("findByFirstname()");
+		String generated = generate(repositoryCreator);
+
+		assertThat(generated).contains("someMethod").contains("findByFirstname").contains("project1ByFirstname")
+				.contains("project2ByFirstname").contains("geoQuery").contains("rangeQuery");
+
+		assertThat(generated).doesNotContain("baseProjection").doesNotContain("upperBoundedProjection")
+				.doesNotContain("lowerBoundedProjection()");
+	}
+
+	static Stream<Method> declaredUserRepositoryMethods() {
+		return Arrays.stream(UserRepository.class.getDeclaredMethods());
+	}
+
+	static Stream<Method> unresolvedRepositoryMethods() {
+		return Arrays.stream(UserRepository.class.getMethods())
+				.filter(it -> it.getDeclaringClass().equals(BaseRepository.class))
+				.filter(it -> it.getName().startsWith("upper") || it.getName().startsWith("lower"));
+	}
+
+	static Stream<Method> resolvedRepositoryMethods() {
+		return Arrays.stream(UserRepository.class.getMethods())
+				.filter(it -> it.getDeclaringClass().equals(BaseRepository.class))
+				.filter(it -> it.getName().startsWith("parametrized"));
+	}
+
+	@ParameterizedTest
+	@MethodSource("declaredUserRepositoryMethods")
+	void shouldResolveGenerics(Method method) {
+
+		assertThat(AotRepositoryCreator.ResolvableGenerics.of(method, UserRepository.class).hasUnresolvableGenerics())
+				.isFalse();
+	}
+
+	@ParameterizedTest
+	@MethodSource("resolvedRepositoryMethods")
+	void shouldResolveInterfaceGenerics(Method method) {
+
+		assertThat(AotRepositoryCreator.ResolvableGenerics.of(method, UserRepository.class).hasUnresolvableGenerics())
+				.isFalse();
+	}
+
+	@ParameterizedTest
+	@MethodSource("unresolvedRepositoryMethods")
+	void shouldReportUnresolvedGenerics(Method method) {
+
+		assumeThat(method.getDeclaringClass()).isEqualTo(BaseRepository.class);
+
+		assertThat(AotRepositoryCreator.ResolvableGenerics.of(method, UserRepository.class).hasUnresolvableGenerics())
+				.isTrue();
 	}
 
 	private AotRepositoryCreator.AotBundle doCreate(AotRepositoryCreator creator) {
@@ -294,12 +358,35 @@ class AotRepositoryCreatorUnitTests {
 		return TypeSpec.classBuilder(className).addAnnotation(Generated.class);
 	}
 
-	interface UserRepository extends org.springframework.data.repository.Repository<User, String> {
+	interface BaseRepository<T, ID> extends org.springframework.data.repository.Repository<T, ID> {
+
+		<P extends T> List<P> upperBoundedProjection(String firstname, Class<T> type);
+
+		List<? super T> lowerBoundedProjection(String firstname, Class<T> type);
+
+		List<T> parametrizedListProjection(String firstname, Class<T> type);
+
+		T parametrizedSelection(String firstname);
+
+	}
+
+	interface UserRepository extends BaseRepository<User, String> {
 
 		String someMethod();
 
 		<T> List<T> findByFirstname(String firstname, Class<T> type);
+
+		<T extends User> List<T> project1ByFirstname(String firstname, Class<? super T> type);
+
+		<T extends User> List<T> project2ByFirstname(String firstname, Class<? extends T> type);
+
+		List<User> geoQuery(GeoJson<?> geoJson);
+
+		List<User> rangeQuery(Range<?> geoJson);
+
 	}
+
+	public interface GeoJson<T extends Iterable<?>> {}
 
 	interface QuerydslUserRepository
 			extends org.springframework.data.repository.Repository<User, String>, QuerydslPredicateExecutor<User> {
