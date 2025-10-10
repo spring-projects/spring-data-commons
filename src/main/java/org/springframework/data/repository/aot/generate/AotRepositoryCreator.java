@@ -290,6 +290,7 @@ class AotRepositoryCreator {
 		MethodContributor<? extends QueryMethod> contributor = contributorFactory.create(method);
 
 		if (contributor == null) {
+
 			if (logger.isTraceEnabled()) {
 				logger.trace("Skipping method [%s.%s] contribution, no MethodContributor available"
 						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
@@ -298,24 +299,55 @@ class AotRepositoryCreator {
 			return;
 		}
 
-		// TODO: should we do this even before we do something with the method to protect the modules?
-		if (ResolvableType.forMethodReturnType(method, repositoryInformation.getRepositoryInterface())
-				.hasUnresolvableGenerics()) {
+		if (hasUnresolvableGenerics(method)) {
 
 			if (logger.isTraceEnabled()) {
-				logger.trace("Skipping method [%s.%s] contribution, unresolvable generic return"
-						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+				logger.trace(
+						"Skipping implementation method [%s.%s] contribution. Method uses generics that currently cannot be resolved."
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
 			}
 
 			generationMetadata.addDelegateMethod(method, contributor);
 			return;
 		}
 
-		if (contributor.contributesMethodSpec() && !repositoryInformation.isReactiveRepository()) {
-			generationMetadata.addRepositoryMethod(method, contributor);
-		} else {
+		if (!contributor.contributesMethodSpec() || repositoryInformation.isReactiveRepository()) {
+
+			if (repositoryInformation.isReactiveRepository() && logger.isTraceEnabled()) {
+				logger.trace(
+						"Skipping implementation method [%s.%s] contribution. AOT repositories are not supported for reactive repositories."
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+			}
+
+			if (!contributor.contributesMethodSpec() && logger.isTraceEnabled()) {
+				logger.trace(
+						"Skipping implementation method [%s.%s] contribution. Spring Data %s did not provide a method implementation."
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName(), moduleName));
+			}
+
 			generationMetadata.addDelegateMethod(method, contributor);
+			return;
 		}
+
+		generationMetadata.addRepositoryMethod(method, contributor);
+	}
+
+	private boolean hasUnresolvableGenerics(Method method) {
+
+		if (ResolvableType.forMethodReturnType(method, repositoryInformation.getRepositoryInterface())
+				.hasUnresolvableGenerics()) {
+			return true;
+		}
+
+		for (int i = 0; i < method.getParameterCount(); i++) {
+
+			if (ResolvableType.forMethodParameter(method, i, repositoryInformation.getRepositoryInterface())
+					.hasUnresolvableGenerics()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -84,24 +84,24 @@ public abstract class TypeNames {
 			return TypeName.get(Object.class);
 		}
 
-		if (!resolvableType.hasGenerics()) {
-			Class<?> resolvedType = resolvableType.toClass();
-			if (!resolvableType.isArray()) {
-				return TypeName.get(resolvedType);
-			}
-
-			if (resolvedType.isArray()) {
-				return TypeName.get(resolvedType);
-			}
-			if (resolvableType.isArray()) {
-				return ArrayTypeName.of(resolvedType);
-			}
-			return TypeName.get(resolvedType);
-		}
-
 		if (resolvableType.hasResolvableGenerics()) {
 			return ParameterizedTypeName.get(ClassName.get(resolvableType.toClass()),
 					Arrays.stream(resolvableType.getGenerics()).map(TypeNames::resolvedTypeName).toArray(TypeName[]::new));
+		}
+
+		if (!resolvableType.hasGenerics()) {
+
+			Class<?> resolvedType = resolvableType.toClass();
+
+			if (!resolvableType.isArray() || resolvedType.isArray()) {
+				return TypeName.get(resolvedType);
+			}
+
+			if (resolvableType.isArray()) {
+				return ArrayTypeName.of(resolvedType);
+			}
+
+			return TypeName.get(resolvedType);
 		}
 
 		return ClassName.get(resolvableType.toClass());

@@ -24,7 +24,7 @@ import org.springframework.data.repository.CrudRepository;
 /**
  * @author Christoph Strobl
  */
-public interface UserRepository extends BaseRepository<User, Long>, UserRepositoryExtension {
+public interface UserRepository extends CrudRepository<User, Long>, UserRepositoryExtension {
 
 	User findByFirstname(String firstname);
 
