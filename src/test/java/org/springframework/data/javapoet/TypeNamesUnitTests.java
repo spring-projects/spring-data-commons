@@ -15,8 +15,10 @@
  */
 package org.springframework.data.javapoet;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.geo.Distance;
@@ -37,7 +40,10 @@ import org.springframework.javapoet.TypeVariableName;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * Tests for {@link TypeNames}.
+ *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class TypeNamesUnitTests {
 
@@ -75,84 +81,104 @@ class TypeNamesUnitTests {
 		assertThat(TypeNames.resolvedTypeName(resolvableType)).extracting(TypeName::toString).isEqualTo("java.util.List");
 	}
 
-	@Test // GH-3374
-	void resolvedTypeNamesForMethodParameters() {
+	static List<Method> concreteMethods() {
+
+		List<Method> methods = new ArrayList<>();
 
 		ReflectionUtils.doWithMethods(Concrete.class, method -> {
 			if (!method.getName().contains("baseMethod")) {
 				return;
 			}
-
-			MethodParameter refiedObjectMethodParameter = new MethodParameter(method, 0).withContainingClass(Concrete.class);
-			ResolvableType resolvedObjectParameterType = ResolvableType.forMethodParameter(refiedObjectMethodParameter);
-			assertThat(TypeNames.typeName(resolvedObjectParameterType)).isEqualTo(TypeVariableName.get("T"));
-			assertThat(TypeNames.resolvedTypeName(resolvedObjectParameterType)).isEqualTo(TypeName.get(MyType.class));
-
-			MethodParameter refiedCollectionMethodParameter = new MethodParameter(method, 1)
-					.withContainingClass(Concrete.class);
-			ResolvableType resolvedCollectionParameterType = ResolvableType
-					.forMethodParameter(refiedCollectionMethodParameter);
-			assertThat(TypeNames.typeName(resolvedCollectionParameterType))
-					.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("T")));
-			assertThat(TypeNames.resolvedTypeName(resolvedCollectionParameterType))
-					.isEqualTo(ParameterizedTypeName.get(java.util.List.class, MyType.class));
-
-			MethodParameter refiedArrayMethodParameter = new MethodParameter(method, 2).withContainingClass(Concrete.class);
-			ResolvableType resolvedArrayParameterType = ResolvableType.forMethodParameter(refiedArrayMethodParameter);
-			assertThat(TypeNames.typeName(resolvedArrayParameterType)).extracting(TypeName::toString).isEqualTo("T[]");
-			assertThat(TypeNames.resolvedTypeName(resolvedArrayParameterType)).extracting(TypeName::toString)
-					.isEqualTo("org.springframework.data.javapoet.TypeNamesUnitTests.MyType[]");
-
-			ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
-			assertThat(TypeNames.typeName(resolvedReturnType))
-					.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("T")));
-			assertThat(TypeNames.resolvedTypeName(resolvedReturnType))
-					.isEqualTo(ParameterizedTypeName.get(java.util.List.class, MyType.class));
+			methods.add(method);
 		});
+
+		return methods;
+	}
+
+	static List<Method> otherMethods() {
+
+		List<Method> methods = new ArrayList<>();
 
 		ReflectionUtils.doWithMethods(Concrete.class, method -> {
 			if (!method.getName().contains("otherMethod")) {
 				return;
 			}
-
-			MethodParameter refiedObjectMethodParameter = new MethodParameter(method, 0).withContainingClass(Concrete.class);
-			ResolvableType resolvedObjectParameterType = ResolvableType.forMethodParameter(refiedObjectMethodParameter);
-			assertThat(TypeNames.typeName(resolvedObjectParameterType)).isEqualTo(TypeVariableName.get("RT"));
-			assertThat(TypeNames.resolvedTypeName(resolvedObjectParameterType)).isEqualTo(TypeName.get(Object.class));
-
-			MethodParameter refiedCollectionMethodParameter = new MethodParameter(method, 1)
-					.withContainingClass(Concrete.class);
-			ResolvableType resolvedCollectionParameterType = ResolvableType
-					.forMethodParameter(refiedCollectionMethodParameter);
-			assertThat(TypeNames.typeName(resolvedCollectionParameterType))
-					.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("RT")));
-			assertThat(TypeNames.resolvedTypeName(resolvedCollectionParameterType))
-					.isEqualTo(ClassName.get(java.util.List.class));
-
-			MethodParameter refiedArrayMethodParameter = new MethodParameter(method, 2).withContainingClass(Concrete.class);
-			ResolvableType resolvedArrayParameterType = ResolvableType.forMethodParameter(refiedArrayMethodParameter);
-			assertThat(TypeNames.typeName(resolvedArrayParameterType)).extracting(TypeName::toString).isEqualTo("RT[]");
-			assertThat(TypeNames.resolvedTypeName(resolvedArrayParameterType)).extracting(TypeName::toString)
-					.isEqualTo("java.lang.Object[]");
-
-			ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
-			assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo("RT");
-			assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(TypeName.get(Object.class));
+			methods.add(method);
 		});
 
-		ReflectionUtils.doWithMethods(Concrete.class, method -> {
-			if (!method.getName().contains("findByLocationNear")) {
-				return;
-			}
+		return methods;
+	}
 
-			ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
+	@ParameterizedTest // GH-3374
+	@MethodSource("concreteMethods")
+	void resolvedTypeNamesForMethodParameters(Method method) {
 
-			assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo(
-					"java.util.List<org.springframework.data.geo.GeoResult<org.springframework.data.javapoet.TypeNamesUnitTests.MyType>>");
-			assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(ParameterizedTypeName
-					.get(ClassName.get(java.util.List.class), ParameterizedTypeName.get(GeoResult.class, MyType.class)));
-		});
+		MethodParameter refiedObjectMethodParameter = new MethodParameter(method, 0).withContainingClass(Concrete.class);
+		ResolvableType resolvedObjectParameterType = ResolvableType.forMethodParameter(refiedObjectMethodParameter);
+		assertThat(TypeNames.typeName(resolvedObjectParameterType)).isEqualTo(TypeVariableName.get("T"));
+		assertThat(TypeNames.resolvedTypeName(resolvedObjectParameterType)).isEqualTo(TypeName.get(MyType.class));
 
+		MethodParameter refiedCollectionMethodParameter = new MethodParameter(method, 1)
+				.withContainingClass(Concrete.class);
+		ResolvableType resolvedCollectionParameterType = ResolvableType.forMethodParameter(refiedCollectionMethodParameter);
+		assertThat(TypeNames.typeName(resolvedCollectionParameterType))
+				.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("T")));
+		assertThat(TypeNames.resolvedTypeName(resolvedCollectionParameterType))
+				.isEqualTo(ParameterizedTypeName.get(java.util.List.class, MyType.class));
+
+		MethodParameter refiedArrayMethodParameter = new MethodParameter(method, 2).withContainingClass(Concrete.class);
+		ResolvableType resolvedArrayParameterType = ResolvableType.forMethodParameter(refiedArrayMethodParameter);
+		assertThat(TypeNames.typeName(resolvedArrayParameterType)).extracting(TypeName::toString).isEqualTo("T[]");
+		assertThat(TypeNames.resolvedTypeName(resolvedArrayParameterType)).extracting(TypeName::toString)
+				.isEqualTo("org.springframework.data.javapoet.TypeNamesUnitTests.MyType[]");
+
+		ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
+		assertThat(TypeNames.typeName(resolvedReturnType))
+				.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("T")));
+		assertThat(TypeNames.resolvedTypeName(resolvedReturnType))
+				.isEqualTo(ParameterizedTypeName.get(java.util.List.class, MyType.class));
+
+	}
+
+	@ParameterizedTest // GH-3374
+	@MethodSource("otherMethods")
+	void resolvedTypeNamesForOtherMethodParameters(Method method) {
+
+		MethodParameter refiedObjectMethodParameter = new MethodParameter(method, 0).withContainingClass(Concrete.class);
+		ResolvableType resolvedObjectParameterType = ResolvableType.forMethodParameter(refiedObjectMethodParameter);
+		assertThat(TypeNames.typeName(resolvedObjectParameterType)).isEqualTo(TypeVariableName.get("RT"));
+		assertThat(TypeNames.resolvedTypeName(resolvedObjectParameterType)).isEqualTo(TypeName.get(Object.class));
+
+		MethodParameter refiedCollectionMethodParameter = new MethodParameter(method, 1)
+				.withContainingClass(Concrete.class);
+		ResolvableType resolvedCollectionParameterType = ResolvableType.forMethodParameter(refiedCollectionMethodParameter);
+		assertThat(TypeNames.typeName(resolvedCollectionParameterType))
+				.isEqualTo(ParameterizedTypeName.get(ClassName.get(java.util.List.class), TypeVariableName.get("RT")));
+		assertThat(TypeNames.resolvedTypeName(resolvedCollectionParameterType))
+				.isEqualTo(ClassName.get(java.util.List.class));
+
+		MethodParameter refiedArrayMethodParameter = new MethodParameter(method, 2).withContainingClass(Concrete.class);
+		ResolvableType resolvedArrayParameterType = ResolvableType.forMethodParameter(refiedArrayMethodParameter);
+		assertThat(TypeNames.typeName(resolvedArrayParameterType)).extracting(TypeName::toString).isEqualTo("RT[]");
+		assertThat(TypeNames.resolvedTypeName(resolvedArrayParameterType)).extracting(TypeName::toString)
+				.isEqualTo("java.lang.Object[]");
+
+		ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
+		assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo("RT");
+		assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(TypeName.get(Object.class));
+	}
+
+	@Test // GH-3374
+	void resolvesTypeNamesForMethodParameters() throws NoSuchMethodException {
+
+		Method method = Concrete.class.getDeclaredMethod("findByLocationNear", Point.class, Distance.class);
+
+		ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
+
+		assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo(
+				"java.util.List<org.springframework.data.geo.GeoResult<org.springframework.data.javapoet.TypeNamesUnitTests.MyType>>");
+		assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(ParameterizedTypeName
+				.get(ClassName.get(java.util.List.class), ParameterizedTypeName.get(GeoResult.class, MyType.class)));
 	}
 
 	interface GenericBase<T> {
