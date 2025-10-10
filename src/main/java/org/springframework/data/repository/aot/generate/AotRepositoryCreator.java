@@ -27,7 +27,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
+import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
@@ -295,6 +295,19 @@ class AotRepositoryCreator {
 						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
 			}
 
+			return;
+		}
+
+		// TODO: should we do this even before we do something with the method to protect the modules?
+		if (ResolvableType.forMethodReturnType(method, repositoryInformation.getRepositoryInterface())
+				.hasUnresolvableGenerics()) {
+
+			if (logger.isTraceEnabled()) {
+				logger.trace("Skipping method [%s.%s] contribution, unresolvable generic return"
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+			}
+
+			generationMetadata.addDelegateMethod(method, contributor);
 			return;
 		}
 
