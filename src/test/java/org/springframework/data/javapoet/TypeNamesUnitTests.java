@@ -27,6 +27,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.Point;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
@@ -136,6 +139,20 @@ class TypeNamesUnitTests {
 			assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo("RT");
 			assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(TypeName.get(Object.class));
 		});
+
+		ReflectionUtils.doWithMethods(Concrete.class, method -> {
+			if (!method.getName().contains("findByLocationNear")) {
+				return;
+			}
+
+			ResolvableType resolvedReturnType = ResolvableType.forMethodReturnType(method, Concrete.class);
+
+			assertThat(TypeNames.typeName(resolvedReturnType)).extracting(TypeName::toString).isEqualTo(
+					"java.util.List<org.springframework.data.geo.GeoResult<org.springframework.data.javapoet.TypeNamesUnitTests.MyType>>");
+			assertThat(TypeNames.resolvedTypeName(resolvedReturnType)).isEqualTo(ParameterizedTypeName
+					.get(ClassName.get(java.util.List.class), ParameterizedTypeName.get(GeoResult.class, MyType.class)));
+		});
+
 	}
 
 	interface GenericBase<T> {
@@ -147,6 +164,7 @@ class TypeNamesUnitTests {
 
 	interface Concrete extends GenericBase<MyType> {
 
+		List<GeoResult<MyType>> findByLocationNear(Point point, Distance maxDistance);
 	}
 
 	static class MyType {}
