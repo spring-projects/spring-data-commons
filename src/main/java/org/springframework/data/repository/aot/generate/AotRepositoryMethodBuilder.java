@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
@@ -101,7 +102,7 @@ class AotRepositoryMethodBuilder {
 	private MethodSpec.Builder initializeMethodBuilder() {
 
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
-		builder.returns(TypeName.get(context.getReturnType().getType()));
+		builder.returns(TypeNames.resolvedTypeName(context.getTargetMethodMetadata().getReturnType()));
 
 		TypeVariable<Method>[] tvs = context.getMethod().getTypeParameters();
 		for (TypeVariable<Method> tv : tvs) {

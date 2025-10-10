@@ -31,6 +31,7 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.ParameterSpec;
@@ -80,11 +81,11 @@ class MethodMetadata {
 
 		for (Parameter parameter : method.getParameters()) {
 
-			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+			MethodParameter methodParameter = MethodParameter.forParameter(parameter).withContainingClass(repositoryInterface.resolve());
 			methodParameter.initParameterNameDiscovery(nameDiscoverer);
-			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
+			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter);
 
-			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
+			TypeName parameterType = TypeNames.resolvedTypeName(resolvableParameterType);
 
 			ParameterSpec parameterSpec = ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build();
 
