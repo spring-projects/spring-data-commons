@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
-import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.core.annotation.MergedAnnotation;
 
 /**
@@ -32,7 +32,8 @@ import org.springframework.core.annotation.MergedAnnotation;
 public class TypeContributor {
 
 	public static final String DATA_NAMESPACE = "org.springframework.data";
-	public static final BindingReflectionHintsRegistrar REGISTRAR = new BindingReflectionHintsRegistrar();
+	public static final BindingReflectionHintsRegistrar DATA_BINDING_REGISTRAR = new BindingReflectionHintsRegistrar();
+	public static final ReflectiveRuntimeHintsRegistrar REFLECTIVE_REGISTRAR = new ReflectiveRuntimeHintsRegistrar();
 
 	/**
 	 * Contribute the type with default reflection configuration, skip annotations.
@@ -67,7 +68,8 @@ public class TypeContributor {
 			return;
 		}
 
-		REGISTRAR.registerReflectionHints(contribution.getRuntimeHints().reflection(), type);
+		DATA_BINDING_REGISTRAR.registerReflectionHints(contribution.getRuntimeHints().reflection(), type);
+		REFLECTIVE_REGISTRAR.registerRuntimeHints(contribution.getRuntimeHints(), type);
 	}
 
 	/**

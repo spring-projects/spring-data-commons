@@ -64,7 +64,7 @@ class DefaultAotContext implements AotContext {
 
 	private final Map<Class<?>, ContextualTypeConfiguration> typeConfigurations = new HashMap<>();
 	private final Environment environment;
-	private final ReflectiveRuntimeHintsRegistrar runtimeHintsRegistrar = new ReflectiveRuntimeHintsRegistrar();
+	private final ReflectiveRuntimeHintsRegistrar reflectiveRuntimeHintsRegistrar = new ReflectiveRuntimeHintsRegistrar();
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
 		this(beanFactory, environment, new AotMappingContext());
@@ -250,6 +250,9 @@ class DefaultAotContext implements AotContext {
 						categories.toArray(MemberCategory[]::new));
 			}
 
+			// check types for presence of @Reflective annotation
+			reflectiveRuntimeHintsRegistrar.registerRuntimeHints(generationContext.getRuntimeHints(), type);
+
 			if (contributeAccessors) {
 
 				AccessorContributionConfiguration configuration = AccessorContributionConfiguration.of(environment);
@@ -259,7 +262,6 @@ class DefaultAotContext implements AotContext {
 			}
 
 			if (forDataBinding) {
-				runtimeHintsRegistrar.registerRuntimeHints(generationContext.getRuntimeHints(), type);
 				TypeContributor.contribute(type, Set.of(TypeContributor.DATA_NAMESPACE), generationContext);
 			}
 
