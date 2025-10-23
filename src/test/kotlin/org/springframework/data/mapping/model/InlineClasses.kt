@@ -20,6 +20,7 @@ import java.time.LocalDate
 
 /**
  * @author Mark Paluch
+ * @author Edward Poot
  */
 @JvmInline
 value class MyValueClass(val id: String)
@@ -45,6 +46,10 @@ data class WithMyValueClass(val id: MyValueClass) {
 	// public static WithMyValueClass copy-R7yrDNU$default(WithMyValueClass var0, String var1, int var2, Object var3) {
 	// ---------
 }
+
+data class WithMyValueClassPrivateConstructor private constructor(val id: MyValueClass)
+
+data class WithMyValueClassPrivateConstructorAndDefaultValue private constructor(val id: MyValueClass = MyValueClass("id"))
 
 @JvmInline
 value class MyNullableValueClass(val id: String? = "id")
