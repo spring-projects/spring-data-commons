@@ -30,6 +30,7 @@ import kotlin.reflect.KClass
  *
  * @author Mark Paluch
  * @author Sebastien Deleuze
+ * @author Edward Poot
  */
 @Suppress("UNCHECKED_CAST")
 class KotlinClassGeneratingEntityInstantiatorUnitTests {
@@ -185,6 +186,24 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 
 		every { provider.getParameterValue<String>(any()) } returns "hello"
 		val instance = construct(WithMyValueClass::class)
+
+		assertThat(instance.id.id).isEqualTo("hello")
+	}
+
+	@Test // GH-3389
+	fun `should use private default constructor for types using value class`() {
+
+		every { provider.getParameterValue<String>(any()) } returns "hello"
+		val instance = construct(WithMyValueClassPrivateConstructor::class)
+
+		assertThat(instance.id.id).isEqualTo("hello")
+	}
+
+	@Test // GH-3389
+	fun `should use private default constructor for types using value class with default value`() {
+
+		every { provider.getParameterValue<String>(any()) } returns "hello"
+		val instance = construct(WithMyValueClassPrivateConstructorAndDefaultValue::class)
 
 		assertThat(instance.id.id).isEqualTo("hello")
 	}
