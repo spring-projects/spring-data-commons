@@ -27,8 +27,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.EnableAuditing;
 
 /**
@@ -38,6 +41,7 @@ import org.springframework.data.auditing.EnableAuditing;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Francisco Soler
+ * @author Jaeyeon Kim
  */
 @ExtendWith(MockitoExtension.class)
 class AuditingBeanDefinitionRegistrarSupportUnitTests {
@@ -71,6 +75,76 @@ class AuditingBeanDefinitionRegistrarSupportUnitTests {
 
 		assertThatIllegalArgumentException() //
 				.isThrownBy(() -> registrar.registerBeanDefinitions(metadata, null));
+	}
+
+	@Test // DATACMNS-3177
+	void setsAuditorAwareAndDateTimeProviderIfConfigured() {
+
+		AuditingConfiguration configuration = new AuditingConfiguration() {
+			@Override
+			public String getAuditorAwareRef() {
+				return "auditorAwareBean";
+			}
+
+			@Override
+			public boolean isSetDates() {
+				return true;
+			}
+
+			@Override
+			public String getDateTimeProviderRef() {
+				return "dateTimeProviderBean";
+			}
+
+			@Override
+			public boolean isModifyOnCreate() {
+				return true;
+			}
+		};
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class);
+		DummyAuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
+
+		BeanDefinitionBuilder result = registrar.configureDefaultAuditHandlerAttributes(configuration, builder);
+		AbstractBeanDefinition beanDefinition = result.getBeanDefinition();
+
+		assertThat(beanDefinition.getAutowireMode()).isEqualTo(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		assertThat(beanDefinition.getPropertyValues().contains("auditorAware")).isTrue();
+		assertThat(beanDefinition.getPropertyValues().contains("dateTimeProvider")).isTrue();
+	}
+
+	@Test // DATACMNS-3177
+	void doesNotSetAuditorAwareAndDateTimeProviderIfNotConfigured() {
+
+		AuditingConfiguration configuration = new AuditingConfiguration() {
+			@Override
+			public String getAuditorAwareRef() {
+				return "";
+			}
+
+			@Override
+			public boolean isSetDates() {
+				return true;
+			}
+
+			@Override
+			public String getDateTimeProviderRef() {
+				return "";
+			}
+
+			@Override
+			public boolean isModifyOnCreate() { return true; }
+		};
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class);
+		DummyAuditingBeanDefinitionRegistrarSupport registrar = new DummyAuditingBeanDefinitionRegistrarSupport();
+
+		BeanDefinitionBuilder result = registrar.configureDefaultAuditHandlerAttributes(configuration, builder);
+		AbstractBeanDefinition beanDefinition = result.getBeanDefinition();
+
+		assertThat(beanDefinition.getAutowireMode()).isEqualTo(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		assertThat(beanDefinition.getPropertyValues().contains("auditorAware")).isFalse();
+		assertThat(beanDefinition.getPropertyValues().contains("dateTimeProvider")).isFalse();
 	}
 
 	static class SampleConfig {}
