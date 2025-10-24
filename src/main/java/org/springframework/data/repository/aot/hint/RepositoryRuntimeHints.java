@@ -15,20 +15,28 @@
  */
 package org.springframework.data.repository.aot.hint;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
+import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.DecoratingProxy;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.data.domain.AbstractAggregateRoot;
+import org.springframework.data.domain.AfterDomainEventPublication;
+import org.springframework.data.domain.DomainEvents;
 import org.springframework.data.domain.Example;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -42,6 +50,7 @@ import org.springframework.data.repository.query.FluentQuery.ReactiveFluentQuery
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.data.util.ReactiveWrappers;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * {@link RuntimeHintsRegistrar} holding required hints to bootstrap data repositories. <br />
@@ -49,9 +58,13 @@ import org.springframework.data.util.ReactiveWrappers;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  * @since 3.0
  */
 class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
+
+	private static final Collection<Class<? extends Annotation>> DOMAIN_EVENT_ANNOTATIONS = List
+			.of(AfterDomainEventPublication.class, DomainEvents.class);
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
@@ -70,6 +83,17 @@ class RepositoryRuntimeHints implements RuntimeHintsRegistrar {
 				TypeReference.of(FetchableFluentQuery.class) //
 		), builder -> {
 			builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS);
+		});
+
+		// Register event handling methods on AbstractAggregateRoot for reflection
+		ReflectionUtils.doWithLocalMethods(AbstractAggregateRoot.class, method -> {
+
+			DOMAIN_EVENT_ANNOTATIONS.forEach(it -> {
+
+				if (AnnotatedElementUtils.isAnnotated(method, it)) {
+					hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
+				}
+			});
 		});
 
 		if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
