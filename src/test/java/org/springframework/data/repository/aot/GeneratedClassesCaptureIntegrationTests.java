@@ -17,10 +17,6 @@ package org.springframework.data.repository.aot;
 
 import static org.springframework.data.repository.aot.RepositoryRegistrationAotContributionAssert.*;
 
-import java.util.Map;
-
-import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,18 +26,12 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.data.aot.types.BaseEntity;
 import org.springframework.data.aot.types.CyclicPropertiesA;
 import org.springframework.data.aot.types.CyclicPropertiesB;
-import org.springframework.data.aot.types.EmptyType1;
-import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.EntityInstantiator;
-import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.aot.GeneratedClassesCaptureIntegrationTests.ConfigWithMultipleRepositories.Repo1;
 import org.springframework.data.repository.aot.GeneratedClassesCaptureIntegrationTests.ConfigWithMultipleRepositories.Repo2;
 import org.springframework.data.repository.config.EnableRepositories;
 import org.springframework.data.repository.config.RepositoryRegistrationAotContribution;
 import org.springframework.data.repository.config.RepositoryRegistrationAotProcessor;
-import org.springframework.data.util.TypeInformation;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Integration Tests for {@link RepositoryRegistrationAotProcessor} to verify capturing generated instantiations and
