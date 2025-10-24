@@ -24,6 +24,7 @@ import org.springframework.lang.CheckReturnValue;
  * @author Christoph Strobl
  * @since 4.0
  */
+@FunctionalInterface
 interface VariableNameFactory {
 
 	/**

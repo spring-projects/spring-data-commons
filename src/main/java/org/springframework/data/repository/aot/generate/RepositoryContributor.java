@@ -15,22 +15,30 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.GeneratedFiles.Kind;
+import org.springframework.aot.generate.GeneratedTypeReference;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.aot.generate.AotRepositoryCreator.AotBundle;
 import org.springframework.data.repository.config.AotRepositoryContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.javapoet.JavaFile;
-import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.TypeSpec;
+import org.springframework.util.StringUtils;
 
 /**
  * Contributor for AOT repository fragments.
@@ -42,16 +50,22 @@ import org.springframework.javapoet.TypeName;
 public class RepositoryContributor {
 
 	private static final Log logger = LogFactory.getLog(RepositoryContributor.class);
+	private static final Log jsonLogger = LogFactory.getLog(RepositoryContributor.class.getName() + ".json");
+	private static final String FEATURE_NAME = "AotRepository";
 
-	private final AotRepositoryBuilder builder;
+	private final AotRepositoryContext repositoryContext;
+	private final AotRepositoryCreator creator;
+	private @Nullable TypeReference contributedTypeName;
 
 	/**
 	 * Create a new {@code RepositoryContributor} for the given {@link AotRepositoryContext}.
 	 *
-	 * @param repositoryContext
+	 * @param repositoryContext context providing details about the repository to be generated.
 	 */
 	public RepositoryContributor(AotRepositoryContext repositoryContext) {
-		this.builder = AotRepositoryBuilder.forRepository(repositoryContext.getRepositoryInformation(),
+
+		this.repositoryContext = repositoryContext;
+		this.creator = AotRepositoryCreator.forRepository(repositoryContext.getRepositoryInformation(),
 				repositoryContext.getModuleName(), createProjectionFactory());
 	}
 
@@ -67,69 +81,170 @@ public class RepositoryContributor {
 	 * @return the used {@link ProjectionFactory}.
 	 */
 	protected ProjectionFactory getProjectionFactory() {
-		return builder.getProjectionFactory();
+		return creator.getProjectionFactory();
 	}
 
 	/**
 	 * @return the used {@link RepositoryInformation}.
 	 */
 	protected RepositoryInformation getRepositoryInformation() {
-		return builder.getRepositoryInformation();
+		return creator.getRepositoryInformation();
 	}
 
-	public String getContributedTypeName() {
-		return builder.getGenerationMetadata().getTargetTypeName().toString();
+	/**
+	 * @return the {@link TypeReference} of the contributed type. Can be {@literal null} until
+	 *         {@link #contribute(GenerationContext)} is called to obtain the actual {@link GeneratedClass} instance.
+	 */
+	@Nullable
+	TypeReference getContributedTypeName() {
+		return this.contributedTypeName;
 	}
 
-	public java.util.Map<String, TypeName> requiredArgs() {
-		return builder.getAutowireFields();
+	/**
+	 * @return the associated {@link AotRepositoryFragmentMetadata}.
+	 */
+	AotRepositoryFragmentMetadata getAotFragmentMetadata() {
+		return creator.getRepositoryMetadata();
 	}
 
-	public void contribute(GenerationContext generationContext) {
+	/**
+	 * Contribute the AOT repository fragment to the given {@link GenerationContext}. This method will prepare the
+	 * metadata, generate the source code and write it to the {@link GenerationContext}.
+	 *
+	 * @param generationContext must not be {@literal null}.
+	 */
+	public final void contribute(GenerationContext generationContext) {
 
-		AotRepositoryBuilder.AotBundle aotBundle = builder.withClassCustomizer(this::customizeClass) //
-				.withConstructorCustomizer(this::customizeConstructor) //
-				.withQueryMethodContributor(this::contributeQueryMethod) //
-				.build();
+		// prepare and collect metadata
+		creator.customizeClass(this::customizeClass) //
+				.customizeConstructor(this::customizeConstructor) //
+				.contributeMethods(this::contributeQueryMethod); //
 
-		Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
-		String repositoryJsonFileName = getRepositoryJsonFileName(repositoryInterface);
-
-		JavaFile javaFile = aotBundle.javaFile();
-		String typeName = "%s.%s".formatted(javaFile.packageName(), javaFile.typeSpec().name());
-		String repositoryJson;
-
-		try {
-			repositoryJson = aotBundle.metadata().toJson().toString(2);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Contributing %s AOT repository implementation for '%s'".formatted(repositoryContext.getModuleName(),
+					repositoryContext.getRepositoryInformation().getRepositoryInterface().getName()));
 		}
 
-		if (logger.isTraceEnabled()) {
-			logger.trace("""
-					------ AOT Repository.json: %s ------
-					%s
-					-------------------
-					""".formatted(repositoryJsonFileName, repositoryJson));
+		// obtain the generated type and its target name.
+		// Writing the source is triggered by DefaultGenerationContext#writeGeneratedContent() at a later stage
+		GeneratedClass generatedClass = generationContext.getGeneratedClasses().getOrAddForFeatureComponent(FEATURE_NAME,
+				creator.getClassName(), targetTypeSpec -> {
 
-			logger.trace("""
-					------ AOT Generated Repository: %s ------
-					%s
-					-------------------
-					""".formatted(typeName, javaFile));
-		}
+					// write out the content
+					AotBundle aotBundle = creator.create(targetTypeSpec);
 
-		// generate the files
-		generationContext.getGeneratedFiles().addSourceFile(javaFile);
-		generationContext.getGeneratedFiles().addResourceFile(repositoryJsonFileName, repositoryJson);
+					String repositoryJson = repositoryContext.isGeneratedRepositoriesMetadataEnabled()
+							? generateJsonMetadata(aotBundle)
+							: null;
 
-		// generate native runtime hints - needed cause we're using the repository proxy
-		generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(typeName),
+					if (logger.isTraceEnabled()) {
+
+						TypeSpec typeSpec = targetTypeSpec.build();
+						JavaFile javaFile = JavaFile.builder(creator.packageName(), typeSpec).build();
+
+						logger.trace("""
+
+								%s
+								""".formatted(formatTraceMessage("Generated Repository", typeSpec.name(),
+								prefixWithLineNumbers(javaFile.toString()).trim())));
+					}
+
+					if (jsonLogger.isTraceEnabled()) {
+
+						if (StringUtils.hasText(repositoryJson)) {
+
+							jsonLogger.trace("""
+
+									%s
+									""".formatted(
+									formatTraceMessage("Repository.json", aotBundle.repositoryJsonFileName(), repositoryJson)));
+						}
+					}
+
+					if (StringUtils.hasText(repositoryJson)) {
+						generationContext.getGeneratedFiles().handleFile(Kind.RESOURCE, aotBundle.repositoryJsonFileName(),
+								fileHandler -> {
+									if (!fileHandler.exists()) {
+										fileHandler.create(() -> new ByteArrayInputStream(repositoryJson.getBytes(StandardCharsets.UTF_8)));
+									}
+								});
+					}
+				});
+
+		// generate native runtime hints
+
+		// make sure to capture the target file name
+		this.contributedTypeName = GeneratedTypeReference.of(generatedClass.getName());
+
+		generationContext.getRuntimeHints().reflection().registerType(this.contributedTypeName,
 				MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 	}
 
-	private static String getRepositoryJsonFileName(Class<?> repositoryInterface) {
-		return repositoryInterface.getName().replace('.', '/') + ".json";
+	/**
+	 * Format a trace message with a title, label, and content using ascii art style borders.
+	 *
+	 * @param title title of the block (e.g. "Generated Source").
+	 * @param label label that follows the title. Will be truncated if too long.
+	 * @param content the actual content to be displayed.
+	 * @return
+	 */
+	public static String formatTraceMessage(String title, String label, String content) {
+
+		int remainingLength = 64 - title.length();
+		String header = ("= %s: %-" + remainingLength + "." + remainingLength + "s =").formatted(title,
+				formatMaxLength(label, remainingLength - 1));
+
+		return """
+				======================================================================
+				%s
+				======================================================================
+				%s
+				======================================================================
+				""".formatted(header, content);
+	}
+
+	private static String formatMaxLength(String name, int length) {
+		return name.length() > length ? "…" + name.substring(name.length() - length) : name;
+	}
+
+	/**
+	 * Format the given contents by prefixing each line with its line number in a block comment.
+	 *
+	 * @param contents
+	 * @return
+	 */
+	public static String prefixWithLineNumbers(String contents) {
+
+		List<String> lines = contents.lines().toList();
+
+		int decimals = (int) Math.log10(Math.abs(lines.size())) + 1;
+		StringBuilder builder = new StringBuilder();
+
+		int lineNumber = 1;
+		for (String s : lines) {
+
+			String formattedLineNumber = String.format("/* %-" + decimals + "d */\t", lineNumber);
+
+			builder.append(formattedLineNumber).append(s).append(System.lineSeparator());
+
+			lineNumber++;
+		}
+
+		return builder.toString();
+	}
+
+	private String generateJsonMetadata(AotBundle aotBundle) {
+
+		String repositoryJson = "";
+
+		if (repositoryContext.isGeneratedRepositoriesMetadataEnabled()) {
+			try {
+				repositoryJson = aotBundle.metadata().get().toJson().toString(2);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return repositoryJson;
 	}
 
 	/**

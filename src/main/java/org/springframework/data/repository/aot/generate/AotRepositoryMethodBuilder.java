@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
@@ -42,7 +43,7 @@ class AotRepositoryMethodBuilder {
 	private final AotQueryMethodGenerationContext context;
 
 	private Function<AotQueryMethodGenerationContext, CodeBlock> contribution = (context) -> CodeBlock.builder().build();
-	private BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer = (context, body) -> {};
+	private BiConsumer<AotQueryMethodGenerationContext, CodeBlock.Builder> customizer = (context, body) -> {};
 
 	AotRepositoryMethodBuilder(AotQueryMethodGenerationContext context) {
 		this.context = context;
@@ -68,7 +69,7 @@ class AotRepositoryMethodBuilder {
 	 * @return
 	 */
 	public AotRepositoryMethodBuilder customize(
-			BiConsumer<AotQueryMethodGenerationContext, MethodSpec.Builder> customizer) {
+			BiConsumer<AotQueryMethodGenerationContext, CodeBlock.Builder> customizer) {
 		this.customizer = customizer;
 		return this;
 	}
@@ -91,7 +92,9 @@ class AotRepositoryMethodBuilder {
 
 		builder.addCode(methodBody);
 
-		customizer.accept(context, builder);
+		CodeBlock.Builder customizerBlock = CodeBlock.builder();
+		customizer.accept(context, customizerBlock);
+		builder.addCode(customizerBlock.build());
 
 		return builder.build();
 	}
@@ -99,7 +102,7 @@ class AotRepositoryMethodBuilder {
 	private MethodSpec.Builder initializeMethodBuilder() {
 
 		MethodSpec.Builder builder = MethodSpec.methodBuilder(context.getMethod().getName()).addModifiers(Modifier.PUBLIC);
-		builder.returns(TypeName.get(context.getReturnType().getType()));
+		builder.returns(TypeNames.resolvedTypeName(context.getTargetMethodMetadata().getReturnType()));
 
 		TypeVariable<Method>[] tvs = context.getMethod().getTypeParameters();
 		for (TypeVariable<Method> tv : tvs) {

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
@@ -56,7 +57,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
@@ -94,6 +94,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Mark Paluch
  * @author Mikael Klamra
  * @author Christoph Strobl
+ * @author Kamil Krzywański
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, BeanFactoryAware,
@@ -125,7 +126,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		EntityInstantiators instantiators = new EntityInstantiators();
 		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
-				? BeanWrapperPropertyAccessorFactory.INSTANCE
+				? new ReflectionFallbackPersistentPropertyAccessorFactory()
 				: new ClassGeneratingPropertyAccessorFactory();
 
 		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
@@ -424,8 +425,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			entity = doAddPersistentEntity(typeInformation);
 
-		} catch (BeansException e) {
-			throw new MappingException(e.getMessage(), e);
+		} catch (RuntimeException e) {
+			throw new MappingException(
+					"Cannot create PersistentEntity for '%s'".formatted(typeInformation.getType().getName()), e);
 		} finally {
 			write.unlock();
 		}
@@ -763,17 +765,18 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		INSTANCE;
 
-		private static final Streamable<PropertyMatch> UNMAPPED_PROPERTIES;
+		private static final Collection<PropertyMatch> UNMAPPED_PROPERTIES;
 
 		static {
 
 			Set<PropertyMatch> matches = new HashSet<>();
 			matches.add(new PropertyMatch("class", null));
 			matches.add(new PropertyMatch("this\\$.*", null));
+			matches.add(new PropertyMatch("\\$\\$_.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
 			matches.add(new KotlinDataClassPropertyMatch(".*\\$delegate", null));
 
-			UNMAPPED_PROPERTIES = Streamable.of(matches);
+			UNMAPPED_PROPERTIES = matches;
 		}
 
 		@Override
@@ -783,8 +786,13 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				return false;
 			}
 
-			return UNMAPPED_PROPERTIES.stream()//
-					.noneMatch(it -> it.matches(field));
+			for (PropertyMatch property : UNMAPPED_PROPERTIES) {
+				if (property.matches(field)) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		/**
@@ -813,7 +821,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		 */
 		static class PropertyMatch {
 
-			private final @Nullable String namePattern;
+			private final @Nullable Pattern namePatternRegex;
 			private final @Nullable String typeName;
 
 			/**
@@ -825,9 +833,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			 */
 			public PropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
 
-				Assert.isTrue(!((namePattern == null) && (typeName == null)), "Either name pattern or type name must be given");
+				Assert.isTrue(namePattern != null || typeName != null, "Either name pattern or type name must be given");
 
-				this.namePattern = namePattern;
+				this.namePatternRegex = namePattern == null ? null : Pattern.compile(namePattern);
 				this.typeName = typeName;
 			}
 
@@ -863,11 +871,11 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				Assert.notNull(name, "Name must not be null");
 				Assert.notNull(type, "Type must not be null");
 
-				if ((namePattern != null) && !name.matches(namePattern)) {
+				if (namePatternRegex != null && !namePatternRegex.matcher(name).matches()) {
 					return false;
 				}
 
-				if ((typeName != null) && !type.getName().equals(typeName)) {
+				if (typeName != null && !type.getName().equals(typeName)) {
 					return false;
 				}
 
@@ -908,7 +916,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 				return super.matches(property);
 			}
+
 		}
+
 	}
 
 }

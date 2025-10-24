@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
@@ -195,7 +196,11 @@ public class AnnotationRepositoryConfigurationSource extends RepositoryConfigura
 			return Optional.empty();
 		}
 
-		return Optional.of(attributes.getClass(REPOSITORY_FRAGMENTS_CONTRIBUTOR_CLASS).getName());
+		Class<?> fragmentsContributorClass = attributes.getClass(REPOSITORY_FRAGMENTS_CONTRIBUTOR_CLASS);
+
+		return Optional.of(fragmentsContributorClass) //
+				.filter(Predicate.not(Class::isInterface)) // avoid default values that are typically interfaces
+				.map(Class::getName);
 	}
 
 	/**

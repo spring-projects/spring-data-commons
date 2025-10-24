@@ -26,14 +26,17 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Metadata about an AOT Repository method.
@@ -53,7 +56,7 @@ class MethodMetadata {
 	MethodMetadata(RepositoryInformation repositoryInformation, Method method) {
 
 		this.returnType = repositoryInformation.getReturnType(method).toResolvableType();
-		this.actualReturnType = repositoryInformation.getReturnedDomainTypeInformation(method).toResolvableType();
+		this.actualReturnType = resolvePrimaryIfNecessary(repositoryInformation.getReturnedDomainTypeInformation(method));
 
 		Map<String, ParameterSpec> methodArguments = new LinkedHashMap<>();
 		Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
@@ -67,18 +70,26 @@ class MethodMetadata {
 		this.methodParameters = Collections.unmodifiableMap(methodParameters);
 	}
 
+	static ResolvableType resolvePrimaryIfNecessary(TypeInformation<?> type) {
+		return type.getType().isPrimitive() ? ResolvableType.forType(ClassUtils.resolvePrimitiveIfNecessary(type.getType()))
+				: type.toResolvableType();
+	}
+
 	private static void initializeMethodArguments(Method method, ParameterNameDiscoverer nameDiscoverer,
 			ResolvableType repositoryInterface, Map<String, ParameterSpec> methodArguments,
 			Map<String, MethodParameter> methodParameters) {
 
+		Class<?> repositoryInterfaceType = repositoryInterface.toClass();
+
 		for (Parameter parameter : method.getParameters()) {
 
-			MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+			MethodParameter methodParameter = MethodParameter.forParameter(parameter)
+					.withContainingClass(repositoryInterfaceType);
 			methodParameter.initParameterNameDiscovery(nameDiscoverer);
-			ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter, repositoryInterface);
 
-			TypeName parameterType = TypeName.get(resolvableParameterType.getType());
+			TypeName parameterType = parameterTypeName(methodParameter, repositoryInterfaceType);
 
+			Assert.notNull(methodParameter.getParameterName(), "MethodParameter.getParameterName() must not be null");
 			ParameterSpec parameterSpec = ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build();
 
 			if (methodArguments.containsKey(parameterSpec.name())) {
@@ -88,6 +99,20 @@ class MethodMetadata {
 			methodArguments.put(parameterSpec.name(), parameterSpec);
 			methodParameters.put(parameterSpec.name(), methodParameter);
 		}
+	}
+
+    @SuppressWarnings("NullAway")
+	static TypeName parameterTypeName(MethodParameter methodParameter, Class<?> repositoryInterface) {
+
+		ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter);
+		if (ClassUtils.isPrimitiveOrWrapper(resolvableParameterType.toClass())) {
+			return TypeNames.className(resolvableParameterType);
+		}
+
+		ResolvableGenerics resolvableGenerics = ResolvableGenerics.of(methodParameter.getMethod(), repositoryInterface);
+		return resolvableGenerics.isFullyResolvableParameter(methodParameter.getParameter())
+				? TypeNames.resolvedTypeName(resolvableParameterType)
+				: TypeNames.className(resolvableParameterType);
 	}
 
 	ResolvableType getReturnType() {

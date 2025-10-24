@@ -15,9 +15,11 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import example.UserRepository;
 import example.UserRepositoryExtension;
@@ -33,6 +35,7 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.core.test.tools.ResourceFile;
 import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.data.aot.CodeContributionAssert;
 import org.springframework.data.repository.CrudRepository;
@@ -87,7 +90,7 @@ class RepositoryContributorUnitTests {
 		repositoryContributor.contribute(generationContext);
 		generationContext.writeGeneratedContent();
 
-		String expectedTypeName = "example.UserRepositoryImpl__Aot";
+		String expectedTypeName = "example.UserRepositoryImpl__AotRepository";
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			assertThat(compiled.getAllCompiledClasses()).map(Class::getName).contains(expectedTypeName);
@@ -108,15 +111,9 @@ class RepositoryContributorUnitTests {
 				return MethodContributor
 						.forQueryMethod(
 								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
-						.withMetadata(new QueryMetadata() {
-
-							@Override
-							public Map<String, Object> serialize() {
-
-								return Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
-										Arrays.stream(method.getParameters()).map(Parameter::getName).toList());
-							}
-						}).contribute(context -> {
+						.withMetadata(() -> Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
+								Arrays.stream(method.getParameters()).map(Parameter::getName).toList()))
+						.contribute(context -> {
 
 							CodeBlock.Builder builder = CodeBlock.builder();
 							if (!ClassUtils.isVoidType(method.getReturnType())) {
@@ -132,7 +129,7 @@ class RepositoryContributorUnitTests {
 		repositoryContributor.contribute(generationContext);
 		generationContext.writeGeneratedContent();
 
-		String expectedTypeName = "example.UserRepositoryImpl__Aot";
+		String expectedTypeName = "example.UserRepositoryImpl__AotRepository";
 
 		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
 			String content = compiled.getResourceFile().getContent();
@@ -141,6 +138,82 @@ class RepositoryContributorUnitTests {
 		});
 
 		new CodeContributionAssert(generationContext).contributesReflectionFor(expectedTypeName);
+	}
+
+	@Test // GH-3354
+	void doesNotWriteCapturedQueryMetadataToResourcesIfDisabled() {
+
+		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
+		aotContext.getEnvironment().setProperty("spring.aot.repositories.metadata.enabled", "false");
+
+		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
+
+			@Override
+			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
+
+				return MethodContributor
+						.forQueryMethod(
+								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
+						.withMetadata(() -> Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
+								Arrays.stream(method.getParameters()).map(Parameter::getName).toList()))
+						.contribute(context -> {
+
+							CodeBlock.Builder builder = CodeBlock.builder();
+							if (!ClassUtils.isVoidType(method.getReturnType())) {
+								builder.addStatement("return null");
+							}
+
+							return builder.build();
+						});
+			}
+		};
+
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		repositoryContributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
+
+		TestCompiler.forSystem().with(generationContext).compile(compiled -> {
+			assertThat(compiled.getResourceFiles()).isEmpty();
+		});
+	}
+
+	@Test // GH-3354
+	void doesNotWriteCapturedQueryMetadataToResourcesIfAlreadyExists() {
+
+		DummyModuleAotRepositoryContext aotContext = new DummyModuleAotRepositoryContext(UserRepository.class, null);
+
+		RepositoryContributor repositoryContributor = new RepositoryContributor(aotContext) {
+
+			@Override
+			protected @Nullable MethodContributor<? extends QueryMethod> contributeQueryMethod(Method method) {
+
+				return MethodContributor
+						.forQueryMethod(
+								new QueryMethod(method, getRepositoryInformation(), getProjectionFactory(), DefaultParameters::new))
+						.withMetadata(() -> Map.of("filter", "FILTER(%s > $1)".formatted(method.getName()), "project",
+								Arrays.stream(method.getParameters()).map(Parameter::getName).toList()))
+						.contribute(context -> {
+
+							CodeBlock.Builder builder = CodeBlock.builder();
+							if (!ClassUtils.isVoidType(method.getReturnType())) {
+								builder.addStatement("return null");
+							}
+
+							return builder.build();
+						});
+			}
+		};
+
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		repositoryContributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
+
+		ResourceFile rf = ResourceFile.of(UserRepository.class.getName().replace('.', '/') + ".json",
+				"But you're untouchable, burning brighter than the sun");
+		TestCompiler.forSystem().with(generationContext).withResources(rf).compile(compiled -> {
+			String content = compiled.getResourceFile().getContent();
+			assertThat(content).contains("you're untouchable").doesNotContain("FILTER(doSomething > $1)");
+		});
 	}
 
 	@Test // GH-3279
@@ -154,7 +227,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(argThat(it -> it.getName().equals("findByFirstname")))).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributionFor("findByFirstname");
 	}
@@ -174,8 +249,10 @@ class RepositoryContributorUnitTests {
 				.thenReturn(true);
 		when(repositoryInformation.isQueryMethod(argThat(it -> !it.getName().equals("findByFirstname")))).thenReturn(true);
 
+		TestGenerationContext testGenerationContext = new TestGenerationContext(UserRepository.class);
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		contributor.contribute(testGenerationContext);
+		testGenerationContext.writeGeneratedContent();
 
 		contributor.verifyContributedMethods().isNotEmpty().doesNotContainKey("findByFirstname");
 	}
@@ -200,7 +277,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(argThat(it -> it.getName().equals("findByFirstname")))).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributedMethods().isNotEmpty().doesNotContainKey("findUserByExtensionMethod");
 	}
@@ -221,7 +300,9 @@ class RepositoryContributorUnitTests {
 		when(repositoryInformation.isQueryMethod(any())).thenReturn(true);
 
 		MethodCapturingRepositoryContributor contributor = new MethodCapturingRepositoryContributor(repositoryContext);
-		contributor.contribute(new TestGenerationContext(UserRepository.class));
+		TestGenerationContext generationContext = new TestGenerationContext(UserRepository.class);
+		contributor.contribute(generationContext);
+		generationContext.writeGeneratedContent();
 
 		contributor.verifyContributedMethods().containsKey("findByFirstname").hasSizeGreaterThan(1);
 	}

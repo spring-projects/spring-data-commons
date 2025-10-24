@@ -27,7 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @since 1.6
+ * @deprecated since 4.0, in favor of {@link JacksonRepositoryPopulatorFactoryBean}.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public class Jackson2RepositoryPopulatorFactoryBean extends AbstractRepositoryPopulatorFactoryBean {
 
 	private @Nullable ObjectMapper mapper;

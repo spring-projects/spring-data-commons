@@ -18,6 +18,8 @@ package org.springframework.data.querydsl;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -125,5 +127,6 @@ public interface QuerydslPredicateExecutor<T> {
 	 * @return all entities matching the given {@link Predicate}.
 	 * @since 2.6
 	 */
-	<S extends T, R> R findBy(Predicate predicate, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
+	<S extends T, R extends @Nullable Object> R findBy(Predicate predicate,
+			Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }

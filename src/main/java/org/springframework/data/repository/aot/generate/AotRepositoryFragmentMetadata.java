@@ -15,17 +15,22 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 import javax.lang.model.element.Modifier;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.javapoet.ClassName;
-import org.springframework.javapoet.FieldSpec;
+import org.springframework.core.ResolvableType;
+import org.springframework.data.javapoet.TypeNames;
+import org.springframework.data.repository.core.support.RepositoryFragment;
+import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 
 /**
@@ -35,15 +40,12 @@ import org.springframework.javapoet.TypeName;
  * @author Mark Paluch
  * @since 4.0
  */
-public class AotRepositoryFragmentMetadata {
+class AotRepositoryFragmentMetadata {
 
-	private final ClassName className;
-	private final Map<String, FieldSpec> fields = new HashMap<>(3);
+	private final Map<String, LocalField> fields = new HashMap<>(3);
 	private final Map<String, ConstructorArgument> constructorArguments = new LinkedHashMap<>(3);
-
-	public AotRepositoryFragmentMetadata(ClassName className) {
-		this.className = className;
-	}
+	private final Map<String, LocalMethod> methods = new LinkedHashMap<>();
+	private final Map<String, DelegateMethod> delegateMethods = new LinkedHashMap<>();
 
 	/**
 	 * Lookup a field name by exact type. Returns the first field that matches the type or {@literal null} if no field
@@ -55,18 +57,14 @@ public class AotRepositoryFragmentMetadata {
 	@Nullable
 	public String fieldNameOf(Class<?> type) {
 
-		TypeName lookup = TypeName.get(type).withoutAnnotations();
-		for (Entry<String, FieldSpec> field : fields.entrySet()) {
-			if (field.getValue().type().withoutAnnotations().equals(lookup)) {
+		ResolvableType lookup = ResolvableType.forClass(type);
+		for (Entry<String, LocalField> field : fields.entrySet()) {
+			if (field.getValue().fieldType().getType().equals(lookup.getType())) {
 				return field.getKey();
 			}
 		}
 
 		return null;
-	}
-
-	public ClassName getTargetTypeName() {
-		return className;
 	}
 
 	/**
@@ -76,17 +74,8 @@ public class AotRepositoryFragmentMetadata {
 	 * @param type field type.
 	 * @param modifiers modifiers for the field, e.g. {@link Modifier#PRIVATE}, {@link Modifier#FINAL}, etc.
 	 */
-	public void addField(String fieldName, TypeName type, Modifier... modifiers) {
-		fields.put(fieldName, FieldSpec.builder(type, fieldName, modifiers).build());
-	}
-
-	/**
-	 * Add a field to the repository fragment.
-	 *
-	 * @param fieldSpec the field specification to add.
-	 */
-	public void addField(FieldSpec fieldSpec) {
-		fields.put(fieldSpec.name(), fieldSpec);
+	public void addField(String fieldName, ResolvableType type, Modifier... modifiers) {
+		fields.putIfAbsent(fieldName, new LocalField(fieldName, type, modifiers));
 	}
 
 	/**
@@ -94,7 +83,7 @@ public class AotRepositoryFragmentMetadata {
 	 *
 	 * @return the fields of the repository fragment.
 	 */
-	public Map<String, FieldSpec> getFields() {
+	public Map<String, LocalField> getFields() {
 		return fields;
 	}
 
@@ -103,16 +92,33 @@ public class AotRepositoryFragmentMetadata {
 	 *
 	 * @param parameterName name of the constructor parameter to add. Must be unique.
 	 * @param type type of the constructor parameter.
-	 * @param fieldName name of the field to bind the constructor parameter to, or {@literal null} if no field should be
-	 *          created.
+	 * @param argumentSupplier supplier to create the constructor argument.
 	 */
-	public void addConstructorArgument(String parameterName, TypeName type, @Nullable String fieldName) {
+	public void addConstructorArgument(String parameterName, ResolvableType type,
+			Supplier<ConstructorArgument> argumentSupplier) {
 
-		this.constructorArguments.put(parameterName, new ConstructorArgument(parameterName, type, fieldName));
+		this.constructorArguments.computeIfAbsent(parameterName, it -> {
 
-		if (fieldName != null) {
-			addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
-		}
+			ConstructorArgument constructorArgument = argumentSupplier.get();
+
+			if (constructorArgument.isBoundToField()) {
+				addField(parameterName, type, Modifier.PRIVATE, Modifier.FINAL);
+			}
+
+			return constructorArgument;
+		});
+	}
+
+	public void addRepositoryMethod(Method source, MethodContributor<? extends QueryMethod> methodContributor) {
+		this.methods.putIfAbsent(source.toGenericString(), new LocalMethod(source, methodContributor));
+	}
+
+	public void addDelegateMethod(Method source, MethodContributor<? extends QueryMethod> methodContributor) {
+		this.delegateMethods.putIfAbsent(source.toGenericString(), new DelegateMethod(source, null, methodContributor));
+	}
+
+	public void addDelegateMethod(Method source, RepositoryFragment<?> fragment) {
+		this.delegateMethods.putIfAbsent(source.toGenericString(), new DelegateMethod(source, fragment, null));
 	}
 
 	/**
@@ -124,23 +130,54 @@ public class AotRepositoryFragmentMetadata {
 		return constructorArguments;
 	}
 
-	/**
-	 * Constructor argument metadata.
-	 *
-	 * @param parameterName
-	 * @param typeName
-	 * @param fieldName
-	 */
-	public record ConstructorArgument(String parameterName, TypeName typeName, @Nullable String fieldName) {
+	Map<String, ResolvableType> getAutowireFields() {
 
-		@Deprecated(forRemoval = true)
-		boolean isForLocalField() {
-			return isBoundToField();
+		Map<String, ResolvableType> autowireFields = new LinkedHashMap<>(getConstructorArguments().size());
+		for (Map.Entry<String, ConstructorArgument> entry : getConstructorArguments().entrySet()) {
+			autowireFields.put(entry.getKey(), entry.getValue().parameterType());
 		}
+		return autowireFields;
+	}
+
+	public Map<String, LocalMethod> getMethods() {
+		return methods;
+	}
+
+	public Map<String, DelegateMethod> getDelegateMethods() {
+		return delegateMethods;
+	}
+
+	static TypeName typeNameOf(ResolvableType type) {
+        return TypeNames.resolvedTypeName(type);
+    }
+
+    public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
+			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin) {
 
 		boolean isBoundToField() {
-			return fieldName != null;
+			return bindToField;
+		}
+
+		TypeName typeName() {
+			return typeNameOf(parameterType());
 		}
 
 	}
+
+	public record LocalField(String fieldName, ResolvableType fieldType, Modifier... modifiers) {
+
+		TypeName typeName() {
+			return typeNameOf(fieldType());
+		}
+	}
+
+	public record LocalMethod(Method source, MethodContributor<? extends QueryMethod> methodContributor) {
+
+	}
+
+	public record DelegateMethod(Method source, @Nullable RepositoryFragment<?> fragment,
+			@Nullable MethodContributor<? extends QueryMethod> methodContributor) {
+
+	}
+
 }

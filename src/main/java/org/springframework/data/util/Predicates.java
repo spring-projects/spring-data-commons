@@ -33,11 +33,9 @@ import org.springframework.util.Assert;
 public interface Predicates {
 
 	Predicate<Member> IS_ENUM_MEMBER = member -> member.getDeclaringClass().isEnum();
-	Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate"); // this
-	// should
-	// go
-	// into
-	// JPA
+
+	@Deprecated(since = "4.0", forRemoval = true)
+	Predicate<Member> IS_HIBERNATE_MEMBER = member -> member.getName().startsWith("$$_hibernate");
 	Predicate<Member> IS_OBJECT_MEMBER = member -> Object.class.equals(member.getDeclaringClass());
 	Predicate<Member> IS_JAVA = member -> member.getDeclaringClass().getPackageName().startsWith("java.");
 	Predicate<Member> IS_NATIVE = member -> Modifier.isNative(member.getModifiers());
@@ -50,6 +48,16 @@ public interface Predicates {
 	Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
 
 	Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
+
+	/**
+	 * A {@link Predicate} that introspects the declaring class of the member.
+	 *
+	 * @return a {@link Predicate} that introspects the declaring class of the member.
+	 * @since 4.0
+	 */
+	static <T extends Member> Predicate<T> declaringClass(Predicate<Class<?>> predicate) {
+		return t -> predicate.test(t.getDeclaringClass());
+	}
 
 	/**
 	 * A {@link Predicate} that yields always {@code true}.

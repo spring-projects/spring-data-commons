@@ -69,7 +69,7 @@ class JSONTokener {
 
 	/**
 	 * @param in JSON encoded string. Null is not permitted and will yield a tokener that throws
-	 *          {@code NullPointerExceptions} when methods are called.
+	 *          {@literal nullPointerExceptions} when methods are called.
 	 */
 	public JSONTokener(String in) {
 		// consume an optional byte order mark (BOM) if it exists

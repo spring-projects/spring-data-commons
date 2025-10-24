@@ -15,14 +15,27 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.lang.model.element.Modifier;
 
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.BeanReference;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.repository.aot.generate.AotRepositoryFragmentMetadata.ConstructorArgument;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
-import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.Assert;
 
@@ -35,54 +48,141 @@ import org.springframework.util.Assert;
  */
 class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 
-	private final AotRepositoryFragmentMetadata metadata;
+	@SuppressWarnings("NullAway")
+	private final String beanFactory = AotRepositoryBeanDefinitionPropertiesDecorator.RESERVED_TYPES
+			.get(ResolvableType.forClass(BeanFactory.class));
 
-	private ConstructorCustomizer customizer = (builder) -> {};
+	@SuppressWarnings("NullAway")
+	private final String fragmentCreationContext = AotRepositoryBeanDefinitionPropertiesDecorator.RESERVED_TYPES
+			.get(ResolvableType.forClass(RepositoryFactoryBeanSupport.FragmentCreationContext.class));
+
+	private final AotRepositoryFragmentMetadata metadata;
+	private final Set<String> parametersAdded = new LinkedHashSet<>();
+	private final Map<String, String> localVariables = new LinkedHashMap<>();
+	private final VariableNameFactory variableNameFactory;
+
+	// add super call with all parameters added
+	private ConstructorCustomizer customizer = (builder) -> {
+		builder.addStatement("super(%s%s)".formatted( //
+				"$L".repeat(parametersAdded.isEmpty() ? 0 : 1), //
+				", $L".repeat(Math.max(0, parametersAdded.size() - 1))), parametersAdded.toArray());
+	};
 
 	RepositoryConstructorBuilder(AotRepositoryFragmentMetadata metadata) {
 		this.metadata = metadata;
+		this.variableNameFactory = new LocalVariableNameFactory(
+				AotRepositoryBeanDefinitionPropertiesDecorator.RESERVED_TYPES.values());
+	}
+
+	@Override
+	public void addParameter(String parameterName, ResolvableType type,
+			Consumer<ConstructorParameterCustomizer> customizer) {
+
+		this.parametersAdded.add(parameterName);
+
+		Supplier<ConstructorArgument> constructorArgumentSupplier = () -> {
+
+			ConstructorParameterContext context = new ConstructorParameterContext(this::localVariable, parameterName, type);
+			customizer.accept(context);
+
+			return new ConstructorArgument(parameterName, type, context.bindToField, context.getRequiredParameterOrigin());
+		};
+
+		this.metadata.addConstructorArgument(parameterName, type, constructorArgumentSupplier);
 	}
 
 	/**
-	 * Add constructor parameter and create a field storing its value.
-	 *
-	 * @param parameterName name of the parameter.
-	 * @param type parameter type.
+	 * Context to customize a constructor parameter.
 	 */
-	@Override
-	public void addParameter(String parameterName, Class<?> type) {
+	class ConstructorParameterContext implements ConstructorParameterCustomizer {
 
-		ResolvableType resolvableType = ResolvableType.forClass(type);
-		if (!resolvableType.hasGenerics() || !resolvableType.hasResolvableGenerics()) {
-			addParameter(parameterName, TypeName.get(type));
-			return;
+		private final VariableNameFactory variableFactory;
+		private final String parameterName;
+		private final TypeName typeName;
+
+		boolean bindToField;
+		@Nullable ParameterOrigin block;
+
+		ConstructorParameterContext(VariableNameFactory variableFactory, String parameterName,
+				ResolvableType resolvableType) {
+
+			this.variableFactory = variableFactory;
+			this.parameterName = parameterName;
+			this.typeName = AotRepositoryFragmentMetadata.typeNameOf(resolvableType);
+
+			if (resolvableType.isAssignableFrom(BeanFactory.class)) {
+				origin(FragmentParameterContext::getBeanFactory);
+			} else if (resolvableType.isAssignableFrom(RepositoryFactoryBeanSupport.FragmentCreationContext.class)) {
+				origin(FragmentParameterContext::getFragmentCreationContext);
+			} else {
+				origin(new RuntimeBeanReference(resolvableType.toClass()));
+			}
 		}
 
-		addParameter(parameterName, ParameterizedTypeName.get(type, resolvableType.resolveGenerics()));
-	}
+		@Override
+		public ConstructorParameterCustomizer bindToField(boolean bindToField) {
+			this.bindToField = bindToField;
+			return this;
+		}
 
-	/**
-	 * Add constructor parameter and create a field storing its value.
-	 *
-	 * @param parameterName name of the parameter.
-	 * @param type parameter type.
-	 */
-	@Override
-	public void addParameter(String parameterName, TypeName type) {
-		addParameter(parameterName, type, true);
-	}
+		@Override
+		public void origin(BeanReference reference) {
 
-	/**
-	 * Add constructor parameter.
-	 *
-	 * @param parameterName name of the parameter.
-	 * @param type parameter type.
-	 * @param createField whether to create a field for the parameter and assign its value to the field.
-	 */
-	@Override
-	public void addParameter(String parameterName, TypeName type, boolean createField) {
+			origin(ctx -> {
 
-		this.metadata.addConstructorArgument(parameterName, type, createField ? parameterName : null);
+				CodeBlock.Builder builder = CodeBlock.builder();
+				String variableName = ctx.localVariable(parameterName);
+
+				if (reference instanceof RuntimeBeanReference rbr && rbr.getBeanType() != null) {
+
+					if (rbr.getBeanName().equals(rbr.getBeanType().getName())) {
+						builder.addStatement("$1T $2L = $3L.getBean($4T.class)", typeName, variableName, ctx.beanFactory(),
+								rbr.getBeanType());
+					} else {
+						builder.addStatement("$1T $2L = $3L.getBean($4S, $5T.class)", typeName, variableName, ctx.beanFactory(),
+								rbr.getBeanName(), rbr.getBeanType());
+					}
+				} else {
+					builder.addStatement("$1T $2L = ($1T) $3L.getBean($4S)", typeName, variableName, ctx.beanFactory(),
+							reference.getBeanName());
+				}
+
+				return ParameterOrigin.of(variableName, builder.build());
+			});
+		}
+
+		@Override
+		public void origin(Function<FragmentParameterContext, ParameterOrigin> originFunction) {
+
+			FragmentParameterContext ctx = new FragmentParameterContext() {
+
+				@Override
+				public String beanFactory() {
+					return beanFactory;
+				}
+
+				@Override
+				public String fragmentCreationContext() {
+					return fragmentCreationContext;
+				}
+
+				@Override
+				public String localVariable(String variableName) {
+					return variableFactory.generateName(variableName);
+				}
+			};
+
+			this.block = originFunction.apply(ctx);
+
+			Assert.state(block != null, "Resulting ParameterOriginBlock must not be null");
+		}
+
+		public ParameterOrigin getRequiredParameterOrigin() {
+
+			Assert.state(block != null, "ParameterOriginBlock must not be null");
+
+			return block;
+		}
 	}
 
 	/**
@@ -98,6 +198,17 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 		this.customizer = customizer;
 	}
 
+	/**
+	 * Obtain a naming-clash free variant for the given logical variable name within the local method context. Returns the
+	 * target variable name when called multiple times with the same {@code variableName}.
+	 *
+	 * @param variableName the logical variable name.
+	 * @return the variable name used in the generated code.
+	 */
+	public String localVariable(String variableName) {
+		return localVariables.computeIfAbsent(variableName, variableNameFactory::generateName);
+	}
+
 	public MethodSpec buildConstructor() {
 
 		MethodSpec.Builder builder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
@@ -106,7 +217,11 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 			builder.addParameter(parameter.getValue().typeName(), parameter.getKey());
 		}
 
-		customizer.customize(builder);
+		CodeBlock.Builder customCtorCode = CodeBlock.builder();
+		customizer.customize(customCtorCode);
+		if(!customCtorCode.isEmpty()) {
+			builder.addCode(customCtorCode.build());
+		}
 
 		for (Entry<String, ConstructorArgument> parameter : this.metadata.getConstructorArguments().entrySet()) {
 			if (parameter.getValue().isBoundToField()) {
@@ -117,4 +232,13 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 		return builder.build();
 	}
 
+	public void dispose() {
+
+		for (String parameterName : this.parametersAdded) {
+			ConstructorArgument removedArgument = this.metadata.getConstructorArguments().remove(parameterName);
+			if (removedArgument != null && removedArgument.isBoundToField()) {
+				this.metadata.getFields().remove(parameterName);
+			}
+		}
+	}
 }

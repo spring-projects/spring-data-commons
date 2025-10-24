@@ -37,7 +37,6 @@ import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -356,7 +355,6 @@ class RepositoryMethodInvokerUnitTests {
 			return CollectionUtils.lastElement(invocations);
 		}
 
-		@NotNull
 		@Override
 		public Iterator<RepositoryMethodInvocation> iterator() {
 			return invocations.iterator();

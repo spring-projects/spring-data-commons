@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.KotlinDetector;
@@ -287,8 +286,7 @@ public final class ReflectionUtils {
 		Assert.notNull(type, "Target type must not be null");
 		Assert.notNull(constructorArguments, "Constructor arguments must not be null");
 
-		for (@NotNull
-		Constructor<?> declaredConstructor : type.getDeclaredConstructors()) {
+		for (Constructor<?> declaredConstructor : type.getDeclaredConstructors()) {
 			if (argumentsMatch(declaredConstructor.getParameterTypes(), constructorArguments)) {
 				return (Constructor<T>) declaredConstructor;
 			}

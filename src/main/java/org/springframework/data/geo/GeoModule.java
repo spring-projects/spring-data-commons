@@ -30,8 +30,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  *
  * @author Oliver Gierke
  * @since 1.8
+ * @deprecated since 4.0, use {@link GeoJacksonModule} instead.
  */
 @SuppressWarnings("unused")
+@Deprecated(since = "4.0", forRemoval = true)
 public class GeoModule extends SimpleModule {
 
 	private static final @Serial long serialVersionUID = 1L;

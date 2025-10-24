@@ -15,33 +15,33 @@
  */
 package org.springframework.data.repository.aot.generate;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.test.tools.ClassFile;
+import org.springframework.data.aot.AotContext;
 import org.springframework.data.repository.config.AotRepositoryContext;
+import org.springframework.data.repository.config.AotRepositoryContextSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryComposition;
+import org.springframework.mock.env.MockEnvironment;
 
 /**
  * Dummy {@link AotRepositoryContext} used to simulate module specific repository implementation.
  *
  * @author Christoph Strobl
  */
-class DummyModuleAotRepositoryContext implements AotRepositoryContext {
+class DummyModuleAotRepositoryContext extends AotRepositoryContextSupport {
 
 	private final StubRepositoryInformation repositoryInformation;
 
 	public DummyModuleAotRepositoryContext(Class<?> repositoryInterface, @Nullable RepositoryComposition composition) {
+		super(AotContext.from(new DefaultListableBeanFactory(), new MockEnvironment()));
 		this.repositoryInformation = new StubRepositoryInformation(repositoryInterface, composition);
 	}
 
@@ -61,8 +61,8 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
-	public Environment getEnvironment() {
-		return null;
+	public MockEnvironment getEnvironment() {
+		return (MockEnvironment) super.getEnvironment();
 	}
 
 	@Override
@@ -105,19 +105,4 @@ class DummyModuleAotRepositoryContext implements AotRepositoryContext {
 		return Set.of();
 	}
 
-	public List<ClassFile> getRequiredContextFiles() {
-		return List.of(classFileForType(repositoryInformation.getRepositoryBaseClass()));
-	}
-
-	static ClassFile classFileForType(Class<?> type) {
-
-		String name = type.getName();
-		ClassPathResource cpr = new ClassPathResource(name.replaceAll("\\.", "/") + ".class");
-
-		try {
-			return ClassFile.of(name, cpr.getContentAsByteArray());
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Cannot open [%s].".formatted(cpr.getPath()));
-		}
-	}
 }

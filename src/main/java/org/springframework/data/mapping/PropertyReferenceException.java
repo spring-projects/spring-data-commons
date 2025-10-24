@@ -46,7 +46,7 @@ public class PropertyReferenceException extends RuntimeException {
 
 	private final String propertyName;
 	private final TypeInformation<?> type;
-	private final List<PropertyPath> alreadyResolvedPath;
+	private final List<? extends PropertyPath> alreadyResolvedPath;
 	private final Lazy<Set<String>> propertyMatches;
 
 	/**
@@ -57,7 +57,7 @@ public class PropertyReferenceException extends RuntimeException {
 	 * @param alreadyResolvedPah the previously calculated {@link PropertyPath}s, must not be {@literal null}.
 	 */
 	public PropertyReferenceException(String propertyName, TypeInformation<?> type,
-			List<PropertyPath> alreadyResolvedPah) {
+			List<? extends PropertyPath> alreadyResolvedPah) {
 
 		Assert.hasText(propertyName, "Property name must not be null");
 		Assert.notNull(type, "Type must not be null");

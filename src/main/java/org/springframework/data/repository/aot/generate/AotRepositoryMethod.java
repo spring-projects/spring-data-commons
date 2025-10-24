@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * @author Mark Paluch
  * @since 4.0
  */
-record AotRepositoryMethod(String name, String signature, @Nullable QueryMetadata query,
+public record AotRepositoryMethod(String name, String signature, @Nullable QueryMetadata query,
 		@Nullable AotFragmentTarget fragment) {
 
 	/**

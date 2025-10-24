@@ -15,6 +15,7 @@
  */
 package org.springframework.data.web.config;
 
+
 import java.io.Serial;
 import java.util.List;
 
@@ -44,10 +45,15 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  * JavaConfig class to export Jackson specific configuration.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
+ * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
  */
+@SuppressWarnings("removal")
+@Deprecated(since = "4.0", forRemoval = true)
 public class SpringDataJacksonConfiguration implements SpringDataJacksonModules {
 
-	@Nullable @Autowired(required = false) SpringDataWebSettings settings;
+	@Nullable
+	@Autowired(required = false) SpringDataWebSettings settings;
 
 	@Bean
 	public GeoModule jacksonGeoModule() {
@@ -61,12 +67,10 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 
 	/**
 	 * A Jackson module customizing the serialization of {@link PageImpl} instances depending on the
-	 * {@link SpringDataWebSettings} handed into the instance. In case of
-	 * {@link org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode#DIRECT} being
+	 * {@link SpringDataWebSettings} handed into the instance. In case of {@link PageSerializationMode#DIRECT} being
 	 * configured, a no-op {@link StdConverter} is registered to issue a one-time warning about the mode being used (as
-	 * it's not recommended).
-	 * {@link org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode#VIA_DTO} would register
-	 * a converter wrapping {@link PageImpl} instances into {@link PagedModel}.
+	 * it's not recommended). {@link PageSerializationMode#VIA_DTO} would register a converter wrapping {@link PageImpl}
+	 * instances into {@link PagedModel}.
 	 *
 	 * @author Oliver Drotbohm
 	 */
@@ -99,7 +103,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		}
 
 		/**
-		 * A Jackson serializer rendering instances of {@link org.springframework.data.domain.Unpaged} as {@code INSTANCE}
+		 * A Jackson serializer rendering instances of {@code org.springframework.data.domain.Unpaged} as {@code INSTANCE}
 		 * as it was previous rendered.
 		 *
 		 * @author Oliver Drotbohm
@@ -119,7 +123,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 		}
 
 		@JsonSerialize(converter = PageModelConverter.class)
-		abstract class WrappingMixing {}
+		abstract static class WrappingMixing {}
 
 		static class PageModelConverter extends StdConverter<Page<?>, PagedModel<?>> {
 
@@ -161,4 +165,5 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 	}
+
 }

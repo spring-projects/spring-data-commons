@@ -15,18 +15,22 @@
  */
 package org.springframework.data.aot;
 
+import java.util.function.Consumer;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.StringUtils;
 
 /**
- * Tests for {@link AotContext}.
+ * Unit tests for {@link AotContext}.
  *
+ * @author Mark Paluch
  * @author Christoph Strobl
  */
 class AotContextUnitTests {
@@ -81,6 +85,16 @@ class AotContextUnitTests {
 		@Override
 		public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
 			return Mockito.mock(IntrospectedBeanDefinition.class);
+		}
+
+		@Override
+		public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+
+		}
+
+		@Override
+		public void contributeTypeConfigurations(GenerationContext generationContext) {
+
 		}
 
 		@Override

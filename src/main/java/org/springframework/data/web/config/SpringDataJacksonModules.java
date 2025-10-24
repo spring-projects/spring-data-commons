@@ -23,5 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  * @since 1.13
+ * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public interface SpringDataJacksonModules {}

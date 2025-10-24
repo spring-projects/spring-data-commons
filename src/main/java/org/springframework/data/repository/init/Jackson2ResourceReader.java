@@ -40,7 +40,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @since 1.6
+ * @deprecated since 4.0, in favor of {@link JacksonResourceReader}.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public class Jackson2ResourceReader implements ResourceReader {
 
 	private static final String DEFAULT_TYPE_KEY = "_class";

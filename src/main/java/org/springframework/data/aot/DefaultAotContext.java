@@ -15,38 +15,66 @@
  */
 package org.springframework.data.aot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.TypeReference;
+import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.aot.AotProcessingException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.env.Environment;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.QTypeContributor;
+import org.springframework.data.util.TypeContributor;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Default {@link AotContext} implementation.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.0
  */
+@SuppressWarnings("removal")
 class DefaultAotContext implements AotContext {
 
+	private final AotMappingContext mappingContext;
 	private final ConfigurableListableBeanFactory factory;
 
+	private final Map<Class<?>, ContextualTypeConfiguration> typeConfigurations = new HashMap<>();
 	private final Environment environment;
+	private final ReflectiveRuntimeHintsRegistrar reflectiveRuntimeHintsRegistrar = new ReflectiveRuntimeHintsRegistrar();
 
 	public DefaultAotContext(BeanFactory beanFactory, Environment environment) {
-		factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
+		this(beanFactory, environment, new AotMappingContext());
+	}
+
+	DefaultAotContext(BeanFactory beanFactory, Environment environment, AotMappingContext mappingContext) {
+		this.factory = beanFactory instanceof ConfigurableListableBeanFactory cbf ? cbf
 				: new DefaultListableBeanFactory(beanFactory);
 		this.environment = environment;
+		this.mappingContext = mappingContext;
 	}
 
 	@Override
@@ -69,6 +97,19 @@ class DefaultAotContext implements AotContext {
 		return new DefaultIntrospectedBeanDefinition(beanName);
 	}
 
+	@Override
+	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
+		configurationConsumer.accept(typeConfigurations.computeIfAbsent(type, it -> new ContextualTypeConfiguration(type)));
+	}
+
+	@Override
+	public void contributeTypeConfigurations(GenerationContext generationContext) {
+		typeConfigurations.forEach((type, configuration) -> {
+			configuration.contribute(this.environment, generationContext);
+		});
+	}
+
+	@SuppressWarnings("removal")
 	class DefaultTypeIntrospector implements TypeIntrospector {
 
 		private final String typeName;
@@ -108,6 +149,7 @@ class DefaultAotContext implements AotContext {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	class DefaultIntrospectedBeanDefinition implements IntrospectedBeanDefinition {
 
 		private final String beanName;
@@ -146,6 +188,164 @@ class DefaultAotContext implements AotContext {
 		public @Nullable Class<?> resolveType() {
 			return factory.getType(beanName, false);
 		}
+	}
+
+	class ContextualTypeConfiguration implements AotTypeConfiguration {
+
+		private final Class<?> type;
+		private boolean forDataBinding = false;
+		private final Set<MemberCategory> categories = new HashSet<>(5);
+		private boolean contributeAccessors = false;
+		private boolean forQuerydsl = false;
+		private final List<List<TypeReference>> proxies = new ArrayList<>();
+
+		ContextualTypeConfiguration(Class<?> type) {
+			this.type = type;
+		}
+
+		@Override
+		public AotTypeConfiguration forDataBinding() {
+			this.forDataBinding = true;
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration forReflectiveAccess(MemberCategory... categories) {
+			this.categories.addAll(Arrays.asList(categories));
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration contributeAccessors() {
+			this.contributeAccessors = true;
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration proxyInterface(List<TypeReference> interfaces) {
+			this.proxies.add(interfaces);
+			return this;
+		}
+
+		@Override
+		public AotTypeConfiguration forQuerydsl() {
+			this.forQuerydsl = true;
+			return this;
+		}
+
+		public void contribute(Environment environment, GenerationContext generationContext) {
+
+			try {
+				doContribute(environment, generationContext);
+			} catch (RuntimeException e) {
+				throw new AotProcessingException("Cannot contribute Ahead-of-Time optimizations for '" + type.getName() + "'",
+						e);
+			}
+		}
+
+		private void doContribute(Environment environment, GenerationContext generationContext) {
+
+			if (!this.categories.isEmpty()) {
+				generationContext.getRuntimeHints().reflection().registerType(this.type,
+						categories.toArray(MemberCategory[]::new));
+			}
+
+			// check types for presence of @Reflective annotation
+			reflectiveRuntimeHintsRegistrar.registerRuntimeHints(generationContext.getRuntimeHints(), type);
+
+			if (contributeAccessors) {
+
+				AccessorContributionConfiguration configuration = AccessorContributionConfiguration.of(environment);
+				if (configuration.shouldContributeAccessors(type)) {
+					mappingContext.contribute(type);
+				}
+			}
+
+			if (forDataBinding) {
+				TypeContributor.contribute(type, Set.of(TypeContributor.DATA_NAMESPACE), generationContext);
+			}
+
+			if (forQuerydsl) {
+				QTypeContributor.contributeEntityPath(type, generationContext, factory.getBeanClassLoader());
+			}
+
+			if (!proxies.isEmpty()) {
+				for (List<TypeReference> proxyInterfaces : proxies) {
+					generationContext.getRuntimeHints().proxies().registerJdkProxy(
+							Stream.concat(Stream.of(TypeReference.of(type)), proxyInterfaces.stream()).toArray(TypeReference[]::new));
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Configuration for accessor to determine whether accessors should be contributed for a given type.
+	 */
+	private record AccessorContributionConfiguration(boolean enabled, Lazy<String> include, Lazy<String> exclude) {
+
+		/**
+		 * {@code boolean }Environment property to enable/disable accessor contribution. Enabled by default.
+		 */
+		public static final String ACCESSORS_ENABLED = "spring.aot.data.accessors.enabled";
+
+		/**
+		 * {@code String} Environment property to define Ant-style include patterns (comma-separated) matching package names
+		 * (e.g. {@code com.acme.**}) or type names inclusion. Inclusion pattern matches are evaluated before exclusions for
+		 * broad exclusion and selective inclusion.
+		 */
+		public static final String INCLUDE_PATTERNS = "spring.aot.data.accessors.include";
+
+		/**
+		 * {@code String} Environment property to define Ant-style exclude patterns (comma-separated) matching package names
+		 * (e.g. {@code com.acme.**}) or type names exclusion. Exclusion pattern matches are evaluated after inclusions for
+		 * broad exclusion and selective inclusion.
+		 */
+		public static final String EXCLUDE_PATTERNS = "spring.aot.data.accessors.exclude";
+
+		private static final AntPathMatcher antPathMatcher = new AntPathMatcher(".");
+
+		private AccessorContributionConfiguration(boolean enabled, Supplier<String> include, Supplier<String> exclude) {
+			this(enabled, Lazy.of(include), Lazy.of(exclude));
+		}
+
+		public static AccessorContributionConfiguration of(Environment environment) {
+			return new AccessorContributionConfiguration(environment.getProperty(ACCESSORS_ENABLED, Boolean.class, true),
+					() -> environment.getProperty(INCLUDE_PATTERNS, String.class, ""),
+					() -> environment.getProperty(EXCLUDE_PATTERNS, String.class, ""));
+		}
+
+		boolean shouldContributeAccessors(Class<?> type) {
+
+			if (!enabled) {
+				return false;
+			}
+
+			if (StringUtils.hasText(include.get())) {
+
+				String[] includes = include.get().split(",");
+
+				for (String includePattern : includes) {
+					if (antPathMatcher.match(includePattern.trim(), type.getName())) {
+						return true;
+					}
+				}
+			}
+
+			if (StringUtils.hasText(exclude.get())) {
+
+				String[] excludes = exclude.get().split(",");
+
+				for (String excludePattern : excludes) {
+					if (antPathMatcher.match(excludePattern.trim(), type.getName())) {
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
 	}
 
 }

@@ -22,10 +22,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.env.Environment;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.util.Lazy;
@@ -41,10 +39,8 @@ import org.springframework.data.util.TypeUtils;
  * @see AotRepositoryContext
  * @since 3.0
  */
-@SuppressWarnings("NullAway") // TODO
-class DefaultAotRepositoryContext implements AotRepositoryContext {
+class DefaultAotRepositoryContext extends AotRepositoryContextSupport {
 
-	private final RegisteredBean bean;
 	private final String moduleName;
 	private final RepositoryConfigurationSource configurationSource;
 	private final AotContext aotContext;
@@ -52,23 +48,19 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	private final Lazy<Set<MergedAnnotation<Annotation>>> resolvedAnnotations = Lazy.of(this::discoverAnnotations);
 	private final Lazy<Set<Class<?>>> managedTypes = Lazy.of(this::discoverTypes);
 
-	private Set<String> basePackages = Collections.emptySet();
 	private Collection<Class<? extends Annotation>> identifyingAnnotations = Collections.emptySet();
 	private String beanName;
 
 	public DefaultAotRepositoryContext(RegisteredBean bean, RepositoryInformation repositoryInformation,
 			String moduleName, AotContext aotContext, RepositoryConfigurationSource configurationSource) {
-		this.bean = bean;
+
+		super(aotContext);
+
 		this.repositoryInformation = repositoryInformation;
 		this.moduleName = moduleName;
 		this.configurationSource = configurationSource;
 		this.aotContext = aotContext;
 		this.beanName = bean.getBeanName();
-		this.basePackages = configurationSource.getBasePackages().toSet();
-	}
-
-	public AotContext getAotContext() {
-		return aotContext;
 	}
 
 	@Override
@@ -79,25 +71,6 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	@Override
 	public RepositoryConfigurationSource getConfigurationSource() {
 		return configurationSource;
-	}
-
-	@Override
-	public ConfigurableListableBeanFactory getBeanFactory() {
-		return getAotContext().getBeanFactory();
-	}
-
-	@Override
-	public Environment getEnvironment() {
-		return getAotContext().getEnvironment();
-	}
-
-	@Override
-	public Set<String> getBasePackages() {
-		return basePackages;
-	}
-
-	public void setBasePackages(Set<String> basePackages) {
-		this.basePackages = basePackages;
 	}
 
 	@Override
@@ -134,11 +107,6 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 	}
 
 	@Override
-	public AotContext.TypeIntrospector introspectType(String typeName) {
-		return aotContext.introspectType(typeName);
-	}
-
-	@Override
 	public AotContext.IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
 		return aotContext.introspectBeanDefinition(beanName);
 	}
@@ -164,7 +132,8 @@ class DefaultAotRepositoryContext implements AotRepositoryContext {
 
 		if (!getIdentifyingAnnotations().isEmpty()) {
 
-			Set<Class<?>> classes = aotContext.getTypeScanner().scanPackages(getBasePackages())
+			Set<Class<?>> classes = aotContext.getTypeScanner()
+					.scanPackages(getConfigurationSource().getBasePackages().toSet())
 					.forTypesAnnotatedWith(getIdentifyingAnnotations()).collectAsSet();
 			types.addAll(TypeCollector.inspect(classes).list());
 		}
