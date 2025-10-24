@@ -15,26 +15,15 @@
  */
 package org.springframework.data.aot;
 
-import static org.mockito.Mockito.*;
-
 import java.util.function.Consumer;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoSettings;
-
 import org.springframework.aot.generate.GenerationContext;
-import org.springframework.aot.test.generate.TestGenerationContext;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.env.Environment;
-import org.springframework.data.aot.types.Address;
-import org.springframework.data.aot.types.Customer;
-import org.springframework.data.aot.types.EmptyType1;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.StringUtils;
 
@@ -44,66 +33,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
 class AotContextUnitTests {
-
-	@Mock BeanFactory beanFactory;
-
-	@Mock AotMappingContext mappingContext;
-
-	MockEnvironment mockEnvironment = new MockEnvironment();
-
-	@Test // GH-2595
-	void shouldContributeAccessorByDefault() {
-
-		contributeAccessor(Address.class);
-		verify(mappingContext).contribute(Address.class);
-	}
-
-	@Test // GH-2595
-	void shouldConsiderDisabledAccessors() {
-
-		mockEnvironment.setProperty("spring.aot.data.accessors.enabled", "false");
-
-		contributeAccessor(Address.class);
-
-		verifyNoInteractions(mappingContext);
-	}
-
-	@Test // GH-2595
-	void shouldApplyExcludeFilters() {
-
-		mockEnvironment.setProperty("spring.aot.data.accessors.exclude",
-				Customer.class.getName() + " , " + EmptyType1.class.getName());
-
-		contributeAccessor(Address.class, Customer.class, EmptyType1.class);
-
-		verify(mappingContext).contribute(Address.class);
-		verifyNoMoreInteractions(mappingContext);
-	}
-
-	@Test // GH-2595
-	void shouldApplyIncludeExcludeFilters() {
-
-		mockEnvironment.setProperty("spring.aot.data.accessors.include", Customer.class.getPackageName() + ".Add*");
-		mockEnvironment.setProperty("spring.aot.data.accessors.exclude", Customer.class.getPackageName() + ".**");
-
-		contributeAccessor(Address.class, Customer.class, EmptyType1.class);
-
-		verify(mappingContext).contribute(Address.class);
-		verifyNoMoreInteractions(mappingContext);
-	}
-
-	private void contributeAccessor(Class<?>... classes) {
-
-		DefaultAotContext context = new DefaultAotContext(beanFactory, mockEnvironment, mappingContext);
-
-		for (Class<?> aClass : classes) {
-			context.typeConfiguration(aClass, AotTypeConfiguration::contributeAccessors);
-		}
-
-		context.contributeTypeConfigurations(new TestGenerationContext());
-	}
 
 	@ParameterizedTest // GH-3322
 	@CsvSource({ //
