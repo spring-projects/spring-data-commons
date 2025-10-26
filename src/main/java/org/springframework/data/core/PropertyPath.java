@@ -44,8 +44,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * @since xxx
 	 */
 	public static <T, R> TypedPropertyPath<T, R> of(TypedPropertyPath<T, R> propertyPath) {
-		PropertyPathExtractor.getPropertyPathInformation(propertyPath);
-		return propertyPath;
+		return TypedPropertyPath.of(propertyPath);
 	}
 
 	/**

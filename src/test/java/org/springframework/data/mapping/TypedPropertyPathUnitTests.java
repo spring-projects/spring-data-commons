@@ -17,8 +17,8 @@ package org.springframework.data.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
@@ -78,7 +78,90 @@ class TypedPropertyPathUnitTests {
 	}
 
 	@Test
-	void resolvesMHRecordPath() {
+	void resolvesInterfaceMethodReferenceGetter() {
+		assertThat(PropertyPath.of(PersonProjection::getName).toDotPath()).isEqualTo("name");
+	}
+
+	@Test
+	void resolvesInterfaceLambdaGetter() {
+		assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
+	}
+
+	@Test
+	void resolvesSuperclassMethodReferenceGetter() {
+		assertThat(PropertyPath.of(PersonQuery::getTenant).toDotPath()).isEqualTo("tenant");
+	}
+
+	@Test
+	void resolvesSuperclassLambdaGetter() {
+		assertThat(PropertyPath.of((PersonQuery person) -> person.getTenant()).toDotPath()).isEqualTo("tenant");
+	}
+
+	@Test
+	void resolvesPrivateMethodReference() {
+		assertThat(PropertyPath.of(Address::getSecret).toDotPath()).isEqualTo("secret");
+	}
+
+	@Test
+	void resolvesPrivateMethodLambda() {
+		assertThat(PropertyPath.of((Address address) -> address.getSecret()).toDotPath()).isEqualTo("secret");
+	}
+
+	@Test
+	void switchingOwningTypeFails() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
+					return ((SuperClass) person).getTenant();
+				}));
+	}
+
+	@Test
+	void constructorCallsShouldFail() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> new PersonQuery(person)));
+	}
+
+	@Test
+	void enumShouldFail() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of(NotSupported.INSTANCE));
+	}
+
+	@Test
+	void returningSomethingShouldFail() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of((TypedPropertyPath<Object, Object>) obj -> null));
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of((TypedPropertyPath<Object, Object>) obj -> 1));
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of((TypedPropertyPath<Object, Object>) obj -> ""));
+	}
+
+	@Test
+	void classImplementationShouldFail() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.of(new TypedPropertyPath<Object, Object>() {
+					@Override
+					public @Nullable Object get(Object obj) {
+						return null;
+					}
+				}));
+	}
+
+	@Test
+	void constructorMethodReferenceShouldFail() {
+
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> PropertyPath.<PersonQuery, PersonQuery> of(PersonQuery::new));
+	}
+
+	@Test
+	void resolvesMRRecordPath() {
 
 		TypedPropertyPath<PersonQuery, String> then = PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry)
 				.then(Country::name);
@@ -108,6 +191,7 @@ class TypedPropertyPathUnitTests {
 
 	@Test
 	void failsResolvingCallingLocalMethod() {
+
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
 					failsResolutionWith$StrangeStuff();
@@ -116,11 +200,28 @@ class TypedPropertyPathUnitTests {
 	}
 
 	// Domain entities
-	static public class PersonQuery {
+
+	static public class SuperClass {
+		private int tenant;
+
+		public int getTenant() {
+			return tenant;
+		}
+
+		public void setTenant(int tenant) {
+			this.tenant = tenant;
+		}
+	}
+
+	static public class PersonQuery extends SuperClass {
 
 		private String name;
 		private Integer age;
 		private Address address;
+
+		public PersonQuery(PersonQuery pq) {}
+
+		public PersonQuery() {}
 
 		// Getters
 		public String getName() {
@@ -141,6 +242,7 @@ class TypedPropertyPathUnitTests {
 		String street;
 		String city;
 		private Country country;
+		private String secret;
 
 		// Getters
 		public String getStreet() {
@@ -154,12 +256,24 @@ class TypedPropertyPathUnitTests {
 		public Country getCountry() {
 			return country;
 		}
+
+		private String getSecret() {
+			return secret;
+		}
+
+		private void setSecret(String secret) {
+			this.secret = secret;
+		}
 	}
 
 	record Country(String name, String code) {
 
 	}
 
+	interface PersonProjection {
+
+		String getName();
+	}
 
 	static class Criteria {
 
@@ -177,6 +291,16 @@ class TypedPropertyPathUnitTests {
 
 		public static <T, R> Criteria where(TypedPropertyPath<T, R> propertyPath) {
 			return new Criteria(propertyPath.toDotPath());
+		}
+	}
+
+	enum NotSupported implements TypedPropertyPath<String, String> {
+
+		INSTANCE;
+
+		@Override
+		public @Nullable String get(String obj) {
+			return "";
 		}
 	}
 }
