@@ -20,6 +20,7 @@ import kotlin.reflect.KParameter;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -53,7 +54,6 @@ class KotlinInstantiationDelegate {
 	private final Map<KParameter, Integer> indexByKParameter;
 	private final List<Function<@Nullable Object, @Nullable Object>> wrappers = new ArrayList<>();
 	private final Constructor<?> constructorToInvoke;
-	private final boolean hasDefaultConstructorMarker;
 
 	public KotlinInstantiationDelegate(PreferredConstructor<?, ?> preferredConstructor,
 			Constructor<?> constructorToInvoke) {
@@ -74,7 +74,6 @@ class KotlinInstantiationDelegate {
 		}
 
 		this.constructorToInvoke = constructorToInvoke;
-		this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(constructorToInvoke.getParameters());
 
 		for (KParameter kParameter : kParameters) {
 
@@ -93,11 +92,7 @@ class KotlinInstantiationDelegate {
 	 * @return number of constructor arguments.
 	 */
 	public int getRequiredParameterCount() {
-
-		return hasDefaultConstructorMarker ? constructorToInvoke.getParameterCount()
-				: (constructorToInvoke.getParameterCount()
-						+ KotlinDefaultMask.getMaskCount(constructorToInvoke.getParameterCount())
-						+ /* DefaultConstructorMarker */1);
+		return constructorToInvoke.getParameterCount();
 	}
 
 	/**
@@ -154,13 +149,14 @@ class KotlinInstantiationDelegate {
 	}
 
 	/**
-	 * Resolves a {@link PreferredConstructor} to a synthetic Kotlin constructor accepting the same user-space parameters
-	 * suffixed by Kotlin-specifics required for defaulting and the {@code kotlin.jvm.internal.DefaultConstructorMarker}.
+	 * Resolves a {@link PreferredConstructor} to the constructor to be invoked. This can be a synthetic Kotlin
+	 * constructor accepting the same user-space parameters suffixed by Kotlin-specifics required for defaulting and the
+	 * {@code kotlin.jvm.internal.DefaultConstructorMarker} or an actual non-synthetic constructor (i.e. private
+	 * constructor).
 	 *
 	 * @since 2.0
 	 * @author Mark Paluch
 	 */
-
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public static PreferredConstructor<?, ?> resolveKotlinJvmConstructor(
@@ -184,11 +180,18 @@ class KotlinInstantiationDelegate {
 
 		Class<?> entityType = detectedConstructor.getDeclaringClass();
 		Constructor<?> hit = null;
+		Constructor<?> privateFallback = null;
 		KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(detectedConstructor);
 
 		for (Constructor<?> candidate : entityType.getDeclaredConstructors()) {
 
-			// use only synthetic constructors
+			if (Modifier.isPrivate(candidate.getModifiers())) {
+				if (detectedConstructor.equals(candidate)) {
+					privateFallback = candidate;
+				}
+			}
+
+			// introspect only synthetic constructors
 			if (!candidate.isSynthetic()) {
 				continue;
 			}
@@ -226,6 +229,10 @@ class KotlinInstantiationDelegate {
 			if (parametersMatch(detectedConstructorParameters, candidateParameters, userParameterCount)) {
 				hit = candidate;
 			}
+		}
+
+		if (hit == null) {
+			return privateFallback;
 		}
 
 		return hit;

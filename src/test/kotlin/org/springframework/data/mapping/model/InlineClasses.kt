@@ -47,9 +47,44 @@ data class WithMyValueClass(val id: MyValueClass) {
 	// ---------
 }
 
-data class WithMyValueClassPrivateConstructor private constructor(val id: MyValueClass)
+data class WithMyValueClassPrivateConstructor private constructor(val id: MyValueClass) {
 
-data class WithMyValueClassPrivateConstructorAndDefaultValue private constructor(val id: MyValueClass = MyValueClass("id"))
+	// ByteCode explanation
+
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithMyValueClassPrivateConstructor(String id) {}
+	// ---------
+}
+
+data class WithNullableMyValueClassPrivateConstructor private constructor(val id: MyNullableValueClass?) {
+
+	// ByteCode explanation
+
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithNullableMyValueClassPrivateConstructor(MyNullableValueClass id) {}
+	// ---------
+}
+
+data class WithMyValueClassPrivateConstructorAndDefaultValue private constructor(
+	val id: MyValueClass = MyValueClass(
+		"id"
+	)
+) {
+
+	// ByteCode explanation
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithMyValueClassPrivateConstructorAndDefaultValue(java.lang.String id) {}
+	// ---------
+
+	// ---------
+	// synthetic constructor that we actually want to use
+	// synthetic WithMyValueClassPrivateConstructorAndDefaultValue(java.lang.String id, int arg1, kotlin.jvm.internal.DefaultConstructorMarker arg2) {}
+	// ---------
+
+}
 
 @JvmInline
 value class MyNullableValueClass(val id: String? = "id")
