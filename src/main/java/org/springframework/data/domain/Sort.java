@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
-import org.springframework.data.util.PropertyPath;
 import org.springframework.data.util.Streamable;
-import org.springframework.data.util.TypedPropertyPath;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
@@ -797,7 +797,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	 * @author Oliver Gierke
 	 * @since 2.2
 	 * @soundtrack The Intersphere - Linger (The Grand Delusion)
-	 * @deprecated since 4.1 in favor of {@link Sort#by(org.springframework.data.util.TypedPropertyPath...)}
+	 * @deprecated since 4.1 in favor of {@link Sort#by(org.springframework.data.core.TypedPropertyPath...)}
 	 */
 	@Deprecated(since = "4.1")
 	public static class TypedSort<T> extends Sort {

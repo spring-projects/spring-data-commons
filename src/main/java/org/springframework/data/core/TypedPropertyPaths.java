@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping;
+package org.springframework.data.core;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -46,8 +46,6 @@ import org.springframework.asm.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.ResolvableType;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
@@ -59,7 +57,7 @@ import org.springframework.util.ReflectionUtils;
 class TypedPropertyPaths {
 
 	private static final Map<ClassLoader, Map<Object, PropertyPathInformation>> lambdas = new WeakHashMap<>();
-	private static final Map<ClassLoader, Map<TypedPropertyPath, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
+	private static final Map<ClassLoader, Map<TypedPropertyPath<?, ?>, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
 	/**
 	 * Retrieve {@link PropertyPathInformation} for a given {@link TypedPropertyPath}.
@@ -92,7 +90,7 @@ class TypedPropertyPaths {
 			return lambda;
 		}
 
-		Map<TypedPropertyPath, ResolvedTypedPropertyPath<?, ?>> cache;
+		Map<TypedPropertyPath<?, ?>, ResolvedTypedPropertyPath<?, ?>> cache;
 		synchronized (resolved) {
 			cache = resolved.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
 		}
@@ -168,7 +166,7 @@ class TypedPropertyPaths {
 
 			Field field = ReflectionUtils.findField(owner, fieldName, fieldType);
 			if (field == null) {
-				throw new IllegalArgumentException("Field %s.%s() not found".formatted(owner.getName(), field));
+				throw new IllegalArgumentException("Field %s.%s() not found".formatted(owner.getName(), fieldName));
 			}
 
 			return new PropertyPathInformation(TypeInformation.of(owner),
