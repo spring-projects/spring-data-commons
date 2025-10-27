@@ -26,7 +26,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
@@ -48,31 +47,27 @@ import org.springframework.lang.Nullable;
  */
 class KotlinInstantiationDelegate {
 
-	private final KFunction<?> constructor;
+	private final PreferredConstructor<?, ?> constructor;
+	private final KFunction<?> constructorFunction;
 	private final List<KParameter> kParameters;
 	private final Map<KParameter, Integer> indexByKParameter;
-	private final List<Function<Object, Object>> wrappers = new ArrayList<>();
-	private final Constructor<?> constructorToInvoke;
+	private final List<Function<Object, Object>> wrappers;
+	private final boolean hasDefaultConstructorMarker;
 
-	public KotlinInstantiationDelegate(PreferredConstructor<?, ?> preferredConstructor,
-			Constructor<?> constructorToInvoke) {
+	private KotlinInstantiationDelegate(PreferredConstructor<?, ?> constructor, KFunction<?> constructorFunction) {
 
-		KFunction<?> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(preferredConstructor.getConstructor());
+		this.constructor = constructor;
+		this.hasDefaultConstructorMarker = hasDefaultConstructorMarker(getConstructor().getParameters());
 
-		if (kotlinConstructor == null) {
-			throw new IllegalArgumentException(
-					"No corresponding Kotlin constructor found for " + preferredConstructor.getConstructor());
-		}
-
-		this.constructor = kotlinConstructor;
-		this.kParameters = kotlinConstructor.getParameters();
-		this.indexByKParameter = new IdentityHashMap<>();
+		this.constructorFunction = constructorFunction;
+		this.kParameters = constructorFunction.getParameters();
+		this.indexByKParameter = new IdentityHashMap<>(kParameters.size());
 
 		for (int i = 0; i < kParameters.size(); i++) {
 			indexByKParameter.put(kParameters.get(i), i);
 		}
 
-		this.constructorToInvoke = constructorToInvoke;
+		this.wrappers = new ArrayList<>(kParameters.size());
 
 		for (KParameter kParameter : kParameters) {
 
@@ -81,27 +76,36 @@ class KotlinInstantiationDelegate {
 		}
 	}
 
-	static boolean hasDefaultConstructorMarker(java.lang.reflect.Parameter[] parameters) {
-
-		return parameters.length > 0
-				&& parameters[parameters.length - 1].getType().getName().equals("kotlin.jvm.internal.DefaultConstructorMarker");
+	/**
+	 * @return the constructor to invoke. {@link PreferredConstructor#getParameters() Constructor parameters} describe the
+	 *         detected (i.e. user-facing) constructor parameters and not {@link PreferredConstructor#getConstructor()}
+	 *         parameters and therefore do not contain any synthetic parameters.
+	 * @since 3.5.6
+	 */
+	public InstanceCreatorMetadata<?> getInstanceCreator() {
+		return constructor;
 	}
 
 	/**
-	 * @return number of constructor arguments.
+	 * @return the constructor to invoke. {@link PreferredConstructor#getParameters() Constructor parameters} describe the
+	 *         detected (i.e. user-facing) constructor parameters and not {@link PreferredConstructor#getConstructor()}
+	 *         parameters and therefore do not contain any synthetic parameters.
+	 * @since 3.5.6
+	 */
+	public Constructor<?> getConstructor() {
+		return constructor.getConstructor();
+	}
+
+	/**
+	 * @return number of actual constructor arguments.
+	 * @see #getConstructor()
 	 */
 	public int getRequiredParameterCount() {
-		return constructorToInvoke.getParameterCount();
+		return getConstructor().getParameterCount();
 	}
 
 	/**
 	 * Extract the actual construction arguments for a direct constructor call.
-	 *
-	 * @param params
-	 * @param entityCreator
-	 * @param provider
-	 * @return
-	 * @param <P>
 	 */
 	public <P extends PersistentProperty<P>> Object[] extractInvocationArguments(Object[] params,
 			@Nullable InstanceCreatorMetadata<P> entityCreator, ParameterValueProvider<P> provider) {
@@ -111,7 +115,6 @@ class KotlinInstantiationDelegate {
 		}
 
 		int userParameterCount = kParameters.size();
-
 		List<Parameter<Object, P>> parameters = entityCreator.getParameters();
 
 		// Prepare user-space arguments
@@ -121,37 +124,61 @@ class KotlinInstantiationDelegate {
 			params[i] = provider.getParameterValue(parameter);
 		}
 
-		KotlinDefaultMask defaultMask = KotlinDefaultMask.forConstructor(constructor, it -> {
-
-			int index = indexByKParameter.get(it);
-
-			Parameter<Object, P> parameter = parameters.get(index);
-			Class<Object> type = parameter.getType().getType();
-
-			if (it.isOptional() && (params[index] == null)) {
-				if (type.isPrimitive()) {
-
-					// apply primitive defaulting to prevent NPE on primitive downcast
-					params[index] = ReflectionUtils.getPrimitiveDefault(type);
-				}
-				return false;
-			}
-
-			return true;
-		});
-
 		// late rewrapping to indicate potential absence of parameters for defaulting
 		for (int i = 0; i < userParameterCount; i++) {
 			params[i] = wrappers.get(i).apply(params[i]);
 		}
 
-		int[] defaulting = defaultMask.getDefaulting();
-		// append nullability masks to creation arguments
-		for (int i = 0; i < defaulting.length; i++) {
-			params[userParameterCount + i] = defaulting[i];
+		if (hasDefaultConstructorMarker) {
+
+			KotlinDefaultMask defaultMask = KotlinDefaultMask.forConstructor(constructorFunction, it -> {
+
+				int index = indexByKParameter.get(it);
+
+				Parameter<Object, P> parameter = parameters.get(index);
+				Class<Object> type = parameter.getType().getType();
+
+				if (it.isOptional() && (params[index] == null)) {
+					if (type.isPrimitive()) {
+
+						// apply primitive defaulting to prevent NPE on primitive downcast
+						params[index] = ReflectionUtils.getPrimitiveDefault(type);
+					}
+					return false;
+				}
+
+				return true;
+			});
+
+			int[] defaulting = defaultMask.getDefaulting();
+			// append nullability masks to creation arguments
+			for (int i = 0; i < defaulting.length; i++) {
+				params[userParameterCount + i] = defaulting[i];
+			}
 		}
 
 		return params;
+	}
+
+	/**
+	 * Try to resolve {@code KotlinInstantiationDelegate} from a {@link PreferredConstructor}. Resolution attempts to find
+	 * a JVM constructor equivalent considering value class mangling, Kotlin defaulting and potentially synthetic
+	 * constructors generated by the Kotlin compile including the lookup of a {@link KFunction} from the given
+	 * {@link PreferredConstructor}.
+	 *
+	 * @return the {@code KotlinInstantiationDelegate} if resolution was successful; {@literal null} otherwise.
+	 * @since 3.5.6
+	 */
+	public static @Nullable KotlinInstantiationDelegate resolve(PreferredConstructor<?, ?> preferredConstructor) {
+
+		KFunction<?> constructorFunction = ReflectJvmMapping.getKotlinFunction(preferredConstructor.getConstructor());
+
+		if (constructorFunction == null) {
+			return null;
+		}
+
+		PreferredConstructor<?, ?> resolved = resolveKotlinJvmConstructor(preferredConstructor, constructorFunction);
+		return resolved != null ? new KotlinInstantiationDelegate(resolved, constructorFunction) : null;
 	}
 
 	/**
@@ -159,18 +186,23 @@ class KotlinInstantiationDelegate {
 	 * constructor accepting the same user-space parameters suffixed by Kotlin-specifics required for defaulting and the
 	 * {@code kotlin.jvm.internal.DefaultConstructorMarker} or an actual non-synthetic constructor (i.e. private
 	 * constructor).
+	 * <p>
+	 * Constructor resolution may return {@literal null} indicating that no matching constructor could be found.
+	 * <p>
+	 * The resulting constructor {@link PreferredConstructor#getParameters()} (and parameter count) reflect user-facing
+	 * parameters and do not contain any synthetic parameters.
 	 *
+	 * @return the resolved constructor or {@literal null} if the constructor could not be resolved.
 	 * @since 2.0
-	 * @author Mark Paluch
 	 */
 	@SuppressWarnings("unchecked")
 	@Nullable
-	public static PreferredConstructor<?, ?> resolveKotlinJvmConstructor(
-			PreferredConstructor<?, ?> preferredConstructor) {
+	private static PreferredConstructor<?, ?> resolveKotlinJvmConstructor(PreferredConstructor<?, ?> preferredConstructor,
+			KFunction<?> constructorFunction) {
 
-		Constructor<?> hit = doResolveKotlinConstructor(preferredConstructor.getConstructor());
+		Constructor<?> hit = findKotlinConstructor(preferredConstructor.getConstructor(), constructorFunction);
 
-		if (hit == preferredConstructor.getConstructor()) {
+		if (preferredConstructor.getConstructor().equals(hit)) {
 			return preferredConstructor;
 		}
 
@@ -182,17 +214,23 @@ class KotlinInstantiationDelegate {
 	}
 
 	@Nullable
-	private static Constructor<?> doResolveKotlinConstructor(Constructor<?> detectedConstructor) {
+	private static Constructor<?> findKotlinConstructor(Constructor<?> preferredConstructor,
+			KFunction<?> constructorFunction) {
 
-		Class<?> entityType = detectedConstructor.getDeclaringClass();
+		Class<?> entityType = preferredConstructor.getDeclaringClass();
 		Constructor<?> hit = null;
 		Constructor<?> privateFallback = null;
-		KFunction<?> kotlinFunction = ReflectJvmMapping.getKotlinFunction(detectedConstructor);
+		java.lang.reflect.Parameter[] detectedParameters = preferredConstructor.getParameters();
+		boolean hasDefaultConstructorMarker = KotlinInstantiationDelegate.hasDefaultConstructorMarker(detectedParameters);
 
 		for (Constructor<?> candidate : entityType.getDeclaredConstructors()) {
 
+			java.lang.reflect.Parameter[] candidateParameters = preferredConstructor.equals(candidate)
+					? detectedParameters
+					: candidate.getParameters();
+
 			if (Modifier.isPrivate(candidate.getModifiers())) {
-				if (detectedConstructor.equals(candidate)) {
+				if (preferredConstructor.equals(candidate)) {
 					privateFallback = candidate;
 				}
 			}
@@ -202,26 +240,22 @@ class KotlinInstantiationDelegate {
 				continue;
 			}
 
-			java.lang.reflect.Parameter[] detectedConstructorParameters = detectedConstructor.getParameters();
-			java.lang.reflect.Parameter[] candidateParameters = candidate.getParameters();
-
-			if (!KotlinInstantiationDelegate.hasDefaultConstructorMarker(detectedConstructorParameters)) {
+			if (!hasDefaultConstructorMarker) {
 
 				// candidates must contain at least two additional parameters (int, DefaultConstructorMarker).
 				// Number of defaulting masks derives from the original constructor arg count
-				int syntheticParameters = KotlinDefaultMask.getMaskCount(detectedConstructor.getParameterCount())
+				int syntheticParameters = KotlinDefaultMask.getMaskCount(detectedParameters.length)
 						+ /* DefaultConstructorMarker */ 1;
 
-				if ((detectedConstructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
+				if ((detectedParameters.length + syntheticParameters) != candidate.getParameterCount()) {
 					continue;
 				}
 			} else {
 
-				int optionalParameterCount = (int) kotlinFunction.getParameters().stream().filter(it -> it.isOptional())
-						.count();
+				int optionalParameterCount = getOptionalParameterCount(constructorFunction);
 				int syntheticParameters = KotlinDefaultMask.getExactMaskCount(optionalParameterCount);
 
-				if ((detectedConstructor.getParameterCount() + syntheticParameters) != candidate.getParameterCount()) {
+				if ((detectedParameters.length + syntheticParameters) != candidate.getParameterCount()) {
 					continue;
 				}
 			}
@@ -230,9 +264,8 @@ class KotlinInstantiationDelegate {
 				continue;
 			}
 
-			int userParameterCount = kotlinFunction != null ? kotlinFunction.getParameters().size()
-					: detectedConstructor.getParameterCount();
-			if (parametersMatch(detectedConstructorParameters, candidateParameters, userParameterCount)) {
+			int userParameterCount = constructorFunction.getParameters().size();
+			if (parametersMatch(detectedParameters, candidateParameters, userParameterCount)) {
 				hit = candidate;
 			}
 		}
@@ -244,24 +277,48 @@ class KotlinInstantiationDelegate {
 		return hit;
 	}
 
+	private static int getOptionalParameterCount(KFunction<?> function) {
+
+		int count = 0;
+
+		for (KParameter parameter : function.getParameters()) {
+			if (parameter.isOptional()) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
 	private static boolean parametersMatch(java.lang.reflect.Parameter[] constructorParameters,
 			java.lang.reflect.Parameter[] candidateParameters, int userParameterCount) {
 
-		return IntStream.range(0, userParameterCount)
-				.allMatch(i -> parametersMatch(constructorParameters[i], candidateParameters[i]));
+		for (int i = 0; i < userParameterCount; i++) {
+			if (!parametersMatch(constructorParameters[i].getType(), candidateParameters[i].getType())) {
+				return false;
+			}
+		}
+		return true;
 	}
 
-	static boolean parametersMatch(java.lang.reflect.Parameter constructorParameter,
-			java.lang.reflect.Parameter candidateParameter) {
+	private static boolean parametersMatch(Class<?> constructorParameter, Class<?> candidateParameter) {
 
-		if (constructorParameter.getType().equals(candidateParameter.getType())) {
+		if (constructorParameter.equals(candidateParameter)) {
 			return true;
 		}
 
 		// candidate can be also a wrapper
-		Class<?> componentOrWrapperType = KotlinValueUtils.getConstructorValueHierarchy(candidateParameter.getType())
-				.getActualType();
+		Class<?> componentOrWrapperType = KotlinValueUtils.getConstructorValueHierarchy(candidateParameter).getActualType();
 
-		return constructorParameter.getType().equals(componentOrWrapperType);
+		return constructorParameter.equals(componentOrWrapperType);
+	}
+
+	private static boolean hasDefaultConstructorMarker(java.lang.reflect.Parameter[] parameters) {
+
+		return parameters.length > 0 && isDefaultConstructorMarker(parameters[parameters.length - 1].getType());
+	}
+
+	private static boolean isDefaultConstructorMarker(Class<?> cls) {
+		return cls.getName().equals("kotlin.jvm.internal.DefaultConstructorMarker");
 	}
 }
