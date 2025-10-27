@@ -97,7 +97,7 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 
 	@Override
 	default String getSegment() {
-		return TypedPropertyPaths.getPropertyPathInformation(this).property().getName();
+		return TypedPropertyPaths.getPropertyPathInformation(this).property();
 	}
 
 	@Override
