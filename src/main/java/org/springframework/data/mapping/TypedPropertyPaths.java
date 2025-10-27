@@ -15,7 +15,6 @@
  */
 package org.springframework.data.mapping;
 
-import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -37,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.asm.ClassReader;
 import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.Label;
@@ -103,12 +103,12 @@ class TypedPropertyPaths {
 
 	/**
 	 * Value object holding information about a property path segment.
-	 * 
+	 *
 	 * @param owner
 	 * @param propertyType
 	 * @param property
 	 */
-	record PropertyPathInformation(TypeInformation<?> owner, TypeInformation<?> propertyType, Property property) {
+	record PropertyPathInformation(TypeInformation<?> owner, TypeInformation<?> propertyType, String property) {
 
 		public static PropertyPathInformation ofInvokeVirtual(ClassLoader classLoader, SerializedLambda lambda)
 				throws ClassNotFoundException {
@@ -142,13 +142,8 @@ class TypedPropertyPaths {
 
 				TypeInformation<?> fallback = TypeInformation.of(owner).getProperty(propertyName);
 				if (fallback != null) {
-					try {
 						return new PropertyPathInformation(TypeInformation.of(owner), fallback,
-								Property.of(TypeInformation.of(owner), new PropertyDescriptor(propertyName, method, null)));
-					} catch (IntrospectionException e) {
-						throw new IllegalArgumentException(
-								"Cannot find PropertyDescriptor from method %s.%s".formatted(owner.getName(), methodName), e);
-					}
+								propertyName);
 				}
 
 				throw new IllegalArgumentException(
@@ -157,7 +152,7 @@ class TypedPropertyPaths {
 
 			return new PropertyPathInformation(TypeInformation.of(owner),
 					TypeInformation.of(ResolvableType.forMethodReturnType(method, owner)),
-					Property.of(TypeInformation.of(owner), descriptor));
+					descriptor.getName());
 		}
 
 		public static PropertyPathInformation ofFieldAccess(ClassLoader classLoader, Type ownerType, String name,
@@ -177,7 +172,7 @@ class TypedPropertyPaths {
 			}
 
 			return new PropertyPathInformation(TypeInformation.of(owner),
-					TypeInformation.of(ResolvableType.forField(field, owner)), Property.of(TypeInformation.of(owner), field));
+					TypeInformation.of(ResolvableType.forField(field, owner)), field.getName());
 		}
 	}
 
@@ -296,7 +291,7 @@ class TypedPropertyPaths {
 
 		@Override
 		public String getSegment() {
-			return information.property().getName();
+			return information.property();
 		}
 
 		@Override
@@ -309,6 +304,7 @@ class TypedPropertyPaths {
 			return list.iterator();
 		}
 
+		@Override
 		public Stream<PropertyPath> stream() {
 			return list.stream();
 		}
