@@ -148,7 +148,12 @@ public class KotlinDefaultMask {
 			masks.add(mask);
 		}
 
-		return new KotlinDefaultMask(masks.stream().mapToInt(i -> i).toArray());
+		int[] defaulting = new int[masks.size()];
+		for (int i = 0; i < masks.size(); i++) {
+			defaulting[i] = masks.get(i);
+		}
+
+		return new KotlinDefaultMask(defaulting);
 	}
 
 	public int[] getDefaulting() {

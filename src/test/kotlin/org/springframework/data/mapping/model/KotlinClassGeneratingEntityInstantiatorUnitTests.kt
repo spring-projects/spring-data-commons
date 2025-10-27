@@ -203,6 +203,15 @@ class KotlinClassGeneratingEntityInstantiatorUnitTests {
 	}
 
 	@Test // GH-3389
+	fun `should use private default constructor for types using nullable value class`() {
+
+		every { provider.getParameterValue<String>(any()) } returns "hello"
+		val instance = construct(WithNullableMyValueClassPrivateConstructor::class)
+
+		assertThat(instance.id?.id).isEqualTo("hello")
+	}
+
+	@Test // GH-3389
 	fun `should use private default constructor for types using value class with default value`() {
 
 		every { provider.getParameterValue<String>(any()) } returns "hello"
