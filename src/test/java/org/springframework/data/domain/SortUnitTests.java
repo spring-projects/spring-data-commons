@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.geo.Circle;
+import org.springframework.data.mapping.Person;
+import org.springframework.data.util.TypedPropertyPath;
 
 /**
  * Unit test for {@link Sort}.
@@ -42,6 +44,29 @@ class SortUnitTests {
 	@Test
 	void appliesDefaultForOrder() {
 		assertThat(Sort.by("foo").iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
+	}
+
+	@Test
+	void appliesDefaultForOrderForProperty() {
+		assertThat(Sort.by(Person::getFirstName).iterator().next().getDirection()).isEqualTo(Sort.DEFAULT_DIRECTION);
+	}
+
+	@Test
+	void appliesPropertyPath() {
+
+		record PersonHolder(Person person) {
+		}
+
+		assertThat(Sort.by(Person::getFirstName).iterator().next().getProperty()).isEqualTo("firstName");
+		assertThat(
+				Sort.by(TypedPropertyPath.of(PersonHolder::person).then(Person::getFirstName)).iterator().next().getProperty())
+				.isEqualTo("person.firstName");
+	}
+
+	@Test
+	void appliesPropertyPaths() {
+		assertThat(Sort.by(Person::getFirstName, Person::getLastName).stream().map(Order::getProperty))
+				.containsSequence("firstName", "lastName");
 	}
 
 	/**
@@ -74,7 +99,7 @@ class SortUnitTests {
 	 */
 	@Test
 	void preventsNoProperties() {
-		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC));
+		assertThatIllegalArgumentException().isThrownBy(() -> Sort.by(Direction.ASC, new String[0]));
 	}
 
 	@Test
@@ -106,6 +131,14 @@ class SortUnitTests {
 		assertThat(Order.by("foo").isIgnoreCase()).isFalse();
 		assertThat(Order.asc("foo").isIgnoreCase()).isFalse();
 		assertThat(Order.desc("foo").isIgnoreCase()).isFalse();
+	}
+
+	@Test
+	void orderFactoryMethodsConsiderPropertyPath() {
+
+		assertThat(Order.by(Person::getFirstName)).isEqualTo(Order.by("firstName"));
+		assertThat(Order.asc(Person::getFirstName)).isEqualTo(Order.asc("firstName"));
+		assertThat(Order.desc(Person::getFirstName)).isEqualTo(Order.desc("firstName"));
 	}
 
 	@Test // DATACMNS-1021
@@ -164,6 +197,26 @@ class SortUnitTests {
 		assertThat(result.getDirection()).isEqualTo(source.getDirection());
 		assertThat(result.getNullHandling()).isEqualTo(source.getNullHandling());
 		assertThat(result.isIgnoreCase()).isEqualTo(source.isIgnoreCase());
+	}
+
+	@Test
+	void createsNewOrderForDifferentPropertyPath() {
+
+		var source = Order.desc("foo").nullsFirst().ignoreCase();
+		var result = source.withProperty(Person::getFirstName);
+
+		assertThat(result.getProperty()).isEqualTo("firstName");
+		assertThat(result.getDirection()).isEqualTo(source.getDirection());
+		assertThat(result.getNullHandling()).isEqualTo(source.getNullHandling());
+		assertThat(result.isIgnoreCase()).isEqualTo(source.isIgnoreCase());
+	}
+
+	@Test
+	void createsNewOrderFromPaths() {
+
+		var sort = Order.desc("foo").withProperties(Person::getFirstName, Person::getLastName);
+
+		assertThat(sort).isEqualTo(Sort.by(Direction.DESC, "firstName", "lastName"));
 	}
 
 	@Test
