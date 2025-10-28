@@ -17,6 +17,8 @@ package org.springframework.data.auditing;
 
 import reactor.core.publisher.Mono;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -56,12 +58,10 @@ public class ReactiveAuditingHandler extends AuditingHandlerSupport {
 	/**
 	 * Setter to inject a {@link ReactiveAuditorAware} component to retrieve the current auditor.
 	 *
-	 * @param auditorAware must not be {@literal null}.
+	 * @param auditorAware can be {@literal null}.
 	 */
-	public void setAuditorAware(ReactiveAuditorAware<?> auditorAware) {
-
-		Assert.notNull(auditorAware, "AuditorAware must not be null");
-		this.auditorAware = auditorAware;
+	public void setAuditorAware(@Nullable ReactiveAuditorAware<?> auditorAware) {
+		this.auditorAware = auditorAware == null ? Mono::empty : auditorAware;
 	}
 
 	/**
