@@ -16,6 +16,11 @@ Classpath scanning is not possible in native image arrangements and so Spring ha
 
 Ahead of time code generation is not limited to usage with GraalVM Native Image but also offers benefits when working with regular deployments and can help optimize startup performance on the jvm.
 
+[NOTE]
+====
+With AOT optimizations some decisions (like database dialects for example) will be frozen at build time and get included as is in the application setup.
+====
+
 If Ahead of Time compilation is enabled Spring Data can (depending on the actual Module in use) contribute several components during the AOT phase of your build.
 
 * Bytecode for generated Type/Property Accessors
@@ -32,30 +37,110 @@ However, there users may fine tune the configuration with following options.
 
 |`spring.aot.data.accessors.include`
 |Comma separated list of FQCN for which to contribute Bytecode for generated Type/Property Accessors.
-Ant-style include patterns matching package names (e.g. `com.acme.**`) or type names inclusion.
+Ant-style include patterns matching package names (e.g. `example.springdata.**`) or type names inclusion.
 Inclusion pattern matches are evaluated before exclusions for broad exclusion and selective inclusion.
 
 |`spring.aot.data.accessors.exclude`
 |Comma separated list of FQCN for which to skip contribution of Bytecode for generated Type/Property Accessors.
-Ant-style exclude patterns matching package names (e.g. `com.acme.**`) or type names exclusion.
+Ant-style exclude patterns matching package names (e.g. `example.springdata.**`) or type names exclusion.
 Exclusion pattern matches are evaluated after inclusions for broad exclusion and selective inclusion.
 
 |`spring.aot.repositories.enabled`
 |Boolean flag to control contribution of Source Code for Repository Interfaces
 
 |`spring.aot.[module-name].repositories.enabled`
-|Boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (eg. `jdbc`, `jpa`, `mongodb`, `cassandra`)
+|Boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (eg. `cassandra`, `jdbc`, `jpa`, `mongodb`)
+
+|`spring.aot.repositories.metadata.enabled`
+|Boolean flag to control contribution of JSON repository metadata containing query methods and actual query strings.
+Requires `spring.aot.repositories.enabled` to be enabled.
 |===
 
 [[aot.repositories]]
 == Ahead of Time Repositories
+
+[NOTE]
+====
+Ahead of Time repositories are only available for imperative (non reactive) repository interfaces of certain modules.
+The criteria identifying eligible query methods varies between the implementing modules.
+====
 
 AOT Repositories are an extension to AOT processing by pre-generating eligible query method implementations.
 Query methods are opaque to developers regarding their underlying queries being executed in a query method call.
 AOT repositories contribute query method implementations based on derived, annotated, and named queries that are known at build-time.
 This optimization moves query method processing from runtime to build-time, which can lead to a significant performance improvement as query methods do not need to be analyzed reflectively upon each application start.
 
-The resulting AOT repository fragment follows the naming scheme of `<Repository FQCN>Impl_AotRepository` and is placed in the same package as the repository interface.
+The resulting AOT repository fragment follows the naming scheme of `<Repository FQCN>Impl__AotRepository` and is placed in the same package as the repository interface.
+
+[WARNING]
+====
+Consider AOT repository classes an internal optimization.
+Do not use them directly in your code as generation and implementation details may change in future releases.
+====
+
+[[aot.repositories.json]]
+=== Repository Metadata
+
+AOT processing introspects query methods and collects metadata about repository queries.
+Spring Data stores this metadata in JSON files that are named after the source repository within the same package.
+Repository JSON Metadata contains details about queries and fragments.
+An example for the following repository is shown below:
+
+[tabs]
+======
+Metadata::
++
+[source,json,role="primary"]
+----
+{
+  "name": "example.springdata.UserRepository",
+  "module": "JDBC",
+  "type": "IMPERATIVE",
+  "methods": [
+    {
+      "name": "findBy",
+      "signature": "public abstract java.util.List<example.springdata.User> example.springdata.UserRepository.findBy()",
+      "query": {
+        "query": "SELECT * FROM User"
+      }
+    },
+    {
+      "name": "findByLastnameStartingWith",
+      "signature": "public abstract org.springframework.data.domain.Page<example.springdata.User> example.springdata.UserRepository.findByLastnameStartingWith(java.lang.String,org.springframework.data.domain.Pageable)",
+      "query": {
+        "query": "SELECT * FROM User u WHERE lastname LIKE :lastname",
+        "count-query": "SELECT COUNT(*) FROM User WHERE lastname LIKE :lastname"
+      }
+    },
+    {
+      "name": "findByEmailAddress",
+      "signature": "public abstract example.springdata.User example.springdata.UserRepository.findByEmailAddress(java.lang.String)",
+      "query": {
+        "query": "select * from User where emailAddress = ?1"
+      }
+    },
+----
+
+Repository::
++
+[source,java,subs="attributes,specialchars",role="secondary"]
+----
+interface UserRepository extends CrudRepository<User, Integer> {
+
+  List<User> findBy();
+
+  Page<User> findByLastnameStartingWith(String lastname, Pageable page);
+
+  @Query("select * from User where emailAddress = ?1")
+  User findByEmailAddress(String username);
+}
+----
+======
+
+[NOTE]
+====
+Creating JSON metadata can be controlled via the `spring.aot.repositories.metadata.enabled` flag.
+====
 
 [[aot.hints]]
 == Native Image Runtime Hints
