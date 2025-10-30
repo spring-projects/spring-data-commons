@@ -171,6 +171,7 @@ class TypedPropertyPathUnitTests {
 
 	@Test
 	void failsResolutionWith$StrangeStuff() {
+
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
 					int a = 1 + 2;
