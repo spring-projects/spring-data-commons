@@ -1,0 +1,51 @@
+[[type-safe-property-references]]
+= Type-safe Property References
+
+Type-safe property references address a common source of friction in data access code: The reliance on literal, dot-separated property path strings.
+Such stringly-typed references are fragile during refactoring difficult to identify as they often lack context.
+Type-safe property paths favor explicitness and compiler validation by deriving property paths from Java method references.
+
+A property path is a simple, transportable representation of object navigation.
+When expressed as a method-reference the compiler participates in validation and IDEs provide meaningful refactoring support.
+The result is code that reads naturally, fails fast on renames, and integrates cleanly with existing query and sorting abstractions, for example:
+
+[source,java]
+----
+TypedPropertyPath.of(Person::getAddress)
+                 .then(Address::getCity);
+----
+
+The expression above constructs a path equivalent to `address.city` while remaining resilient to refactoring.
+Property resolution is performed by inspecting the supplied method references; any mismatch becomes visible at compile time.
+
+By comparing a literal-based approach as the following example you can immediately spot the same intent while the mechanism of using strings removes any type context:
+
+.Stringly-typed programming
+[source,java]
+----
+Sort.by("address.city", "address.street")
+----
+
+You can also use it inline for operations like sorting:
+
+.Type-safe Property Path
+[source,java]
+----
+Sort.by(Person::getFirstName, Person::getLastName);
+----
+
+`TypedPropertyPath` can integrate seamlessly with query abstractions or criteria builders:
+
+.Type-safe Property Path
+[source,java]
+----
+Criteria.where(Person::getAddress)
+        .then(Address::getCity)
+        .is("New York");
+----
+
+Adopting type-safe property references aligns with modern Spring development principles.
+Providing declarative, type-safe, and fluent APIs leads to simpler reasoning about data access eliminating an entire category of potential bugs through IDE refactoring support and early feedback on invalid properties by the compiler.
+
+Lambda introspection is cached for efficiency enabling repeatable use.
+The JVM reuses static lambda instances contributing to minimal overhead of one-time parsing.

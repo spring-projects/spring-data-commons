@@ -70,6 +70,13 @@ class SortUnitTests {
 				.containsSequence("firstName", "lastName");
 	}
 
+	@Test
+	void appliesPropertyPathsWithOrders() {
+		assertThat(
+				Sort.by(Order.asc(Person::getFirstName), Order.desc(Person::getLastName)).stream().map(Order::getProperty))
+				.containsSequence("firstName", "lastName");
+	}
+
 	/**
 	 * Asserts that the class rejects {@code null} as properties array.
 	 */
