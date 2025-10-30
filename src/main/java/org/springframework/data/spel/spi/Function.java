@@ -25,7 +25,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.util.ParameterTypes;
 import org.springframework.util.Assert;
 
 /**

@@ -18,9 +18,10 @@ package org.springframework.data.convert;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Alias;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link SimpleTypeInformationMapper}.

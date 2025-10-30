@@ -26,13 +26,14 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.Assert;

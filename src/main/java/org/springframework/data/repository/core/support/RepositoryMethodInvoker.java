@@ -31,13 +31,13 @@ import org.reactivestreams.Publisher;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.KotlinDetector;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocation;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult;
 import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener.RepositoryMethodInvocationResult.State;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.KotlinReflectionUtils;
-import org.springframework.data.util.ReactiveWrappers;
 
 /**
  * Invoker for repository methods. Used to invoke query methods and fragment methods. This invoker considers Kotlin

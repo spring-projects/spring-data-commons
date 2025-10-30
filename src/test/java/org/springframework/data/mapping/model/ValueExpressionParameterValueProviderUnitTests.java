@@ -26,9 +26,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.expression.MapAccessor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**

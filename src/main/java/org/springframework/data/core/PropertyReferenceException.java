@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping;
+package org.springframework.data.core;
 
 import java.io.Serial;
 import java.util.Arrays;
@@ -26,7 +26,6 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.PropertyMatches;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

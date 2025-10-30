@@ -35,13 +35,13 @@ import org.springframework.core.KotlinDetector;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.FactoryMethod;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Discoverer for factory methods and persistence constructors.

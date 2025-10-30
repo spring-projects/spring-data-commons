@@ -21,7 +21,6 @@ import java.lang.annotation.Annotation;
 
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -29,7 +28,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.auditing.AuditingHandler;
-import org.springframework.data.auditing.CurrentDateTimeProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -42,6 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Thomas Darimont
  * @author Oliver Gierke
  * @author Francisco Soler
+ * @author Jaeyeon Kim
  */
 public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
 
@@ -120,8 +119,9 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
 			builder.addPropertyValue(AUDITOR_AWARE,
 					createLazyInitTargetSourceBeanDefinition(configuration.getAuditorAwareRef()));
-		} else {
-			builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
+		}
+		else {
+			builder.addAutowiredProperty(AUDITOR_AWARE);
 		}
 
 		builder.addPropertyValue(SET_DATES, configuration.isSetDates());
@@ -129,8 +129,9 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 		if (StringUtils.hasText(configuration.getDateTimeProviderRef())) {
 			builder.addPropertyReference(DATE_TIME_PROVIDER, configuration.getDateTimeProviderRef());
-		} else {
-			builder.addPropertyValue(DATE_TIME_PROVIDER, CurrentDateTimeProvider.INSTANCE);
+		}
+		else {
+			builder.addAutowiredProperty(DATE_TIME_PROVIDER);
 		}
 
 		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);

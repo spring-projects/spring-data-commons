@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.springframework.data.core.PropertyPath;
 import org.springframework.data.util.Streamable;
 
 /**

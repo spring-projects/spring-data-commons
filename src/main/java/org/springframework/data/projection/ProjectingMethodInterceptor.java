@@ -31,9 +31,9 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.util.NullableWrapper;
-import org.springframework.data.util.NullableWrapperConverters;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.NullableWrapper;
+import org.springframework.data.core.NullableWrapperConverters;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;

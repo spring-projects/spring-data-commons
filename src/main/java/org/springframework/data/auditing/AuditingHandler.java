@@ -19,6 +19,8 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mapping.context.MappingContext;
@@ -66,12 +68,10 @@ public class AuditingHandler extends AuditingHandlerSupport implements Initializ
 	/**
 	 * Setter to inject a {@code AuditorAware} component to retrieve the current auditor.
 	 *
-	 * @param auditorAware must not be {@literal null}.
+	 * @param auditorAware can be {@literal null} if no auditor-aware is available.
 	 */
-	public void setAuditorAware(AuditorAware<?> auditorAware) {
-
-		Assert.notNull(auditorAware, "AuditorAware must not be null");
-		this.auditorAware = Optional.of(auditorAware);
+	public void setAuditorAware(@Nullable AuditorAware<?> auditorAware) {
+		this.auditorAware = Optional.ofNullable(auditorAware);
 	}
 
 	/**

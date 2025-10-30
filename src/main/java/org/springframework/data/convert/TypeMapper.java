@@ -17,7 +17,7 @@ package org.springframework.data.convert;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 
 /**
  * Interface to define strategies how to store type information in a store specific sink or source.

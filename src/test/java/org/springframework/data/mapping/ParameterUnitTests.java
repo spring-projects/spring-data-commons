@@ -25,12 +25,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.ParameterUnitTests.IFace.ClassMember;
 import org.springframework.data.mapping.ParameterUnitTests.IFace.RecordMember;
 import org.springframework.data.mapping.ParameterUnitTests.StaticType.NonStaticInner;
 import org.springframework.data.mapping.ParameterUnitTests.StaticType.RecordInner;
 import org.springframework.data.mapping.ParameterUnitTests.StaticType.StaticInner;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link Parameter}.

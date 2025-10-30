@@ -21,13 +21,14 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.util.AnnotatedTypeScanner;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link MappingContextTypeInformationMapper}.

@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.util.ClassUtils;
 
 /**

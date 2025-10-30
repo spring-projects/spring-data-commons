@@ -19,9 +19,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Metadata for repository interfaces.

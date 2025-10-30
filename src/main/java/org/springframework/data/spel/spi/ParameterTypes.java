@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.spel.spi;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
@@ -41,10 +42,8 @@ import org.springframework.util.TypeUtils;
  * @author Oliver Drotbohm
  * @since 2.1.7
  * @soundtrack Signs, High Times - Tedeschi Trucks Band (Signs)
- * @deprecated since 4.0, this class is not intended for public use and will be removed in future versions.
  */
-@Deprecated(since = "4.0", forRemoval = true)
-public class ParameterTypes {
+class ParameterTypes {
 
 	private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
 	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> cache = new ConcurrentReferenceHashMap<>();

@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.Association;
@@ -34,7 +35,6 @@ import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Simple {@link AbstractMappingContext} for processing of AOT contributions.

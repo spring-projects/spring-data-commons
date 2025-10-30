@@ -22,6 +22,6 @@ import kotlin.reflect.KProperty
  *
  * @author Mark Paluch
  * @since 2.5
- * @see PropertyPath.toDotPath
+ * @see org.springframework.data.core.PropertyPath.toDotPath
  */
 fun KProperty<*>.toDotPath(): String = asString(this)

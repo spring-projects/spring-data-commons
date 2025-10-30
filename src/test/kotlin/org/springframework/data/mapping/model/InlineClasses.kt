@@ -20,6 +20,7 @@ import java.time.LocalDate
 
 /**
  * @author Mark Paluch
+ * @author Edward Poot
  */
 @JvmInline
 value class MyValueClass(val id: String)
@@ -44,6 +45,45 @@ data class WithMyValueClass(val id: MyValueClass) {
 	// ---------
 	// public static WithMyValueClass copy-R7yrDNU$default(WithMyValueClass var0, String var1, int var2, Object var3) {
 	// ---------
+}
+
+data class WithMyValueClassPrivateConstructor private constructor(val id: MyValueClass) {
+
+	// ByteCode explanation
+
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithMyValueClassPrivateConstructor(String id) {}
+	// ---------
+}
+
+data class WithNullableMyValueClassPrivateConstructor private constructor(val id: MyNullableValueClass?) {
+
+	// ByteCode explanation
+
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithNullableMyValueClassPrivateConstructor(MyNullableValueClass id) {}
+	// ---------
+}
+
+data class WithMyValueClassPrivateConstructorAndDefaultValue private constructor(
+	val id: MyValueClass = MyValueClass(
+		"id"
+	)
+) {
+
+	// ByteCode explanation
+	// ---------
+	// default constructor, detected by Discoverers.KOTLIN
+	// private WithMyValueClassPrivateConstructorAndDefaultValue(java.lang.String id) {}
+	// ---------
+
+	// ---------
+	// synthetic constructor that we actually want to use
+	// synthetic WithMyValueClassPrivateConstructorAndDefaultValue(java.lang.String id, int arg1, kotlin.jvm.internal.DefaultConstructorMarker arg2) {}
+	// ---------
+
 }
 
 @JvmInline

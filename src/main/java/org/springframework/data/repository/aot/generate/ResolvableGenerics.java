@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 
 /**
  * Value object to determine whether generics in a given {@link Method} can be resolved. Resolvable generics are e.g.

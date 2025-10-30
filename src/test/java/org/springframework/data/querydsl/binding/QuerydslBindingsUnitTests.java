@@ -21,14 +21,15 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.Address;
 import org.springframework.data.querydsl.QAddress;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
-import org.springframework.data.util.TypeInformation;
 
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;

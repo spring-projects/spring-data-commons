@@ -15,7 +15,6 @@
  */
 package org.springframework.data.mapping.model;
 
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import org.springframework.data.mapping.InstanceCreatorMetadata;
@@ -43,15 +42,11 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		if (KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
 
-			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor = KotlinInstantiationDelegate
-					.resolveKotlinJvmConstructor(constructor);
+			KotlinInstantiationDelegate delegate = KotlinInstantiationDelegate.resolve(constructor);
 
-			if (kotlinJvmConstructor != null) {
-
-				ObjectInstantiator instantiator = createObjectInstantiator(entity, kotlinJvmConstructor);
-
-				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, constructor,
-						kotlinJvmConstructor.getConstructor());
+			if (delegate != null) {
+				ObjectInstantiator instantiator = createObjectInstantiator(entity, delegate.getInstanceCreator());
+				return new DefaultingKotlinClassInstantiatorAdapter(instantiator, delegate);
 			}
 		}
 
@@ -82,10 +77,10 @@ class KotlinClassGeneratingEntityInstantiator extends ClassGeneratingEntityInsta
 		private final KotlinInstantiationDelegate delegate;
 
 		DefaultingKotlinClassInstantiatorAdapter(ObjectInstantiator instantiator,
-				PreferredConstructor<?, ?> defaultConstructor, Constructor<?> constructorToInvoke) {
+				KotlinInstantiationDelegate delegate) {
 
 			this.instantiator = instantiator;
-			this.delegate = new KotlinInstantiationDelegate(defaultConstructor, constructorToInvoke);
+			this.delegate = delegate;
 		}
 
 		@Override

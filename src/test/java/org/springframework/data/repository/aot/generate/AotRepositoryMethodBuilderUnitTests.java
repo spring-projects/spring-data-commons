@@ -34,8 +34,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * @author Christoph Strobl

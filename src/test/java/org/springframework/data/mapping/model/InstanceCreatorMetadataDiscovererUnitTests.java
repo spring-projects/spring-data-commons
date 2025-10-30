@@ -18,9 +18,10 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.SamplePersistentProperty;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link InstanceCreatorMetadata}.

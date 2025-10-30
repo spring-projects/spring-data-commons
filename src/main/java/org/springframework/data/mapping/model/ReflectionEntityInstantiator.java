@@ -62,11 +62,10 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 		if (KotlinDetector.isKotlinReflectPresent() && KotlinReflectionUtils.isSupportedKotlinClass(entity.getType())
 				&& creator instanceof PreferredConstructor<?, ?> constructor) {
 
-			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor = KotlinInstantiationDelegate
-					.resolveKotlinJvmConstructor(constructor);
+			KotlinInstantiationDelegate delegate = KotlinInstantiationDelegate.resolve(constructor);
 
-			if (kotlinJvmConstructor != null) {
-				return instantiateKotlinClass(entity, provider, constructor, kotlinJvmConstructor);
+			if (delegate != null) {
+				return instantiateKotlinClass(entity, provider, delegate);
 			}
 		}
 
@@ -98,14 +97,11 @@ enum ReflectionEntityInstantiator implements EntityInstantiator {
 			throw new MappingInstantiationException(entity, new ArrayList<>(Arrays.asList(params)), e);
 		}
 	}
-
 	@SuppressWarnings("unchecked")
 	private static <T, E extends PersistentEntity<? extends T, P>, P extends PersistentProperty<P>> T instantiateKotlinClass(
-			E entity, ParameterValueProvider<P> provider, PreferredConstructor<?, ?> preferredConstructor,
-			PreferredConstructor<?, ? extends PersistentProperty<?>> kotlinJvmConstructor) {
+			E entity, ParameterValueProvider<P> provider, KotlinInstantiationDelegate delegate) {
 
-		Constructor<?> ctor = kotlinJvmConstructor.getConstructor();
-		KotlinInstantiationDelegate delegate = new KotlinInstantiationDelegate(preferredConstructor, ctor);
+		Constructor<?> ctor = delegate.getConstructor();
 		Object[] params = new Object[delegate.getRequiredParameterCount()];
 		delegate.extractInvocationArguments(params, entity.getInstanceCreatorMetadata(), provider);
 

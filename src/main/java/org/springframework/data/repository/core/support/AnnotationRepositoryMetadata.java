@@ -15,14 +15,14 @@
  */
 package org.springframework.data.repository.core.support;
 
-import java.util.function.Function;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**

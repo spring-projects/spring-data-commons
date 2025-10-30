@@ -38,8 +38,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.data.util.ReactiveWrappers.ReactiveLibrary;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.ReactiveWrappers;
+import org.springframework.data.core.ReactiveWrappers.ReactiveLibrary;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -55,7 +56,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Hantsy Bai
  * @since 2.0
- * @see org.springframework.data.util.ReactiveWrappers
+ * @see ReactiveWrappers
  * @see ReactiveAdapterRegistry
  */
 public abstract class ReactiveWrapperConverters {
@@ -63,13 +64,13 @@ public abstract class ReactiveWrapperConverters {
 	private static final List<ReactiveTypeWrapper<?>> REACTIVE_WRAPPERS = new ArrayList<>();
 	private static final GenericConversionService GENERIC_CONVERSION_SERVICE = new GenericConversionService();
 
-	private static final boolean RXJAVA3_PRESENT = org.springframework.data.util.ReactiveWrappers
+	private static final boolean RXJAVA3_PRESENT = ReactiveWrappers
 			.isAvailable(ReactiveLibrary.RXJAVA3);
-	private static final boolean REACTOR_PRESENT = org.springframework.data.util.ReactiveWrappers
+	private static final boolean REACTOR_PRESENT = ReactiveWrappers
 			.isAvailable(ReactiveLibrary.PROJECT_REACTOR);
-	private static final boolean KOTLIN_COROUTNES_PRESENT = org.springframework.data.util.ReactiveWrappers
+	private static final boolean KOTLIN_COROUTNES_PRESENT = ReactiveWrappers
 			.isAvailable(ReactiveLibrary.KOTLIN_COROUTINES);
-	private static final boolean MUTINY_PRESENT = org.springframework.data.util.ReactiveWrappers
+	private static final boolean MUTINY_PRESENT = ReactiveWrappers
 			.isAvailable(ReactiveLibrary.MUTINY);
 
 	static {
@@ -130,9 +131,8 @@ public abstract class ReactiveWrapperConverters {
 	/**
 	 * Returns whether the given type is supported for wrapper type conversion.
 	 * <p>
-	 * NOTE: A reactive wrapper type might be supported in general by
-	 * {@link org.springframework.data.util.ReactiveWrappers#supports(Class)} but not necessarily for conversion using
-	 * this method.
+	 * NOTE: A reactive wrapper type might be supported in general by {@link ReactiveWrappers#supports(Class)} but not
+	 * necessarily for conversion using this method.
 	 * </p>
 	 *
 	 * @param type must not be {@literal null}.
@@ -556,7 +556,7 @@ public abstract class ReactiveWrapperConverters {
 
 		static {
 
-			if (org.springframework.data.util.ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
+			if (ReactiveWrappers.PROJECT_REACTOR_PRESENT) {
 				REACTIVE_ADAPTER_REGISTRY = ReactiveAdapterRegistry.getSharedInstance();
 			} else {
 				REACTIVE_ADAPTER_REGISTRY = null;

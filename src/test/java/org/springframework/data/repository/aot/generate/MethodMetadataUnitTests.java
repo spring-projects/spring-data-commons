@@ -23,9 +23,9 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link MethodMetadata}.

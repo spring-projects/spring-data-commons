@@ -39,12 +39,13 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.core.NullableWrapper;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.util.NullableWrapper;
 import org.springframework.data.util.Streamable;
-import org.springframework.data.util.TypeInformation;
 
 import com.google.common.base.Optional;
 

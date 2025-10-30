@@ -25,9 +25,9 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.DecoratingProxy;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.ReactiveAuditorAware;
-import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.util.ClassUtils;
 
 /**

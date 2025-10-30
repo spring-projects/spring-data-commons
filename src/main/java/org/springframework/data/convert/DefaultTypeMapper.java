@@ -26,10 +26,10 @@ import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
