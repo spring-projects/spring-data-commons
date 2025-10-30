@@ -22,8 +22,8 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;

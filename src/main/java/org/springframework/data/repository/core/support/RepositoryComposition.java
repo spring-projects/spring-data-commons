@@ -31,11 +31,11 @@ import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.MethodLookup.InvokedMethod;
 import org.springframework.data.repository.core.support.RepositoryInvocationMulticaster.NoOpRepositoryInvocationMulticaster;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;

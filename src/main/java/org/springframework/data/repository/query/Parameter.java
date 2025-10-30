@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
@@ -37,7 +38,6 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ClassUtils;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**

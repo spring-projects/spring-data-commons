@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.aop.framework.Advised;
@@ -33,8 +32,8 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.core.NullableWrapperConverters;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.NullnessMethodInvocationValidator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;

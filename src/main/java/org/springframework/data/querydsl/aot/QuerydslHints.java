@@ -23,10 +23,10 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.querydsl.ReactiveQuerydslPredicateExecutor;
-import org.springframework.data.util.ReactiveWrappers;
 
 import com.querydsl.core.types.Predicate;
 

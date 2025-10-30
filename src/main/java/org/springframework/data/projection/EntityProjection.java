@@ -25,9 +25,9 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Streamable;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Descriptor for a top-level mapped type representing a view onto a domain type structure. The view may exactly match

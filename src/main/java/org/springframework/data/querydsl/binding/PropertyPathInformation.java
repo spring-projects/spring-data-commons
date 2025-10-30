@@ -21,9 +21,9 @@ import java.lang.reflect.Field;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 

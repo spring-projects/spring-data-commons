@@ -23,9 +23,9 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;

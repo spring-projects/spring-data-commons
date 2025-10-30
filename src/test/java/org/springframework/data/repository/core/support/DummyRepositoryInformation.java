@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.TypeInformation;
 
 public final class DummyRepositoryInformation implements RepositoryInformation {
 

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.core.PropertyPath;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;

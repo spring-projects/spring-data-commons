@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.core;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.aopalliance.aop.Advice;
+import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.Advisor;
@@ -36,6 +37,7 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopConfigException;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.Person;
+import org.springframework.data.util.Pair;
 
 /**
  * Unit tests for {@link ClassTypeInformation}.
@@ -347,7 +349,7 @@ public class ClassTypeInformationUnitTests {
 	@Test // DATACMNS-446
 	public void createsToStringRepresentation() {
 		assertThat(TypeInformation.of(SpecialPerson.class).toString())
-				.isEqualTo("org.springframework.data.util.ClassTypeInformationUnitTests$SpecialPerson");
+				.isEqualTo("org.springframework.data.core.ClassTypeInformationUnitTests$SpecialPerson");
 	}
 
 	@Test // DATACMNS-590
@@ -396,7 +398,7 @@ public class ClassTypeInformationUnitTests {
 
 		var abstractBar = root.getProperty("abstractBar");
 
-		assertThat(Pair.of(abstractBar.specialize(TypeInformation.of(Bar.class)),
+		Assertions.assertThat(Pair.of(abstractBar.specialize(TypeInformation.of(Bar.class)),
 				abstractBar.specialize(TypeInformation.of(Bar.class)))).satisfies(pair -> {
 					assertThat(pair.getFirst()).isEqualTo(pair.getSecond());
 					assertThat(pair.getSecond()).isEqualTo(pair.getFirst());

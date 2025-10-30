@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.core;
 
 import java.util.Collection;
 import java.util.Collections;

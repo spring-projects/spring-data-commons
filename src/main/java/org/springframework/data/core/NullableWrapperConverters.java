@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.core;
 
 import scala.Function0;
 import scala.Option;
@@ -31,6 +31,8 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.converter.GenericConverter;
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;

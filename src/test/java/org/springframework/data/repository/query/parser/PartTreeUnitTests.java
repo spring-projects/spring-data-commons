@@ -27,9 +27,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.core.PropertyPath;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;

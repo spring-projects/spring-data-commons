@@ -18,7 +18,7 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**

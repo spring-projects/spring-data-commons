@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.core.PropertyPath;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 

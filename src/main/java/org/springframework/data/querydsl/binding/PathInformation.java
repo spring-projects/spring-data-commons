@@ -19,7 +19,7 @@ import java.beans.PropertyDescriptor;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.core.PropertyPath;
 import org.springframework.data.querydsl.EntityPathResolver;
 
 import com.querydsl.core.types.Path;

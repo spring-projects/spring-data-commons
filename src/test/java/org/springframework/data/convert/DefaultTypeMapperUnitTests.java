@@ -30,9 +30,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Alias;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link DefaultTypeMapper}.

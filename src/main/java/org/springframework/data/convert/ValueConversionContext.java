@@ -17,8 +17,8 @@ package org.springframework.data.convert;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * The {@link ValueConversionContext} provides access to the store-specific {@link PersistentProperty} and allows to

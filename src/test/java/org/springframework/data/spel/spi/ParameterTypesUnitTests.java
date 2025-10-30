@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.util;
+package org.springframework.data.spel.spi;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -26,7 +26,6 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Drotbohm
  */
-@SuppressWarnings("removal")
 public class ParameterTypesUnitTests {
 
 	@Test // DATACMNS-1518

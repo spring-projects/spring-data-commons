@@ -23,6 +23,10 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.data.core.NullableWrapperConverters;
+import org.springframework.data.core.ReactiveWrappers;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,10 +42,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.NullableWrapperConverters;
-import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.ReflectionUtils;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.Address;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
@@ -31,7 +33,6 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 import org.springframework.data.querydsl.UserWrapper;
 import org.springframework.data.querydsl.Users;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.data.util.Version;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;

@@ -27,9 +27,9 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 import com.querydsl.core.types.EntityPath;

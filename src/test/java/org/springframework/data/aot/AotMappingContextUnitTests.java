@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 
 /**
  * Unit tests for {@link AotMappingContext}.

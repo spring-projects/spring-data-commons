@@ -25,9 +25,9 @@ import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Optionals;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;

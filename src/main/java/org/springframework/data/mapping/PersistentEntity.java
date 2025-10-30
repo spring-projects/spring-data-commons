@@ -21,7 +21,7 @@ import java.util.Iterator;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.annotation.Immutable;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.util.Assert;
 
 /**

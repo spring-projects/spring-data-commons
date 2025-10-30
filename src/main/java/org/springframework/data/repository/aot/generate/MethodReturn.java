@@ -19,10 +19,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.core.ResolvableType;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.util.ReflectionUtils;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.javapoet.TypeName;
 
 /**

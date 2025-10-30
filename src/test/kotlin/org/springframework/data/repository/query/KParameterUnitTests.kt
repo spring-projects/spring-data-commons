@@ -19,7 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.core.DefaultParameterNameDiscoverer
 import org.springframework.core.MethodParameter
-import org.springframework.data.util.TypeInformation
+import org.springframework.data.core.TypeInformation
 import kotlin.reflect.jvm.javaMethod
 
 /**

@@ -33,13 +33,13 @@ import org.mockito.quality.Strictness;
 
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.classloadersupport.HidingClassLoader;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiator.ObjectInstantiator;
 import org.springframework.data.mapping.model.ClassGeneratingEntityInstantiatorUnitTests.Outer.Inner;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 

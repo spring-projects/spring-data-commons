@@ -25,12 +25,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.PreferredConstructorDiscovererUnitTests.Outer.Inner;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.PreferredConstructorDiscoverer;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link PreferredConstructorDiscoverer}.

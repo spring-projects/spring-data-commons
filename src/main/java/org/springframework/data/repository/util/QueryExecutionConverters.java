@@ -37,18 +37,19 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.core.CustomCollections;
+import org.springframework.data.core.NullableWrapper;
+import org.springframework.data.core.NullableWrapperConverters;
+import org.springframework.data.core.ReactiveWrappers;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.SearchResult;
 import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Window;
 import org.springframework.data.geo.GeoResults;
-import org.springframework.data.util.CustomCollections;
-import org.springframework.data.util.NullableWrapper;
-import org.springframework.data.util.NullableWrapperConverters;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -65,7 +66,7 @@ import org.springframework.util.ObjectUtils;
  * via {@link CustomCollections}</li>
  * <li>{@code io.vavr.collection.Seq}, {@code io.vavr.collection.Map}, {@code io.vavr.collection.Set} - as of 2.0 via
  * {@link CustomCollections}</li>
- * <li>Reactive wrappers supported by {@link org.springframework.data.util.ReactiveWrappers} - as of 2.0</li>
+ * <li>Reactive wrappers supported by {@link ReactiveWrappers} - as of 2.0</li>
  * </ul>
  *
  * @author Oliver Gierke
