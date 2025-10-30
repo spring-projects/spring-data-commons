@@ -28,7 +28,6 @@ import org.springframework.data.javapoet.TypeNames;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
-import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeVariableName;
 
 /**
