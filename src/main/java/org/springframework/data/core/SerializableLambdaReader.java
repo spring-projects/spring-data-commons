@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,104 +39,157 @@ import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
+import org.springframework.asm.SpringAsmInfo;
 import org.springframework.asm.Type;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.SpringProperties;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Utility to parse Single Abstract Method (SAM) method references and lambdas to extract the owning type and the member
- * that is being accessed from it.
+ * Reader to extract references to fields and methods from serializable lambda expressions and method references using
+ * lambda serialization and bytecode analysis. Allows introspection of property access patterns expressed through
+ * functional interfaces without executing the lambda's behavior. Their declarative nature makes method references in
+ * general and a constrained subset of lambda expressions suitable to declare property references in the sense of Java
+ * Beans properties. Although lambdas and method references are primarily used in a declarative functional programming
+ * models to express behavior, lambda serialization allows for further introspection such as parsing the lambda method
+ * bytecode for property or member access information and not taking the functional behavior into account.
+ * <p>
+ * The actual interface is not constrained by a base type, however the object must:
+ * <ul>
+ * <li>Implement a functional Java interface</li>
+ * <li>Must be the top-level lambda (i.e. not wrapped or a functional composition)</li>
+ * <li>Implement Serializable (either through the actual interface or through inference)</li>
+ * <li>Declare a single method to be implemented</li>
+ * <li>Accept a single method argument and return a value</li>
+ * </ul>
+ * Ideally, the interface has a similar format to {@link Function}, for example:
+ *
+ * <pre class="code">
+ * interface XtoYFunction<X, Y> (optional: extends Serializable) {
+ *   Y &lt;method-name&gt;(X someArgument);
+ * }
+ * </pre>
+ * <p>
+ * <strong>Supported patterns</strong>
+ * <ul>
+ * <li>Method references: {@code Person::getName}</li>
+ * <li>Property access lambdas: {@code person -> person.getName()}</li>
+ * <li>Field access lambdas: {@code person -> person.name}</li>
+ * </ul>
+ * <strong>Unsupported patterns</strong>
+ * <ul>
+ * <li>Constructor references: {@code Person::new}</li>
+ * <li>Methods with arguments: {@code person -> person.setAge(25)}</li>
+ * <li>Lambda expressions that do more than property access, e.g. {@code person -> { person.setAge(25); return
+ * person.getName(); }}</li>
+ * <li>Arithmetic operations, arbitrary calls</li>
+ * <li>Functional composition: {@code Function.andThen(...)}</li>
+ * </ul>
  *
  * @author Mark Paluch
+ * @since 4.1
  */
-class SamParser {
+class SerializableLambdaReader {
 
 	/**
 	 * System property that instructs Spring Data to filter stack traces of exceptions thrown during SAM parsing.
 	 */
-	public static final String FILTER_STACK_TRACE = "spring.date.sam-parser.filter-stacktrace";
+	public static final String FILTER_STACK_TRACE = "spring.data.lambda-reader.filter-stacktrace";
 
 	/**
 	 * System property that instructs Spring Data to include suppressed exceptions during SAM parsing.
 	 */
-	public static final String INCLUDE_SUPPRESSED_EXCEPTIONS = "spring.date.sam-parser.include-suppressed-exceptions";
+	public static final String INCLUDE_SUPPRESSED_EXCEPTIONS = "spring.data.lambda-reader.include-suppressed-exceptions";
 
-	private static final Log LOGGER = LogFactory.getLog(SamParser.class);
-
+	private static final Log LOGGER = LogFactory.getLog(SerializableLambdaReader.class);
 	private static final boolean filterStackTrace = isEnabled(FILTER_STACK_TRACE, true);
 	private static final boolean includeSuppressedExceptions = isEnabled(INCLUDE_SUPPRESSED_EXCEPTIONS, false);
 
 	private final List<Class<?>> entryPoints;
 
-	private static boolean isEnabled(String property, boolean defaultValue) {
-
-		String value = SpringProperties.getProperty(property);
-		if (StringUtils.hasText(value)) {
-			return Boolean.parseBoolean(value);
-		}
-
-		return defaultValue;
-	}
-
-	SamParser(Class<?>... entryPoints) {
+	SerializableLambdaReader(Class<?>... entryPoints) {
 		this.entryPoints = Arrays.asList(entryPoints);
 	}
 
-	public MemberReference parse(ClassLoader classLoader, Object lambdaObject) {
+	private static boolean isEnabled(String property, boolean defaultValue) {
+
+		String value = SpringProperties.getProperty(property);
+		return StringUtils.hasText(value) ? Boolean.parseBoolean(value) : defaultValue;
+	}
+
+	/**
+	 * Read the given lambda object and extract a reference to a {@link Member} such as a field or method.
+	 * <p>
+	 * Ideally used with an interface resembling {@link java.util.function.Function}.
+	 *
+	 * @param lambdaObject the actual lambda object, must be {@link java.io.Serializable}.
+	 * @return the member reference.
+	 * @throws InvalidDataAccessApiUsageException if the lambda object does not contain a valid property reference or hits
+	 *           any of the mentioned limitations.
+	 */
+	public MemberDescriptor read(Object lambdaObject) {
+
+		SerializedLambda lambda = serialize(lambdaObject);
+		assertNotConstructor(lambda);
 
 		try {
-			// Use serialization to extract method reference info
-			SerializedLambda lambda = serialize(lambdaObject);
 
-			if (lambda.getImplMethodKind() == MethodHandleInfo.REF_newInvokeSpecial
-					|| lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeSpecial) {
-				InvalidDataAccessApiUsageException e = new InvalidDataAccessApiUsageException(
-						"Method reference must not be a constructor call");
-
-				if (filterStackTrace) {
-					e.setStackTrace(filterStackTrace(e.getStackTrace(), null));
-				}
-				throw e;
-			}
-
-			// method handle
+			// method reference
 			if ((lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual
 					|| lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeInterface)
 					&& !lambda.getImplMethodName().startsWith("lambda$")) {
-				return MethodInformation.ofInvokeVirtual(classLoader, lambda);
+				return MemberDescriptor.ofMethodReference(lambdaObject.getClass().getClassLoader(), lambda);
 			}
 
+			// all other lambda forms
 			if (lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeStatic
 					|| lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual) {
-
-				String implClass = Type.getObjectType(lambda.getImplClass()).getClassName();
-
-				Type owningType = Type.getArgumentTypes(lambda.getImplMethodSignature())[0];
-				String classFileName = implClass.replace('.', '/') + ".class";
-				InputStream classFile = ClassLoader.getSystemResourceAsStream(classFileName);
-				if (classFile == null) {
-					throw new IllegalStateException("Cannot find class file '%s' for lambda analysis.".formatted(classFileName));
-				}
-
-				try (classFile) {
-
-					ClassReader cr = new ClassReader(classFile);
-					LambdaClassVisitor classVisitor = new LambdaClassVisitor(classLoader, lambda.getImplMethodName(), owningType);
-					cr.accept(classVisitor, ClassReader.SKIP_FRAMES);
-					return classVisitor.getPropertyPathInformation(lambda);
-				}
+				return getMemberDescriptor(lambdaObject, lambda);
 			}
 		} catch (ReflectiveOperationException | IOException e) {
-			throw new InvalidDataAccessApiUsageException("Cannot extract property path", e);
+			throw new InvalidDataAccessApiUsageException("Cannot extract method or field", e);
 		}
 
-		throw new InvalidDataAccessApiUsageException("Cannot extract property path from: " + lambdaObject
-				+ ". The given value is not a Lambda and not a Method Reference.");
+		throw new InvalidDataAccessApiUsageException("Cannot extract method or field from: " + lambdaObject
+				+ ". The given value is not a lambda or method reference.");
+	}
+
+	private void assertNotConstructor(SerializedLambda lambda) {
+
+		if (lambda.getImplMethodKind() == MethodHandleInfo.REF_newInvokeSpecial
+				|| lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeSpecial) {
+
+			InvalidDataAccessApiUsageException e = new InvalidDataAccessApiUsageException(
+					"Method reference must not be a constructor call");
+
+			if (filterStackTrace) {
+				e.setStackTrace(filterStackTrace(e.getStackTrace(), null));
+			}
+			throw e;
+		}
+	}
+
+	private MemberDescriptor getMemberDescriptor(Object lambdaObject, SerializedLambda lambda) throws IOException {
+
+		String implClass = Type.getObjectType(lambda.getImplClass()).getClassName();
+		Type owningType = Type.getArgumentTypes(lambda.getImplMethodSignature())[0];
+		String classFileName = implClass.replace('.', '/') + ".class";
+		InputStream classFile = ClassLoader.getSystemResourceAsStream(classFileName);
+
+		if (classFile == null) {
+			throw new IllegalStateException("Cannot find class file '%s' for lambda introspection".formatted(classFileName));
+		}
+
+		try (classFile) {
+
+			ClassReader cr = new ClassReader(classFile);
+			LambdaReadingVisitor classVisitor = new LambdaReadingVisitor(lambdaObject.getClass().getClassLoader(),
+					lambda.getImplMethodName(), owningType);
+			cr.accept(classVisitor, ClassReader.SKIP_FRAMES);
+			return classVisitor.getMemberReference(lambda);
+		}
 	}
 
 	private static SerializedLambda serialize(Object lambda) {
@@ -152,35 +204,27 @@ class SamParser {
 		}
 	}
 
-	class LambdaClassVisitor extends ClassVisitor {
+	class LambdaReadingVisitor extends ClassVisitor {
 
-		private final ClassLoader classLoader;
 		private final String implMethodName;
-		private final Type owningType;
-		private @Nullable LambdaMethodVisitor methodVisitor;
+		private final LambdaMethodVisitor methodVisitor;
 
-		public LambdaClassVisitor(ClassLoader classLoader, String implMethodName, Type owningType) {
-			super(Opcodes.ASM10_EXPERIMENTAL);
-			this.classLoader = classLoader;
+		public LambdaReadingVisitor(ClassLoader classLoader, String implMethodName, Type owningType) {
+			super(SpringAsmInfo.ASM_VERSION);
 			this.implMethodName = implMethodName;
-			this.owningType = owningType;
+			this.methodVisitor = new LambdaMethodVisitor(classLoader, owningType);
+		}
+
+		public MemberDescriptor getMemberReference(SerializedLambda lambda) {
+			return methodVisitor.resolve(lambda);
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-			// Capture the lambda body methods for later
-			if (name.equals(implMethodName)) {
-
-				methodVisitor = new LambdaMethodVisitor(classLoader, owningType);
-				return methodVisitor;
-			}
-
-			return null;
+		public @Nullable MethodVisitor visitMethod(int access, String name, String desc, String signature,
+				String[] exceptions) {
+			return name.equals(implMethodName) ? methodVisitor : null;
 		}
 
-		public MemberReference getPropertyPathInformation(SerializedLambda lambda) {
-			return methodVisitor.resolve(lambda);
-		}
 	}
 
 	class LambdaMethodVisitor extends MethodVisitor {
@@ -197,11 +241,11 @@ class SamParser {
 		private final ClassLoader classLoader;
 		private final Type owningType;
 		private int line;
-		List<MemberReference> memberReferences = new ArrayList<>();
-		Set<ParseError> errors = new LinkedHashSet<>();
+		private final List<MemberDescriptor> memberDescriptors = new ArrayList<>();
+		private final Set<ReadingError> errors = new LinkedHashSet<>();
 
 		public LambdaMethodVisitor(ClassLoader classLoader, Type owningType) {
-			super(Opcodes.ASM10_EXPERIMENTAL);
+			super(SpringAsmInfo.ASM_VERSION);
 			this.classLoader = classLoader;
 			this.owningType = owningType;
 		}
@@ -219,7 +263,13 @@ class SamParser {
 				return;
 			}
 
+			// we don't care about stack manipulation
 			if (opcode >= Opcodes.DUP && opcode <= Opcodes.DUP2_X2) {
+				return;
+			}
+
+			// no-op
+			if (opcode == Opcodes.NOP) {
 				return;
 			}
 
@@ -228,7 +278,7 @@ class SamParser {
 
 		@Override
 		public void visitLdcInsn(Object value) {
-			errors.add(new ParseError(line,
+			errors.add(new ReadingError(line,
 					"Lambda expressions may only contain method calls to getters, record components, or field access", null));
 		}
 
@@ -236,19 +286,20 @@ class SamParser {
 		public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
 
 			if (opcode == Opcodes.PUTSTATIC || opcode == Opcodes.PUTFIELD) {
-				errors.add(new ParseError(line, "Setting a field not allowed", null));
+				errors.add(new ReadingError(line, "Setting a field not allowed", null));
 				return;
 			}
 
 			Type fieldType = Type.getType(descriptor);
 
 			try {
-				this.memberReferences.add(FieldInformation.create(classLoader, owningType, name, fieldType));
+				this.memberDescriptors
+						.add(MemberDescriptor.ofField(classLoader, owningType.getClassName(), name, fieldType.getClassName()));
 			} catch (ReflectiveOperationException e) {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Failed to resolve field '%s.%s'".formatted(owner, name), e);
 				}
-				errors.add(new ParseError(line, e.getMessage()));
+				errors.add(new ReadingError(line, e.getMessage()));
 			}
 		}
 
@@ -256,7 +307,7 @@ class SamParser {
 		public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
 			if (opcode == Opcodes.INVOKESPECIAL && name.equals("<init>")) {
-				errors.add(new ParseError(line, "Lambda must not invoke constructors", null));
+				errors.add(new ReadingError(line, "Lambda must not invoke constructors", null));
 				return;
 			}
 
@@ -268,7 +319,7 @@ class SamParser {
 					return;
 				}
 
-				errors.add(new ParseError(line, "Method references must invoke no-arg methods only"));
+				errors.add(new ReadingError(line, "Method references must invoke no-arg methods only"));
 				return;
 			}
 
@@ -277,33 +328,39 @@ class SamParser {
 
 				Type[] argumentTypes = Type.getArgumentTypes(descriptor);
 				String signature = Arrays.stream(argumentTypes).map(Type::getClassName).collect(Collectors.joining(", "));
-				errors.add(new ParseError(line,
+				errors.add(new ReadingError(line,
 						"Cannot derive a method reference from method invocation '%s(%s)' on a different type than the owning one.%nExpected owning type: '%s', but was: '%s'"
 								.formatted(name, signature, this.owningType.getClassName(), ownerType.getClassName())));
 				return;
 			}
 
 			try {
-				this.memberReferences.add(MethodInformation.ofInvokeVirtual(classLoader, owningType, name));
+				this.memberDescriptors.add(MemberDescriptor.ofMethod(classLoader, owningType.getClassName(), name));
 			} catch (ReflectiveOperationException e) {
 
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Failed to resolve method '%s.%s'".formatted(owner, name), e);
 				}
-				errors.add(new ParseError(line, e.getMessage()));
+				errors.add(new ReadingError(line, e.getMessage()));
 			}
 		}
 
-		public MemberReference resolve(SerializedLambda lambda) {
+		/**
+		 * Resolve a {@link MemberDescriptor} from a {@link SerializedLambda}.
+		 *
+		 * @param lambda the lambda to introspect.
+		 * @return the resolved member descriptor.
+		 */
+		public MemberDescriptor resolve(SerializedLambda lambda) {
 
 			// TODO composite path information
 			if (errors.isEmpty()) {
 
-				if (memberReferences.isEmpty()) {
+				if (memberDescriptors.isEmpty()) {
 					throw new InvalidDataAccessApiUsageException("There is no method or field access");
 				}
 
-				return memberReferences.get(memberReferences.size() - 1);
+				return memberDescriptors.get(memberDescriptors.size() - 1);
 			}
 
 			if (lambda.getImplMethodKind() == MethodHandleInfo.REF_invokeStatic
@@ -313,10 +370,10 @@ class SamParser {
 
 				InvalidDataAccessApiUsageException e = new InvalidDataAccessApiUsageException(
 						"Cannot resolve property path%n%nError%s:%n".formatted(errors.size() > 1 ? "s" : "") + errors.stream()
-								.map(ParseError::message).map(args -> formatMessage(args)).collect(Collectors.joining()));
+								.map(ReadingError::message).map(LambdaMethodVisitor::formatMessage).collect(Collectors.joining()));
 
 				if (includeSuppressedExceptions) {
-					for (ParseError error : errors) {
+					for (ReadingError error : errors) {
 						if (error.e != null) {
 							e.addSuppressed(error.e);
 						}
@@ -376,7 +433,7 @@ class SamParser {
 			Type type = Type.getObjectType(lambda.getCapturingClass());
 
 			return new StackTraceElement(null, userCode.getModuleName(), userCode.getModuleVersion(), type.getClassName(),
-					methodName, ClassUtils.getShortName(type.getClassName()) + ".java", errors.iterator().next().line);
+					methodName, ClassUtils.getShortName(type.getClassName()) + ".java", errors.iterator().next().line());
 		}
 	}
 
@@ -432,15 +489,22 @@ class SamParser {
 		return false;
 	}
 
-	record ParseError(int line, String message, @Nullable Exception e) {
+	/**
+	 * Value object for reading errors.
+	 *
+	 * @param line
+	 * @param message
+	 * @param e
+	 */
+	record ReadingError(int line, String message, @Nullable Exception e) {
 
-		ParseError(int line, String message) {
+		ReadingError(int line, String message) {
 			this(line, message, null);
 		}
 
 		@Override
 		public boolean equals(Object o) {
-			if (!(o instanceof ParseError that)) {
+			if (!(o instanceof ReadingError that)) {
 				return false;
 			}
 			if (!ObjectUtils.nullSafeEquals(e, that.e)) {
@@ -453,97 +517,7 @@ class SamParser {
 		public int hashCode() {
 			return ObjectUtils.nullSafeHash(message, e);
 		}
+
 	}
 
-	sealed interface MemberReference permits FieldInformation, MethodInformation {
-
-		Class<?> getOwner();
-
-		Member getMember();
-
-		ResolvableType getType();
-	}
-
-	/**
-	 * Value object holding information about a property path segment.
-	 *
-	 * @param owner
-	 */
-	record FieldInformation(Class<?> owner, Field field) implements MemberReference {
-
-		public static FieldInformation create(ClassLoader classLoader, Type ownerType, String name, Type fieldType)
-				throws ClassNotFoundException {
-
-			Class<?> owner = ClassUtils.forName(ownerType.getClassName(), classLoader);
-			Class<?> type = ClassUtils.forName(fieldType.getClassName(), classLoader);
-
-			return create(owner, name, type);
-		}
-
-		private static FieldInformation create(Class<?> owner, String fieldName, Class<?> fieldType) {
-
-			Field field = ReflectionUtils.findField(owner, fieldName, fieldType);
-			if (field == null) {
-				throw new IllegalArgumentException("Field %s.%s() not found".formatted(owner.getName(), fieldName));
-			}
-
-			return new FieldInformation(owner, field);
-		}
-
-		@Override
-		public Class<?> getOwner() {
-			return owner();
-		}
-
-		@Override
-		public Field getMember() {
-			return field();
-		}
-
-		@Override
-		public ResolvableType getType() {
-			return ResolvableType.forField(field(), owner());
-		}
-	}
-
-	/**
-	 * Value object holding information about a method invocation.
-	 */
-	record MethodInformation(Class<?> owner, Method method) implements MemberReference {
-
-		public static MethodInformation ofInvokeVirtual(ClassLoader classLoader, SerializedLambda lambda)
-				throws ClassNotFoundException {
-			return ofInvokeVirtual(classLoader, Type.getObjectType(lambda.getImplClass()), lambda.getImplMethodName());
-		}
-
-		public static MethodInformation ofInvokeVirtual(ClassLoader classLoader, Type ownerType, String name)
-				throws ClassNotFoundException {
-			Class<?> owner = ClassUtils.forName(ownerType.getClassName(), classLoader);
-			return ofInvokeVirtual(owner, name);
-		}
-
-		public static MethodInformation ofInvokeVirtual(Class<?> owner, String methodName) {
-
-			Method method = ReflectionUtils.findMethod(owner, methodName);
-			if (method == null) {
-				throw new IllegalArgumentException("Method %s.%s() not found".formatted(owner.getName(), methodName));
-			}
-			return new MethodInformation(owner, method);
-		}
-
-		@Override
-		public Class<?> getOwner() {
-			return owner();
-		}
-
-		@Override
-		public Method getMember() {
-			return method();
-		}
-
-		@Override
-		public ResolvableType getType() {
-			return ResolvableType.forMethodReturnType(method(), owner());
-		}
-	}
 }

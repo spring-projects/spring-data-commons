@@ -37,7 +37,8 @@ public interface MemberReference<T, R> extends Function<T, R>, Serializable {
 		Assert.notNull(object, "Object must not be null");
 		Assert.isInstanceOf(Serializable.class, object, "Object must be Serializable");
 
-		return new SamParser(MemberReference.class).parse(object.getClass().getClassLoader(), object).getMember();
+		return new SerializableLambdaReader(MemberReference.class).read(object)
+				.getMember();
 	}
 
 }
