@@ -27,43 +27,23 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CompositeIterator;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
- * Utility class to parse and resolve {@link TypedPropertyPath} instances.
+ * Utility class to read metadata and resolve {@link TypedPropertyPath} instances.
+ *
+ * @author Mark Paluch
+ * @since 4.1
  */
 class TypedPropertyPaths {
 
-	private static final Map<ClassLoader, Map<Object, PropertyPathInformation>> lambdas = new WeakHashMap<>();
+	private static final Map<ClassLoader, Map<Object, PropertyPathMetadata>> lambdas = new WeakHashMap<>();
 	private static final Map<ClassLoader, Map<TypedPropertyPath<?, ?>, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
-	private static final SamParser samParser = new SamParser(PropertyPath.class, TypedPropertyPath.class,
+	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyPath.class,
+			TypedPropertyPath.class,
 			TypedPropertyPaths.class);
-
-	/**
-	 * Retrieve {@link PropertyPathInformation} for a given {@link TypedPropertyPath}.
-	 */
-	public static PropertyPathInformation getPropertyPathInformation(TypedPropertyPath<?, ?> lambda) {
-
-		Map<Object, PropertyPathInformation> cache;
-		synchronized (lambdas) {
-			cache = lambdas.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
-		}
-		Map<Object, PropertyPathInformation> lambdaMap = cache;
-
-		return lambdaMap.computeIfAbsent(lambda, o -> extractPath(lambda.getClass().getClassLoader(), lambda));
-	}
-
-	private static PropertyPathInformation extractPath(ClassLoader classLoader, TypedPropertyPath<?, ?> lambda) {
-
-		SamParser.MemberReference reference = samParser.parse(classLoader, lambda);
-
-		if (reference instanceof SamParser.MethodInformation method) {
-			return PropertyPathInformation.ofMethod(method);
-		}
-
-		return PropertyPathInformation.ofField((SamParser.FieldInformation) reference);
-	}
 
 	/**
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
@@ -73,7 +53,7 @@ class TypedPropertyPaths {
 	}
 
 	/**
-	 * Resolve a {@link TypedPropertyPath} into a {@link ResolvedTypedPropertyPath}.
+	 * Introspect {@link TypedPropertyPath} and return an introspected {@link ResolvedTypedPropertyPath} variant.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <P, T> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
@@ -88,65 +68,99 @@ class TypedPropertyPaths {
 		}
 
 		return (TypedPropertyPath<T, P>) cache.computeIfAbsent(lambda,
-				o -> new ResolvedTypedPropertyPath(o, getPropertyPathInformation(lambda)));
+				o -> new ResolvedTypedPropertyPath(o, getMetadata(lambda)));
 	}
 
 	/**
-	 * Value object holding information about a property path segment.
-	 *
-	 * @param owner
-	 * @param propertyType
-	 * @param property
+	 * Retrieve {@link PropertyPathMetadata} for a given {@link TypedPropertyPath}.
 	 */
-	record PropertyPathInformation(TypeInformation<?> owner, TypeInformation<?> propertyType, String property) {
+	public static PropertyPathMetadata getMetadata(TypedPropertyPath<?, ?> lambda) {
 
-		public static PropertyPathInformation ofMethod(SamParser.MethodInformation method) {
+		Map<Object, PropertyPathMetadata> cache;
+		synchronized (lambdas) {
+			cache = lambdas.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
+		}
+		Map<Object, PropertyPathMetadata> lambdaMap = cache;
+
+		return lambdaMap.computeIfAbsent(lambda, o -> read(lambda));
+	}
+
+	private static PropertyPathMetadata read(TypedPropertyPath<?, ?> lambda) {
+
+		MemberDescriptor reference = reader.read(lambda);
+
+		if (reference instanceof MemberDescriptor.MethodDescriptor method) {
+			return PropertyPathMetadata.ofMethod(method);
+		}
+
+		return PropertyPathMetadata.ofField((MemberDescriptor.MethodDescriptor.FieldDescriptor) reference);
+	}
+
+	/**
+	 * Metadata describing a single property path segment including its owner type, property type, and name.
+	 *
+	 * @param owner the type that owns the property.
+	 * @param property the property name.
+	 * @param propertyType the type of the property.
+	 */
+	record PropertyPathMetadata(TypeInformation<?> owner, String property, TypeInformation<?> propertyType) {
+
+		public static PropertyPathMetadata ofMethod(MemberDescriptor.MethodDescriptor method) {
 
 			PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method.method());
 			String methodName = method.getMember().getName();
 
 			if (descriptor == null) {
-				String propertyName;
 
-				if (methodName.startsWith("is")) {
-					propertyName = Introspector.decapitalize(methodName.substring(2));
-				} else if (methodName.startsWith("get")) {
-					propertyName = Introspector.decapitalize(methodName.substring(3));
-				} else {
-					propertyName = methodName;
-				}
-
+				String propertyName = getPropertyName(methodName);
 				TypeInformation<?> owner = TypeInformation.of(method.owner());
 				TypeInformation<?> fallback = owner.getProperty(propertyName);
+
 				if (fallback != null) {
-					return new PropertyPathInformation(owner, fallback,
-								propertyName);
+					return new PropertyPathMetadata(owner, propertyName, fallback);
 				}
 
 				throw new IllegalArgumentException(
-						"Cannot find PropertyDescriptor from method %s.%s".formatted(method.owner().getName(), methodName));
+						"Cannot find PropertyDescriptor from method '%s.%s()'".formatted(method.owner().getName(), methodName));
 			}
 
-			return new PropertyPathInformation(TypeInformation.of(method.getOwner()), TypeInformation.of(method.getType()),
-					descriptor.getName());
+			return new PropertyPathMetadata(TypeInformation.of(method.getOwner()), descriptor.getName(),
+					TypeInformation.of(method.getType()));
 		}
 
-		public static PropertyPathInformation ofField(SamParser.FieldInformation field) {
-			return new PropertyPathInformation(TypeInformation.of(field.owner()), TypeInformation.of(field.getType()),
-					field.getMember().getName());
+		private static String getPropertyName(String methodName) {
+
+			if (methodName.startsWith("is")) {
+				return Introspector.decapitalize(methodName.substring(2));
+			} else if (methodName.startsWith("get")) {
+				return Introspector.decapitalize(methodName.substring(3));
+			}
+
+			return methodName;
 		}
+
+		public static PropertyPathMetadata ofField(MemberDescriptor.MethodDescriptor.FieldDescriptor field) {
+			return new PropertyPathMetadata(TypeInformation.of(field.owner()), field.getMember().getName(),
+					TypeInformation.of(field.getType()));
+		}
+
 	}
 
-
+	/**
+	 * A {@link TypedPropertyPath} implementation that caches resolved metadata to avoid repeated introspection.
+	 *
+	 * @param <T> the owning type.
+	 * @param <P> the property type.
+	 */
 	static class ResolvedTypedPropertyPath<T, P> implements TypedPropertyPath<T, P> {
 
 		private final TypedPropertyPath<T, P> function;
-		private final PropertyPathInformation information;
+		private final PropertyPathMetadata metadata;
 		private final List<PropertyPath> list;
 
-		ResolvedTypedPropertyPath(TypedPropertyPath<T, P> function, PropertyPathInformation information) {
+		ResolvedTypedPropertyPath(TypedPropertyPath<T, P> function, PropertyPathMetadata metadata) {
 			this.function = function;
-			this.information = information;
+			this.metadata = metadata;
 			this.list = List.of(this);
 		}
 
@@ -157,17 +171,17 @@ class TypedPropertyPaths {
 
 		@Override
 		public TypeInformation<?> getOwningType() {
-			return information.owner();
+			return metadata.owner();
 		}
 
 		@Override
 		public String getSegment() {
-			return information.property();
+			return metadata.property();
 		}
 
 		@Override
 		public TypeInformation<?> getTypeInformation() {
-			return information.propertyType();
+			return metadata.propertyType();
 		}
 
 		@Override
@@ -191,24 +205,34 @@ class TypedPropertyPaths {
 				return true;
 			if (obj == null || obj.getClass() != this.getClass())
 				return false;
-			var that = (ResolvedTypedPropertyPath) obj;
-			return Objects.equals(this.function, that.function) && Objects.equals(this.information, that.information);
+			var that = (ResolvedTypedPropertyPath<?, ?>) obj;
+			return Objects.equals(this.function, that.function) && Objects.equals(this.metadata, that.metadata);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(function, information);
+			return Objects.hash(function, metadata);
 		}
 
 		@Override
 		public String toString() {
-			return information.owner().getType().getSimpleName() + "." + toDotPath();
+			return metadata.owner().getType().getSimpleName() + "." + toDotPath();
 		}
+
 	}
 
-
-
-	record ComposedPropertyPath<T, M, R>(TypedPropertyPath<T, M> first, TypedPropertyPath<M, R> second,
+	/**
+	 * A {@link TypedPropertyPath} that represents the composition of two property paths, enabling navigation through
+	 * nested properties.
+	 *
+	 * @param <T> the root owning type.
+	 * @param <M> the intermediate property type (connecting first and second paths).
+	 * @param <R> the final property type.
+	 * @param base the initial path segment.
+	 * @param next the next path segment.
+	 * @param dotPath the precomputed dot-notation path string.
+	 */
+	record ComposedPropertyPath<T, M, R>(TypedPropertyPath<T, M> base, TypedPropertyPath<M, R> next,
 			String dotPath) implements TypedPropertyPath<T, R> {
 
 		ComposedPropertyPath(TypedPropertyPath<T, M> first, TypedPropertyPath<M, R> second) {
@@ -217,33 +241,33 @@ class TypedPropertyPaths {
 
 		@Override
 		public @Nullable R get(T obj) {
-			M intermediate = first.get(obj);
-			return intermediate != null ? second.get(intermediate) : null;
+			M intermediate = base.get(obj);
+			return intermediate != null ? next.get(intermediate) : null;
 		}
 
 		@Override
 		public TypeInformation<?> getOwningType() {
-			return first.getOwningType();
+			return base.getOwningType();
 		}
 
 		@Override
 		public String getSegment() {
-			return first().getSegment();
+			return base().getSegment();
 		}
 
 		@Override
 		public PropertyPath getLeafProperty() {
-			return second.getLeafProperty();
+			return next.getLeafProperty();
 		}
 
 		@Override
 		public TypeInformation<?> getTypeInformation() {
-			return first.getTypeInformation();
+			return base.getTypeInformation();
 		}
 
 		@Override
-		public PropertyPath next() {
-			return second;
+		public TypedPropertyPath<M, R> next() {
+			return next;
 		}
 
 		@Override
@@ -258,17 +282,22 @@ class TypedPropertyPaths {
 
 		@Override
 		public Stream<PropertyPath> stream() {
-			return second.stream();
+			return Stream.concat(base.stream(), next.stream());
 		}
 
 		@Override
 		public Iterator<PropertyPath> iterator() {
-			return second.iterator();
+			CompositeIterator<PropertyPath> iterator = new CompositeIterator<>();
+			iterator.add(base.iterator());
+			iterator.add(next.iterator());
+			return iterator;
 		}
 
 		@Override
 		public String toString() {
 			return getOwningType().getType().getSimpleName() + "." + toDotPath();
 		}
+
 	}
+
 }

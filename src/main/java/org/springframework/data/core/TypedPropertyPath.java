@@ -22,12 +22,12 @@ import java.util.Iterator;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Type-safe representation of a property path expressed through method references.
+ * Type-safe representation of a property path using getter method references or lambda expressions.
  * <p>
- * This functional interface extends {@link PropertyPath} to provide compile-time type safety when declaring property
- * paths. Instead of using {@link PropertyPath#from(String, TypeInformation) string-based property paths} that represent
- * references to properties textually and that are prone to refactoring issues, {@code TypedPropertyPath} leverages
- * Java's declarative method references and lambda expressions to ensure type-safe property access.
+ * This functional interface extends {@link PropertyPath} to provide compile-time type safety and refactoring support.
+ * Instead of using {@link PropertyPath#from(String, TypeInformation) string-based property paths} for textual property
+ * representation that are easy to miss when changing the domain model, {@code TypedPropertyPath} leverages Java's
+ * declarative method references and lambda expressions to ensure type-safe property access.
  * <p>
  * Typed property paths can be created directly they are accepted used or conveniently using the static factory method
  * {@link #of(TypedPropertyPath)} with method references:
@@ -39,28 +39,24 @@ import org.jspecify.annotations.Nullable;
  * Property paths can be composed to navigate nested properties using {@link #then(TypedPropertyPath)}:
  *
  * <pre class="code">
- * PropertyPath.of(Person::getAddress).then(Address::getCountry).then(Country::getName);
+ * PropertyPath.of(Person::getAddress).then(Address::getCity);
  * </pre>
  * <p>
  * The interface maintains type information throughout the property path chain: the {@code T} type parameter represents
  * its owning type (root type for composed paths), while {@code P} represents the property value type at this path
  * segment.
  * <p>
- * As a functional interface, {@code TypedPropertyPath} should be implemented as method reference (recommended).
- * Alternatively, the interface can be implemented as lambda extracting a property value from an object of type
- * {@code T}. Implementations must ensure that the method reference or lambda correctly represents a property access
- * through a method invocation or by field access. Arbitrary calls to non-getter methods (i.e. methods accepting
- * parameters or arbitrary method calls on types other than the owning type are not allowed and will fail with
- * {@link org.springframework.dao.InvalidDataAccessApiUsageException}.
- * <p>
- * Note that using lambda expressions requires bytecode analysis of the declaration site classes and therefore presence
- * of their class files.
+ * Use method references (recommended) or lambdas that access a property getter to implement {@code TypedPropertyPath}.
+ * Usage of constructor references, method calls with parameters, and complex expressions results in
+ * {@link org.springframework.dao.InvalidDataAccessApiUsageException}. In contrast to method references, introspection
+ * of lambda expressions requires bytecode analysis of the declaration site classes and therefore presence of their
+ * class files.
  *
- * @param <T> the owning type of the property path segment, but typically the root type for composed property paths.
- * @param <P> the property value type at this path segment.
+ * @param <T> the owning type of the property path segment, root type for composed paths.
+ * @param <P> the property type at this path segment.
  * @author Mark Paluch
- * @see PropertyPath
- * @see #of(TypedPropertyPath)
+ * @since 4.1
+ * @see PropertyPath#of(TypedPropertyPath)
  * @see #then(TypedPropertyPath)
  */
 @FunctionalInterface
@@ -69,15 +65,15 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 	/**
 	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
 	 *
-	 * @param lambda the method reference or lambda.
+	 * @param propertyPath the method reference or lambda.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 */
-	static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
-		return TypedPropertyPaths.of(lambda);
+	static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> propertyPath) {
+		return TypedPropertyPaths.of(propertyPath);
 	}
 
 	/**
@@ -91,17 +87,17 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 
 	@Override
 	default TypeInformation<?> getOwningType() {
-		return TypedPropertyPaths.getPropertyPathInformation(this).owner();
+		return TypedPropertyPaths.getMetadata(this).owner();
 	}
 
 	@Override
 	default String getSegment() {
-		return TypedPropertyPaths.getPropertyPathInformation(this).property();
+		return TypedPropertyPaths.getMetadata(this).property();
 	}
 
 	@Override
 	default TypeInformation<?> getTypeInformation() {
-		return TypedPropertyPaths.getPropertyPathInformation(this).propertyType();
+		return TypedPropertyPaths.getMetadata(this).propertyType();
 	}
 
 	@Override
@@ -121,13 +117,15 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 	}
 
 	/**
-	 * Extend the property path by appending the {@code next} path segment and returning a new property path instance..
+	 * Extend the property path by appending the {@code next} path segment and returning a new property path instance.
 	 *
-	 * @param next the next property path segment accepting a property path owned by the {@code P} type.
+	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
+	 *          and returning {@code N} as result of accessing a property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
 	default <N> TypedPropertyPath<T, N> then(TypedPropertyPath<P, N> next) {
 		return TypedPropertyPaths.compose(this, of(next));
 	}
+
 }
