@@ -21,11 +21,12 @@ import static org.springframework.data.domain.Sort.NullHandling.*;
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.mapping.Person;
-import org.springframework.data.util.TypedPropertyPath;
 
 /**
  * Unit test for {@link Sort}.

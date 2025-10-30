@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.util.TypedPropertyPath;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;

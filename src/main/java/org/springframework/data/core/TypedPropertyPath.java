@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mapping;
+package org.springframework.data.core;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Type-safe representation of a property path expressed through method references.
@@ -32,13 +31,13 @@ import org.springframework.data.util.TypeInformation;
  * <p>
  * Typed property paths can be created directly they are accepted used or conveniently using the static factory method
  * {@link #of(TypedPropertyPath)} with method references:
- * 
+ *
  * <pre class="code">
  * PropertyPath.of(Person::getName);
  * </pre>
- * 
+ *
  * Property paths can be composed to navigate nested properties using {@link #then(TypedPropertyPath)}:
- * 
+ *
  * <pre class="code">
  * PropertyPath.of(Person::getAddress).then(Address::getCountry).then(Country::getName);
  * </pre>
@@ -56,7 +55,7 @@ import org.springframework.data.util.TypeInformation;
  * <p>
  * Note that using lambda expressions requires bytecode analysis of the declaration site classes and therefore presence
  * of their class files.
- * 
+ *
  * @param <T> the owning type of the property path segment, but typically the root type for composed property paths.
  * @param <P> the property value type at this path segment.
  * @author Mark Paluch
