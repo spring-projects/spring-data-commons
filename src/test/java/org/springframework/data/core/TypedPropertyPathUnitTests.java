@@ -18,6 +18,7 @@ package org.springframework.data.core;
 import static org.assertj.core.api.Assertions.*;
 
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
@@ -198,6 +199,21 @@ class TypedPropertyPathUnitTests {
 					failsResolutionWith$StrangeStuff();
 					return person.getName();
 				}));
+	}
+
+	@Nested
+	class NestedTestClass {
+
+		@Test
+		void resolvesInterfaceLambdaGetter() {
+			assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
+		}
+
+		@Test
+		void resolvesSuperclassMethodReferenceGetter() {
+			assertThat(PropertyPath.of(PersonQuery::getTenant).toDotPath()).isEqualTo("tenant");
+		}
+
 	}
 
 	// Domain entities
