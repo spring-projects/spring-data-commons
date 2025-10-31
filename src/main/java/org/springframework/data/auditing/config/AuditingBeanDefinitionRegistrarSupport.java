@@ -116,12 +116,11 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 	protected BeanDefinitionBuilder configureDefaultAuditHandlerAttributes(AuditingConfiguration configuration,
 			BeanDefinitionBuilder builder) {
 
+		builder.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+
 		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
 			builder.addPropertyValue(AUDITOR_AWARE,
 					createLazyInitTargetSourceBeanDefinition(configuration.getAuditorAwareRef()));
-		}
-		else {
-			builder.addAutowiredProperty(AUDITOR_AWARE);
 		}
 
 		builder.addPropertyValue(SET_DATES, configuration.isSetDates());
@@ -129,9 +128,6 @@ public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBe
 
 		if (StringUtils.hasText(configuration.getDateTimeProviderRef())) {
 			builder.addPropertyReference(DATE_TIME_PROVIDER, configuration.getDateTimeProviderRef());
-		}
-		else {
-			builder.addAutowiredProperty(DATE_TIME_PROVIDER);
 		}
 
 		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);

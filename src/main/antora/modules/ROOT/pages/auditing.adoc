@@ -3,16 +3,13 @@
 
 [[auditing.basics]]
 == Basics
-
-Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and when the change happened.
-To benefit from that functionality, you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
+Spring Data provides sophisticated support to transparently keep track of who created or changed an entity and when the change happened.To benefit from that functionality, you have to equip your entity classes with auditing metadata that can be defined either using annotations or by implementing an interface.
 Additionally, auditing has to be enabled either through Annotation configuration or XML configuration to register the required infrastructure components.
 Please refer to the store-specific section for configuration samples.
 
 [NOTE]
 ====
 Applications that only track creation and modification dates are not required do make their entities implement <<auditing.auditor-aware,`AuditorAware`>>.
-If no `AuditorAware` or `DateTimeProvider` bean is configured, `AuditingHandler` will use Spring's autowiring to detect a matching bean if beans of the corresponding type are available in the application context.
 ====
 
 [[auditing.annotations]]
