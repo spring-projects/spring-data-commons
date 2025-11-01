@@ -1,5 +1,125 @@
+[[property-paths]]
+= Property Paths
+
+This chapter covers the concept of property paths.
+Property paths are a form of navigation through domain classes to apply certain aspects in the context of interacting with the model.
+Application code provides property paths to data access components to express intents such as selection of properties within a query, forming predicates, or applying sorting.
+A property path originates from a owning type and can consist of one to many segments.
+
+In Spring Data, the classes that form the backbone of your persistent domain model and that are accessed through Spring Data called entities.
+An entry point for the object graph is called aggregate root in alignment with domain-driven design.
+
+[TIP]
+====
+Spring Data considers domain types to be entities, more specifically aggregates.
+So you will see the term "entity" used throughout the documentation that can be interchanged with the term "domain type" or "aggregate".
+
+As you might have noticed in the introduction it already hinted towards domain-driven concepts.
+We consider domain objects in the sense of DDD.
+Domain objects have identifiers (otherwise these would be identity-less value objects), and we somehow need to refer to identifiers when working with certain patterns to access data.
+Referring to identifiers will become more meaningful as we talk about repositories and query methods.
+====
+
+[[property-path-overview]]
+== Property Path Overview
+
+Let's start from a domain model, consider the simple domain model consisting of `Person` and `Address` classes with a couple of properties each:
+
+.Domain model
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+class Person {
+  String firstname, lastname;
+  int age;
+  Address address;
+  List<Address> previousAddresses;
+  
+  String getFirstname() { … }; // other property accessors omitted for brevity
+
+}
+
+class Address {
+  String city, street;
+  
+  // accessors omitted for brevity
+
+}
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+class Person {
+  var firstname: String? = null
+  var lastname: String? = null
+  var age: Int = 0
+  var address: Address? = null
+  var previousAddresses: List<Address> = emptyList()
+}
+
+class Address {
+  var city: String? = null
+  var street: String? = null
+}
+----
+======
+
+Property paths let you express references to properties using dot-path notation, for example when declaring sort orders:
+
+.Sorting
+[source,java]
+----
+Sort.by("firstname", "lastname")
+----
+
+Dot-path notation addresses individual properties that are separated by a dot `.`.
+Methods accepting a `String` property path typically allow usage of single-segment property paths (i.e. reference to a top-level property) or multi-segment properties unless otherwise indicated.
+
+Dot-path traversal into properties considers the component type of array and collection properties allowing references into the actual type for a simple navigation across collection-like types.
+
+----
+Sort.by("address.city")             <1>
+
+Sort.by("previousAddresses")        <2>
+
+Sort.by("previousAddresses.city")   <3>
+----
+
+<1> Sort by the `city` of the `address` object.
+<2> Sort by the `Person.previousAddresses` collection.
+Applicable for technologies that support sorting by arrays or lists
+<3> Sort by the `city` of any previous address.
+
+String-based property paths are simple and widely applicable because they do not require additional dependencies.
+There are various tradeoffs to consider:
+
+* Simple and flexible: Generalized and simple usage by expressing a property reference as string literal or constant.
+* Untyped: String paths do not carry compile-time type information and do not have a dependency on the underlying domain type.
+* Context-less: Without the associated domain type, string literals are easy to miss when renaming or refactoring the model.
+
+For better refactoring safety and stronger type consistency, prefer type-safe property references that associate property paths with type information, enabling IDE refactoring and compiler validation.
+<<type-safe-property-references>> shows how to use method references to express property paths in a type-safe manner.
+
+NOTE: For advanced usage: Property paths are translated to javadoc:org.springframework.data.core.PropertyPath[], read more about <<property-path-internals>>.
+
+[[property-path-internals]]
+=== Property Path Internals
+
+The `org.springframework.data.core` package is the basis for Spring Data's navigation across domain classes.
+The javadoc:org.springframework.data.core.TypeInformation[] inteface provides type introspection capable of resolving the type of a property. javadoc:org.springframework.data.core.PropertyPath[] represents a textual navigation path through a domain class.
+Together they provide:
+
+* Type introspection and resolution of generics
+* Creation and validation of property paths
+* Actual type resolution for properties that hold a objects of an actual type such as collections and maps
+
 [[type-safe-property-references]]
-= Type-safe Property References
+== Type-safe Property References
 
 Type-safe property references address a common source of friction in data access code: The reliance on literal, dot-separated property path strings.
 Such stringly-typed references are fragile during refactoring difficult to identify as they often lack context.
@@ -9,11 +129,27 @@ A property path is a simple, transportable representation of object navigation.
 When expressed as a method-reference the compiler participates in validation and IDEs provide meaningful refactoring support.
 The result is code that reads naturally, fails fast on renames, and integrates cleanly with existing query and sorting abstractions, for example:
 
-[source,java]
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
 ----
 TypedPropertyPath.of(Person::getAddress)
                  .then(Address::getCity);
 ----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+TypedPropertyPath.of<Person, Address>(Person::address)
+                 .then(Address::city);
+
+// Kotlin Exension
+KTypedPropertyPath.of(Person::address).then(Address::city)
+----
+======
 
 The expression above constructs a path equivalent to `address.city` while remaining resilient to refactoring.
 Property resolution is performed by inspecting the supplied method references; any mismatch becomes visible at compile time.
@@ -29,10 +165,23 @@ Sort.by("address.city", "address.street")
 You can also use it inline for operations like sorting:
 
 .Type-safe Property Path
-[source,java]
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
 ----
 Sort.by(Person::getFirstName, Person::getLastName);
+
 ----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+Sort.by(Person::firstName, Person::lastName);
+----
+======
 
 `TypedPropertyPath` can integrate seamlessly with query abstractions or criteria builders:
 
