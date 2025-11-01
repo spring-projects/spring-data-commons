@@ -1,42 +1,188 @@
-[[type-safe-property-references]]
-= Type-safe Property References
+[[property-paths]]
+= Property Paths
 
-Type-safe property references address a common source of friction in data access code: The reliance on literal, dot-separated property path strings.
-Such stringly-typed references are fragile during refactoring difficult to identify as they often lack context.
-Type-safe property paths favor explicitness and compiler validation by deriving property paths from Java method references.
+This chapter covers the concept of property paths.
+Property paths are a form of navigation through domain classes to apply certain aspects in the context of interacting with the model.
+Application code provides property paths to data access components to express intents such as selection of properties within a query, forming predicates, or applying sorting.
+A property path originates from its owning type and can consist of one to many segments.
 
-A property path is a simple, transportable representation of object navigation.
-When expressed as a method-reference the compiler participates in validation and IDEs provide meaningful refactoring support.
-The result is code that reads naturally, fails fast on renames, and integrates cleanly with existing query and sorting abstractions, for example:
+[TIP]
+====
+Following domain-driven design principles the classes that form the backbone of your persistent domain model and that are accessed through Spring Data are called entities.
+An entry point to the object graph is called aggregate root.
 
+Understanding how to navigate and reference these properties is essential for working with repositories and query operations.
+====
+
+[[property-path-overview]]
+== Property Path Overview
+
+Property paths provide a simple, text-based mechanism to navigate domain model properties.
+This section introduces the fundamentals of property path navigation and demonstrates trade-offs between string-based and type-safe approaches.
+
+.Domain model example
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+class Person {
+  String firstname, lastname;
+  int age;
+  Address address;
+  List<Address> previousAddresses;
+  
+  String getFirstname() { … }; // other property accessors omitted for brevity
+
+}
+
+class Address {
+  String city, street;
+  
+  // accessors omitted for brevity
+
+}
+----
+
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+class Person {
+  var firstname: String? = null
+  var lastname: String? = null
+  var age: Int = 0
+  var address: Address? = null
+  var previousAddresses: List<Address> = emptyList()
+}
+
+class Address {
+  var city: String? = null
+  var street: String? = null
+}
+----
+======
+
+Property paths use dot-notation to express property references throughout Spring Data operations, such as sorting and filtering:
+
+.Dot-notation property references
 [source,java]
+----
+Sort.by("firstname", "address.city")
+----
+
+A property path consists of one or more segments separated by a dot (`.`).
+Methods accepting property paths support single-segment references (top-level properties) and multi-segment navigation unless otherwise indicated.
+
+Collection and array properties support transparent traversal to their component type, enabling direct reference to nested properties:
+
+----
+Sort.by("address.city")             <1>
+
+Sort.by("previousAddresses")        <2>
+
+Sort.by("previousAddresses.city")   <3>
+----
+
+<1> Navigate from the top-level `address` property to the `city` field.
+<2> Reference the entire `previousAddresses` collection (supported by certain technologies for collection-based sorting).
+<3> Navigate through the collection to sort by the `city` field of each address.
+
+String-based property paths offer simplicity and can be broadly applied but there are tradeoffs to consider:
+
+* **Flexibility**: Property paths are flexible and can be constructed from constant string, configuration or as result of user input.
+* **Untyped**: String paths do not carry compile-time type information.
+Typed as textual content they do not have a dependency on the underlying domain type.
+* **Refactoring risk**: Renaming domain properties requires often manual updates to string literals; IDEs cannot reliably track these references.
+
+To improve refactoring safety and type consistency, prefer type-safe property references using method references.
+This approach associates property paths with compile-time type information and enables compiler validation and IDE-driven refactoring.
+See <<type-safe-property-references>> for details.
+
+NOTE: For implementation details, refer to <<property-path-internals>> for more information.
+
+[[property-path-internals]]
+=== Property Path Internals
+
+The `org.springframework.data.core` package is the basis for Spring Data's navigation across domain classes.
+The javadoc:org.springframework.data.core.TypeInformation[] inteface provides type introspection capable of resolving the type of a property. javadoc:org.springframework.data.core.PropertyPath[] represents a textual navigation path through a domain class.
+
+Together they provide:
+
+* Generic type resolution and introspection
+* Property path creation and validation
+* Actual type resolution for complex properties such as collections and maps
+
+[[type-safe-property-references]]
+== Type-safe Property-References
+
+Type-safe property-references eliminate a common source of errors in data access code: Brittle, string-based property references.
+This section explains how method references can be used to express refactoring-safe property paths.
+
+While a property path is a simple representation of object navigation, String-based property paths are inherently fragile during refactoring as they can be easily missed with an increasing distance between the property definition and its usage.
+Type-safe alternatives derive property paths from method references, enabling the compiler to validate property names and IDEs to support refactoring operations.
+
+Consider the practical difference: The following examples express the same intent - sorting by `address.city` - but only the type-safe version benefits from compiler validation and IDE support:
+
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
 ----
 TypedPropertyPath.of(Person::getAddress)
                  .then(Address::getCity);
 ----
 
-The expression above constructs a path equivalent to `address.city` while remaining resilient to refactoring.
-Property resolution is performed by inspecting the supplied method references; any mismatch becomes visible at compile time.
-
-By comparing a literal-based approach as the following example you can immediately spot the same intent while the mechanism of using strings removes any type context:
-
-.Stringly-typed programming
-[source,java]
+Kotlin::
++
+[source,kotlin,role="secondary"]
 ----
-Sort.by("address.city", "address.street")
-----
+TypedPropertyPath.of<Person, Address>(Person::address)
+                 .then(Address::city)
 
-You can also use it inline for operations like sorting:
-
-.Type-safe Property Path
-[source,java]
+// Kotlin Exension
+KTypedPropertyPath.of(Person::address).then(Address::city)
 ----
+======
+
+=== Building Type-safe Property Paths
+
+Type-safe property paths compose method references to construct navigation expressions.
+The following examples demonstrate inline usage and composition:
+
+.Type-safe Property Path Construction
+[tabs]
+======
+Java::
++
+[source,java,role="primary"]
+----
+// Inline usage with Sort
 Sort.by(Person::getFirstName, Person::getLastName);
+
+// Composed navigation
+TypedPropertyPath.of(Person::getAddress)
+                 .then(Address::getCity);
 ----
 
-`TypedPropertyPath` can integrate seamlessly with query abstractions or criteria builders:
+Kotlin::
++
+[source,kotlin,role="secondary"]
+----
+// Inline usage with Sort
+Sort.by(Person::firstName, Person::lastName);
 
-.Type-safe Property Path
+// Kotlin extension with composed navigation
+KTypedPropertyPath.of(Person::address)
+                 .then(Address::city)
+----
+======
+
+Type-safe property paths integrate seamlessly with query abstractions and criteria builders, enabling declarative query construction without string-based property references:
+
+.Integration with Criteria API
 [source,java]
 ----
 Criteria.where(Person::getAddress)
