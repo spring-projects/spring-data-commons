@@ -15,6 +15,9 @@
  */
 package org.springframework.data.core;
 
+import kotlin.reflect.KProperty1;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -31,8 +34,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @since 4.1
  */
-sealed interface MemberDescriptor
-		permits MemberDescriptor.MethodDescriptor.FieldDescriptor, MemberDescriptor.MethodDescriptor {
+interface MemberDescriptor {
 
 	/**
 	 * @return class owning the member, can be the declaring class or a subclass.
@@ -69,7 +71,7 @@ sealed interface MemberDescriptor
 	/**
 	 * Create {@link MethodDescriptor.FieldDescriptor} from owner type, field name and field type.
 	 */
-	public static MethodDescriptor.FieldDescriptor ofField(ClassLoader classLoader, String ownerClassName, String name,
+	static MethodDescriptor.FieldDescriptor ofField(ClassLoader classLoader, String ownerClassName, String name,
 			String fieldType) throws ClassNotFoundException {
 
 		Class<?> owner = ClassUtils.forName(ownerClassName, classLoader);
@@ -80,9 +82,6 @@ sealed interface MemberDescriptor
 
 	/**
 	 * Value object describing a {@link Method} in the context of an owning class.
-	 *
-	 * @param owner
-	 * @param method
 	 */
 	record MethodDescriptor(Class<?> owner, Method method) implements MemberDescriptor {
 
@@ -113,9 +112,6 @@ sealed interface MemberDescriptor
 
 	/**
 	 * Value object describing a {@link Field} in the context of an owning class.
-	 *
-	 * @param owner
-	 * @param field
 	 */
 	record FieldDescriptor(Class<?> owner, Field field) implements MemberDescriptor {
 
@@ -144,4 +140,50 @@ sealed interface MemberDescriptor
 		}
 
 	}
+
+	/**
+	 * Value object describing a Kotlin property in the context of an owning class.
+	 */
+	record KPropertyReferenceDescriptor(Class<?> owner, KProperty1<?, ?> property) implements MemberDescriptor {
+
+		static KPropertyReferenceDescriptor create(Class<?> owner, KProperty1<?, ?> property) {
+			return new KPropertyReferenceDescriptor(owner, property);
+		}
+
+		@Override
+		public Class<?> getOwner() {
+			return owner();
+		}
+
+		@Override
+		public Member getMember() {
+
+			Method javaGetter = ReflectJvmMapping.getJavaGetter(property());
+			if (javaGetter != null) {
+				return javaGetter;
+			}
+
+			Field javaField = ReflectJvmMapping.getJavaField(property());
+
+			if (javaField != null) {
+				return javaField;
+			}
+
+			throw new IllegalStateException("Cannot resolve member for property '%s'".formatted(property().getName()));
+		}
+
+		@Override
+		public ResolvableType getType() {
+
+			Member member = getMember();
+
+			if (member instanceof Method m) {
+				return ResolvableType.forMethodReturnType(m, owner());
+			}
+
+			return ResolvableType.forField((Field) member, owner());
+		}
+
+	}
+
 }

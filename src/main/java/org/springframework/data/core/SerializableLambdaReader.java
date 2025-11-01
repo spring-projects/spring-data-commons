@@ -15,6 +15,11 @@
  */
 package org.springframework.data.core;
 
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.jvm.internal.PropertyReference;
+import kotlin.reflect.KClass;
+import kotlin.reflect.KProperty1;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandleInfo;
@@ -33,7 +38,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.asm.ClassReader;
 import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.Label;
@@ -41,8 +45,10 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.SpringAsmInfo;
 import org.springframework.asm.Type;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.SpringProperties;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -104,8 +110,8 @@ class SerializableLambdaReader {
 	public static final String INCLUDE_SUPPRESSED_EXCEPTIONS = "spring.data.lambda-reader.include-suppressed-exceptions";
 
 	private static final Log LOGGER = LogFactory.getLog(SerializableLambdaReader.class);
-	private static final boolean filterStackTrace = isEnabled(FILTER_STACK_TRACE, true);
-	private static final boolean includeSuppressedExceptions = isEnabled(INCLUDE_SUPPRESSED_EXCEPTIONS, false);
+	private static final boolean filterStackTrace = isEnabled(FILTER_STACK_TRACE, false);
+	private static final boolean includeSuppressedExceptions = isEnabled(INCLUDE_SUPPRESSED_EXCEPTIONS, true);
 
 	private final List<Class<?>> entryPoints;
 
@@ -132,6 +138,18 @@ class SerializableLambdaReader {
 	public MemberDescriptor read(Object lambdaObject) {
 
 		SerializedLambda lambda = serialize(lambdaObject);
+
+		if (isKotlinPropertyReference(lambda)) {
+
+			Object captured = lambda.getCapturedArg(0);
+			if (captured != null //
+					&& captured instanceof PropertyReference propRef //
+					&& propRef.getOwner() instanceof KClass<?> owner //
+					&& captured instanceof KProperty1<?, ?> kProperty) {
+				return new KPropertyReferenceDescriptor(JvmClassMappingKt.getJavaClass(owner), kProperty);
+			}
+		}
+
 		assertNotConstructor(lambda);
 
 		try {
@@ -154,6 +172,11 @@ class SerializableLambdaReader {
 
 		throw new InvalidDataAccessApiUsageException("Cannot extract method or field from: " + lambdaObject
 				+ ". The given value is not a lambda or method reference.");
+	}
+
+	public static boolean isKotlinPropertyReference(SerializedLambda lambda) {
+		return KotlinDetector.isKotlinReflectPresent() && lambda.getCapturedArgCount() == 1
+				&& lambda.getCapturedArg(0) != null && KotlinDetector.isKotlinType(lambda.getCapturedArg(0).getClass());
 	}
 
 	private void assertNotConstructor(SerializedLambda lambda) {
@@ -192,7 +215,7 @@ class SerializableLambdaReader {
 		}
 	}
 
-	private static SerializedLambda serialize(Object lambda) {
+	static SerializedLambda serialize(Object lambda) {
 
 		try {
 			Method method = lambda.getClass().getDeclaredMethod("writeReplace");
