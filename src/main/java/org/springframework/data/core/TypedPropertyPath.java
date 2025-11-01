@@ -72,7 +72,7 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 */
-	static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> propertyPath) {
+	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> propertyPath) {
 		return TypedPropertyPaths.of(propertyPath);
 	}
 
@@ -124,7 +124,7 @@ public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
-	default <N> TypedPropertyPath<T, N> then(TypedPropertyPath<P, N> next) {
+	default <N extends @Nullable Object> TypedPropertyPath<T, N> then(TypedPropertyPath<P, N> next) {
 		return TypedPropertyPaths.compose(this, of(next));
 	}
 
