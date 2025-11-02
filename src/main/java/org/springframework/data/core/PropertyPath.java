@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
@@ -43,9 +42,25 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
+	 * @since 4.1
 	 */
 	static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> propertyPath) {
 		return TypedPropertyPaths.of(propertyPath);
+	}
+
+	/**
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda for a collection property.
+	 * <p>
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 *
+	 * @param propertyPath the method reference or lambda.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property path.
+	 * @since 4.1
+	 */
+	static <T, P> TypedPropertyPath<T, P> ofMany(TypedPropertyPath<T, ? extends Iterable<P>> propertyPath) {
+		return (TypedPropertyPath) TypedPropertyPaths.of(propertyPath);
 	}
 
 	/**

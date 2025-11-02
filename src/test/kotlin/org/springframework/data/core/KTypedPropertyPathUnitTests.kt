@@ -30,6 +30,14 @@ class KTypedPropertyPathUnitTests {
 	}
 
 	@Test
+	fun shouldComposeManyPropertyPath() {
+
+		val path = KTypedPropertyPath.of(Author::books).then(Book::title)
+
+		assertThat(path.toDotPath()).isEqualTo("books.title")
+	}
+
+	@Test
 	fun shouldCreateComposed() {
 
 		val path = KTypedPropertyPath.of<Author, String>(Book::author / Author::name)
