@@ -165,7 +165,7 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				builder.customMessageConverter(converter);
+				builder.addCustomConverter(converter);
 
 			} else if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", context.getClassLoader())) {
 
@@ -177,13 +177,13 @@ public class SpringDataWebConfiguration implements WebMvcConfigurer, BeanClassLo
 				converter.setBeanFactory(context);
 				forwardBeanClassLoader(converter);
 
-				builder.customMessageConverter(converter);
+				builder.addCustomConverter(converter);
 			}
 		}
 
 		if (ClassUtils.isPresent("org.xmlbeam.XBProjector", context.getClassLoader())) {
 
-			builder.customMessageConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
+			builder.addCustomConverter(context.getBeanProvider(XmlBeamHttpMessageConverter.class) //
 					.getIfAvailable(XmlBeamHttpMessageConverter::new));
 		}
 	}

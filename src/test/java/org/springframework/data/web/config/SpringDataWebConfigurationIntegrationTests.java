@@ -63,7 +63,7 @@ class SpringDataWebConfigurationIntegrationTests {
 				HidingClassLoader.hide(ObjectMapper.class, com.fasterxml.jackson.databind.ObjectMapper.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).addCustomConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
@@ -75,7 +75,7 @@ class SpringDataWebConfigurationIntegrationTests {
 		createConfigWithClassLoader(HidingClassLoader.hide(DocumentContext.class),
 				it -> it.configureMessageConverters(builder));
 
-		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).addCustomConverter(any(XmlBeamHttpMessageConverter.class));
 		verifyNoMoreInteractions(builder);
 	}
 
@@ -87,7 +87,7 @@ class SpringDataWebConfigurationIntegrationTests {
 		ClassLoader classLoader = HidingClassLoader.hide(XBProjector.class);
 		createConfigWithClassLoader(classLoader, it -> it.configureMessageConverters(builder));
 
-		verify(builder, never()).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder, never()).addCustomConverter(any(XmlBeamHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-987
@@ -97,8 +97,8 @@ class SpringDataWebConfigurationIntegrationTests {
 
 		createConfigWithClassLoader(getClass().getClassLoader(), it -> it.configureMessageConverters(builder));
 
-		verify(builder).customMessageConverter(any(XmlBeamHttpMessageConverter.class));
-		verify(builder).customMessageConverter(any(ProjectingJacksonHttpMessageConverter.class));
+		verify(builder).addCustomConverter(any(XmlBeamHttpMessageConverter.class));
+		verify(builder).addCustomConverter(any(ProjectingJacksonHttpMessageConverter.class));
 	}
 
 	@Test // DATACMNS-1152
@@ -110,7 +110,7 @@ class SpringDataWebConfigurationIntegrationTests {
 			ArgumentCaptor<HttpMessageConverter> captor = ArgumentCaptor.forClass(HttpMessageConverter.class);
 
 			it.configureMessageConverters(builder);
-			verify(builder, atLeast(1)).customMessageConverter(captor.capture());
+			verify(builder, atLeast(1)).addCustomConverter(captor.capture());
 
 			// Converters contains ProjectingJackson2HttpMessageConverter with custom ObjectMapper
 
