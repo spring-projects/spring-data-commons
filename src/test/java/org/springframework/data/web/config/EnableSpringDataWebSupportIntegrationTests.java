@@ -135,7 +135,7 @@ class EnableSpringDataWebSupportIntegrationTests {
 
 		@Override
 		protected void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
-			builder.jsonMessageConverter(new JacksonJsonHttpMessageConverter(
+			builder.withJsonConverter(new JacksonJsonHttpMessageConverter(
 					JsonMapper.builder().addModules(modules.toArray(new JacksonModule[0])).build()));
 		}
 
