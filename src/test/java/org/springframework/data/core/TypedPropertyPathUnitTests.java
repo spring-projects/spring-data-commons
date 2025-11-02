@@ -17,6 +17,8 @@ package org.springframework.data.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -61,6 +63,12 @@ class TypedPropertyPathUnitTests {
 	void resolvesMHComposedPath() {
 		assertThat(PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry).toDotPath())
 				.isEqualTo("address.country");
+	}
+
+	@Test
+	void resolvesCollectionPath() {
+		assertThat(PropertyPath.ofMany(PersonQuery::getAddresses).then(Address::getCity).toDotPath())
+				.isEqualTo("addresses.city");
 	}
 
 	@Test
@@ -235,6 +243,7 @@ class TypedPropertyPathUnitTests {
 		private String name;
 		private Integer age;
 		private Address address;
+		private List<Address> addresses;
 
 		public PersonQuery(PersonQuery pq) {}
 
@@ -251,6 +260,14 @@ class TypedPropertyPathUnitTests {
 
 		public Address getAddress() {
 			return address;
+		}
+
+		public List<Address> getAddresses() {
+			return addresses;
+		}
+
+		public void setAddresses(List<Address> addresses) {
+			this.addresses = addresses;
 		}
 	}
 

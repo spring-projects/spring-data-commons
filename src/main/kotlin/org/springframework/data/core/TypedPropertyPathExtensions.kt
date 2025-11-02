@@ -67,6 +67,14 @@ class KTypedPropertyPath {
 		}
 
 		/**
+		 * Create a [TypedPropertyPath] from a collection-like [KProperty1].
+		 */
+		@JvmName("ofMany")
+		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P>>): TypedPropertyPath<T, P> {
+			return of((property as KProperty<P?>))
+		}
+
+		/**
 		 * Create a [TypedPropertyPath] from a [KProperty].
 		 */
 		fun <T : Any, P : Any> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
