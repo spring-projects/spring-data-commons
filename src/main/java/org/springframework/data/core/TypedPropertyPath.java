@@ -35,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * <pre class="code">
  * TypedPropertyPath&lt;Person, String&gt; name = TypedPropertyPath.of(Person::getName);
  * </pre>
- * 
+ *
  * The resulting object can be used to obtain the {@link #toDotPath() dot-path} and to interact with the targetting
  * property. Typed paths allow for composition to navigate nested object structures using
  * {@link #then(TypedPropertyPath)}:

@@ -17,6 +17,8 @@ package org.springframework.data.core
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaGetter
 
 /**
  * Extension for [KProperty] providing an `toPath` function to render a [KProperty] in dot notation.
@@ -34,7 +36,7 @@ fun KProperty<*>.toDotPath(): String = asString(this)
  */
 fun <T : Any, P : Any, N : Any> TypedPropertyPath<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
 	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
-	return TypedPropertyPaths.ComposedPropertyPath(this, nextPath)
+	return TypedPropertyPaths.compose(this, nextPath)
 }
 
 /**
@@ -44,7 +46,7 @@ fun <T : Any, P : Any, N : Any> TypedPropertyPath<T, P>.then(next: KProperty1<T,
  */
 fun <T : Any, P : Any, N : Any> TypedPropertyPath<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
 	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
-	return TypedPropertyPaths.ComposedPropertyPath(this, nextPath)
+	return TypedPropertyPaths.compose(this, nextPath)
 }
 
 /**
@@ -80,10 +82,14 @@ class KTypedPropertyPath {
 		fun <T : Any, P : Any> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
 
 			if (property is KProperty1<*, *>) {
+
+				val property1 = property as KProperty1<*, *>;
+				val owner = property1.javaField?.declaringClass
+					?: property1.javaGetter?.declaringClass
 				val metadata = TypedPropertyPaths.KPropertyPathMetadata.of(
 					MemberDescriptor.KPropertyReferenceDescriptor.create(
-						String::class.java,
-						property as KProperty1<*, *>
+						owner,
+						property1
 					)
 				)
 				return TypedPropertyPaths.ResolvedKPropertyPath(metadata)
@@ -96,7 +102,10 @@ class KTypedPropertyPath {
 				val parent = of<Any, Any>(paths.parent)
 				val child = of<Any, Any>(paths.child)
 
-				return TypedPropertyPaths.ComposedPropertyPath(parent, child) as TypedPropertyPath<T, P>
+				return TypedPropertyPaths.compose(
+					parent,
+					child
+				) as TypedPropertyPath<T, P>
 			}
 
 			if (property is KIterablePropertyPath<*, *>) {
@@ -106,7 +115,10 @@ class KTypedPropertyPath {
 				val parent = of<Any, Any>(paths.parent)
 				val child = of<Any, Any>(paths.child)
 
-				return TypedPropertyPaths.ComposedPropertyPath(parent, child) as TypedPropertyPath<T, P>
+				return TypedPropertyPaths.compose(
+					parent,
+					child
+				) as TypedPropertyPath<T, P>
 			}
 
 			throw IllegalArgumentException("Property ${property.name} is not a KProperty")
