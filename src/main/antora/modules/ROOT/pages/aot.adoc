@@ -1,3 +1,4 @@
+[[aot]]
 = Ahead of Time Optimizations
 
 This chapter covers Spring Data's Ahead of Time (AOT) optimizations that build upon {spring-framework-docs}/core/aot.html[Spring's Ahead of Time Optimizations].
