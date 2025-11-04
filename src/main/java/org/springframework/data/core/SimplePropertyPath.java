@@ -177,45 +177,12 @@ class SimplePropertyPath implements PropertyPath {
 
 	@Override
 	public boolean equals(@Nullable Object o) {
-
-		if (this == o) {
-			return true;
-		}
-
-		if (!(o instanceof SimplePropertyPath that)) {
-			return false;
-		}
-
-		if (isCollection != that.isCollection) {
-			return false;
-		}
-
-		return Objects.equals(this.owningType, that.owningType) && Objects.equals(this.name, that.name)
-				&& Objects.equals(this.typeInformation, that.typeInformation)
-				&& Objects.equals(this.actualTypeInformation, that.actualTypeInformation) && Objects.equals(next, that.next);
+		return PropertyPathUtil.equals(this, o);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(owningType, name, typeInformation, actualTypeInformation, isCollection, next);
-	}
-
-	/**
-	 * Returns the next {@link SimplePropertyPath}.
-	 *
-	 * @return the next {@link SimplePropertyPath}.
-	 * @throws IllegalStateException it there's no next one.
-	 */
-	private SimplePropertyPath requiredNext() {
-
-		SimplePropertyPath result = next;
-
-		if (result == null) {
-			throw new IllegalStateException(
-					"No next path available; Clients should call hasNext() before invoking this method");
-		}
-
-		return result;
+		return PropertyPathUtil.hashCode(this);
 	}
 
 	/**

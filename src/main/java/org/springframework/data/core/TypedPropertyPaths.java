@@ -19,14 +19,17 @@ import kotlin.reflect.KProperty;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
@@ -53,8 +56,28 @@ class TypedPropertyPaths {
 	/**
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static <T, M, R> TypedPropertyPath<T, R> compose(TypedPropertyPath<T, M> owner, TypedPropertyPath<M, R> next) {
-		return new ComposedPropertyPath<>(owner, next);
+
+		if (owner instanceof ForwardingPropertyPath<?, ?, ?> fwd) {
+
+			List<PropertyPath> paths = fwd.stream().map(ForwardingPropertyPath::getSelf).collect(Collectors.toList());
+			Collections.reverse(paths);
+
+			ForwardingPropertyPath result = null;
+			for (PropertyPath path : paths) {
+
+				if (result == null) {
+					result = new ForwardingPropertyPath((TypedPropertyPath) path, next);
+				} else {
+					result = new ForwardingPropertyPath((TypedPropertyPath) path, result);
+				}
+			}
+
+			return result;
+		}
+
+		return new ForwardingPropertyPath<>(owner, next);
 	}
 
 	/**
@@ -63,7 +86,7 @@ class TypedPropertyPaths {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <P, T> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
 
-		if (lambda instanceof ComposedPropertyPath<?, ?, ?> || lambda instanceof ResolvedTypedPropertyPathSupport<?, ?>) {
+		if (lambda instanceof ForwardingPropertyPath<?, ?, ?> || lambda instanceof ResolvedTypedPropertyPathSupport<?, ?>) {
 			return lambda;
 		}
 
@@ -79,6 +102,7 @@ class TypedPropertyPaths {
 	/**
 	 * Retrieve {@link PropertyPathMetadata} for a given {@link TypedPropertyPath}.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> delegate, PropertyPathMetadata metadata) {
 
 		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyPathMetadata kmp) {
@@ -276,8 +300,8 @@ class TypedPropertyPaths {
 				return false;
 			}
 
-			return Objects.equals(this.toDotPath(), that.toDotPath())
-					&& Objects.equals(this.getOwningType(), that.getOwningType());
+			return Objects.equals(this.getOwningType(), that.getOwningType())
+					&& Objects.equals(this.toDotPath(), that.toDotPath());
 		}
 
 		@Override
@@ -342,53 +366,62 @@ class TypedPropertyPaths {
 	}
 
 	/**
-	 * A {@link TypedPropertyPath} that represents the composition of two property paths, enabling navigation through
-	 * nested properties.
+	 * Forwarding implementation to compose a linked {@link TypedPropertyPath} graph.
 	 *
-	 * @param <T> the root owning type.
-	 * @param <M> the intermediate property type (connecting first and second paths).
-	 * @param <R> the final property type.
-	 * @param base the initial path segment.
-	 * @param next the next path segment.
-	 * @param dotPath the precomputed dot-notation path string.
+	 * @param self
+	 * @param nextSegment
+	 * @param leaf cached leaf property.
+	 * @param toStringRepresentation cached toString representation.
 	 */
-	record ComposedPropertyPath<T, M, R>(TypedPropertyPath<T, M> base, TypedPropertyPath<M, R> next, String dotPath,
-			String toStringRepresentation) implements TypedPropertyPath<T, R> {
+	record ForwardingPropertyPath<T, M, R>(TypedPropertyPath<T, M> self, TypedPropertyPath<M, R> nextSegment,
+			PropertyPath leaf, String dotPath, String toStringRepresentation) implements TypedPropertyPath<T, R> {
 
-		ComposedPropertyPath(TypedPropertyPath<T, M> first, TypedPropertyPath<M, R> second) {
-			this(first, second, first.toDotPath() + "." + second.toDotPath(),
-					first.getType().getSimpleName() + "." + first.toDotPath() + "." + second.toDotPath());
+		public ForwardingPropertyPath(TypedPropertyPath<T, M> self, TypedPropertyPath<M, R> nextSegment) {
+			this(self, nextSegment, nextSegment.getLeafProperty(), getDotPath(self, nextSegment),
+					getToString(self, nextSegment));
+		}
+
+		private static String getToString(PropertyPath self, PropertyPath nextSegment) {
+			return self.getOwningType().getType().getSimpleName() + "." + getDotPath(self, nextSegment);
+		}
+
+		private static String getDotPath(PropertyPath self, PropertyPath nextSegment) {
+			return self.getSegment() + "." + nextSegment.toDotPath();
+		}
+
+		public static PropertyPath getSelf(PropertyPath path) {
+			return path instanceof ForwardingPropertyPath<?, ?, ?> fwd ? fwd.self() : path;
 		}
 
 		@Override
 		public @Nullable R get(T obj) {
-			M intermediate = base.get(obj);
-			return intermediate != null ? next.get(intermediate) : null;
+			M intermediate = self.get(obj);
+			return intermediate != null ? nextSegment.get(intermediate) : null;
 		}
 
 		@Override
 		public TypeInformation<?> getOwningType() {
-			return base.getOwningType();
+			return self.getOwningType();
 		}
 
 		@Override
 		public String getSegment() {
-			return base().getSegment();
+			return self.getSegment();
 		}
 
 		@Override
 		public PropertyPath getLeafProperty() {
-			return next.getLeafProperty();
+			return leaf;
+		}
+
+		@Override
+		public String toDotPath() {
+			return self.getSegment() + "." + nextSegment.toDotPath();
 		}
 
 		@Override
 		public TypeInformation<?> getTypeInformation() {
-			return base.getTypeInformation();
-		}
-
-		@Override
-		public TypedPropertyPath<M, R> next() {
-			return next;
+			return self.getTypeInformation();
 		}
 
 		@Override
@@ -397,48 +430,33 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public String toDotPath() {
-			return dotPath;
-		}
-
-		@Override
-		public Stream<PropertyPath> stream() {
-			return Stream.concat(base.stream(), next.stream());
+		public PropertyPath next() {
+			return nextSegment;
 		}
 
 		@Override
 		public Iterator<PropertyPath> iterator() {
+
 			CompositeIterator<PropertyPath> iterator = new CompositeIterator<>();
-			iterator.add(base.iterator());
-			iterator.add(next.iterator());
+			iterator.add(List.of((PropertyPath) this).iterator());
+			iterator.add(nextSegment.iterator());
 			return iterator;
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-
-			if (obj == this) {
-				return true;
-			}
-
-			if (!(obj instanceof PropertyPath that)) {
-				return false;
-			}
-
-			return Objects.equals(this.toDotPath(), that.toDotPath())
-					&& Objects.equals(this.getOwningType(), that.getOwningType());
+		public boolean equals(@Nullable Object o) {
+			return PropertyPathUtil.equals(this, o);
 		}
 
 		@Override
 		public int hashCode() {
-			return toString().hashCode();
+			return PropertyPathUtil.hashCode(this);
 		}
 
 		@Override
 		public String toString() {
 			return toStringRepresentation;
 		}
-
 	}
 
 }

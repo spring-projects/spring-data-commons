@@ -18,10 +18,15 @@ package org.springframework.data.core;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
@@ -31,27 +36,26 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
  */
 class TypedPropertyPathUnitTests {
 
-	@Test
-	void meetsApiContract() {
+	@ParameterizedTest
+	@MethodSource("propertyPaths")
+	void verifyTck(TypedPropertyPath<?, ?> actual, PropertyPath expected) {
+		PropertyPathTck.verify(actual, expected);
+	}
 
-		TypedPropertyPath<PersonQuery, Country> typed = PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry);
-
-		PropertyPath path = PropertyPath.from("address.country", PersonQuery.class);
-
-		assertThat(typed.hasNext()).isTrue();
-		assertThat(path.hasNext()).isTrue();
-
-		assertThat(typed.next().hasNext()).isFalse();
-		assertThat(path.next().hasNext()).isFalse();
-
-		assertThat(typed.getType()).isEqualTo(Address.class);
-		assertThat(path.getType()).isEqualTo(Address.class);
-
-		assertThat(typed.getSegment()).isEqualTo("address");
-		assertThat(path.getSegment()).isEqualTo("address");
-
-		assertThat(typed.getLeafProperty().getType()).isEqualTo(Country.class);
-		assertThat(path.getLeafProperty().getType()).isEqualTo(Country.class);
+	static Stream<Arguments.ArgumentSet> propertyPaths() {
+		return Stream.of(
+				Arguments.argumentSet("PersonQuery.name", PropertyPath.of(PersonQuery::getName),
+						PropertyPath.from("name", PersonQuery.class)),
+				Arguments.argumentSet("PersonQuery.address.country",
+						PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry),
+						PropertyPath.from("address.country", PersonQuery.class)),
+				Arguments.argumentSet("PersonQuery.address.country.name",
+						PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry).then(Country::name),
+						PropertyPath.from("address.country.name", PersonQuery.class)),
+				Arguments.argumentSet(
+						"PersonQuery.emergencyContact.address.country.name", PropertyPath.of(PersonQuery::getEmergencyContact)
+								.then(PersonQuery::getAddress).then(Address::getCountry).then(Country::name),
+						PropertyPath.from("emergencyContact.address.country.name", PersonQuery.class)));
 	}
 
 	@Test
@@ -92,6 +96,7 @@ class TypedPropertyPathUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("Convert2MethodRef")
 	void resolvesInterfaceLambdaGetter() {
 		assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
 	}
@@ -108,12 +113,13 @@ class TypedPropertyPathUnitTests {
 
 	@Test
 	void resolvesPrivateMethodReference() {
-		assertThat(PropertyPath.of(Address::getSecret).toDotPath()).isEqualTo("secret");
+		assertThat(PropertyPath.of(Secret::getSecret).toDotPath()).isEqualTo("secret");
 	}
 
 	@Test
+	@SuppressWarnings("Convert2MethodRef")
 	void resolvesPrivateMethodLambda() {
-		assertThat(PropertyPath.of((Address address) -> address.getSecret()).toDotPath()).isEqualTo("secret");
+		assertThat(PropertyPath.of((Secret secret) -> secret.getSecret()).toDotPath()).isEqualTo("secret");
 	}
 
 	@Test
@@ -151,6 +157,7 @@ class TypedPropertyPathUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("Convert2Lambda")
 	void classImplementationShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
@@ -226,7 +233,8 @@ class TypedPropertyPathUnitTests {
 
 	// Domain entities
 
-	static public class SuperClass {
+	static class SuperClass {
+
 		private int tenant;
 
 		public int getTenant() {
@@ -238,10 +246,11 @@ class TypedPropertyPathUnitTests {
 		}
 	}
 
-	static public class PersonQuery extends SuperClass {
+	static class PersonQuery extends SuperClass {
 
 		private String name;
 		private Integer age;
+		private PersonQuery emergencyContact;
 		private Address address;
 		private List<Address> addresses;
 
@@ -258,6 +267,14 @@ class TypedPropertyPathUnitTests {
 			return age;
 		}
 
+		public PersonQuery getEmergencyContact() {
+			return emergencyContact;
+		}
+
+		public void setEmergencyContact(PersonQuery emergencyContact) {
+			this.emergencyContact = emergencyContact;
+		}
+
 		public Address getAddress() {
 			return address;
 		}
@@ -271,7 +288,7 @@ class TypedPropertyPathUnitTests {
 		}
 	}
 
-	class Address {
+	static class Address {
 
 		String street;
 		String city;
@@ -301,6 +318,15 @@ class TypedPropertyPathUnitTests {
 	}
 
 	record Country(String name, String code) {
+
+	}
+
+	static class Secret {
+		private String secret;
+
+		private String getSecret() {
+			return secret;
+		}
 
 	}
 

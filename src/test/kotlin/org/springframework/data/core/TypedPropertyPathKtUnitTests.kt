@@ -2,6 +2,11 @@ package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.ArgumentSet
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 /**
  * Kotlin unit tests for [TypedPropertyPath] and related functionality.
@@ -9,6 +14,49 @@ import org.junit.jupiter.api.Test
  * @author Mark Paluch
  */
 class TypedPropertyPathKtUnitTests {
+
+	@ParameterizedTest
+	@MethodSource("propertyPaths")
+	fun verifyTck(actual: TypedPropertyPath<*, *>?, expected: PropertyPath) {
+		PropertyPathTck.verify(actual, expected)
+	}
+
+	companion object {
+
+		@JvmStatic
+		fun propertyPaths(): Stream<ArgumentSet> {
+
+			return Stream.of(
+				Arguments.argumentSet(
+					"Person.name",
+					TypedPropertyPath.of(Person::name),
+					PropertyPath.from("name", Person::class.java)
+				),
+				Arguments.argumentSet(
+					"Person.address.country",
+					TypedPropertyPath.of<Person, Address>(Person::address)
+						.then(Address::country),
+					PropertyPath.from("address.country", Person::class.java)
+				),
+				Arguments.argumentSet(
+					"Person.address.country.name",
+					TypedPropertyPath.of<Person, Address>(Person::address)
+						.then<Country>(Address::country).then(Country::name),
+					PropertyPath.from("address.country.name", Person::class.java)
+				),
+				Arguments.argumentSet(
+					"Person.emergencyContact.address.country.name",
+					TypedPropertyPath.of<Person, Person>(Person::emergencyContact)
+						.then<Address>(Person::address).then<Country>(Address::country)
+						.then(Country::name),
+					PropertyPath.from(
+						"emergencyContact.address.country.name",
+						Person::class.java
+					)
+				)
+			)
+		}
+	}
 
 	@Test
 	fun shouldSupportPropertyReference() {
@@ -36,10 +84,10 @@ class TypedPropertyPathKtUnitTests {
 	}
 
 	class Person {
-		var firstname: String? = null
-		var lastname: String? = null
+		var name: String? = null
 		var age: Int = 0
 		var address: Address? = null
+		var emergencyContact: Person? = null
 	}
 
 	class Address {

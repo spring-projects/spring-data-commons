@@ -59,6 +59,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * @return the typed property path.
 	 * @since 4.1
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static <T, P> TypedPropertyPath<T, P> ofMany(TypedPropertyPath<T, ? extends Iterable<P>> propertyPath) {
 		return (TypedPropertyPath) TypedPropertyPaths.of(propertyPath);
 	}
@@ -71,7 +72,9 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	TypeInformation<?> getOwningType();
 
 	/**
-	 * Returns the first part of the {@link PropertyPath}. For example:
+	 * Returns the current property path segment (i.e. first part of {@link #toDotPath()}).
+	 * <p>
+	 * For example:
 	 *
 	 * <pre class="code">
 	 * PropertyPath.from("a.b.c", Some.class).getSegment();
@@ -79,14 +82,15 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 *
 	 * results in {@code a}.
 	 *
-	 * @return the name will never be {@literal null}.
+	 * @return the current property path segment.
 	 */
 	String getSegment();
 
 	/**
-	 * Returns the leaf property of the {@link PropertyPath}.
+	 * Returns the leaf property of the {@link PropertyPath}. Either this property if the path ends here or the last
+	 * property in the chain.
 	 *
-	 * @return will never be {@literal null}.
+	 * @return leaf property.
 	 */
 	default PropertyPath getLeafProperty() {
 
@@ -103,30 +107,44 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * Returns the type of the leaf property of the current {@link PropertyPath}.
 	 *
 	 * @return will never be {@literal null}.
+	 * @see #getLeafProperty()
 	 */
 	default Class<?> getLeafType() {
 		return getLeafProperty().getType();
 	}
 
 	/**
-	 * Returns the actual type of the property. Will return the plain resolved type for simple properties, the component
-	 * type for any {@link Iterable} or the value type of a {@link java.util.Map}.
+	 * Returns the actual type of the property at this segment. Will return the plain resolved type for simple properties,
+	 * the component type for any {@link Iterable} or the value type of {@link java.util.Map} properties.
 	 *
 	 * @return the actual type of the property.
+	 * @see #getTypeInformation()
+	 * @see TypeInformation#getRequiredActualType()
 	 */
 	default Class<?> getType() {
 		return getTypeInformation().getRequiredActualType().getType();
 	}
 
 	/**
-	 * Returns the type information of the property.
+	 * Returns the type information for the property at this segment.
 	 *
-	 * @return the actual type of the property.
+	 * @return the type information for the property at this segment.
 	 */
 	TypeInformation<?> getTypeInformation();
 
 	/**
-	 * Returns the {@link PropertyPath} path that results from removing the first element of the current one. For example:
+	 * Returns whether the current property path segment is a collection.
+	 *
+	 * @return {@literal true} if the current property path segment is a collection.
+	 * @see #getTypeInformation()
+	 * @see TypeInformation#isCollectionLike()
+	 */
+	default boolean isCollection() {
+		return getTypeInformation().isCollectionLike();
+	}
+
+	/**
+	 * Returns the next {@code PropertyPath} segment in the property path chain.
 	 *
 	 * <pre class="code">
 	 * PropertyPath.from("a.b.c", Some.class).next().toDotPath();
@@ -134,26 +152,27 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 *
 	 * results in the output: {@code b.c}
 	 *
-	 * @return the next nested {@link PropertyPath} or {@literal null} if no nested {@link PropertyPath} available.
+	 * @return the next {@code PropertyPath} or {@literal null} if the path does not contain further segments.
 	 * @see #hasNext()
 	 */
 	@Nullable
 	PropertyPath next();
 
 	/**
-	 * Returns whether there is a nested {@link PropertyPath}. If this returns {@literal true} you can expect
-	 * {@link #next()} to return a non- {@literal null} value.
+	 * Returns {@literal true} if the property path contains further segments or {@literal false} if the path ends at this
+	 * segment.
 	 *
-	 * @return
+	 * @return {@literal true} if the property path contains further segments or {@literal false} if the path ends at this
+	 *         segment.
 	 */
 	default boolean hasNext() {
 		return next() != null;
 	}
 
 	/**
-	 * Returns the {@link PropertyPath} in dot notation.
+	 * Returns the {@code PropertyPath} in dot notation.
 	 *
-	 * @return the {@link PropertyPath} in dot notation.
+	 * @return the {@code PropertyPath} in dot notation.
 	 */
 	default String toDotPath() {
 
@@ -162,16 +181,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns whether the {@link PropertyPath} is actually a collection.
-	 *
-	 * @return {@literal true} whether the {@link PropertyPath} is actually a collection.
-	 */
-	default boolean isCollection() {
-		return getTypeInformation().isCollectionLike();
-	}
-
-	/**
-	 * Returns the {@link PropertyPath} for the path nested under the current property.
+	 * Returns the {@code PropertyPath} for the path nested under the current property.
 	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @return will never be {@literal null}.
@@ -186,8 +196,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	}
 
 	/**
-	 * Returns an {@link Iterator Iterator of PropertyPath} that iterates over all the partial property paths with the
-	 * same leaf type but decreasing length. For example:
+	 * Returns an {@link Iterator Iterator of PropertyPath} that iterates over all property path segments. For example:
 	 *
 	 * <pre class="code">
 	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
@@ -197,9 +206,9 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * results in the dot paths:
 	 *
 	 * <pre class="code">
-	 * a.b.c
-	 * b.c
-	 * c
+	 * a.b.c             (this object)
+	 * b.c               (next() object)
+	 * c                 (next().next() object)
 	 * </pre>
 	 */
 	@Override
