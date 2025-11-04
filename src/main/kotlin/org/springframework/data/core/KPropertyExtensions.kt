@@ -18,51 +18,28 @@ package org.springframework.data.core
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
+
 /**
- * Abstraction of a property path consisting of [KProperty].
+ * Extension for [KProperty] providing an `toPath` function to render a [KProperty] in dot notation.
  *
- * @author Tjeu Kayim
  * @author Mark Paluch
- * @author Yoann de Martino
  * @since 2.5
+ * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-internal class KPropertyPath<T, U>(
-	val parent: KProperty<U?>,
-	val child: KProperty1<U, T>
-) : KProperty<T> by child
+fun KProperty<*>.toDotPath(): String = asString(this)
 
 /**
- * Abstraction of a property path that consists of parent [KProperty],
- * and child property [KProperty], where parent [parent] has an [Iterable]
- * of children, so it represents 1-M mapping.
+ * Extension for [KProperty1] providing an `toPath` function to create a [TypedPropertyPath].
  *
- * @author Mikhail Polivakha
- * @since 3.5
+ * @author Mark Paluch
+ * @since 4.1
+ * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-internal class KIterablePropertyPath<T, U>(
-	val parent: KProperty<Iterable<U?>?>,
-	val child: KProperty1<U, T>
-) : KProperty<T> by child
+fun <T : Any, P> KProperty1<T, P>.toPath(): TypedPropertyPath<T, P> =
+	KTypedPropertyPath.of(this)
 
 /**
- * Recursively construct field name for a nested property.
- * @author Tjeu Kayim
- * @author Mikhail Polivakha
- */
-fun asString(property: KProperty<*>): String {
-	return when (property) {
-		is KPropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-
-		is KIterablePropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-
-		else -> property.name
-	}
-}
-
-/**
- * Builds [KPropertyPath] from Property References.
+ * Builds [KPropertyReference] from Property References.
  * Refer to a nested property in an embeddable or association.
  *
  * For example, referring to the field "author.name":
@@ -71,14 +48,14 @@ fun asString(property: KProperty<*>): String {
  * ```
  * @author Tjeu Kayim
  * @author Yoann de Martino
- * @since 2.5
+ * @since 4.1
  */
 @JvmName("div")
-operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
-	KPropertyPath(this, other)
+operator fun <T, M, P> KProperty1<T, M?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
+	KSinglePropertyReference(this, other) as KProperty1<T, P>
 
 /**
- * Builds [KPropertyPath] from Property References.
+ * Builds [KPropertyReference] from Property References.
  * Refer to a nested property in an embeddable or association.
  *
  * Note, that this function is different from [div] above in the
@@ -91,8 +68,8 @@ operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
  * Author::books / Book::title contains "Bartleby"
  * ```
  * @author Mikhail Polivakha
- * @since 3.5
+ * @since 4.1
  */
 @JvmName("divIterable")
-operator fun <T, U> KProperty<Collection<T?>?>.div(other: KProperty1<T, U>): KProperty<U> =
-	KIterablePropertyPath(this, other)
+operator fun <T, M, P> KProperty1<T, Collection<M?>?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
+	KIterablePropertyReference(this, other) as KProperty1<T, P>

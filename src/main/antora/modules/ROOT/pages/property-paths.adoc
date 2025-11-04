@@ -32,14 +32,14 @@ class Person {
   int age;
   Address address;
   List<Address> previousAddresses;
-  
+
   String getFirstname() { … }; // other property accessors omitted for brevity
 
 }
 
 class Address {
   String city, street;
-  
+
   // accessors omitted for brevity
 
 }
@@ -139,11 +139,13 @@ Kotlin::
 +
 [source,kotlin,role="secondary"]
 ----
-TypedPropertyPath.of<Person, Address>(Person::address)
-                 .then(Address::city)
-
-// Kotlin Exension
+// Kotlin API
 KTypedPropertyPath.of(Person::address).then(Address::city)
+
+// Extension for KProperty1
+KTypedPropertyPath.of(Person::address / Address::city)
+
+(Person::address / Address::city).toPath()
 ----
 ======
 
@@ -163,8 +165,8 @@ Java::
 Sort.by(Person::getFirstName, Person::getLastName);
 
 // Composed navigation
-TypedPropertyPath.of(Person::getAddress)
-                 .then(Address::getCity);
+Sort.by(TypedPropertyPath.of(Person::getAddress).then(Address::getCity),
+            Person::getLastName);
 ----
 
 Kotlin::
@@ -172,11 +174,10 @@ Kotlin::
 [source,kotlin,role="secondary"]
 ----
 // Inline usage with Sort
-Sort.by(Person::firstName, Person::lastName);
+Sort.by(Person::firstName, Person::lastName)
 
-// Kotlin extension with composed navigation
-KTypedPropertyPath.of(Person::address)
-                 .then(Address::city)
+// Composed navigation
+Sort.by((Person::address / Address::city).toPath(), Person::lastName)
 ----
 ======
 

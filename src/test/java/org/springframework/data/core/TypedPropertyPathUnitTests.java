@@ -43,6 +43,7 @@ class TypedPropertyPathUnitTests {
 	}
 
 	static Stream<Arguments.ArgumentSet> propertyPaths() {
+
 		return Stream.of(
 				Arguments.argumentSet("PersonQuery.name", PropertyPath.of(PersonQuery::getName),
 						PropertyPath.from("name", PersonQuery.class)),
@@ -76,11 +77,13 @@ class TypedPropertyPathUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("Convert2MethodRef")
 	void resolvesInitialLambdaGetter() {
 		assertThat(PropertyPath.of((PersonQuery person) -> person.getName()).toDotPath()).isEqualTo("name");
 	}
 
 	@Test
+	@SuppressWarnings("Convert2MethodRef")
 	void resolvesComposedLambdaGetter() {
 		assertThat(PropertyPath.of(PersonQuery::getAddress).then(it -> it.getCity()).toDotPath()).isEqualTo("address.city");
 	}
@@ -220,6 +223,7 @@ class TypedPropertyPathUnitTests {
 	class NestedTestClass {
 
 		@Test
+		@SuppressWarnings("Convert2MethodRef")
 		void resolvesInterfaceLambdaGetter() {
 			assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
 		}
@@ -249,7 +253,7 @@ class TypedPropertyPathUnitTests {
 	static class PersonQuery extends SuperClass {
 
 		private String name;
-		private Integer age;
+		private @Nullable Integer age;
 		private PersonQuery emergencyContact;
 		private Address address;
 		private List<Address> addresses;
@@ -263,7 +267,7 @@ class TypedPropertyPathUnitTests {
 			return name;
 		}
 
-		public Integer getAge() {
+		public @Nullable Integer getAge() {
 			return age;
 		}
 
@@ -322,6 +326,7 @@ class TypedPropertyPathUnitTests {
 	}
 
 	static class Secret {
+
 		private String secret;
 
 		private String getSecret() {
@@ -333,25 +338,6 @@ class TypedPropertyPathUnitTests {
 	interface PersonProjection {
 
 		String getName();
-	}
-
-	static class Criteria {
-
-		public Criteria(String key) {
-
-		}
-
-		public static Criteria where(String key) {
-			return new Criteria(key);
-		}
-
-		public static Criteria where(PropertyPath propertyPath) {
-			return new Criteria(propertyPath.toDotPath());
-		}
-
-		public static <T, R> Criteria where(TypedPropertyPath<T, R> propertyPath) {
-			return new Criteria(propertyPath.toDotPath());
-		}
 	}
 
 	enum NotSupported implements TypedPropertyPath<String, String> {

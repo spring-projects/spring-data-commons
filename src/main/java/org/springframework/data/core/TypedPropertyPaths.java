@@ -57,7 +57,7 @@ class TypedPropertyPaths {
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <T, M, R> TypedPropertyPath<T, R> compose(TypedPropertyPath<T, M> owner, TypedPropertyPath<M, R> next) {
+	public static <T, M, P> TypedPropertyPath<T, P> compose(TypedPropertyPath<T, M> owner, TypedPropertyPath<M, P> next) {
 
 		if (owner instanceof ForwardingPropertyPath<?, ?, ?> fwd) {
 
@@ -373,10 +373,10 @@ class TypedPropertyPaths {
 	 * @param leaf cached leaf property.
 	 * @param toStringRepresentation cached toString representation.
 	 */
-	record ForwardingPropertyPath<T, M, R>(TypedPropertyPath<T, M> self, TypedPropertyPath<M, R> nextSegment,
-			PropertyPath leaf, String dotPath, String toStringRepresentation) implements TypedPropertyPath<T, R> {
+	record ForwardingPropertyPath<T, M, P>(TypedPropertyPath<T, M> self, TypedPropertyPath<M, P> nextSegment,
+			PropertyPath leaf, String dotPath, String toStringRepresentation) implements TypedPropertyPath<T, P> {
 
-		public ForwardingPropertyPath(TypedPropertyPath<T, M> self, TypedPropertyPath<M, R> nextSegment) {
+		public ForwardingPropertyPath(TypedPropertyPath<T, M> self, TypedPropertyPath<M, P> nextSegment) {
 			this(self, nextSegment, nextSegment.getLeafProperty(), getDotPath(self, nextSegment),
 					getToString(self, nextSegment));
 		}
@@ -394,7 +394,7 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public @Nullable R get(T obj) {
+		public @Nullable P get(T obj) {
 			M intermediate = self.get(obj);
 			return intermediate != null ? nextSegment.get(intermediate) : null;
 		}
