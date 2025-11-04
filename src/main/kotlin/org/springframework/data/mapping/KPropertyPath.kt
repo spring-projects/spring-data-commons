@@ -72,6 +72,7 @@ fun asString(property: KProperty<*>): String {
  * @since 2.5
  */
 @JvmName("div")
+@Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
 operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
 	KPropertyPath(this, other)
 
@@ -92,5 +93,6 @@ operator fun <T, U> KProperty<T?>.div(other: KProperty1<T, U>): KProperty<U> =
  * @since 3.5
  */
 @JvmName("divIterable")
+@Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
 operator fun <T, U> KProperty<Collection<T?>?>.div(other: KProperty1<T, U>): KProperty<U> =
 	KIterablePropertyPath(this, other)

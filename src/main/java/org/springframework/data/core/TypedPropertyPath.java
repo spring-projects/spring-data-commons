@@ -63,7 +63,7 @@ import org.jspecify.annotations.Nullable;
  * @see #then(TypedPropertyPath)
  */
 @FunctionalInterface
-public interface TypedPropertyPath<T, P> extends PropertyPath, Serializable {
+public interface TypedPropertyPath<T, P extends @Nullable Object> extends PropertyPath, Serializable {
 
 	/**
 	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.

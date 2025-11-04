@@ -17,16 +17,52 @@ package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.ArgumentSet
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 /**
- * Unit tests for [KPropertyPath] and its extensions.
+ * Unit tests for [kotlin.reflect.KProperty] extensions.
  *
  * @author Tjeu Kayim
  * @author Yoann de Martino
  * @author Mark Paluch
  * @author Mikhail Polivakha
  */
-class KPropertyPathTests {
+class KPropertyExtensionsTests {
+
+	@ParameterizedTest
+	@MethodSource("propertyPaths")
+	fun verifyTck(actual: TypedPropertyPath<*, *>, expected: PropertyPath) {
+		PropertyPathTck.verify(actual, expected)
+	}
+
+	companion object {
+
+		@JvmStatic
+		fun propertyPaths(): Stream<ArgumentSet> {
+
+			return Stream.of(
+				Arguments.argumentSet(
+					"Person.name (toPath)",
+					Person::name.toPath(),
+					PropertyPath.from("name", Person::class.java)
+				),
+				Arguments.argumentSet(
+					"Person.address.country.name (toPath)",
+					(Person::address / Address::country / Country::name).toPath(),
+					PropertyPath.from("address.country.name", Person::class.java)
+				),
+				Arguments.argumentSet(
+					"Person.addresses.country.name (toPath)",
+					(Person::addresses / Address::country / Country::name).toPath(),
+					PropertyPath.from("addresses.country.name", Person::class.java)
+				)
+			)
+		}
+	}
 
 	@Test // DATACMNS-1835
 	fun `Convert normal KProperty to field name`() {
@@ -76,7 +112,8 @@ class KPropertyPathTests {
 		class Entity(val book: Book)
 		class AnotherEntity(val entity: Entity)
 
-		val property = asString(AnotherEntity::entity / Entity::book / Book::author / Author::name)
+		val property =
+			(AnotherEntity::entity / Entity::book / Book::author / Author::name).toDotPath()
 
 		assertThat(property).isEqualTo("entity.book.author.name")
 	}
@@ -117,11 +154,26 @@ class KPropertyPathTests {
 		class Cat(val name: String?)
 		class Owner(val cat: Cat?)
 
-		val property = asString(Owner::cat / Cat::name)
+		val property = (Owner::cat / Cat::name).toDotPath()
 		assertThat(property).isEqualTo("cat.name")
 	}
 
 	class Book(val title: String, val author: Author)
 	class Author(val name: String, val books: List<Book>)
+
+	class Person {
+		var name: String? = null
+		var age: Int = 0
+		var address: Address? = null
+		var addresses: List<Address> = emptyList()
+	}
+
+	class Address {
+		var city: String? = null
+		var street: String? = null
+		var country: Country? = null
+	}
+
+	data class Country(val name: String)
 
 }

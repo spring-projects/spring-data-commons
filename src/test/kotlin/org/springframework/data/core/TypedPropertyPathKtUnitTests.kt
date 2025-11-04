@@ -73,7 +73,8 @@ class TypedPropertyPathKtUnitTests {
 	@Test
 	fun shouldSupportPropertyLambda() {
 		assertThat(TypedPropertyPath.of<Person, Address> { it.address }.toDotPath()).isEqualTo("address")
-		assertThat(TypedPropertyPath.of<Person, Address> { it -> it.address }.toDotPath()).isEqualTo("address")
+		assertThat(TypedPropertyPath.of<Person, Address> { foo -> foo.address }
+			.toDotPath()).isEqualTo("address")
 	}
 
 	@Test
@@ -97,4 +98,5 @@ class TypedPropertyPathKtUnitTests {
 	}
 
 	data class Country(val name: String)
+
 }
