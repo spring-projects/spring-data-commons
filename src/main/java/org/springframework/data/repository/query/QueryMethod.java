@@ -150,17 +150,20 @@ public class QueryMethod {
 		}
 
 		Assert.notNull(this.parameters,
-				() -> String.format("Parameters extracted from method '%s' must not be null", method.getName()));
+				() -> String.format("Parameters extracted from method '%s' must not be null",
+						ReflectionUtils.toString(method)));
 
 		if (isPageQuery()) {
 			Assert.isTrue(this.parameters.hasPageableParameter(),
-					String.format("Paging query needs to have a Pageable parameter; Offending method: %s", method));
+					String.format("Paging query needs to have a Pageable parameter; Offending method: %s",
+							ReflectionUtils.toString(method)));
 		}
 
 		if (isScrollQuery()) {
 
 			Assert.isTrue(this.parameters.hasScrollPositionParameter() || this.parameters.hasPageableParameter(),
-					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s", method));
+					String.format("Scroll query needs to have a ScrollPosition parameter; Offending method: %s",
+							ReflectionUtils.toString(method)));
 		}
 	}
 

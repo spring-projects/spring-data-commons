@@ -115,7 +115,7 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 	 */
 	protected RuntimeException argumentIsNull(Method method, String parameterName) {
 		return new IllegalArgumentException(String.format("Parameter %s in %s.%s must not be null", parameterName,
-				ClassUtils.getShortName(method.getDeclaringClass()), method.getName()));
+				ClassUtils.getShortName(method.getDeclaringClass()), ReflectionUtils.toString(method)));
 	}
 
 	/**

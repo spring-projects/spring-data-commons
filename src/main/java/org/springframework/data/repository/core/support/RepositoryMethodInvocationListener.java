@@ -16,13 +16,13 @@
 package org.springframework.data.repository.core.support;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ClassUtils;
 
 /**
  * Interface to be implemented by listeners that want to be notified upon repository method invocation. Listeners are
@@ -89,9 +89,8 @@ public interface RepositoryMethodInvocationListener {
 		@Override
 		public String toString() {
 
-			return String.format("Invocation %s.%s(%s): %s ms - %s", repositoryInterface.getSimpleName(), method.getName(),
-					StringUtils.arrayToCommaDelimitedString(
-							Arrays.stream(method.getParameterTypes()).map(Class::getSimpleName).toArray()),
+			return String.format("Invocation %s.%s: %s ms - %s", repositoryInterface.getSimpleName(),
+					ReflectionUtils.toString(method, ClassUtils::getShortName),
 					getDuration(TimeUnit.MILLISECONDS), result.getState());
 		}
 	}

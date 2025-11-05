@@ -19,10 +19,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -440,6 +442,40 @@ public final class ReflectionUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns a string representation of the given method including its name and parameter using fully-qualified class
+	 * names.
+	 * <p>
+	 * In contrast to {@link Method#toString()} this method omits the declaring type, the return type, any generics and
+	 * modifiers.
+	 *
+	 * @param method the method to render to string.
+	 * @return a string representation of the given method, i.e. {@code toString(java.lang.reflect.Method)}.
+	 * @since 4.0
+	 */
+	public static String toString(Method method) {
+		return toString(method, Type::getTypeName);
+	}
+
+	/**
+	 * Returns a string representation of the given method including its name and parameter types.
+	 * <p>
+	 * In contrast to {@link Method#toString()} this method omits the declaring type, the return type, any generics and
+	 * modifiers.
+	 *
+	 * @param method the method to render to string.
+	 * @param typeNameMapper mapping function to obtain the type name from a {@link Class}.
+	 * @return a string representation of the given method, i.e. {@code toString(java.lang.reflect.Method)} when using a
+	 *         {@code Type::getTypeName typeNameMapper}.
+	 * @since 4.0
+	 */
+	public static String toString(Method method, Function<Class<?>, String> typeNameMapper) {
+
+		return method.getName() + Arrays.stream(method.getParameterTypes()) //
+				.map(typeNameMapper) //
+				.collect(Collectors.joining(",", "(", ")"));
 	}
 
 	/**

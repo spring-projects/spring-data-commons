@@ -20,15 +20,14 @@ import java.lang.reflect.TypeVariable;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
 import org.springframework.data.javapoet.TypeNames;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterSpec;
-import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeVariableName;
 
 /**
@@ -111,9 +110,8 @@ class AotRepositoryMethodBuilder {
 
 		MethodMetadata methodMetadata = context.getTargetMethodMetadata();
 		Map<String, ParameterSpec> methodArguments = methodMetadata.getMethodArguments();
-		builder.addJavadoc("AOT generated implementation of {@link $T#$L($L)}.", context.getMethod().getDeclaringClass(),
-				context.getMethod().getName(),
-				methodArguments.values().stream().map(it -> it.type().toString()).collect(Collectors.joining(", ")));
+		builder.addJavadoc("AOT generated implementation of {@link $T#$L}.", context.getMethod().getDeclaringClass(),
+				ReflectionUtils.toString(context.getMethod()));
 
 		methodArguments.forEach((name, spec) -> builder.addParameter(spec));
 

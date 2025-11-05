@@ -17,13 +17,12 @@ package org.springframework.data.repository.query;
 
 import java.io.Serial;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.repository.core.RepositoryCreationException;
+import org.springframework.data.util.ReflectionUtils;
+import org.springframework.util.ClassUtils;
 
 /**
  * Exception to be thrown if a query cannot be created from a {@link Method}.
@@ -141,7 +140,6 @@ public final class QueryCreationException extends RepositoryCreationException {
 				cause, repositoryInterface, method);
 	}
 
-
 	/**
 	 * @return the method causing the exception.
 	 * @since 2.5
@@ -152,17 +150,9 @@ public final class QueryCreationException extends RepositoryCreationException {
 
 	@Override
 	public String getLocalizedMessage() {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(method.getDeclaringClass().getSimpleName()).append('.');
-		sb.append(method.getName());
-
-		sb.append(method.getName());
-		sb.append(Arrays.stream(method.getParameterTypes()) //
-				.map(Type::getTypeName) //
-				.collect(Collectors.joining(",", "(", ")")));
-
-		return "Cannot create query for method [%s]; %s".formatted(sb.toString(), getMessage());
+		return "Cannot create query for method [%s.%s]; %s".formatted(ClassUtils.getShortName(method.getDeclaringClass()),
+				ReflectionUtils.toString(getMethod()), getMessage());
 	}
+
 
 }

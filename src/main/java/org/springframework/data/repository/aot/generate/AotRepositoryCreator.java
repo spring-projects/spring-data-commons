@@ -33,6 +33,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFragment;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.FieldSpec;
 import org.springframework.javapoet.MethodSpec;
@@ -238,7 +239,9 @@ class AotRepositoryCreator {
 					} catch (RuntimeException e) {
 						if (logger.isErrorEnabled()) {
 							logger.error("Failed to contribute Repository method [%s.%s]"
-									.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()), e);
+									.formatted(repositoryInformation.getRepositoryInterface().getName(),
+											ReflectionUtils.toString(method)),
+									e);
 						}
 					}
 				});
@@ -263,7 +266,7 @@ class AotRepositoryCreator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Skipping %s method [%s.%s] contribution".formatted(
 						(method.isBridge() ? "bridge" : method.isDefault() ? "default" : "static"),
-						repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+						repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 			return;
 		}
@@ -272,7 +275,7 @@ class AotRepositoryCreator {
 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Skipping method [%s.%s] contribution, not a query method"
-						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 			return;
 		}
@@ -281,7 +284,7 @@ class AotRepositoryCreator {
 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Skipping method [%s.%s] contribution, no MethodContributorFactory available"
-						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 			return;
 		}
@@ -292,7 +295,7 @@ class AotRepositoryCreator {
 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Skipping method [%s.%s] contribution, no MethodContributor available"
-						.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+						.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 
 			return;
@@ -303,7 +306,7 @@ class AotRepositoryCreator {
 			if (logger.isTraceEnabled()) {
 				logger.trace(
 						"Skipping implementation method [%s.%s] contribution. Method uses generics that currently cannot be resolved."
-								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 
 			generationMetadata.addDelegateMethod(method, contributor);
@@ -315,13 +318,14 @@ class AotRepositoryCreator {
 			if (repositoryInformation.isReactiveRepository() && logger.isTraceEnabled()) {
 				logger.trace(
 						"Skipping implementation method [%s.%s] contribution. AOT repositories are not supported for reactive repositories."
-								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName()));
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method)));
 			}
 
 			if (!contributor.contributesMethodSpec() && logger.isTraceEnabled()) {
 				logger.trace(
 						"Skipping implementation method [%s.%s] contribution. Spring Data %s did not provide a method implementation."
-								.formatted(repositoryInformation.getRepositoryInterface().getName(), method.getName(), moduleName));
+								.formatted(repositoryInformation.getRepositoryInterface().getName(), ReflectionUtils.toString(method),
+										moduleName));
 			}
 
 			generationMetadata.addDelegateMethod(method, contributor);
