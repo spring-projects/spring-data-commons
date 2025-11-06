@@ -100,6 +100,7 @@ public abstract class QueryExecutionConverters {
 		ALLOWED_PAGEABLE_TYPES.add(Slice.class);
 		ALLOWED_PAGEABLE_TYPES.add(Page.class);
 		ALLOWED_PAGEABLE_TYPES.add(List.class);
+		ALLOWED_PAGEABLE_TYPES.add(Streamable.class);
 		ALLOWED_PAGEABLE_TYPES.add(Window.class);
 		ALLOWED_PAGEABLE_TYPES.add(SearchResults.class);
 

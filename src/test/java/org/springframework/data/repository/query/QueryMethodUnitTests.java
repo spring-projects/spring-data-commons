@@ -206,6 +206,16 @@ class QueryMethodUnitTests {
 		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isStreamQuery()).isTrue();
 	}
 
+	@Test // GH-3397
+	void doesNotRejectStreamableForPagination() throws Exception {
+
+		RepositoryMetadata repositoryMetadata = new DefaultRepositoryMetadata(SampleRepository.class);
+		var method = SampleRepository.class.getMethod("streamable", Pageable.class);
+
+		assertThat(new QueryMethod(method, repositoryMetadata, factory, DefaultParameters::new).isCollectionQuery())
+				.isTrue();
+	}
+
 	@Test // DATACMNS-716
 	void doesNotRejectCompletableFutureQueryForSingleEntity() throws Exception {
 
@@ -444,6 +454,8 @@ class QueryMethodUnitTests {
 		Stream<String> streaming();
 
 		Stream<String> streaming(Pageable pageable);
+
+		Streamable<String> streamable(Pageable pageable);
 
 		// DATACMNS-716
 		CompletableFuture<User> returnsCompletableFutureForSingleEntity();
