@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotationSelectors;
 import org.springframework.core.annotation.MergedAnnotations;
@@ -30,7 +30,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.javapoet.TypeName;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -152,40 +151,6 @@ public class AotQueryMethodGenerationContext {
 	 */
 	public ReturnedType getReturnedType() {
 		return queryMethod.getResultProcessor().getReturnedType();
-	}
-
-	/**
-	 * @return the actual returned domain type.
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnedDomainClass(Method)
-	 */
-	@Deprecated(forRemoval = true)
-	public ResolvableType getActualReturnType() {
-		return targetMethodMetadata.getActualReturnType();
-	}
-
-	/**
-	 * @return the query method return type.
-	 * @see org.springframework.data.repository.core.RepositoryMetadata#getReturnType(Method)
-	 */
-	@Deprecated(forRemoval = true)
-	public ResolvableType getReturnType() {
-		return targetMethodMetadata.getReturnType();
-	}
-
-	/**
-	 * @return the {@link TypeName} representing the method return type.
-	 */
-	@Deprecated(forRemoval = true)
-	public TypeName getReturnTypeName() {
-		return TypeName.get(getReturnType().getType());
-	}
-
-	/**
-	 * @return the {@link TypeName} representing the actual (component) method return type.
-	 */
-	@Deprecated(forRemoval = true)
-	public TypeName getActualReturnTypeName() {
-		return TypeName.get(getActualReturnType().getType());
 	}
 
 	/**

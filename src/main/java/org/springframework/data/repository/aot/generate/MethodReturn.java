@@ -139,7 +139,7 @@ public class MethodReturn {
 	}
 
 	/**
-	 * Returns the actual type (i.e. component type of a collection).
+	 * Returns the actual type (i.e. collection component type).
 	 *
 	 * @return the actual type.
 	 */
