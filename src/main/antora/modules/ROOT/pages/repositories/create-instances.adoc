@@ -61,7 +61,7 @@ class ApplicationConfiguration {
 ======
 
 ifeval::[{include-xml-namespaces} != false]
-[[repositories.create-instances.spring]]
+
 [[repositories.create-instances.xml]]
 == XML Configuration
 
