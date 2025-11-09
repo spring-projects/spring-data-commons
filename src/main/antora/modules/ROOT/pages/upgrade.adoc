@@ -1,4 +1,3 @@
-[[new-features]]
 [[upgrading]]
 = Upgrading Spring Data
 :page-section-summary-toc: 1

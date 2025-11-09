@@ -19,7 +19,6 @@ Due to the different inception dates of individual Spring Data modules, most of 
 </dependencyManagement>
 ----
 
-[[dependencies.train-names]]
 [[dependencies.train-version]]
 The current release train version is `{releasetrainVersion}`. The train version uses https://calver.org/[calver] with the pattern `YYYY.MINOR.MICRO`.
 The version name follows `+${calver}+` for GA releases and service releases and the following pattern for all other versions: `+${calver}-${modifier}+`, where `modifier` can be one of the following:
