@@ -35,7 +35,7 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -222,7 +222,7 @@ class DefaultProjectionInformation implements ProjectionInformation {
 
 			try {
 
-				SimpleMetadataReaderFactory factory = new SimpleMetadataReaderFactory(type.getClassLoader());
+				MetadataReaderFactory factory = MetadataReaderFactory.create(type.getClassLoader());
 				MetadataReader metadataReader = factory.getMetadataReader(ClassUtils.getQualifiedName(type));
 
 				return Optional.of(metadataReader.getAnnotationMetadata());
