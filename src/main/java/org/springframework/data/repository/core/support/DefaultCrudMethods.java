@@ -15,10 +15,12 @@
  */
 package org.springframework.data.repository.core.support;
 
-import static java.util.Arrays.*;
 import static org.springframework.data.util.Optionals.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -85,7 +87,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> selectMostSuitableSaveMethod(RepositoryMetadata metadata) {
 
-		return asList(metadata.getDomainType(), Object.class).stream()//
+		return Arrays.asList(metadata.getDomainType(), Object.class).stream()//
 				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), SAVE, it)))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
 				.findFirst();
@@ -160,7 +162,7 @@ public class DefaultCrudMethods implements CrudMethods {
 	 */
 	private static Optional<Method> selectMostSuitableFindOneMethod(RepositoryMetadata metadata) {
 
-		return asList(metadata.getIdType(), Object.class).stream()//
+		return Arrays.asList(metadata.getIdType(), Object.class).stream()//
 				.flatMap(it -> toStream(findMethod(metadata.getRepositoryInterface(), FIND_ONE, it)))//
 				.flatMap(it -> toStream(getMostSpecificMethod(it, metadata.getRepositoryInterface())))//
 				.findFirst();
@@ -224,6 +226,19 @@ public class DefaultCrudMethods implements CrudMethods {
 	}
 
 	private static Optional<Method> findMethod(Class<?> type, String name, Class<?>... parameterTypes) {
+
+		List<Method> candidates = new ArrayList<>();
+		ReflectionUtils.doWithMethods(type, candidates::add,
+				it -> it.getName().equals(name) && hasSameParams(it, parameterTypes) && !it.isBridge());
+
+		if (!candidates.isEmpty()) {
+			return Optional.of(candidates.get(0));
+		}
+
 		return Optional.ofNullable(ReflectionUtils.findMethod(type, name, parameterTypes));
+	}
+
+	private static boolean hasSameParams(Method method, Class<?>[] paramTypes) {
+		return (paramTypes.length == method.getParameterCount() && Arrays.equals(paramTypes, method.getParameterTypes()));
 	}
 }
