@@ -34,6 +34,8 @@ class Customer {
 As you can see, the annotations can be applied selectively, depending on which information you want to capture.
 The annotations, indicating to capture when changes are made, can be used on properties of type JDK8 date and time types, `long`, `Long`, and legacy Java `Date` and `Calendar`.
 
+The time giving instance is provided by a `org.springframework.data.auditing.DateTimeProvider`, defaulting to `CurrentDateTimeProvider`, unless configured via the `dateTimeProviderRef` attribute when enabling auditing, or a dedicated `AuditingHandler` respectively `DateTimeProvider` bean being present in the `ApplicationContext`.
+
 Auditing metadata does not necessarily need to live in the root level entity but can be added to an embedded one (depending on the actual store in use), as shown in the snippet below.
 
 .Audit metadata in embedded entity
