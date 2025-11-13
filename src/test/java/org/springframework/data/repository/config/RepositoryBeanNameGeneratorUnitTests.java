@@ -31,7 +31,6 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 
 /**
@@ -68,7 +67,7 @@ class RepositoryBeanNameGeneratorUnitTests {
 	@Test // DATACMNS-1115
 	void usesClassNameOfScannedBeanDefinition() throws IOException {
 
-		MetadataReaderFactory factory = new SimpleMetadataReaderFactory();
+		MetadataReaderFactory factory = MetadataReaderFactory.create(getClass().getClassLoader());
 		var reader = factory.getMetadataReader(SomeImplementation.class.getName());
 
 		BeanDefinition definition = new ScannedGenericBeanDefinition(reader);

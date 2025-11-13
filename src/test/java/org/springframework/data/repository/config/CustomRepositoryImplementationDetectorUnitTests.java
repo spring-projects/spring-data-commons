@@ -24,12 +24,12 @@ import java.beans.Introspector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetectorUnitTests.First.CanonicalSampleRepositoryTestImpl;
 import org.springframework.data.util.Streamable;
 import org.springframework.mock.env.MockEnvironment;
@@ -42,7 +42,7 @@ import org.springframework.mock.env.MockEnvironment;
  */
 class CustomRepositoryImplementationDetectorUnitTests {
 
-	MetadataReaderFactory metadataFactory = new SimpleMetadataReaderFactory();
+	MetadataReaderFactory metadataFactory = MetadataReaderFactory.create(getClass().getClassLoader());
 	Environment environment = new MockEnvironment();
 	ResourceLoader resourceLoader = new DefaultResourceLoader();
 	ImplementationDetectionConfiguration configuration = mock(ImplementationDetectionConfiguration.class,

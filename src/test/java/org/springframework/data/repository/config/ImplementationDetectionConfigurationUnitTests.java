@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.util.Streamable;
 
@@ -65,7 +64,7 @@ class ImplementationDetectionConfigurationUnitTests {
 
 		@Override
 		public MetadataReaderFactory getMetadataReaderFactory() {
-			return new SimpleMetadataReaderFactory();
+			return MetadataReaderFactory.create(getClass().getClassLoader());
 		}
 	}
 }
