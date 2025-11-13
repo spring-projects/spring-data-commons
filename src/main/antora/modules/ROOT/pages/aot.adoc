@@ -39,18 +39,18 @@ However, there users may fine tune the configuration with following options.
 |`spring.aot.data.accessors.include`
 |Comma separated list of FQCN for which to contribute Bytecode for generated Type/Property Accessors.
 Ant-style include patterns matching package names (e.g. `example.springdata.**`) or type names inclusion.
-Inclusion pattern matches are evaluated before exclusions for broad exclusion and selective inclusion.
+If a type is matched by an inclusion and an exclusion, the inclusion wins and the type is considered included.
 
 |`spring.aot.data.accessors.exclude`
 |Comma separated list of FQCN for which to skip contribution of Bytecode for generated Type/Property Accessors.
 Ant-style exclude patterns matching package names (e.g. `example.springdata.**`) or type names exclusion.
-Exclusion pattern matches are evaluated after inclusions for broad exclusion and selective inclusion.
+If a type is matched by an inclusion and an exclusion, the inclusion wins and the type is considered included.
 
 |`spring.aot.repositories.enabled`
 |Boolean flag to control contribution of Source Code for Repository Interfaces
 
 |`spring.aot.[module-name].repositories.enabled`
-|Boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (eg. `cassandra`, `jdbc`, `jpa`, `mongodb`)
+|Boolean flag to control contribution of Source Code for Repository Interfaces for a certain module (e.g. `cassandra`, `jdbc`, `jpa`, `mongodb`)
 
 |`spring.aot.repositories.metadata.enabled`
 |Boolean flag to control contribution of JSON repository metadata containing query methods and actual query strings.
