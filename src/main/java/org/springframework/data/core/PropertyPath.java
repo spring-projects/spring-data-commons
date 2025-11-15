@@ -30,6 +30,8 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Mariusz Mączkowski
  * @author Johannes Englmeier
+ * @see PropertyReference
+ * @see TypedPropertyPath
  */
 public interface PropertyPath extends Streamable<PropertyPath> {
 
@@ -44,7 +46,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * @return the typed property path.
 	 * @since 4.1
 	 */
-	static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> propertyPath) {
+	static <T, P> TypedPropertyPath<T, P> of(PropertyReference<T, P> propertyPath) {
 		return TypedPropertyPaths.of(propertyPath);
 	}
 
@@ -60,7 +62,7 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * @since 4.1
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static <T, P> TypedPropertyPath<T, P> ofMany(TypedPropertyPath<T, ? extends Iterable<P>> propertyPath) {
+	static <T, P> TypedPropertyPath<T, P> ofMany(PropertyReference<T, ? extends Iterable<P>> propertyPath) {
 		return (TypedPropertyPath) TypedPropertyPaths.of(propertyPath);
 	}
 

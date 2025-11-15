@@ -18,117 +18,91 @@ package org.springframework.data.core;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
- * Unit tests for {@link TypedPropertyPath}.
+ * Unit tests for {@link PropertyReference}.
  *
  * @author Mark Paluch
  */
-class TypedPropertyPathUnitTests {
-
-	@ParameterizedTest
-	@MethodSource("propertyPaths")
-	void verifyTck(TypedPropertyPath<?, ?> actual, PropertyPath expected) {
-		PropertyPathTck.verify(actual, expected);
-	}
-
-	static Stream<Arguments.ArgumentSet> propertyPaths() {
-
-		return Stream.of(
-				Arguments.argumentSet("PersonQuery.name", PropertyPath.of(PersonQuery::getName),
-						PropertyPath.from("name", PersonQuery.class)),
-				Arguments.argumentSet("PersonQuery.address.country",
-						PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry),
-						PropertyPath.from("address.country", PersonQuery.class)),
-				Arguments.argumentSet("PersonQuery.address.country.name",
-						PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry).then(Country::name),
-						PropertyPath.from("address.country.name", PersonQuery.class)),
-				Arguments.argumentSet(
-						"PersonQuery.emergencyContact.address.country.name", PropertyPath.of(PersonQuery::getEmergencyContact)
-								.then(PersonQuery::getAddress).then(Address::getCountry).then(Country::name),
-						PropertyPath.from("emergencyContact.address.country.name", PersonQuery.class)));
-	}
+class PropertyReferenceUnitTests {
 
 	@Test
 	void resolvesMHSimplePath() {
-		assertThat(PropertyPath.of(PersonQuery::getName).toDotPath()).isEqualTo("name");
+		assertThat(PropertyReference.of(PersonQuery::getName).getName()).isEqualTo("name");
 	}
 
 	@Test
 	void resolvesMHComposedPath() {
-		assertThat(PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry).toDotPath())
+		assertThat(PropertyReference.of(PersonQuery::getAddress).then(Address::getCountry).toDotPath())
 				.isEqualTo("address.country");
 	}
 
 	@Test
 	void resolvesCollectionPath() {
-		assertThat(PropertyPath.ofMany(PersonQuery::getAddresses).then(Address::getCity).toDotPath())
+		assertThat(PropertyReference.ofMany(PersonQuery::getAddresses).then(Address::getCity).toDotPath())
 				.isEqualTo("addresses.city");
 	}
 
 	@Test
 	@SuppressWarnings("Convert2MethodRef")
 	void resolvesInitialLambdaGetter() {
-		assertThat(PropertyPath.of((PersonQuery person) -> person.getName()).toDotPath()).isEqualTo("name");
+		assertThat(PropertyReference.of((PersonQuery person) -> person.getName()).getName()).isEqualTo("name");
 	}
 
 	@Test
 	@SuppressWarnings("Convert2MethodRef")
 	void resolvesComposedLambdaGetter() {
-		assertThat(PropertyPath.of(PersonQuery::getAddress).then(it -> it.getCity()).toDotPath()).isEqualTo("address.city");
+		assertThat(PropertyReference.of(PersonQuery::getAddress).then(it -> it.getCity()).toDotPath())
+				.isEqualTo("address.city");
 	}
 
 	@Test
 	void resolvesComposedLambdaFieldAccess() {
-		assertThat(PropertyPath.of(PersonQuery::getAddress).then(it -> it.city).toDotPath()).isEqualTo("address.city");
+		assertThat(PropertyReference.of(PersonQuery::getAddress).then(it -> it.city).toDotPath()).isEqualTo("address.city");
 	}
 
 	@Test
 	void resolvesInterfaceMethodReferenceGetter() {
-		assertThat(PropertyPath.of(PersonProjection::getName).toDotPath()).isEqualTo("name");
+		assertThat(PropertyReference.of(PersonProjection::getName).getName()).isEqualTo("name");
 	}
 
 	@Test
 	@SuppressWarnings("Convert2MethodRef")
 	void resolvesInterfaceLambdaGetter() {
-		assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
+		assertThat(PropertyReference.of((PersonProjection person) -> person.getName()).getName()).isEqualTo("name");
 	}
 
 	@Test
 	void resolvesSuperclassMethodReferenceGetter() {
-		assertThat(PropertyPath.of(PersonQuery::getTenant).toDotPath()).isEqualTo("tenant");
+		assertThat(PropertyReference.of(PersonQuery::getTenant).getName()).isEqualTo("tenant");
 	}
 
 	@Test
 	void resolvesSuperclassLambdaGetter() {
-		assertThat(PropertyPath.of((PersonQuery person) -> person.getTenant()).toDotPath()).isEqualTo("tenant");
+		assertThat(PropertyReference.of((PersonQuery person) -> person.getTenant()).getName()).isEqualTo("tenant");
 	}
 
 	@Test
 	void resolvesPrivateMethodReference() {
-		assertThat(PropertyPath.of(Secret::getSecret).toDotPath()).isEqualTo("secret");
+		assertThat(PropertyReference.of(Secret::getSecret).getName()).isEqualTo("secret");
 	}
 
 	@Test
 	@SuppressWarnings("Convert2MethodRef")
 	void resolvesPrivateMethodLambda() {
-		assertThat(PropertyPath.of((Secret secret) -> secret.getSecret()).toDotPath()).isEqualTo("secret");
+		assertThat(PropertyReference.of((Secret secret) -> secret.getSecret()).getName()).isEqualTo("secret");
 	}
 
 	@Test
 	void switchingOwningTypeFails() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
+				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					return ((SuperClass) person).getTenant();
 				}));
 	}
@@ -137,25 +111,25 @@ class TypedPropertyPathUnitTests {
 	void constructorCallsShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> new PersonQuery(person)));
+				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> new PersonQuery(person)));
 	}
 
 	@Test
 	void enumShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> TypedPropertyPath.of(NotSupported.INSTANCE));
+				.isThrownBy(() -> PropertyReference.of(NotSupported.INSTANCE));
 	}
 
 	@Test
 	void returningSomethingShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> null));
+				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> null));
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> 1));
+				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> 1));
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> ""));
+				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> ""));
 	}
 
 	@Test
@@ -163,7 +137,7 @@ class TypedPropertyPathUnitTests {
 	void classImplementationShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> TypedPropertyPath.of(new TypedPropertyPath<Object, Object>() {
+				.isThrownBy(() -> PropertyReference.of(new PropertyReference<Object, Object>() {
 					@Override
 					public @Nullable Object get(Object obj) {
 						return null;
@@ -175,33 +149,24 @@ class TypedPropertyPathUnitTests {
 	void constructorMethodReferenceShouldFail() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> PropertyPath.<PersonQuery, PersonQuery> of(PersonQuery::new));
-	}
-
-	@Test
-	void resolvesMRRecordPath() {
-
-		TypedPropertyPath<PersonQuery, String> then = PropertyPath.of(PersonQuery::getAddress).then(Address::getCountry)
-				.then(Country::name);
-
-		assertThat(then.toDotPath()).isEqualTo("address.country.name");
+				.isThrownBy(() -> PropertyReference.<PersonQuery, PersonQuery> of(PersonQuery::new));
 	}
 
 	@Test
 	void failsResolutionWith$StrangeStuff() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
+				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					int a = 1 + 2;
 					new Integer(a).toString();
 					return person.getName();
-				}).toDotPath());
+				}).getName());
 	}
 
 	@Test
 	void arithmeticOpsFail() {
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(() -> {
-			PropertyPath.of((PersonQuery person) -> {
+			PropertyReference.of((PersonQuery person) -> {
 				int a = 1 + 2;
 				return person.getName();
 			});
@@ -212,7 +177,7 @@ class TypedPropertyPathUnitTests {
 	void failsResolvingCallingLocalMethod() {
 
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
-				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
+				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					failsResolutionWith$StrangeStuff();
 					return person.getName();
 				}));
@@ -224,12 +189,12 @@ class TypedPropertyPathUnitTests {
 		@Test
 		@SuppressWarnings("Convert2MethodRef")
 		void resolvesInterfaceLambdaGetter() {
-			assertThat(PropertyPath.of((PersonProjection person) -> person.getName()).toDotPath()).isEqualTo("name");
+			assertThat(PropertyReference.of((PersonProjection person) -> person.getName()).getName()).isEqualTo("name");
 		}
 
 		@Test
 		void resolvesSuperclassMethodReferenceGetter() {
-			assertThat(PropertyPath.of(PersonQuery::getTenant).toDotPath()).isEqualTo("tenant");
+			assertThat(PropertyReference.of(PersonQuery::getTenant).getName()).isEqualTo("tenant");
 		}
 
 	}
@@ -339,7 +304,7 @@ class TypedPropertyPathUnitTests {
 		String getName();
 	}
 
-	enum NotSupported implements TypedPropertyPath<String, String> {
+	enum NotSupported implements PropertyReference<String, String> {
 
 		INSTANCE;
 

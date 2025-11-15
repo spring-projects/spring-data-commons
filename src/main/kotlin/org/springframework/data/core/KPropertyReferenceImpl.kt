@@ -28,7 +28,7 @@ import kotlin.reflect.KProperty1
  * @author Yoann de Martino
  * @since 4.1
  */
-internal interface KPropertyReference<T, out P> : KProperty1<T, P> {
+internal interface KPropertyReferenceImpl<T, out P> : KProperty1<T, P> {
 	val property: KProperty1<T, *>
 	val leaf: KProperty1<*, P>
 }
@@ -36,7 +36,7 @@ internal interface KPropertyReference<T, out P> : KProperty1<T, P> {
 internal class KSinglePropertyReference<T, M, out P>(
 	val parent: KProperty1<T, M?>,
 	val child: KProperty1<M, P>
-) : KProperty1<T, P> by child as KProperty1<T, P>, KPropertyReference<T, P> {
+) : KProperty1<T, P> by child as KProperty1<T, P>, KPropertyReferenceImpl<T, P> {
 
 	override fun get(receiver: T): P {
 
@@ -71,7 +71,7 @@ internal class KSinglePropertyReference<T, M, out P>(
 internal class KIterablePropertyReference<T, M, out P>(
 	val parent: KProperty1<T, Iterable<M?>?>,
 	val child: KProperty1<M, P>
-) : KProperty1<T, P> by child as KProperty1<T, P>, KPropertyReference<T, P> {
+) : KProperty1<T, P> by child as KProperty1<T, P>, KPropertyReferenceImpl<T, P> {
 
 	override fun get(receiver: T): P {
 		throw UnsupportedOperationException("Collection retrieval not supported")
@@ -95,7 +95,7 @@ internal class KIterablePropertyReference<T, M, out P>(
  */
 internal fun asString(property: KProperty<*>): String {
 	return when (property) {
-		is KPropertyReference<*, *> ->
+		is KPropertyReferenceImpl<*, *> ->
 			"${asString(property.property)}.${property.leaf.name}"
 
 		else -> property.name
