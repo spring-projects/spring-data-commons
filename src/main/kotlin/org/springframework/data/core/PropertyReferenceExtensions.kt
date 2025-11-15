@@ -30,8 +30,8 @@ import kotlin.reflect.jvm.javaGetter
  *
  * @since 4.1
  */
-fun <T : Any, P : Any?, N : Any> TypedPropertyPath<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
-	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
+fun <T : Any, P : Any?, N : Any> PropertyReference<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
+	val nextPath = KPropertyReference.of<T, P>(next) as PropertyReference<P, N>
 	return TypedPropertyPaths.compose(this, nextPath)
 }
 
@@ -40,17 +40,17 @@ fun <T : Any, P : Any?, N : Any> TypedPropertyPath<T, P>.then(next: KProperty1<T
  *
  * @since 4.1
  */
-fun <T : Any, P : Any?, N : Any> TypedPropertyPath<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
-	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
+fun <T : Any, P : Any?, N : Any> PropertyReference<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
+	val nextPath = KPropertyReference.of<T, P>(next) as PropertyReference<P, N>
 	return TypedPropertyPaths.compose(this, nextPath)
 }
 
 /**
- * Helper to create [TypedPropertyPath] from [KProperty].
+ * Helper to create [PropertyReference] from [KProperty].
  *
  * @since 4.1
  */
-class KTypedPropertyPath {
+class KPropertyReference {
 
 	/**
 	 * Companion object for static factory methods.
@@ -58,50 +58,38 @@ class KTypedPropertyPath {
 	companion object {
 
 		/**
-		 * Create a [TypedPropertyPath] from a [KProperty1].
+		 * Create a [PropertyReference] from a [KProperty1].
 		 */
-		fun <T : Any, P : Any> of(property: KProperty1<T, P?>): TypedPropertyPath<T, P> {
+		fun <T : Any, P : Any> of(property: KProperty1<T, P?>): PropertyReference<T, P> {
 			return of((property as KProperty<P?>))
 		}
 
 		/**
-		 * Create a [TypedPropertyPath] from a collection-like [KProperty1].
+		 * Create a [PropertyReference] from a collection-like [KProperty1].
 		 */
 		@JvmName("ofMany")
-		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P?>?>): TypedPropertyPath<T, P> {
+		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P?>?>): PropertyReference<T, P> {
 			return of((property as KProperty<P?>))
 		}
 
+
 		/**
-		 * Create a [TypedPropertyPath] from a [KProperty].
+		 * Create a [PropertyReference] from a [KProperty].
 		 */
-		fun <T, P> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
-
-			if (property is KPropertyReferenceImpl<*, *>) {
-
-				val paths = property as KPropertyReferenceImpl<*, *>
-
-				val parent = of<Any, Any>(paths.property)
-				val child = of<Any, Any>(paths.leaf)
-
-				return TypedPropertyPaths.compose(
-					parent,
-					child
-				) as TypedPropertyPath<T, P>
-			}
+		fun <T, P> of(property: KProperty<P?>): PropertyReference<T, P> {
 
 			if (property is KProperty1<*, *>) {
 
 				val property1 = property as KProperty1<*, *>
 				val owner = property1.javaField?.declaringClass
 					?: property1.javaGetter?.declaringClass
-				val metadata = TypedPropertyPaths.KPropertyPathMetadata.of(
+				val metadata = PropertyReferences.KPropertyReferenceMetadata.of(
 					MemberDescriptor.KPropertyReferenceDescriptor.create(
 						owner,
 						property1
 					)
 				)
-				return TypedPropertyPaths.ResolvedKPropertyPath(metadata)
+				return PropertyReferences.ResolvedKPropertyReference(metadata)
 			}
 
 			throw IllegalArgumentException("Property ${property.name} is not a KProperty")

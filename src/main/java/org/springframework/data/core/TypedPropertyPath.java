@@ -36,9 +36,9 @@ import org.jspecify.annotations.Nullable;
  * TypedPropertyPath&lt;Person, String&gt; name = TypedPropertyPath.of(Person::getName);
  * </pre>
  *
- * The resulting object can be used to obtain the {@link #toDotPath() dot-path} and to interact with the targetting
+ * The resulting object can be used to obtain the {@link #toDotPath() dot-path} and to interact with the targeting
  * property. Typed paths allow for composition to navigate nested object structures using
- * {@link #then(TypedPropertyPath)}:
+ * {@link #then(PropertyReference)}:
  *
  * <pre class="code">
  * TypedPropertyPath&lt;Person, String&gt; city = TypedPropertyPath.of(Person::getAddress).then(Address::getCity);
@@ -59,11 +59,25 @@ import org.jspecify.annotations.Nullable;
  * @param <P> the property value type at this path segment.
  * @author Mark Paluch
  * @since 4.1
- * @see PropertyPath#of(TypedPropertyPath)
- * @see #then(TypedPropertyPath)
+ * @see PropertyPath#of(PropertyReference)
+ * @see #then(PropertyReference)
  */
 @FunctionalInterface
 public interface TypedPropertyPath<T, P extends @Nullable Object> extends PropertyPath, Serializable {
+
+	/**
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
+	 * <p>
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 *
+	 * @param propertyPath the method reference or lambda.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property path.
+	 */
+	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> ofReference(PropertyReference<T, P> propertyPath) {
+		return TypedPropertyPaths.of(propertyPath);
+	}
 
 	/**
 	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
@@ -142,8 +156,8 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
-	default <N extends @Nullable Object> TypedPropertyPath<T, N> then(TypedPropertyPath<P, N> next) {
-		return TypedPropertyPaths.compose(this, of(next));
+	default <N extends @Nullable Object> TypedPropertyPath<T, N> then(PropertyReference<P, N> next) {
+		return TypedPropertyPaths.compose(this, next);
 	}
 
 	/**
@@ -155,8 +169,8 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
 	default <N extends @Nullable Object> TypedPropertyPath<T, N> thenMany(
-			TypedPropertyPath<P, ? extends Iterable<N>> next) {
-		return (TypedPropertyPath) TypedPropertyPaths.compose(this, of(next));
+			PropertyReference<P, ? extends Iterable<N>> next) {
+		return (TypedPropertyPath) TypedPropertyPaths.compose(this, PropertyReference.of(next));
 	}
 
 }

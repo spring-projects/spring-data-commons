@@ -17,7 +17,6 @@ package org.springframework.data.core;
 
 import org.junit.platform.commons.annotation.Testable;
 import org.openjdk.jmh.annotations.Benchmark;
-
 import org.springframework.data.BenchmarkSettings;
 
 /**
@@ -30,32 +29,32 @@ public class TypedPropertyPathBenchmarks extends BenchmarkSettings {
 
 	@Benchmark
 	public Object benchmarkMethodReference() {
-		return TypedPropertyPath.of(Person::firstName);
+		return TypedPropertyPath.ofReference(Person::firstName);
 	}
 
 	@Benchmark
 	public Object benchmarkComposedMethodReference() {
-		return TypedPropertyPath.of(Person::address).then(Address::city);
+		return TypedPropertyPath.ofReference(Person::address).then(Address::city);
 	}
 
 	@Benchmark
 	public TypedPropertyPath<Person, String> benchmarkLambda() {
-		return TypedPropertyPath.of(person -> person.firstName());
+		return TypedPropertyPath.ofReference(person -> person.firstName());
 	}
 
 	@Benchmark
 	public TypedPropertyPath<Person, String> benchmarkComposedLambda() {
-		return TypedPropertyPath.of((Person person) -> person.address()).then(address -> address.city());
+		return TypedPropertyPath.ofReference((Person person) -> person.address()).then(address -> address.city());
 	}
 
 	@Benchmark
 	public Object dotPath() {
-		return TypedPropertyPath.of(Person::firstName).toDotPath();
+		return TypedPropertyPath.ofReference(Person::firstName).toDotPath();
 	}
 
 	@Benchmark
 	public Object composedDotPath() {
-		return TypedPropertyPath.of(Person::address).then(Address::city).toDotPath();
+		return TypedPropertyPath.ofReference(Person::address).then(Address::city).toDotPath();
 	}
 
 	record Person(String firstName, String lastName, Address address) {

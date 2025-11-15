@@ -39,7 +39,7 @@ fun <T : Any, P> KProperty1<T, P>.toPath(): TypedPropertyPath<T, P> =
 	KTypedPropertyPath.of(this)
 
 /**
- * Builds [KPropertyReference] from Property References.
+ * Builds [KPropertyReferenceImpl] from Property References.
  * Refer to a nested property in an embeddable or association.
  *
  * For example, referring to the field "author.name":
@@ -55,7 +55,7 @@ operator fun <T, M, P> KProperty1<T, M?>.div(other: KProperty1<M, P?>): KPropert
 	KSinglePropertyReference(this, other) as KProperty1<T, P>
 
 /**
- * Builds [KPropertyReference] from Property References.
+ * Builds [KPropertyReferenceImpl] from Property References.
  * Refer to a nested property in an embeddable or association.
  *
  * Note, that this function is different from [div] above in the

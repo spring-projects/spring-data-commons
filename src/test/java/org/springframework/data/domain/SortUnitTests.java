@@ -21,7 +21,6 @@ import static org.springframework.data.domain.Sort.NullHandling.*;
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -60,7 +59,8 @@ class SortUnitTests {
 
 		assertThat(Sort.by(Person::getFirstName).iterator().next().getProperty()).isEqualTo("firstName");
 		assertThat(
-				Sort.by(TypedPropertyPath.of(PersonHolder::person).then(Person::getFirstName)).iterator().next().getProperty())
+				Sort.by(TypedPropertyPath.ofReference(PersonHolder::person).then(Person::getFirstName)).iterator().next()
+						.getProperty())
 				.isEqualTo("person.firstName");
 	}
 

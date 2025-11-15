@@ -19,6 +19,7 @@ import kotlin.reflect.KProperty;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
@@ -48,10 +48,24 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 class TypedPropertyPaths {
 
 	private static final Map<ClassLoader, Map<Object, PropertyPathMetadata>> lambdas = new WeakHashMap<>();
-	private static final Map<ClassLoader, Map<TypedPropertyPath<?, ?>, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
+	private static final Map<ClassLoader, Map<Serializable, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
 	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyPath.class,
 			TypedPropertyPath.class, TypedPropertyPaths.class);
+
+	/**
+	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
+	 */
+	public static <T, M, P> TypedPropertyPath<T, P> compose(PropertyReference<T, M> owner, PropertyReference<M, P> next) {
+		return compose(of(owner), of(next));
+	}
+
+	/**
+	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
+	 */
+	public static <T, M, P> TypedPropertyPath<T, P> compose(TypedPropertyPath<T, M> owner, PropertyReference<M, P> next) {
+		return compose(of(owner), of(next));
+	}
 
 	/**
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
@@ -77,7 +91,14 @@ class TypedPropertyPaths {
 			return result;
 		}
 
-		return new ForwardingPropertyPath<>(owner, next);
+		return new ForwardingPropertyPath<>(of(owner), next);
+	}
+
+	/**
+	 * Create a {@link TypedPropertyPath} from a {@link PropertyReference}.
+	 */
+	public static <P, T> TypedPropertyPath<T, P> of(PropertyReference<T, P> lambda) {
+		return new PropertyReferenceWrapper<>(PropertyReferences.of(lambda));
 	}
 
 	/**
@@ -86,13 +107,14 @@ class TypedPropertyPaths {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <P, T> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
 
-		if (lambda instanceof ForwardingPropertyPath<?, ?, ?> || lambda instanceof ResolvedTypedPropertyPathSupport<?, ?>) {
+		if (lambda instanceof Resolved) {
 			return lambda;
 		}
 
 		Map<TypedPropertyPath<?, ?>, ResolvedTypedPropertyPath<?, ?>> cache;
 		synchronized (resolved) {
-			cache = resolved.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
+			cache = (Map) resolved.computeIfAbsent(lambda.getClass().getClassLoader(),
+					k -> new ConcurrentReferenceHashMap<>());
 		}
 
 		return (TypedPropertyPath<T, P>) cache.computeIfAbsent(lambda,
@@ -241,13 +263,17 @@ class TypedPropertyPaths {
 		}
 	}
 
+	interface Resolved {
+
+	}
+
 	/**
 	 * A {@link TypedPropertyPath} implementation that caches resolved metadata to avoid repeated introspection.
 	 *
 	 * @param <T> the owning type.
 	 * @param <P> the property type.
 	 */
-	static abstract class ResolvedTypedPropertyPathSupport<T, P> implements TypedPropertyPath<T, P> {
+	static abstract class ResolvedTypedPropertyPathSupport<T, P> implements TypedPropertyPath<T, P>, Resolved {
 
 		private final PropertyPathMetadata metadata;
 		private final List<PropertyPath> list;
@@ -317,6 +343,106 @@ class TypedPropertyPaths {
 	}
 
 	/**
+	 * Wrapper for {@link PropertyReference}.
+	 *
+	 * @param <T> the owning type.
+	 * @param <P> the property type.
+	 */
+	static class PropertyReferenceWrapper<T, P> implements TypedPropertyPath<T, P>, Resolved {
+
+		private final PropertyReference<T, P> property;
+		private final List<PropertyPath> self;
+
+		public PropertyReferenceWrapper(PropertyReference<T, P> property) {
+			this.property = property;
+			this.self = List.of(this);
+		}
+
+		@Override
+		public @Nullable P get(T obj) {
+			return property.get(obj);
+		}
+
+		@Override
+		public TypeInformation<?> getOwningType() {
+			return property.getOwningType();
+		}
+
+		@Override
+		public String getSegment() {
+			return property.getName();
+		}
+
+		@Override
+		public TypeInformation<?> getTypeInformation() {
+			return property.getTypeInformation();
+		}
+
+		@Override
+		public Iterator<PropertyPath> iterator() {
+			return self.iterator();
+		}
+
+		@Override
+		public Stream<PropertyPath> stream() {
+			return self.stream();
+		}
+
+		@Override
+		public List<PropertyPath> toList() {
+			return self;
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof PropertyPath that)) {
+				return false;
+			}
+
+			return Objects.equals(this.getOwningType(), that.getOwningType())
+					&& Objects.equals(this.toDotPath(), that.toDotPath());
+		}
+
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return property.toString();
+		}
+
+	}
+
+	/**
+	 * A {@link TypedPropertyPath} implementation that caches resolved metadata to avoid repeated introspection.
+	 *
+	 * @param <T> the owning type.
+	 * @param <P> the property type.
+	 */
+	static class ResolvedPropertyReference<T, P> extends ResolvedTypedPropertyPathSupport<T, P> {
+
+		private final PropertyReference<T, P> function;
+
+		ResolvedPropertyReference(PropertyReference<T, P> function, PropertyPathMetadata metadata) {
+			super(metadata);
+			this.function = function;
+		}
+
+		@Override
+		public @Nullable P get(T obj) {
+			return function.get(obj);
+		}
+
+	}
+
+	/**
 	 * A {@link TypedPropertyPath} implementation that caches resolved metadata to avoid repeated introspection.
 	 *
 	 * @param <T> the owning type.
@@ -374,7 +500,7 @@ class TypedPropertyPaths {
 	 * @param toStringRepresentation cached toString representation.
 	 */
 	record ForwardingPropertyPath<T, M, P>(TypedPropertyPath<T, M> self, TypedPropertyPath<M, P> nextSegment,
-			PropertyPath leaf, String dotPath, String toStringRepresentation) implements TypedPropertyPath<T, P> {
+			PropertyPath leaf, String dotPath, String toStringRepresentation) implements TypedPropertyPath<T, P>, Resolved {
 
 		public ForwardingPropertyPath(TypedPropertyPath<T, M> self, TypedPropertyPath<M, P> nextSegment) {
 			this(self, nextSegment, nextSegment.getLeafProperty(), getDotPath(self, nextSegment),
