@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
@@ -291,9 +290,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	 * 			// …
 	 * 			case 3357:
 	 * 				return bean.field;
-	 * 				// …
-	 * 				throw new UnsupportedOperationException(
-	 * 						String.format("No accessor to get property %s", new Object[] { property }));
+	 * 			// …
+	 * 			throw new UnsupportedOperationException(
+	 * 					String.format("No accessor to get property %s", new Object[] { property }));
 	 * 		}
 	 * 	}
 	 * }
@@ -568,6 +567,34 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			mv.visitEnd();
 		}
 
+		static boolean requiresMethodHandleSetup(PersistentEntity<?, ?> entity,
+				List<PersistentProperty<?>> persistentProperties) {
+
+			for (PersistentProperty<?> property : persistentProperties) {
+
+				if (property.usePropertyAccess()) {
+
+					if (generateMethodHandle(entity, property.getGetter())) {
+						return true;
+					}
+
+					if (generateMethodHandle(entity, property.getSetter())) {
+						return true;
+					}
+				}
+
+				if (property.isImmutable() && generateMethodHandle(entity, property.getWither())) {
+					return true;
+				}
+
+				if (generateSetterMethodHandle(entity, property.getField())) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		/**
 		 * Retrieve all classes which are involved in property/getter/setter declarations as these elements may be
 		 * distributed across the type hierarchy.
@@ -583,9 +610,9 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 						// keep it a lambda to infer the correct types, preventing
 						// LambdaConversionException: Invalid receiver type class java.lang.reflect.AccessibleObject; not a subtype
 						// of implementation type interface java.lang.reflect.Member
-						.map(it -> it.getDeclaringClass());
+						.map(Member::getDeclaringClass);
 
-			}).collect(Collectors.collectingAndThen(Collectors.toSet(), it -> new ArrayList<>(it)));
+			}).collect(Collectors.collectingAndThen(Collectors.toSet(), ArrayList::new));
 
 		}
 
@@ -1233,8 +1260,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * Creates the method signature containing parameter types (e.g. (Ljava/lang/Object)I for a method accepting
 		 * {@link Object} and returning a primitive {@code int}).
 		 *
-		 * @param method
-		 * @return
+		 * @param method must not be {@literal null}.
+		 * @return a string representation of the given method.
 		 * @since 2.1
 		 */
 		private static String getArgumentSignature(Method method) {
@@ -1360,8 +1387,8 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return 5 + list.indexOf(item);
 		}
 
-		private static String generateClassName(PersistentEntity<?, ?> entity) {
-			return entity.getType().getName() + TAG + Integer.toString(entity.hashCode(), 36);
+		static String generateClassName(PersistentEntity<?, ?> entity) {
+			return entity.getType().getName() + TAG + Integer.toString(Math.abs(entity.getType().getName().hashCode()), 36);
 		}
 	}
 
@@ -1425,7 +1452,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 	}
 
 	/**
-	 * @param property
+	 * @param property the persistent property to inspect.
 	 * @return {@literal true} if object mutation is supported.
 	 */
 	static boolean supportsMutation(PersistentProperty<?> property) {
