@@ -1,6 +1,7 @@
 package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import org.junit.jupiter.api.Test
 
 /**
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test
  */
 class KPropertyReferenceUnitTests {
 
-	@Test
+	@Test // GH-3400
 	fun shouldCreatePropertyReference() {
 
 		val path = KPropertyReference.of(Person::name)
@@ -18,7 +19,7 @@ class KPropertyReferenceUnitTests {
 		assertThat(path.name).isEqualTo("name")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldComposePropertyPath() {
 
 		val path = KPropertyReference.of(Person::address).then(Address::city)
@@ -26,7 +27,7 @@ class KPropertyReferenceUnitTests {
 		assertThat(path.toDotPath()).isEqualTo("address.city")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldComposeManyPropertyPath() {
 
 		val path = KPropertyReference.of(Person::addresses).then(Address::city)
@@ -34,12 +35,9 @@ class KPropertyReferenceUnitTests {
 		assertThat(path.toDotPath()).isEqualTo("addresses.city")
 	}
 
-	@Test
-	fun shouldCreateComposed() {
-
-		val path = KPropertyReference.of(Person::address / Address::city)
-
-		assertThat(path.name).isEqualTo("city")
+	@Test // GH-3400
+	fun composedReferenceCreationShouldFail() {
+		assertThatIllegalArgumentException().isThrownBy { KPropertyReference.of(Person::address / Address::city) }
 	}
 
 	class Person {

@@ -64,7 +64,7 @@ class KTypedPropertyPathUnitTests {
 		}
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldCreatePropertyPath() {
 
 		val path = KTypedPropertyPath.of(Person::name)
@@ -72,7 +72,7 @@ class KTypedPropertyPathUnitTests {
 		assertThat(path.toDotPath()).isEqualTo("name")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldComposePropertyPath() {
 
 		val path = KTypedPropertyPath.of(Person::address).then(Address::city)
@@ -80,7 +80,7 @@ class KTypedPropertyPathUnitTests {
 		assertThat(path.toDotPath()).isEqualTo("address.city")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldComposeManyPropertyPath() {
 
 		val path = KTypedPropertyPath.of(Person::addresses).then(Address::city)
@@ -88,7 +88,7 @@ class KTypedPropertyPathUnitTests {
 		assertThat(path.toDotPath()).isEqualTo("addresses.city")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldCreateComposed() {
 
 		val path = KTypedPropertyPath.of(Person::address / Address::city)

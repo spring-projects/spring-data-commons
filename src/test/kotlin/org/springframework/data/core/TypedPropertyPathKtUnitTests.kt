@@ -58,26 +58,26 @@ class TypedPropertyPathKtUnitTests {
 		}
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldSupportPropertyReference() {
 		assertThat(TypedPropertyPath.ofReference(Person::address).toDotPath()).isEqualTo("address")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldSupportComposedPropertyReference() {
 
 		val path = TypedPropertyPath.ofReference<Person, Address>(Person::address).then(Address::city);
 		assertThat(path.toDotPath()).isEqualTo("address.city")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldSupportPropertyLambda() {
 		assertThat(TypedPropertyPath.ofReference<Person, Address> { it.address }.toDotPath()).isEqualTo("address")
 		assertThat(TypedPropertyPath.ofReference<Person, Address> { foo -> foo.address }
 			.toDotPath()).isEqualTo("address")
 	}
 
-	@Test
+	@Test // GH-3400
 	fun shouldSupportComposedPropertyLambda() {
 
 		val path = TypedPropertyPath.ofReference<Person, Address> { it.address };

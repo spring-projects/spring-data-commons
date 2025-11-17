@@ -22,7 +22,7 @@ import java.util.Iterator;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Interface providing type-safe property path navigation through method references or lambda expressions.
+ * Interface providing type-safe property path navigation through method references and lambda expressions.
  * <p>
  * This functional interface extends {@link PropertyPath} to provide compile-time type safety and refactoring support.
  * Instead of using {@link PropertyPath#from(String, TypeInformation) string-based property paths} for textual property

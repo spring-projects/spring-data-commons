@@ -58,25 +58,30 @@ class KPropertyReference {
 	companion object {
 
 		/**
-		 * Create a [PropertyReference] from a [KProperty1].
+		 * Create a [PropertyReference] from a [KProperty1] reference.
+		 * @param property the property reference, must not be a property path.
 		 */
 		fun <T : Any, P : Any> of(property: KProperty1<T, P?>): PropertyReference<T, P> {
 			return of((property as KProperty<P?>))
 		}
 
 		/**
-		 * Create a [PropertyReference] from a collection-like [KProperty1].
+		 * Create a [PropertyReference] from a collection-like [KProperty1] reference.
+		 * @param property the property reference, must not be a property path.
 		 */
 		@JvmName("ofMany")
 		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P?>?>): PropertyReference<T, P> {
 			return of((property as KProperty<P?>))
 		}
 
-
 		/**
 		 * Create a [PropertyReference] from a [KProperty].
 		 */
 		fun <T, P> of(property: KProperty<P?>): PropertyReference<T, P> {
+
+			if (property is KPropertyReferenceImpl<*, *>) {
+				throw IllegalArgumentException("Property reference ${property.name} must not be a property path")
+			}
 
 			if (property is KProperty1<*, *>) {
 

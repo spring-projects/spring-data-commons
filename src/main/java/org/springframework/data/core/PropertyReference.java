@@ -22,16 +22,16 @@ import org.jspecify.annotations.Nullable;
 /**
  * Interface providing type-safe property references.
  * <p>
- * This functional interface is typically implemented through method references or lambda expressions that allow for
+ * This functional interface is typically implemented through method references and lambda expressions that allow for
  * compile-time type safety and refactoring support. Instead of string-based property names that are easy to miss when
- * changing the domain model, {@code TypedPropertyReference} leverages Java's declarative method references and lambda
+ * changing the domain model, {@code PropertyReference} leverages Java's declarative method references and lambda
  * expressions to ensure type-safe property access.
  * <p>
  * Create a typed property reference using the static factory method {@link #of(PropertyReference)} with a method
  * reference or lambda, for example:
  *
  * <pre class="code">
- * TypedPropertyReference&lt;Person, String&gt; name = TypedPropertyReference.of(Person::getName);
+ * PropertyReference&lt;Person, String&gt; name = PropertyReference.of(Person::getName);
  * </pre>
  *
  * The resulting object can be used to obtain the {@link #getName() property name} and to interact with the target
@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * structures using {@link #then(PropertyReference)}:
  *
  * <pre class="code">
- * TypedPropertyPath&lt;Person, String&gt; city = TypedPropertyReference.of(Person::getAddress).then(Address::getCity);
+ * TypedPropertyPath&lt;Person, String&gt; city = PropertyReference.of(Person::getAddress).then(Address::getCity);
  * </pre>
  * <p>
  * The generic type parameters preserve type information across the property path chain: {@code T} represents the owning
@@ -47,11 +47,11 @@ import org.jspecify.annotations.Nullable;
  * at this segment. Composition automatically flows type information forward, ensuring that {@code then()} preserves the
  * full chain's type safety.
  * <p>
- * Implement {@code TypedPropertyReference} using method references (strongly recommended) or lambdas that directly
- * access a property getter. Constructor references, method calls with parameters, and complex expressions are not
- * supported and result in {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references,
- * introspection of lambda expressions requires bytecode analysis of the declaration site classes and thus depends on
- * their availability at runtime.
+ * Implement {@code PropertyReference} using method references (strongly recommended) or lambdas that directly access a
+ * property getter. Constructor references, method calls with parameters, and complex expressions are not supported and
+ * result in {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references, introspection
+ * of lambda expressions requires bytecode analysis of the declaration site classes and thus depends on their
+ * availability at runtime.
  *
  * @param <T> the owning type of this property.
  * @param <P> the property value type.
