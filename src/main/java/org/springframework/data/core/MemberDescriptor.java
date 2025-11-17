@@ -200,9 +200,9 @@ interface MemberDescriptor {
 	/**
 	 * Value object describing a Kotlin property in the context of an owning class.
 	 */
-	record KPropertyPathDescriptor(KPropertyReferenceImpl<?, ?> property) implements KotlinMemberDescriptor {
+	record KPropertyPathDescriptor(KProperty1<?, ?> property) implements KotlinMemberDescriptor {
 
-		static KPropertyPathDescriptor create(KPropertyReferenceImpl<?, ?> propertyReference) {
+		static KPropertyPathDescriptor create(KProperty1<?, ?> propertyReference) {
 			return new KPropertyPathDescriptor(propertyReference);
 		}
 
