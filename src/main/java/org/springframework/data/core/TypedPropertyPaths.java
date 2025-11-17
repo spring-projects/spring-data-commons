@@ -38,6 +38,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.core.MemberDescriptor.FieldDescriptor;
+import org.springframework.data.core.MemberDescriptor.KPropertyPathDescriptor;
 import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.data.core.MemberDescriptor.MethodDescriptor;
 import org.springframework.util.CompositeIterator;
@@ -126,18 +127,23 @@ class TypedPropertyPaths {
 
 		PropertyPathMetadata metadata = getMetadata(lambda);
 
-		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyPathMetadata kMetadata
+		if (KotlinDetector.isKotlinReflectPresent()) {
+			if (metadata instanceof KPropertyPathMetadata kMetadata
 				&& kMetadata.getProperty() instanceof KPropertyReferenceImpl<?, ?> ref) {
-			return KotlinDelegate.of(ref);
+				return KotlinDelegate.of(ref);
+			}
 		}
 
 		return new ResolvedPropertyReference<>(lambda, metadata);
 	}
 
+	/**
+	 * Delegate to handle property path composition of single-property and property-path KProperty1 references.
+	 */
 	static class KotlinDelegate {
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public static <T, P> TypedPropertyPath<T, P> of(KProperty1<T, P> property) {
+		public static <T, P> TypedPropertyPath<T, P> of(Object property) {
 
 			if (property instanceof KPropertyReferenceImpl paths) {
 
@@ -152,16 +158,22 @@ class TypedPropertyPaths {
 				Class<?> owner = impl.getJavaField() != null ? impl.getJavaField().getDeclaringClass()
 						: impl.getGetter().getCaller().getMember().getDeclaringClass();
 				KPropertyPathMetadata metadata = TypedPropertyPaths.KPropertyPathMetadata
-						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, property));
+						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, (KProperty1) impl));
 				return new TypedPropertyPaths.ResolvedKPropertyPath(metadata);
 			}
 
-			if (property.getGetter().getProperty() instanceof KProperty1Impl impl) {
-				return of(impl);
+			if (property instanceof KProperty1 kProperty) {
+
+				if (kProperty.getGetter().getProperty() instanceof KProperty1Impl impl) {
+					return of(impl);
+				}
+
+				throw new IllegalArgumentException("Property " + kProperty.getName() + " is not a KProperty");
 			}
 
-			throw new IllegalArgumentException("Property " + property.getName() + " is not a KProperty");
+			throw new IllegalArgumentException("Property " + property + " is not a KProperty");
 		}
+
 	}
 
 	/**
@@ -190,8 +202,8 @@ class TypedPropertyPaths {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> delegate, PropertyPathMetadata metadata) {
 
-		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyPathMetadata kmp) {
-			return new ResolvedKPropertyPath(kmp.getProperty(), metadata);
+		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyPathMetadata) {
+			return new ResolvedKPropertyPath(((KPropertyPathMetadata) metadata).getProperty(), metadata);
 		}
 
 		return new ResolvedTypedPropertyPath<>(delegate, metadata);
@@ -228,12 +240,12 @@ class TypedPropertyPaths {
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 
-			if (reference instanceof KPropertyReferenceDescriptor kProperty) {
-				return KPropertyPathMetadata.of(kProperty);
+			if (reference instanceof KPropertyReferenceDescriptor descriptor) {
+				return KPropertyPathMetadata.of(descriptor);
 			}
 
-			if (reference instanceof MemberDescriptor.KPropertyPathDescriptor kProperty) {
-				return KPropertyPathMetadata.of(kProperty);
+			if (reference instanceof KPropertyPathDescriptor descriptor) {
+				return KPropertyPathMetadata.of(descriptor);
 			}
 		}
 
@@ -342,7 +354,7 @@ class TypedPropertyPaths {
 		/**
 		 * Create a new {@code KPropertyPathMetadata}.
 		 */
-		public static KPropertyPathMetadata of(MemberDescriptor.KPropertyPathDescriptor descriptor) {
+		public static KPropertyPathMetadata of(KPropertyPathDescriptor descriptor) {
 			return new KPropertyPathMetadata(descriptor.getOwner(), descriptor.property(), descriptor.getType());
 		}
 

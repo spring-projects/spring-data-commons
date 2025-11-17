@@ -51,6 +51,7 @@ fun <T : Any, P> KProperty1<T, P>.toPath(): TypedPropertyPath<T, P> =
  * @since 4.1
  */
 @JvmName("div")
+@Suppress("UNCHECKED_CAST")
 operator fun <T, M, P> KProperty1<T, M?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
 	KSinglePropertyReference(this, other) as KProperty1<T, P>
 
@@ -71,5 +72,6 @@ operator fun <T, M, P> KProperty1<T, M?>.div(other: KProperty1<M, P?>): KPropert
  * @since 4.1
  */
 @JvmName("divIterable")
+@Suppress("UNCHECKED_CAST")
 operator fun <T, M, P> KProperty1<T, Collection<M?>?>.div(other: KProperty1<M, P?>): KProperty1<T, P> =
 	KIterablePropertyReference(this, other) as KProperty1<T, P>
