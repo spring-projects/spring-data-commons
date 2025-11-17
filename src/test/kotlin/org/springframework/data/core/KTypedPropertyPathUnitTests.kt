@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 /**
- * Unit tests for [KPropertyReferenceImpl] and related functionality.
+ * Unit tests for [KPropertyPath] and related functionality.
  *
  * @author Mark Paluch
  */

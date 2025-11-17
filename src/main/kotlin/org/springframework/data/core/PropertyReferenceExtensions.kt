@@ -79,8 +79,8 @@ class KPropertyReference {
 		 */
 		fun <T, P> of(property: KProperty<P?>): PropertyReference<T, P> {
 
-			if (property is KPropertyReferenceImpl<*, *>) {
-				throw IllegalArgumentException("Property reference ${property.name} must not be a property path")
+			if (property is KPropertyPath<*, *>) {
+				throw IllegalArgumentException("Property reference '${property.toDotPath()}' must be a single property reference, not a property path")
 			}
 
 			if (property is KProperty1<*, *>) {
@@ -97,7 +97,7 @@ class KPropertyReference {
 				return PropertyReferences.ResolvedKPropertyReference(metadata)
 			}
 
-			throw IllegalArgumentException("Property ${property.name} is not a KProperty")
+			throw IllegalArgumentException("Property '${property.name}' is not a KProperty")
 		}
 
 	}

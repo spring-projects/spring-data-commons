@@ -129,7 +129,7 @@ class TypedPropertyPaths {
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 			if (metadata instanceof KPropertyPathMetadata kMetadata
-				&& kMetadata.getProperty() instanceof KPropertyReferenceImpl<?, ?> ref) {
+					&& kMetadata.getProperty() instanceof KPropertyPath<?, ?> ref) {
 				return KotlinDelegate.of(ref);
 			}
 		}
@@ -145,7 +145,7 @@ class TypedPropertyPaths {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static <T, P> TypedPropertyPath<T, P> of(Object property) {
 
-			if (property instanceof KPropertyReferenceImpl paths) {
+			if (property instanceof KPropertyPath paths) {
 
 				TypedPropertyPath parent = of(paths.getProperty());
 				TypedPropertyPath child = of(paths.getLeaf());

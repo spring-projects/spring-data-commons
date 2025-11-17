@@ -77,9 +77,9 @@ class KTypedPropertyPath {
 		 */
 		fun <T, P> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
 
-			if (property is KPropertyReferenceImpl<*, *>) {
+			if (property is KPropertyPath<*, *>) {
 
-				val paths = property as KPropertyReferenceImpl<*, *>
+				val paths = property as KPropertyPath<*, *>
 
 				val parent = of<Any, Any>(paths.property)
 				val child = of<Any, Any>(paths.leaf)
@@ -104,7 +104,7 @@ class KTypedPropertyPath {
 				return TypedPropertyPaths.ResolvedKPropertyPath(metadata)
 			}
 
-			throw IllegalArgumentException("Property ${property.name} is not a KProperty")
+			throw IllegalArgumentException("Property '${property.name}' is not a KProperty")
 		}
 
 	}

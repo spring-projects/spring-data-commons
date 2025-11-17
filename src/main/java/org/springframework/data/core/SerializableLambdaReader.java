@@ -151,7 +151,7 @@ class SerializableLambdaReader {
 			}
 
 			if (captured != null //
-					&& captured instanceof KPropertyReferenceImpl<?, ?> propRef) {
+					&& captured instanceof KPropertyPath<?, ?> propRef) {
 				return KPropertyPathDescriptor.create(propRef);
 			}
 		}
