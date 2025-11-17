@@ -48,6 +48,7 @@ import org.springframework.asm.Type;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.SpringProperties;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.MemberDescriptor.KPropertyPathDescriptor;
 import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -147,6 +148,11 @@ class SerializableLambdaReader {
 					&& propRef.getOwner() instanceof KClass<?> owner //
 					&& captured instanceof KProperty1<?, ?> kProperty) {
 				return new KPropertyReferenceDescriptor(JvmClassMappingKt.getJavaClass(owner), kProperty);
+			}
+
+			if (captured != null //
+					&& captured instanceof KPropertyReferenceImpl<?, ?> propRef) {
+				return KPropertyPathDescriptor.create(propRef);
 			}
 		}
 

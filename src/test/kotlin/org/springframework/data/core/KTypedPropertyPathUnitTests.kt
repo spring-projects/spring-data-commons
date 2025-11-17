@@ -91,6 +91,10 @@ class KTypedPropertyPathUnitTests {
 	@Test // GH-3400
 	fun shouldCreateComposed() {
 
+		assertThat(
+			PropertyPath.of(Person::address / Address::city).toDotPath()
+		).isEqualTo("address.city")
+
 		val path = KTypedPropertyPath.of(Person::address / Address::city)
 
 		assertThat(path.toDotPath()).isEqualTo("address.city")

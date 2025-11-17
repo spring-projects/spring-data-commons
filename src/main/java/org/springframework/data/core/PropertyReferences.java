@@ -24,11 +24,11 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.core.MemberDescriptor.FieldDescriptor;
-import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.data.core.MemberDescriptor.MethodDescriptor;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
@@ -96,7 +96,14 @@ class PropertyReferences {
 
 		MemberDescriptor reference = reader.read(lambda);
 
-		if (KotlinDetector.isKotlinReflectPresent() && reference instanceof KPropertyReferenceDescriptor kProperty) {
+		if (KotlinDetector.isKotlinReflectPresent()
+				&& reference instanceof MemberDescriptor.KotlinMemberDescriptor kProperty) {
+
+			if (kProperty instanceof MemberDescriptor.KPropertyPathDescriptor) {
+				throw new IllegalArgumentException("PropertyReference " + kProperty.getKotlinProperty().getName()
+						+ " is a property path. Use a single property reference.");
+			}
+
 			return KPropertyReferenceMetadata.of(kProperty);
 		}
 
@@ -198,8 +205,9 @@ class PropertyReferences {
 		/**
 		 * Create a new {@code KPropertyReferenceMetadata}.
 		 */
-		public static KPropertyReferenceMetadata of(KPropertyReferenceDescriptor descriptor) {
-			return new KPropertyReferenceMetadata(descriptor.getOwner(), descriptor.property(), descriptor.getType());
+		public static KPropertyReferenceMetadata of(MemberDescriptor.KotlinMemberDescriptor descriptor) {
+			return new KPropertyReferenceMetadata(descriptor.getOwner(), descriptor.getKotlinProperty(),
+					descriptor.getType());
 		}
 
 		public KProperty<?> getProperty() {

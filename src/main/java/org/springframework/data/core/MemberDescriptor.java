@@ -141,13 +141,24 @@ interface MemberDescriptor {
 
 	}
 
+	interface KotlinMemberDescriptor extends MemberDescriptor {
+
+		KProperty1<?, ?> getKotlinProperty();
+
+	}
+
 	/**
 	 * Value object describing a Kotlin property in the context of an owning class.
 	 */
-	record KPropertyReferenceDescriptor(Class<?> owner, KProperty1<?, ?> property) implements MemberDescriptor {
+	record KPropertyReferenceDescriptor(Class<?> owner, KProperty1<?, ?> property) implements KotlinMemberDescriptor {
 
 		static KPropertyReferenceDescriptor create(Class<?> owner, KProperty1<?, ?> property) {
 			return new KPropertyReferenceDescriptor(owner, property);
+		}
+
+		@Override
+		public KProperty1<?, ?> getKotlinProperty() {
+			return property();
 		}
 
 		@Override
@@ -182,6 +193,56 @@ interface MemberDescriptor {
 			}
 
 			return ResolvableType.forField((Field) member, owner());
+		}
+
+	}
+
+	/**
+	 * Value object describing a Kotlin property in the context of an owning class.
+	 */
+	record KPropertyPathDescriptor(KPropertyReferenceImpl<?, ?> property) implements KotlinMemberDescriptor {
+
+		static KPropertyPathDescriptor create(KPropertyReferenceImpl<?, ?> propertyReference) {
+			return new KPropertyPathDescriptor(propertyReference);
+		}
+
+		@Override
+		public KProperty1<?, ?> getKotlinProperty() {
+			return property();
+		}
+
+		@Override
+		public Class<?> getOwner() {
+			return getMember().getDeclaringClass();
+		}
+
+		@Override
+		public Member getMember() {
+
+			Method javaGetter = ReflectJvmMapping.getJavaGetter(property());
+			if (javaGetter != null) {
+				return javaGetter;
+			}
+
+			Field javaField = ReflectJvmMapping.getJavaField(property());
+
+			if (javaField != null) {
+				return javaField;
+			}
+
+			throw new IllegalStateException("Cannot resolve member for property '%s'".formatted(property().getName()));
+		}
+
+		@Override
+		public ResolvableType getType() {
+
+			Member member = getMember();
+
+			if (member instanceof Method m) {
+				return ResolvableType.forMethodReturnType(m, getOwner());
+			}
+
+			return ResolvableType.forField((Field) member, getOwner());
 		}
 
 	}
