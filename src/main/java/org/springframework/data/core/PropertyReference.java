@@ -81,12 +81,15 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * Syntax sugar to create a {@link PropertyReference} from a method reference or lambda for a collection property.
 	 * <p>
 	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference or lambda.
+	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
+	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
 	 * @param property the method reference or lambda.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static <T, P> PropertyReference<T, P> ofMany(PropertyReference<T, ? extends Iterable<P>> property) {
 		return (PropertyReference) PropertyReferences.of(property);
 	}
@@ -106,7 +109,7 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * @return the owningType will never be {@literal null}.
 	 */
 	default TypeInformation<?> getOwningType() {
-		return PropertyReferences.getMetadata(this).owner();
+		return PropertyReferences.of(this).getOwningType();
 	}
 
 	/**
@@ -115,7 +118,7 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * @return the current property name.
 	 */
 	default String getName() {
-		return PropertyReferences.getMetadata(this).property();
+		return PropertyReferences.of(this).getName();
 	}
 
 	/**
@@ -136,7 +139,7 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * @return the type information for the property at this segment.
 	 */
 	default TypeInformation<?> getTypeInformation() {
-		return PropertyReferences.getMetadata(this).propertyType();
+		return PropertyReferences.of(this).getTypeInformation();
 	}
 
 	/**
@@ -166,12 +169,16 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	/**
 	 * Extend the property to a property path by appending the {@code next} path segment and return a new property path
 	 * instance.
+	 * <p>
+	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
+	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
 	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
 	 *          and returning {@code N} as result of accessing a property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	default <N extends @Nullable Object> TypedPropertyPath<T, N> thenMany(
 			PropertyReference<P, ? extends Iterable<N>> next) {
 		return (TypedPropertyPath) TypedPropertyPaths.compose(this, next);

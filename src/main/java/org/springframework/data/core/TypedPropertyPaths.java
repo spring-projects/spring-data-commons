@@ -52,7 +52,6 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class TypedPropertyPaths {
 
-	private static final Map<ClassLoader, Map<Object, PropertyPathMetadata>> lambdas = new WeakHashMap<>();
 	private static final Map<ClassLoader, Map<Serializable, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
 	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyPath.class,
@@ -125,7 +124,7 @@ class TypedPropertyPaths {
 			return new PropertyReferenceWrapper<>(resolved);
 		}
 
-		PropertyPathMetadata metadata = getMetadata(lambda);
+		PropertyPathMetadata metadata = read(lambda);
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 			if (metadata instanceof KPropertyPathMetadata kMetadata
@@ -135,45 +134,6 @@ class TypedPropertyPaths {
 		}
 
 		return new ResolvedPropertyReference<>(lambda, metadata);
-	}
-
-	/**
-	 * Delegate to handle property path composition of single-property and property-path KProperty1 references.
-	 */
-	static class KotlinDelegate {
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public static <T, P> TypedPropertyPath<T, P> of(Object property) {
-
-			if (property instanceof KPropertyPath paths) {
-
-				TypedPropertyPath parent = of(paths.getProperty());
-				TypedPropertyPath child = of(paths.getLeaf());
-
-				return TypedPropertyPaths.compose(parent, child);
-			}
-
-			if (property instanceof KPropertyImpl impl) {
-
-				Class<?> owner = impl.getJavaField() != null ? impl.getJavaField().getDeclaringClass()
-						: impl.getGetter().getCaller().getMember().getDeclaringClass();
-				KPropertyPathMetadata metadata = TypedPropertyPaths.KPropertyPathMetadata
-						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, (KProperty1) impl));
-				return new TypedPropertyPaths.ResolvedKPropertyPath(metadata);
-			}
-
-			if (property instanceof KProperty1 kProperty) {
-
-				if (kProperty.getGetter().getProperty() instanceof KProperty1Impl impl) {
-					return of(impl);
-				}
-
-				throw new IllegalArgumentException("Property " + kProperty.getName() + " is not a KProperty");
-			}
-
-			throw new IllegalArgumentException("Property " + property + " is not a KProperty");
-		}
-
 	}
 
 	/**
@@ -193,45 +153,20 @@ class TypedPropertyPaths {
 		}
 
 		return (TypedPropertyPath) cache.computeIfAbsent(lambda,
-				o -> new ResolvedTypedPropertyPath(o, doGetMetadata(lambda)));
+				o -> new ResolvedTypedPropertyPath(o, read(lambda)));
 	}
 
 	/**
 	 * Retrieve {@link PropertyPathMetadata} for a given {@link TypedPropertyPath}.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <T, P> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> delegate, PropertyPathMetadata metadata) {
+	private static <T, P> TypedPropertyPath<T, P> aaa(TypedPropertyPath<T, P> delegate, PropertyPathMetadata metadata) {
 
 		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyPathMetadata) {
 			return new ResolvedKPropertyPath(((KPropertyPathMetadata) metadata).getProperty(), metadata);
 		}
 
 		return new ResolvedTypedPropertyPath<>(delegate, metadata);
-	}
-
-	/**
-	 * Retrieve {@link PropertyPathMetadata} for a given {@link PropertyReference}.
-	 */
-	public static PropertyPathMetadata getMetadata(PropertyReference<?, ?> lambda) {
-		return doGetMetadata(lambda);
-	}
-
-	/**
-	 * Retrieve {@link PropertyPathMetadata} for a given {@link TypedPropertyPath}.
-	 */
-	public static PropertyPathMetadata getMetadata(TypedPropertyPath<?, ?> lambda) {
-		return doGetMetadata(lambda);
-	}
-
-	private static PropertyPathMetadata doGetMetadata(Object lambda) {
-
-		Map<Object, PropertyPathMetadata> cache;
-
-		synchronized (lambdas) {
-			cache = lambdas.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
-		}
-
-		return cache.computeIfAbsent(lambda, o -> read(lambda));
 	}
 
 	private static PropertyPathMetadata read(Object lambda) {
@@ -363,6 +298,48 @@ class TypedPropertyPaths {
 		}
 	}
 
+	/**
+	 * Delegate to handle property path composition of single-property and property-path KProperty1 references.
+	 */
+	static class KotlinDelegate {
+
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public static <T, P> TypedPropertyPath<T, P> of(Object property) {
+
+			if (property instanceof KPropertyPath paths) {
+
+				TypedPropertyPath parent = of(paths.getProperty());
+				TypedPropertyPath child = of(paths.getLeaf());
+
+				return TypedPropertyPaths.compose(parent, child);
+			}
+
+			if (property instanceof KPropertyImpl impl) {
+
+				Class<?> owner = impl.getJavaField() != null ? impl.getJavaField().getDeclaringClass()
+						: impl.getGetter().getCaller().getMember().getDeclaringClass();
+				KPropertyPathMetadata metadata = TypedPropertyPaths.KPropertyPathMetadata
+						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, (KProperty1) impl));
+				return new TypedPropertyPaths.ResolvedKPropertyPath(metadata);
+			}
+
+			if (property instanceof KProperty1 kProperty) {
+
+				if (kProperty.getGetter().getProperty() instanceof KProperty1Impl impl) {
+					return of(impl);
+				}
+
+				throw new IllegalArgumentException("Property " + kProperty.getName() + " is not a KProperty");
+			}
+
+			throw new IllegalArgumentException("Property " + property + " is not a KProperty");
+		}
+
+	}
+
+	/**
+	 * Marker interface to indicate a resolved and processed property path.
+	 */
 	interface Resolved {
 
 	}

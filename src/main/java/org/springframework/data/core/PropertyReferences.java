@@ -40,7 +40,6 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class PropertyReferences {
 
-	private static final Map<ClassLoader, Map<Object, PropertyReferenceMetadata>> lambdas = new WeakHashMap<>();
 	private static final Map<ClassLoader, Map<PropertyReference<?, ?>, ResolvedPropertyReference<?, ?>>> resolved = new WeakHashMap<>();
 
 	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyReference.class,
@@ -62,7 +61,7 @@ class PropertyReferences {
 		}
 
 		return (PropertyReference<T, P>) cache.computeIfAbsent(lambda,
-				o -> new ResolvedPropertyReference(o, getMetadata(lambda)));
+				o -> new ResolvedPropertyReference(o, read(lambda)));
 	}
 
 	/**
@@ -77,19 +76,6 @@ class PropertyReferences {
 		}
 
 		return new ResolvedPropertyReference<>(delegate, metadata);
-	}
-
-	/**
-	 * Retrieve {@link PropertyReferenceMetadata} for a given {@link PropertyReference}.
-	 */
-	public static PropertyReferenceMetadata getMetadata(PropertyReference<?, ?> lambda) {
-
-		Map<Object, PropertyReferenceMetadata> cache;
-		synchronized (lambdas) {
-			cache = lambdas.computeIfAbsent(lambda.getClass().getClassLoader(), k -> new ConcurrentReferenceHashMap<>());
-		}
-
-		return cache.computeIfAbsent(lambda, o -> read(lambda));
 	}
 
 	private static PropertyReferenceMetadata read(PropertyReference<?, ?> lambda) {

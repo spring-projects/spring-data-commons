@@ -97,13 +97,16 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda for a collection property.
 	 * <p>
 	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * <p>
+	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
+	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
 	 * @param propertyPath the method reference or lambda.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
-	 * @since 4.1
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static <T, P> TypedPropertyPath<T, P> ofMany(TypedPropertyPath<T, ? extends Iterable<P>> propertyPath) {
 		return (TypedPropertyPath) TypedPropertyPaths.of(propertyPath);
 	}
@@ -119,17 +122,17 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 
 	@Override
 	default TypeInformation<?> getOwningType() {
-		return TypedPropertyPaths.getMetadata(this).owner();
+		return TypedPropertyPaths.of(this).getOwningType();
 	}
 
 	@Override
 	default String getSegment() {
-		return TypedPropertyPaths.getMetadata(this).property();
+		return TypedPropertyPaths.of(this).getSegment();
 	}
 
 	@Override
 	default TypeInformation<?> getTypeInformation() {
-		return TypedPropertyPaths.getMetadata(this).propertyType();
+		return TypedPropertyPaths.of(this).getTypeInformation();
 	}
 
 	@Override
@@ -162,12 +165,16 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 
 	/**
 	 * Extend the property path by appending the {@code next} path segment and returning a new property path instance.
+	 * <p>
+	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
+	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
 	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
 	 *          and returning {@code N} as result of accessing a property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	default <N extends @Nullable Object> TypedPropertyPath<T, N> thenMany(
 			PropertyReference<P, ? extends Iterable<N>> next) {
 		return (TypedPropertyPath) TypedPropertyPaths.compose(this, PropertyReference.of(next));
