@@ -66,7 +66,7 @@ import org.jspecify.annotations.Nullable;
 public interface TypedPropertyPath<T, P extends @Nullable Object> extends PropertyPath, Serializable {
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a property described as method reference or lambda.
 	 * <p>
 	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
 	 *
@@ -75,7 +75,7 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 */
-	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> ofReference(PropertyReference<T, P> propertyPath) {
+	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> ofProperty(PropertyReference<T, P> propertyPath) {
 		return TypedPropertyPaths.of(propertyPath);
 	}
 

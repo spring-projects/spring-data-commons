@@ -26,31 +26,11 @@ import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
 
 /**
- * Extension function to compose a [TypedPropertyPath] with a [KProperty1].
- *
- * @since 4.1
- */
-fun <T : Any, P : Any?, N : Any> TypedPropertyPath<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
-	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
-	return TypedPropertyPaths.compose(this, nextPath)
-}
-
-/**
- * Extension function to compose a [TypedPropertyPath] with a [KProperty].
- *
- * @since 4.1
- */
-fun <T : Any, P : Any?, N : Any> TypedPropertyPath<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
-	val nextPath = KTypedPropertyPath.of<T, P>(next) as TypedPropertyPath<P, N>
-	return TypedPropertyPaths.compose(this, nextPath)
-}
-
-/**
  * Helper to create [TypedPropertyPath] from [KProperty].
  *
  * @since 4.1
  */
-class KTypedPropertyPath {
+internal class KTypedPropertyPath {
 
 	/**
 	 * Companion object for static factory methods.

@@ -29,13 +29,13 @@ import kotlin.reflect.KProperty1
 fun KProperty<*>.toDotPath(): String = asString(this)
 
 /**
- * Extension for [KProperty1] providing an `toPath` function to create a [TypedPropertyPath].
+ * Extension for [KProperty1] providing an `toPropertyPath` function to create a [TypedPropertyPath].
  *
  * @author Mark Paluch
  * @since 4.1
  * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-fun <T : Any, P> KProperty1<T, P>.toPath(): TypedPropertyPath<T, P> =
+fun <T : Any, P> KProperty1<T, P>.toPropertyPath(): TypedPropertyPath<T, P> =
 	KTypedPropertyPath.of(this)
 
 /**

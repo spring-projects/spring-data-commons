@@ -31,8 +31,15 @@ import kotlin.reflect.KProperty1
 internal interface KPropertyPath<T, out P> : KProperty1<T, P> {
 	val property: KProperty1<T, *>
 	val leaf: KProperty1<*, P>
+
 }
 
+/**
+ * Abstraction of a single property reference wrapping [KProperty1].
+ *
+ * @author Mark Paluch
+ * @since 4.1
+ */
 internal class KSinglePropertyReference<T, M, out P>(
 	val parent: KProperty1<T, M?>,
 	val child: KProperty1<M, P>
@@ -57,6 +64,7 @@ internal class KSinglePropertyReference<T, M, out P>(
 		get() = parent
 	override val leaf: KProperty1<*, P>
 		get() = child
+
 }
 
 /**
@@ -67,7 +75,6 @@ internal class KSinglePropertyReference<T, M, out P>(
  * @author Mikhail Polivakha
  * @since 4.1
  */
-
 internal class KIterablePropertyReference<T, M, out P>(
 	val parent: KProperty1<T, Iterable<M?>?>,
 	val child: KProperty1<M, P>
@@ -85,20 +92,25 @@ internal class KIterablePropertyReference<T, M, out P>(
 		get() = parent
 	override val leaf: KProperty1<*, P>
 		get() = child
+
 }
 
 
 /**
  * Recursively construct field name for a nested property.
+ *
  * @author Tjeu Kayim
  * @author Mikhail Polivakha
+ * @since 4.1
  */
 internal fun asString(property: KProperty<*>): String {
+
 	return when (property) {
 		is KPropertyPath<*, *> ->
 			"${asString(property.property)}.${property.leaf.name}"
 
 		else -> property.name
 	}
+
 }
 

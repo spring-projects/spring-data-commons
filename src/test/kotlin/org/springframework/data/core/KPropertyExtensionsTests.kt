@@ -47,17 +47,17 @@ class KPropertyExtensionsTests {
 			return Stream.of(
 				Arguments.argumentSet(
 					"Person.name (toPath)",
-					Person::name.toPath(),
+					Person::name.toPropertyPath(),
 					PropertyPath.from("name", Person::class.java)
 				),
 				Arguments.argumentSet(
 					"Person.address.country.name (toPath)",
-					(Person::address / Address::country / Country::name).toPath(),
+					(Person::address / Address::country / Country::name).toPropertyPath(),
 					PropertyPath.from("address.country.name", Person::class.java)
 				),
 				Arguments.argumentSet(
 					"Person.addresses.country.name (toPath)",
-					(Person::addresses / Address::country / Country::name).toPath(),
+					(Person::addresses / Address::country / Country::name).toPropertyPath(),
 					PropertyPath.from("addresses.country.name", Person::class.java)
 				)
 			)

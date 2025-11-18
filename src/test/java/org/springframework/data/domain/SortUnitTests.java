@@ -59,7 +59,7 @@ class SortUnitTests {
 
 		assertThat(Sort.by(Person::getFirstName).iterator().next().getProperty()).isEqualTo("firstName");
 		assertThat(
-				Sort.by(TypedPropertyPath.ofReference(PersonHolder::person).then(Person::getFirstName)).iterator().next()
+				Sort.by(TypedPropertyPath.ofProperty(PersonHolder::person).then(Person::getFirstName)).iterator().next()
 						.getProperty())
 				.isEqualTo("person.firstName");
 	}
