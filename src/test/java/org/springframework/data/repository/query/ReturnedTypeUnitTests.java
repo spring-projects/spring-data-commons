@@ -37,7 +37,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  */
 class ReturnedTypeUnitTests {
 
-	@Test // DATACMNS-89
+	@Test // DATACMNS-89, GH-3410
 	void treatsSimpleDomainTypeAsIs() throws Exception {
 
 		var type = getReturnedType("findAll");
@@ -45,10 +45,12 @@ class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead()).isEqualTo(Sample.class);
 		assertThat(type.getInputProperties()).isEmpty();
 		assertThat(type.isProjecting()).isFalse();
+		assertThat(type.isDtoProjection()).isFalse();
+		assertThat(type.isInterfaceProjection()).isFalse();
 		assertThat(type.needsCustomConstruction()).isFalse();
 	}
 
-	@Test // DATACMNS-89
+	@Test // DATACMNS-89, GH-3410
 	void detectsDto() throws Exception {
 
 		var type = getReturnedType("findAllDtos");
@@ -57,6 +59,8 @@ class ReturnedTypeUnitTests {
 		assertThat(type.getInputProperties()).contains("firstname");
 		assertThat(type.isInstance(new SampleDto("firstname"))).isTrue();
 		assertThat(type.isProjecting()).isTrue();
+		assertThat(type.isDtoProjection()).isTrue();
+		assertThat(type.isInterfaceProjection()).isFalse();
 		assertThat(type.needsCustomConstruction()).isTrue();
 	}
 
@@ -78,13 +82,15 @@ class ReturnedTypeUnitTests {
 		assertThat(type.getReturnedType()).isEqualTo(void.class);
 	}
 
-	@Test // DATACMNS-89
+	@Test // DATACMNS-89, GH-3410
 	void detectsClosedProjection() throws Exception {
 
 		var type = getReturnedType("findOneProjection");
 
 		assertThat(type.getReturnedType()).isEqualTo(SampleProjection.class);
 		assertThat(type.isProjecting()).isTrue();
+		assertThat(type.isInterfaceProjection()).isTrue();
+		assertThat(type.isDtoProjection()).isFalse();
 		assertThat(type.needsCustomConstruction()).isTrue();
 	}
 
@@ -109,12 +115,14 @@ class ReturnedTypeUnitTests {
 		assertThat(type.getTypeToRead()).isEqualTo(BigInteger.class);
 	}
 
-	@Test // DATACMNS-840
+	@Test // DATACMNS-840, GH-3410
 	void detectsSampleDtoWithDefaultConstructor() throws Exception {
 
 		var type = getReturnedType("dtoWithMultipleConstructors");
 
 		assertThat(type.getInputProperties()).isEmpty();
+		assertThat(type.isDtoProjection()).isTrue();
+		assertThat(type.isInterfaceProjection()).isFalse();
 		assertThat(type.needsCustomConstruction()).isFalse();
 	}
 
