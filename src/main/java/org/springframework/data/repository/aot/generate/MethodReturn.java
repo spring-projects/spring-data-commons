@@ -99,7 +99,17 @@ public class MethodReturn {
 	 * @return {@literal true} if the return type is an interface-based projection.
 	 */
 	public boolean isInterfaceProjection() {
-		return isProjecting() && returnedType.getReturnedType().isInterface();
+		return returnedType.isInterfaceProjection();
+	}
+
+	/**
+	 * Returns whether the method return type is a DTO projection.
+	 *
+	 * @return {@literal true} if the return type is a DTO based projection.
+	 * @since 4.0.1
+	 */
+	public boolean isDtoProjection() {
+		return returnedType.isDtoProjection();
 	}
 
 	/**
