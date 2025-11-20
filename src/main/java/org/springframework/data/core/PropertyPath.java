@@ -24,6 +24,19 @@ import org.springframework.util.Assert;
 
 /**
  * Abstraction of a {@link PropertyPath} within a domain class.
+ * <p>
+ * Property paths allow to navigate nested properties such as {@code address.city.name} and provide metadata for each
+ * segment of the path. Paths are represented in dot-path notation and are resolved from an owning type, for example:
+ *
+ * <pre class="code">
+ * PropertyPath.from("address.city.name", Person.class);
+ * </pre>
+ *
+ * Paths are cached on a best-effort basis using a weak reference cache to avoid repeated introspection if GC pressure
+ * permits.
+ * <p>
+ * A typed variant of {@link PropertyPath} is available as {@link TypedPropertyPath} through
+ * {@link #of(PropertyReference)} to leverage method references for a type-safe usage across application code.
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
@@ -79,10 +92,10 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * For example:
 	 *
 	 * <pre class="code">
-	 * PropertyPath.from("a.b.c", Some.class).getSegment();
+	 * PropertyPath.from("address.city.name", Person.class).getSegment();
 	 * </pre>
 	 *
-	 * results in {@code a}.
+	 * results in {@code address}.
 	 *
 	 * @return the current property path segment.
 	 */
@@ -149,10 +162,10 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * Returns the next {@code PropertyPath} segment in the property path chain.
 	 *
 	 * <pre class="code">
-	 * PropertyPath.from("a.b.c", Some.class).next().toDotPath();
+	 * PropertyPath.from("address.city.name", Person.class).next().toDotPath();
 	 * </pre>
 	 *
-	 * results in the output: {@code b.c}
+	 * results in the output: {@code city.name}.
 	 *
 	 * @return the next {@code PropertyPath} or {@literal null} if the path does not contain further segments.
 	 * @see #hasNext()
@@ -201,16 +214,16 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 	 * Returns an {@link Iterator Iterator of PropertyPath} that iterates over all property path segments. For example:
 	 *
 	 * <pre class="code">
-	 * PropertyPath propertyPath = PropertyPath.from("a.b.c", Some.class);
-	 * propertyPath.forEach(p -> p.toDotPath());
+	 * PropertyPath path = PropertyPath.from("address.city.name", Person.class);
+	 * path.forEach(p -> p.toDotPath());
 	 * </pre>
 	 *
 	 * results in the dot paths:
 	 *
 	 * <pre class="code">
-	 * a.b.c             (this object)
-	 * b.c               (next() object)
-	 * c                 (next().next() object)
+	 * address.city.name     (this object)
+	 * city.name             (next() object)
+	 * city.name             (next().next() object)
 	 * </pre>
 	 */
 	@Override

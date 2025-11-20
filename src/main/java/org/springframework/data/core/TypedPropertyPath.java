@@ -22,15 +22,15 @@ import java.util.Iterator;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Interface providing type-safe property path navigation through method references and lambda expressions.
+ * Interface providing type-safe property path navigation through method references expressions.
  * <p>
  * This functional interface extends {@link PropertyPath} to provide compile-time type safety and refactoring support.
  * Instead of using {@link PropertyPath#from(String, TypeInformation) string-based property paths} for textual property
  * representation that are easy to miss when changing the domain model, {@code TypedPropertyPath} leverages Java's
- * declarative method references and lambda expressions to ensure type-safe property access.
+ * declarative method references to ensure type-safe property access.
  * <p>
- * Create a typed property path using the static factory method {@link #of(TypedPropertyPath)} with a method reference
- * or lambda, for example:
+ * Create a typed property path using the static factory method {@link #of(TypedPropertyPath)} with a method reference ,
+ * for example:
  *
  * <pre class="code">
  * TypedPropertyPath&lt;Person, String&gt; name = TypedPropertyPath.of(Person::getName);
@@ -49,11 +49,11 @@ import org.jspecify.annotations.Nullable;
  * at this segment. Composition automatically flows type information forward, ensuring that {@code then()} preserves the
  * full chain's type safety.
  * <p>
- * Implement {@code TypedPropertyPath} using method references (strongly recommended) or lambdas that directly access a
- * property getter. Constructor references, method calls with parameters, and complex expressions are not supported and
- * result in {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references, introspection
- * of lambda expressions requires bytecode analysis of the declaration site classes and thus depends on their
- * availability at runtime.
+ * Implement {@code TypedPropertyPath} using method references (strongly recommended)s that directly access a property
+ * getter. Constructor references, method calls with parameters, and complex expressions are not supported and result in
+ * {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references, introspection of lambda
+ * expressions requires bytecode analysis of the declaration site classes and thus depends on their availability at
+ * runtime.
  *
  * @param <T> the owning type of this path segment; the root type for composed paths.
  * @param <P> the property value type at this path segment.
@@ -66,25 +66,80 @@ import org.jspecify.annotations.Nullable;
 public interface TypedPropertyPath<T, P extends @Nullable Object> extends PropertyPath, Serializable {
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a property described as method reference or lambda.
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a property described as method reference. Suitable for
+	 * static imports.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference.
 	 *
-	 * @param propertyPath the method reference or lambda.
+	 * @param property the property reference.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 */
-	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> ofProperty(PropertyReference<T, P> propertyPath) {
-		return TypedPropertyPaths.of(propertyPath);
+	static <T, P extends @Nullable Object> TypedPropertyPath<T, P> path(PropertyReference<T, P> property) {
+		return TypedPropertyPaths.of(property);
 	}
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
+	 * Syntax sugar to create a composed {@link TypedPropertyPath} from properties described as method reference. Suitable
+	 * for static imports.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method references.
 	 *
-	 * @param propertyPath the method reference or lambda.
+	 * @param owner the owner property.
+	 * @param child the nested property.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property path.
+	 */
+	static <T, I, P extends @Nullable Object> TypedPropertyPath<T, P> path(PropertyReference<T, @Nullable I> owner,
+			PropertyReference<I, P> child) {
+		return TypedPropertyPaths.compose(owner, child);
+	}
+
+	/**
+	 * Syntax sugar to create a composed {@link TypedPropertyPath} from properties described as method reference. Suitable
+	 * for static imports.
+	 * <p>
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method references.
+	 *
+	 * @param owner the owner property.
+	 * @param child1 the first nested property.
+	 * @param child1 the second nested property.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property path.
+	 */
+	static <T, I1, I2, P extends @Nullable Object> TypedPropertyPath<T, P> path(PropertyReference<T, @Nullable I1> owner,
+			PropertyReference<I1, @Nullable I2> child1, PropertyReference<I2, P> child2) {
+		return path(owner, child1).then(child2);
+	}
+
+	/**
+	 * Syntax sugar to create a composed {@link TypedPropertyPath} from properties described as method reference. Suitable
+	 * for static imports.
+	 * <p>
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method references.
+	 *
+	 * @param owner the owner property.
+	 * @param child1 the first nested property.
+	 * @param child1 the second nested property.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property path.
+	 */
+	static <T, I1, I2, I3, P extends @Nullable Object> TypedPropertyPath<T, P> path(
+			PropertyReference<T, @Nullable I1> owner, PropertyReference<I1, @Nullable I2> child1,
+			PropertyReference<I2, @Nullable I3> child2, PropertyReference<I3, P> child3) {
+		return path(owner, child1, child2).then(child3);
+	}
+
+	/**
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference.
+	 * <p>
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference.
+	 *
+	 * @param propertyPath the method reference.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
@@ -94,14 +149,14 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	}
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda for a collection property.
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference for a collection property.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference.
 	 * <p>
 	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
 	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
-	 * @param propertyPath the method reference or lambda.
+	 * @param propertyPath the method reference.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
@@ -121,7 +176,7 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	P get(T obj);
 
 	@Override
-	default TypeInformation<?> getOwningType() {
+	default TypeInformation<T> getOwningType() {
 		return TypedPropertyPaths.of(this).getOwningType();
 	}
 
@@ -131,7 +186,7 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	}
 
 	@Override
-	default TypeInformation<?> getTypeInformation() {
+	default TypeInformation<P> getTypeInformation() {
 		return TypedPropertyPaths.of(this).getTypeInformation();
 	}
 
@@ -154,8 +209,8 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	/**
 	 * Extend the property path by appending the {@code next} path segment and returning a new property path instance.
 	 *
-	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
-	 *          and returning {@code N} as result of accessing a property.
+	 * @param next the next property path segment as method reference accepting the owner object {@code P} type and
+	 *          returning {@code N} as result of accessing a property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
@@ -169,8 +224,8 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
 	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
-	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
-	 *          and returning {@code N} as result of accessing a property.
+	 * @param next the next property path segment as method reference accepting the owner object {@code P} type and
+	 *          returning {@code N} as result of accessing a property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */

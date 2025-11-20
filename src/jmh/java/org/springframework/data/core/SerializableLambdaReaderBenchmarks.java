@@ -28,19 +28,19 @@ import org.springframework.data.BenchmarkSettings;
 @Testable
 public class SerializableLambdaReaderBenchmarks extends BenchmarkSettings {
 
-	private static final SerializableLambdaReader reader = new SerializableLambdaReader(MemberReference.class);
+	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyReference.class);
 
 	@Benchmark
 	public Object benchmarkMethodReference() {
 
-		MemberReference<Person, String> methodReference = Person::firstName;
+		PropertyReference<Person, String> methodReference = Person::firstName;
 		return reader.read(methodReference);
 	}
 
 	@Benchmark
 	public Object benchmarkLambda() {
 
-		MemberReference<Person, String> methodReference = person -> person.firstName();
+		PropertyReference<Person, String> methodReference = person -> person.firstName();
 		return reader.read(methodReference);
 	}
 

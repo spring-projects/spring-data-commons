@@ -111,8 +111,8 @@ class SerializableLambdaReader {
 	public static final String INCLUDE_SUPPRESSED_EXCEPTIONS = "spring.data.lambda-reader.include-suppressed-exceptions";
 
 	private static final Log LOGGER = LogFactory.getLog(SerializableLambdaReader.class);
-	private static final boolean filterStackTrace = isEnabled(FILTER_STACK_TRACE, false);
-	private static final boolean includeSuppressedExceptions = isEnabled(INCLUDE_SUPPRESSED_EXCEPTIONS, true);
+	private static final boolean filterStackTrace = isEnabled(FILTER_STACK_TRACE, true);
+	private static final boolean includeSuppressedExceptions = isEnabled(INCLUDE_SUPPRESSED_EXCEPTIONS, false);
 
 	private final List<Class<?>> entryPoints;
 
@@ -143,15 +143,13 @@ class SerializableLambdaReader {
 		if (isKotlinPropertyReference(lambda)) {
 
 			Object captured = lambda.getCapturedArg(0);
-			if (captured != null //
-					&& captured instanceof PropertyReference propRef //
+			if (captured instanceof PropertyReference propRef //
 					&& propRef.getOwner() instanceof KClass<?> owner //
 					&& captured instanceof KProperty1<?, ?> kProperty) {
 				return new KPropertyReferenceDescriptor(JvmClassMappingKt.getJavaClass(owner), kProperty);
 			}
 
-			if (captured != null //
-					&& captured instanceof KPropertyPath<?, ?> propRef) {
+			if (captured instanceof KPropertyPath<?, ?> propRef) {
 				return KPropertyPathDescriptor.create(propRef);
 			}
 		}

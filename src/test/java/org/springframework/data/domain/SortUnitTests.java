@@ -16,12 +16,13 @@
 package org.springframework.data.domain;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.core.TypedPropertyPath.*;
 import static org.springframework.data.domain.Sort.NullHandling.*;
 
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.core.TypedPropertyPath;
+
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.geo.Circle;
@@ -59,7 +60,7 @@ class SortUnitTests {
 
 		assertThat(Sort.by(Person::getFirstName).iterator().next().getProperty()).isEqualTo("firstName");
 		assertThat(
-				Sort.by(TypedPropertyPath.ofProperty(PersonHolder::person).then(Person::getFirstName)).iterator().next()
+				Sort.by(path(PersonHolder::person, Person::getFirstName)).iterator().next()
 						.getProperty())
 				.isEqualTo("person.firstName");
 	}

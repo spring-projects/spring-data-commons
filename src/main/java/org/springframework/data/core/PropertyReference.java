@@ -22,13 +22,12 @@ import org.jspecify.annotations.Nullable;
 /**
  * Interface providing type-safe property references.
  * <p>
- * This functional interface is typically implemented through method references and lambda expressions that allow for
- * compile-time type safety and refactoring support. Instead of string-based property names that are easy to miss when
- * changing the domain model, {@code PropertyReference} leverages Java's declarative method references and lambda
- * expressions to ensure type-safe property access.
+ * This functional interface is typically implemented through method references that allow for compile-time type safety
+ * and refactoring support. Instead of string-based property names that are easy to miss when changing the domain model,
+ * {@code PropertyReference} leverages Java's declarative method references to ensure type-safe property access.
  * <p>
- * Create a typed property reference using the static factory method {@link #of(PropertyReference)} with a method
- * reference or lambda, for example:
+ * Create a typed property reference using the static factory method {@link #property(PropertyReference)} with a method
+ * reference, for example:
  *
  * <pre class="code">
  * PropertyReference&lt;Person, String&gt; name = PropertyReference.of(Person::getName);
@@ -64,11 +63,25 @@ import org.jspecify.annotations.Nullable;
 public interface PropertyReference<T, P extends @Nullable Object> extends Serializable {
 
 	/**
-	 * Syntax sugar to create a {@link PropertyReference} from a method reference or lambda.
+	 * Syntax sugar to create a {@link PropertyReference} from a method reference. Suitable for static imports.
 	 * <p>
-	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference.
 	 *
-	 * @param property the method reference or lambda.
+	 * @param property the method reference.
+	 * @param <T> owning type.
+	 * @param <P> property type.
+	 * @return the typed property reference.
+	 */
+	static <T, P extends @Nullable Object> PropertyReference<T, P> property(PropertyReference<T, P> property) {
+		return of(property);
+	}
+
+	/**
+	 * Syntax sugar to create a {@link PropertyReference} from a method reference.
+	 * <p>
+	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference.
+	 *
+	 * @param property the method reference.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
@@ -80,11 +93,11 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	/**
 	 * Syntax sugar to create a {@link PropertyReference} from a method reference or lambda for a collection property.
 	 * <p>
-	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference or lambda.
-	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
+	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference. Note that
+	 * {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
 	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
-	 * @param property the method reference or lambda.
+	 * @param property the method reference.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
@@ -104,11 +117,11 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	P get(T obj);
 
 	/**
-	 * Returns the owning type of the referenced property..
+	 * Returns the owning type of the referenced property.
 	 *
 	 * @return the owningType will never be {@literal null}.
 	 */
-	default TypeInformation<?> getOwningType() {
+	default TypeInformation<T> getOwningType() {
 		return PropertyReferences.of(this).getOwningType();
 	}
 

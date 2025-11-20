@@ -88,7 +88,7 @@ class KPropertyReference {
 				val property1 = property as KProperty1<*, *>
 				val owner = property1.javaField?.declaringClass
 					?: property1.javaGetter?.declaringClass
-				val metadata = PropertyReferences.KPropertyReferenceMetadata.of(
+				val metadata = PropertyReferences.KPropertyMetadata.of(
 					MemberDescriptor.KPropertyReferenceDescriptor.create(
 						owner,
 						property1

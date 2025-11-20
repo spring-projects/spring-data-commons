@@ -37,7 +37,11 @@ class KPropertyReferenceUnitTests {
 
 	@Test // GH-3400
 	fun composedReferenceCreationShouldFail() {
-		assertThatIllegalArgumentException().isThrownBy { PropertyReference.of(Person::address / Address::city) }
+		assertThatIllegalArgumentException().isThrownBy {
+			PropertyReference.property(
+				Person::address / Address::city
+			)
+		}
 		assertThatIllegalArgumentException().isThrownBy { KPropertyReference.of(Person::address / Address::city) }
 	}
 

@@ -177,12 +177,12 @@ class SimplePropertyPath implements PropertyPath {
 
 	@Override
 	public boolean equals(@Nullable Object o) {
-		return PropertyPathUtil.equals(this, o);
+		return PropertyUtil.equals(this, o);
 	}
 
 	@Override
 	public int hashCode() {
-		return PropertyPathUtil.hashCode(this);
+		return PropertyUtil.hashCode(this);
 	}
 
 	/**

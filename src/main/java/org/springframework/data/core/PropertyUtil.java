@@ -20,12 +20,12 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Utility class for {@link PropertyPath} implementations.
+ * Utility class for {@link PropertyPath} and {@link PropertyReference} implementations.
  *
  * @author Mark Paluch
  * @since 4.1
  */
-class PropertyPathUtil {
+class PropertyUtil {
 
 	/**
 	 * Compute the hash code for the given {@link PropertyPath} based on its {@link Object#toString() string}
@@ -39,13 +39,24 @@ class PropertyPathUtil {
 	}
 
 	/**
+	 * Compute the hash code for the given {@link PropertyReference} based on its {@link Object#toString() string}
+	 * representation.
+	 *
+	 * @param property the property reference
+	 * @return property reference hash code.
+	 */
+	static int hashCode(PropertyReference<?, ?> property) {
+		return Objects.hash(property.getOwningType(), property.getName());
+	}
+
+	/**
 	 * Equality check for {@link PropertyPath} implementations based on their owning type and string representation.
 	 *
 	 * @param self the property path.
 	 * @param o the other object.
 	 * @return {@literal true} if both are equal; {@literal false} otherwise.
 	 */
-	public static boolean equals(PropertyPath self, @Nullable Object o) {
+	static boolean equals(PropertyPath self, @Nullable Object o) {
 
 		if (self == o) {
 			return true;
@@ -57,6 +68,26 @@ class PropertyPathUtil {
 
 		return Objects.equals(self.getOwningType(), that.getOwningType())
 				&& Objects.equals(self.toString(), that.toString());
+	}
+
+	/**
+	 * Equality check for {@link PropertyReference} implementations based on their owning type and name.
+	 *
+	 * @param self the property path.
+	 * @param o the other object.
+	 * @return {@literal true} if both are equal; {@literal false} otherwise.
+	 */
+	static boolean equals(PropertyReference<?, ?> self, @Nullable Object o) {
+
+		if (self == o) {
+			return true;
+		}
+
+		if (!(o instanceof PropertyReference<?, ?> that)) {
+			return false;
+		}
+
+		return Objects.equals(self.getOwningType(), that.getOwningType()) && Objects.equals(self.getName(), that.getName());
 	}
 
 }

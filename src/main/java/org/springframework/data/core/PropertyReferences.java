@@ -20,8 +20,8 @@ import kotlin.reflect.KProperty;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -65,20 +65,20 @@ class PropertyReferences {
 	}
 
 	/**
-	 * Retrieve {@link PropertyReferenceMetadata} for a given {@link PropertyReference}.
+	 * Retrieve {@link PropertyMetadata} for a given {@link PropertyReference}.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T, P> PropertyReference<T, P> of(PropertyReference<T, P> delegate,
-			PropertyReferenceMetadata metadata) {
+			PropertyMetadata metadata) {
 
-		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyReferenceMetadata kmp) {
+		if (KotlinDetector.isKotlinReflectPresent() && metadata instanceof KPropertyMetadata kmp) {
 			return new ResolvedKPropertyReference(kmp.getProperty(), metadata);
 		}
 
 		return new ResolvedPropertyReference<>(delegate, metadata);
 	}
 
-	private static PropertyReferenceMetadata read(PropertyReference<?, ?> lambda) {
+	private static PropertyMetadata read(PropertyReference<?, ?> lambda) {
 
 		MemberDescriptor reference = reader.read(lambda);
 
@@ -90,42 +90,66 @@ class PropertyReferences {
 						+ " is a property path. Use a single property reference.");
 			}
 
-			return KPropertyReferenceMetadata.of(kProperty);
+			return KPropertyMetadata.of(kProperty);
 		}
 
 		if (reference instanceof MethodDescriptor method) {
-			return PropertyReferenceMetadata.ofMethod(method);
+			return PropertyMetadata.ofMethod(method);
 		}
 
-		return PropertyReferenceMetadata.ofField((FieldDescriptor) reference);
+		return PropertyMetadata.ofField((FieldDescriptor) reference);
 	}
 
 	/**
 	 * Metadata describing a property reference including its owner type, property type, and name.
 	 */
-	static class PropertyReferenceMetadata {
+	static class PropertyMetadata {
 
 		private final TypeInformation<?> owner;
 		private final String property;
 		private final TypeInformation<?> propertyType;
 
-		PropertyReferenceMetadata(Class<?> owner, String property, ResolvableType propertyType) {
+		PropertyMetadata(Class<?> owner, String property, ResolvableType propertyType) {
 			this(TypeInformation.of(owner), property, TypeInformation.of(propertyType));
 		}
 
-		PropertyReferenceMetadata(TypeInformation<?> owner, String property, TypeInformation<?> propertyType) {
+		PropertyMetadata(TypeInformation<?> owner, String property, TypeInformation<?> propertyType) {
 			this.owner = owner;
 			this.property = property;
 			this.propertyType = propertyType;
 		}
 
 		/**
-		 * Create a new {@code PropertyReferenceMetadata} from a method.
+		 * Create a new {@code PropertyMetadata} from a method.
 		 */
-		public static PropertyReferenceMetadata ofMethod(MethodDescriptor method) {
+		public static PropertyMetadata ofMethod(MethodDescriptor descriptor) {
+
+			return resolveProperty(descriptor,
+					() -> new IllegalArgumentException("Cannot find PropertyDescriptor from method '%s.%s()'"
+							.formatted(descriptor.owner().getName(), descriptor.getMember().getName())));
+		}
+
+		/**
+		 * Create a new {@code PropertyMetadata} from a field.
+		 */
+		public static PropertyMetadata ofField(FieldDescriptor field) {
+			return new PropertyMetadata(field.owner(), field.getMember().getName(), field.getType());
+		}
+
+		/**
+		 * Resolve {@code PropertyMetadata} from a method descriptor by introspecting bean metadata and return metadata if
+		 * available otherwise throw an exception supplied by {@code exceptionSupplier}.
+		 *
+		 * @param method the method descriptor.
+		 * @param exceptionSupplier supplier for exception to be thrown when property cannot be resolved.
+		 * @return metadata for the resolved property.
+		 * @see BeanUtils
+		 */
+		public static PropertyMetadata resolveProperty(MethodDescriptor method,
+				Supplier<? extends RuntimeException> exceptionSupplier) {
 
 			PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method.method());
-			String methodName = method.getMember().getName();
+			String methodName = method.method().getName();
 
 			if (descriptor == null) {
 
@@ -134,14 +158,13 @@ class PropertyReferences {
 				TypeInformation<?> fallback = owner.getProperty(propertyName);
 
 				if (fallback != null) {
-					return new PropertyReferenceMetadata(owner, propertyName, fallback);
+					return new PropertyMetadata(owner, propertyName, fallback);
 				}
 
-				throw new IllegalArgumentException(
-						"Cannot find PropertyDescriptor from method '%s.%s()'".formatted(method.owner().getName(), methodName));
+				throw exceptionSupplier.get();
 			}
 
-			return new PropertyReferenceMetadata(method.getOwner(), descriptor.getName(), method.getType());
+			return new PropertyMetadata(method.owner(), descriptor.getName(), method.getType());
 		}
 
 		private static String getPropertyName(String methodName) {
@@ -153,13 +176,6 @@ class PropertyReferences {
 			}
 
 			return methodName;
-		}
-
-		/**
-		 * Create a new {@code PropertyReferenceMetadata} from a field.
-		 */
-		public static PropertyReferenceMetadata ofField(FieldDescriptor field) {
-			return new PropertyReferenceMetadata(field.owner(), field.getMember().getName(), field.getType());
 		}
 
 		public TypeInformation<?> owner() {
@@ -177,22 +193,22 @@ class PropertyReferences {
 	}
 
 	/**
-	 * Kotlin-specific {@link PropertyReferenceMetadata} implementation.
+	 * Kotlin-specific {@link PropertyMetadata} implementation.
 	 */
-	static class KPropertyReferenceMetadata extends PropertyReferenceMetadata {
+	static class KPropertyMetadata extends PropertyMetadata {
 
 		private final KProperty<?> property;
 
-		KPropertyReferenceMetadata(Class<?> owner, KProperty<?> property, ResolvableType propertyType) {
+		KPropertyMetadata(Class<?> owner, KProperty<?> property, ResolvableType propertyType) {
 			super(owner, property.getName(), propertyType);
 			this.property = property;
 		}
 
 		/**
-		 * Create a new {@code KPropertyReferenceMetadata}.
+		 * Create a new {@code KPropertyMetadata}.
 		 */
-		public static KPropertyReferenceMetadata of(MemberDescriptor.KotlinMemberDescriptor descriptor) {
-			return new KPropertyReferenceMetadata(descriptor.getOwner(), descriptor.getKotlinProperty(),
+		public static KPropertyMetadata of(MemberDescriptor.KotlinMemberDescriptor descriptor) {
+			return new KPropertyMetadata(descriptor.getOwner(), descriptor.getKotlinProperty(),
 					descriptor.getType());
 		}
 
@@ -209,17 +225,18 @@ class PropertyReferences {
 	 */
 	static abstract class ResolvedPropertyReferenceSupport<T, P> implements PropertyReference<T, P> {
 
-		private final PropertyReferenceMetadata metadata;
+		private final PropertyMetadata metadata;
 		private final String toString;
 
-		ResolvedPropertyReferenceSupport(PropertyReferenceMetadata metadata) {
+		ResolvedPropertyReferenceSupport(PropertyMetadata metadata) {
 			this.metadata = metadata;
 			this.toString = metadata.owner().getType().getSimpleName() + "." + getName();
 		}
 
 		@Override
-		public TypeInformation<?> getOwningType() {
-			return metadata.owner();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<T> getOwningType() {
+			return (TypeInformation<T>) metadata.owner();
 		}
 
 		@Override
@@ -228,28 +245,19 @@ class PropertyReferences {
 		}
 
 		@Override
-		public TypeInformation<?> getTypeInformation() {
-			return metadata.propertyType();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<P> getTypeInformation() {
+			return (TypeInformation<P>) metadata.propertyType();
 		}
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-
-			if (obj == this) {
-				return true;
-			}
-
-			if (!(obj instanceof PropertyReference<?, ?> that)) {
-				return false;
-			}
-
-			return Objects.equals(this.getOwningType(), that.getOwningType())
-					&& Objects.equals(this.getName(), that.getName());
+			return PropertyUtil.equals(this, obj);
 		}
 
 		@Override
 		public int hashCode() {
-			return toString().hashCode();
+			return PropertyUtil.hashCode(this);
 		}
 
 		@Override
@@ -269,7 +277,7 @@ class PropertyReferences {
 
 		private final PropertyReference<T, P> function;
 
-		ResolvedPropertyReference(PropertyReference<T, P> function, PropertyReferenceMetadata metadata) {
+		ResolvedPropertyReference(PropertyReference<T, P> function, PropertyMetadata metadata) {
 			super(metadata);
 			this.function = function;
 		}
@@ -292,11 +300,12 @@ class PropertyReferences {
 
 		private final KProperty<P> property;
 
-		ResolvedKPropertyReference(KPropertyReferenceMetadata metadata) {
+		@SuppressWarnings("unchecked")
+		ResolvedKPropertyReference(KPropertyMetadata metadata) {
 			this((KProperty<P>) metadata.getProperty(), metadata);
 		}
 
-		ResolvedKPropertyReference(KProperty<P> property, PropertyReferenceMetadata metadata) {
+		ResolvedKPropertyReference(KProperty<P> property, PropertyMetadata metadata) {
 			super(metadata);
 			this.property = property;
 		}

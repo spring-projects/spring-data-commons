@@ -29,32 +29,32 @@ public class TypedPropertyPathBenchmarks extends BenchmarkSettings {
 
 	@Benchmark
 	public Object benchmarkMethodReference() {
-		return TypedPropertyPath.ofProperty(Person::firstName);
+		return TypedPropertyPath.path(Person::firstName);
 	}
 
 	@Benchmark
 	public Object benchmarkComposedMethodReference() {
-		return TypedPropertyPath.ofProperty(Person::address).then(Address::city);
+		return TypedPropertyPath.path(Person::address).then(Address::city);
 	}
 
 	@Benchmark
 	public TypedPropertyPath<Person, String> benchmarkLambda() {
-		return TypedPropertyPath.ofProperty(person -> person.firstName());
+		return TypedPropertyPath.path(person -> person.firstName());
 	}
 
 	@Benchmark
 	public TypedPropertyPath<Person, String> benchmarkComposedLambda() {
-		return TypedPropertyPath.ofProperty((Person person) -> person.address()).then(address -> address.city());
+		return TypedPropertyPath.path((Person person) -> person.address()).then(address -> address.city());
 	}
 
 	@Benchmark
 	public Object dotPath() {
-		return TypedPropertyPath.ofProperty(Person::firstName).toDotPath();
+		return TypedPropertyPath.path(Person::firstName).toDotPath();
 	}
 
 	@Benchmark
 	public Object composedDotPath() {
-		return TypedPropertyPath.ofProperty(Person::address).then(Address::city).toDotPath();
+		return TypedPropertyPath.path(Person::address).then(Address::city).toDotPath();
 	}
 
 	record Person(String firstName, String lastName, Address address) {

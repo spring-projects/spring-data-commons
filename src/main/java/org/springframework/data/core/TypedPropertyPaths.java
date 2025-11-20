@@ -20,27 +20,23 @@ import kotlin.reflect.KProperty1;
 import kotlin.reflect.jvm.internal.KProperty1Impl;
 import kotlin.reflect.jvm.internal.KPropertyImpl;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.core.MemberDescriptor.FieldDescriptor;
 import org.springframework.data.core.MemberDescriptor.KPropertyPathDescriptor;
 import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.data.core.MemberDescriptor.MethodDescriptor;
+import org.springframework.data.core.PropertyReferences.PropertyMetadata;
 import org.springframework.util.CompositeIterator;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
@@ -55,7 +51,7 @@ class TypedPropertyPaths {
 	private static final Map<ClassLoader, Map<Serializable, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
 	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyPath.class,
-			TypedPropertyPath.class, TypedPropertyPaths.class);
+			PropertyReference.class, PropertyReferences.class, TypedPropertyPath.class, TypedPropertyPaths.class);
 
 	/**
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
@@ -124,7 +120,7 @@ class TypedPropertyPaths {
 			return new PropertyReferenceWrapper<>(resolved);
 		}
 
-		PropertyPathMetadata metadata = read(lambda);
+		PropertyMetadata metadata = read(lambda);
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 			if (metadata instanceof KPropertyPathMetadata kMetadata
@@ -158,7 +154,7 @@ class TypedPropertyPaths {
 
 	private static <T, P> TypedPropertyPath<?, ?> doResolvePropertyPathReference(TypedPropertyPath<T, P> lambda) {
 
-		PropertyPathMetadata metadata = read(lambda);
+		PropertyMetadata metadata = read(lambda);
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 			if (metadata instanceof KPropertyPathMetadata kMetadata
@@ -170,7 +166,7 @@ class TypedPropertyPaths {
 		return new ResolvedTypedPropertyPath<>(lambda, metadata);
 	}
 
-	private static PropertyPathMetadata read(Object lambda) {
+	private static PropertyMetadata read(Object lambda) {
 
 		MemberDescriptor reference = reader.read(lambda);
 
@@ -186,92 +182,16 @@ class TypedPropertyPaths {
 		}
 
 		if (reference instanceof MethodDescriptor method) {
-			return PropertyPathMetadata.ofMethod(method);
+			return PropertyMetadata.ofMethod(method);
 		}
 
-		return PropertyPathMetadata.ofField((MemberDescriptor.MethodDescriptor.FieldDescriptor) reference);
+		return PropertyMetadata.ofField((MemberDescriptor.MethodDescriptor.FieldDescriptor) reference);
 	}
 
 	/**
-	 * Metadata describing a single property path segment including its owner type, property type, and name.
+	 * Kotlin-specific {@link PropertyMetadata} implementation supporting composed {@link KProperty property paths}.
 	 */
-	static class PropertyPathMetadata {
-
-		private final TypeInformation<?> owner;
-		private final String property;
-		private final TypeInformation<?> propertyType;
-
-		PropertyPathMetadata(Class<?> owner, String property, ResolvableType propertyType) {
-			this(TypeInformation.of(owner), property, TypeInformation.of(propertyType));
-		}
-
-		PropertyPathMetadata(TypeInformation<?> owner, String property, TypeInformation<?> propertyType) {
-			this.owner = owner;
-			this.property = property;
-			this.propertyType = propertyType;
-		}
-
-		/**
-		 * Create a new {@code PropertyPathMetadata} from a method.
-		 */
-		public static PropertyPathMetadata ofMethod(MethodDescriptor method) {
-
-			PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method.method());
-			String methodName = method.getMember().getName();
-
-			if (descriptor == null) {
-
-				String propertyName = getPropertyName(methodName);
-				TypeInformation<?> owner = TypeInformation.of(method.owner());
-				TypeInformation<?> fallback = owner.getProperty(propertyName);
-
-				if (fallback != null) {
-					return new PropertyPathMetadata(owner, propertyName, fallback);
-				}
-
-				throw new IllegalArgumentException(
-						"Cannot find PropertyDescriptor from method '%s.%s()'".formatted(method.owner().getName(), methodName));
-			}
-
-			return new PropertyPathMetadata(method.getOwner(), descriptor.getName(), method.getType());
-		}
-
-		private static String getPropertyName(String methodName) {
-
-			if (methodName.startsWith("is")) {
-				return Introspector.decapitalize(methodName.substring(2));
-			} else if (methodName.startsWith("get")) {
-				return Introspector.decapitalize(methodName.substring(3));
-			}
-
-			return methodName;
-		}
-
-		/**
-		 * Create a new {@code PropertyPathMetadata} from a field.
-		 */
-		public static PropertyPathMetadata ofField(FieldDescriptor field) {
-			return new PropertyPathMetadata(field.owner(), field.getMember().getName(), field.getType());
-		}
-
-		public TypeInformation<?> owner() {
-			return owner;
-		}
-
-		public String property() {
-			return property;
-		}
-
-		public TypeInformation<?> propertyType() {
-			return propertyType;
-		}
-
-	}
-
-	/**
-	 * Kotlin-specific {@link PropertyPathMetadata} implementation.
-	 */
-	static class KPropertyPathMetadata extends PropertyPathMetadata {
+	static class KPropertyPathMetadata extends PropertyMetadata {
 
 		private final KProperty<?> property;
 
@@ -353,19 +273,20 @@ class TypedPropertyPaths {
 	 */
 	static abstract class ResolvedTypedPropertyPathSupport<T, P> implements TypedPropertyPath<T, P>, Resolved {
 
-		private final PropertyPathMetadata metadata;
+		private final PropertyMetadata metadata;
 		private final List<PropertyPath> list;
 		private final String toString;
 
-		ResolvedTypedPropertyPathSupport(PropertyPathMetadata metadata) {
+		ResolvedTypedPropertyPathSupport(PropertyMetadata metadata) {
 			this.metadata = metadata;
 			this.list = List.of(this);
 			this.toString = metadata.owner().getType().getSimpleName() + "." + toDotPath();
 		}
 
 		@Override
-		public TypeInformation<?> getOwningType() {
-			return metadata.owner();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<T> getOwningType() {
+			return (TypeInformation<T>) metadata.owner();
 		}
 
 		@Override
@@ -374,8 +295,9 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public TypeInformation<?> getTypeInformation() {
-			return metadata.propertyType();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<P> getTypeInformation() {
+			return (TypeInformation<P>) metadata.propertyType();
 		}
 
 		@Override
@@ -395,22 +317,12 @@ class TypedPropertyPaths {
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-
-			if (obj == this) {
-				return true;
-			}
-
-			if (!(obj instanceof PropertyPath that)) {
-				return false;
-			}
-
-			return Objects.equals(this.getOwningType(), that.getOwningType())
-					&& Objects.equals(this.toDotPath(), that.toDotPath());
+			return PropertyUtil.equals(this, obj);
 		}
 
 		@Override
 		public int hashCode() {
-			return toString().hashCode();
+			return PropertyUtil.hashCode(this);
 		}
 
 		@Override
@@ -442,7 +354,7 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public TypeInformation<?> getOwningType() {
+		public TypeInformation<T> getOwningType() {
 			return property.getOwningType();
 		}
 
@@ -452,8 +364,9 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public TypeInformation<?> getTypeInformation() {
-			return property.getTypeInformation();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<P> getTypeInformation() {
+			return (TypeInformation<P>) property.getTypeInformation();
 		}
 
 		@Override
@@ -473,22 +386,12 @@ class TypedPropertyPaths {
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-
-			if (obj == this) {
-				return true;
-			}
-
-			if (!(obj instanceof PropertyPath that)) {
-				return false;
-			}
-
-			return Objects.equals(this.getOwningType(), that.getOwningType())
-					&& Objects.equals(this.toDotPath(), that.toDotPath());
+			return PropertyUtil.equals(this, obj);
 		}
 
 		@Override
 		public int hashCode() {
-			return toString().hashCode();
+			return PropertyUtil.hashCode(this);
 		}
 
 		@Override
@@ -508,7 +411,7 @@ class TypedPropertyPaths {
 
 		private final PropertyReference<T, P> function;
 
-		ResolvedPropertyReference(PropertyReference<T, P> function, PropertyPathMetadata metadata) {
+		ResolvedPropertyReference(PropertyReference<T, P> function, PropertyMetadata metadata) {
 			super(metadata);
 			this.function = function;
 		}
@@ -530,7 +433,7 @@ class TypedPropertyPaths {
 
 		private final TypedPropertyPath<T, P> function;
 
-		ResolvedTypedPropertyPath(TypedPropertyPath<T, P> function, PropertyPathMetadata metadata) {
+		ResolvedTypedPropertyPath(TypedPropertyPath<T, P> function, PropertyMetadata metadata) {
 			super(metadata);
 			this.function = function;
 		}
@@ -553,11 +456,12 @@ class TypedPropertyPaths {
 
 		private final KProperty<P> property;
 
+		@SuppressWarnings("unchecked")
 		ResolvedKPropertyPath(KPropertyPathMetadata metadata) {
 			this((KProperty<P>) metadata.getProperty(), metadata);
 		}
 
-		ResolvedKPropertyPath(KProperty<P> property, PropertyPathMetadata metadata) {
+		ResolvedKPropertyPath(KProperty<P> property, PropertyMetadata metadata) {
 			super(metadata);
 			this.property = property;
 		}
@@ -604,7 +508,7 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public TypeInformation<?> getOwningType() {
+		public TypeInformation<T> getOwningType() {
 			return self.getOwningType();
 		}
 
@@ -624,8 +528,9 @@ class TypedPropertyPaths {
 		}
 
 		@Override
-		public TypeInformation<?> getTypeInformation() {
-			return self.getTypeInformation();
+		@SuppressWarnings("unchecked")
+		public TypeInformation<P> getTypeInformation() {
+			return (TypeInformation<P>) self.getTypeInformation();
 		}
 
 		@Override
@@ -649,12 +554,12 @@ class TypedPropertyPaths {
 
 		@Override
 		public boolean equals(@Nullable Object o) {
-			return PropertyPathUtil.equals(this, o);
+			return PropertyUtil.equals(this, o);
 		}
 
 		@Override
 		public int hashCode() {
-			return PropertyPathUtil.hashCode(this);
+			return PropertyUtil.hashCode(this);
 		}
 
 		@Override

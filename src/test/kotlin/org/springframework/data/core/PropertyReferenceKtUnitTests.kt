@@ -13,13 +13,13 @@ class PropertyReferenceKtUnitTests {
 
 	@Test // GH-3400
 	fun shouldSupportPropertyReference() {
-		assertThat(PropertyReference.of(Person::address).name).isEqualTo("address")
+		assertThat(PropertyReference.property(Person::address).name).isEqualTo("address")
 	}
 
 	@Test // GH-3400
 	fun resolutionShouldFailForComposedPropertyPath() {
 		assertThatIllegalArgumentException()
-			.isThrownBy { PropertyReference.of(Person::address / Address::city) }
+			.isThrownBy { PropertyReference.property(Person::address / Address::city) }
 	}
 
 	class Person {

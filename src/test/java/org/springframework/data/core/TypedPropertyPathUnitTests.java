@@ -70,6 +70,13 @@ class TypedPropertyPathUnitTests {
 	}
 
 	@Test // GH-3400
+	void resolvesMHComposedPathThroughFactory() {
+		assertThat(TypedPropertyPath
+				.path(PersonQuery::getEmergencyContact, PersonQuery::getAddress, Address::getCountry, Country::name)
+				.toDotPath()).isEqualTo("emergencyContact.address.country.name");
+	}
+
+	@Test // GH-3400
 	void resolvesCollectionPath() {
 		assertThat(PropertyPath.ofMany(PersonQuery::getAddresses).then(Address::getCity).toDotPath())
 				.isEqualTo("addresses.city");
@@ -200,6 +207,7 @@ class TypedPropertyPathUnitTests {
 
 	@Test // GH-3400
 	void arithmeticOpsFail() {
+
 		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(() -> {
 			PropertyPath.of((PersonQuery person) -> {
 				int a = 1 + 2;
