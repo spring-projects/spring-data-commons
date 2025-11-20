@@ -15,9 +15,16 @@
  */
 package org.springframework.data.core;
 
+import java.io.Serializable;
+import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility class for {@link PropertyPath} and {@link PropertyReference} implementations.
@@ -25,7 +32,45 @@ import org.jspecify.annotations.Nullable;
  * @author Mark Paluch
  * @since 4.1
  */
-class PropertyUtil {
+public class PropertyPathUtil {
+
+	/**
+	 * Resolve a {@link PropertyPath} from a {@link Serializable} lambda implementing a functional interface accepting a
+	 * single method argument and returning a value. The form of the interface must follow a design aligned with
+	 * {@link org.springframework.core.convert.converter.Converter} or {@link java.util.function.Function}.
+	 *
+	 * @param obj the serializable lambda object.
+	 * @return the resolved property path.
+	 */
+	public static PropertyPath resolve(Object obj) {
+
+		Assert.isInstanceOf(Serializable.class, obj, "Object must be Serializable");
+
+		return TypedPropertyPaths.of(new SerializableWrapper((Serializable) obj));
+	}
+
+	private record SerializableWrapper(Serializable serializable) implements PropertyReference<Object, Object> {
+
+		@Override
+		public @Nullable Object get(Object obj) {
+			return null;
+		}
+
+		// serializable bridge
+		public SerializedLambda writeReplace() {
+
+			Method method = ReflectionUtils.findMethod(serializable.getClass(), "writeReplace");
+
+			if (method == null) {
+				throw new InvalidDataAccessApiUsageException(
+						"Cannot find writeReplace method on " + serializable.getClass().getName());
+			}
+
+			ReflectionUtils.makeAccessible(method);
+			return (SerializedLambda) ReflectionUtils.invokeMethod(method, serializable);
+		}
+
+	}
 
 	/**
 	 * Compute the hash code for the given {@link PropertyPath} based on its {@link Object#toString() string}
