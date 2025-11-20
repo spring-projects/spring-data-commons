@@ -141,17 +141,7 @@ class SerializableLambdaReader {
 		SerializedLambda lambda = serialize(lambdaObject);
 
 		if (isKotlinPropertyReference(lambda)) {
-
-			Object captured = lambda.getCapturedArg(0);
-			if (captured instanceof PropertyReference propRef //
-					&& propRef.getOwner() instanceof KClass<?> owner //
-					&& captured instanceof KProperty1<?, ?> kProperty) {
-				return new KPropertyReferenceDescriptor(JvmClassMappingKt.getJavaClass(owner), kProperty);
-			}
-
-			if (captured instanceof KPropertyPath<?, ?> propRef) {
-				return KPropertyPathDescriptor.create(propRef);
-			}
+			return KotlinDelegate.read(lambda);
 		}
 
 		assertNotConstructor(lambda);
@@ -176,11 +166,6 @@ class SerializableLambdaReader {
 
 		throw new InvalidDataAccessApiUsageException("Cannot extract method or field from: " + lambdaObject
 				+ ". The given value is not a lambda or method reference.");
-	}
-
-	public static boolean isKotlinPropertyReference(SerializedLambda lambda) {
-		return KotlinDetector.isKotlinReflectPresent() && lambda.getCapturedArgCount() == 1
-				&& lambda.getCapturedArg(0) != null && KotlinDetector.isKotlinType(lambda.getCapturedArg(0).getClass());
 	}
 
 	private void assertNotConstructor(SerializedLambda lambda) {
@@ -219,7 +204,7 @@ class SerializableLambdaReader {
 		}
 	}
 
-	static SerializedLambda serialize(Object lambda) {
+	private static SerializedLambda serialize(Object lambda) {
 
 		try {
 			Method method = lambda.getClass().getDeclaredMethod("writeReplace");
@@ -229,6 +214,40 @@ class SerializableLambdaReader {
 			throw new InvalidDataAccessApiUsageException(
 					"Not a lambda: " + (lambda instanceof Enum<?> ? lambda.getClass().getName() + "#" + lambda : lambda), e);
 		}
+	}
+
+	private static boolean isKotlinPropertyReference(SerializedLambda lambda) {
+
+		return KotlinDetector.isKotlinReflectPresent() //
+				&& lambda.getCapturedArgCount() == 1 //
+				&& lambda.getCapturedArg(0) != null //
+				&& KotlinDetector.isKotlinType(lambda.getCapturedArg(0).getClass());
+	}
+
+	/**
+	 * Delegate to detect and read Kotlin property references.
+	 * <p>
+	 * Inner class delays loading of Kotlin classes.
+	 */
+	static class KotlinDelegate {
+
+		public static MemberDescriptor read(SerializedLambda lambda) {
+
+			Object captured = lambda.getCapturedArg(0);
+
+			if (captured instanceof PropertyReference propRef //
+					&& propRef.getOwner() instanceof KClass<?> owner //
+					&& captured instanceof KProperty1<?, ?> kProperty) {
+				return new KPropertyReferenceDescriptor(JvmClassMappingKt.getJavaClass(owner), kProperty);
+			}
+
+			if (captured instanceof KPropertyPath<?, ?> propRef) {
+				return KPropertyPathDescriptor.create(propRef);
+			}
+
+			throw new InvalidDataAccessApiUsageException("Cannot extract MemberDescriptor from: " + lambda);
+		}
+
 	}
 
 	class LambdaReadingVisitor extends ClassVisitor {
@@ -306,14 +325,14 @@ class SerializableLambdaReader {
 		@Override
 		public void visitLdcInsn(Object value) {
 			errors.add(new ReadingError(line,
-					"Lambda expressions may only contain method calls to getters, record components, or field access", null));
+					"Code loads a constant. Only method calls to getters, record components, or field access allowed.", null));
 		}
 
 		@Override
 		public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
 
 			if (opcode == Opcodes.PUTSTATIC || opcode == Opcodes.PUTFIELD) {
-				errors.add(new ReadingError(line, "Setting a field not allowed", null));
+				errors.add(new ReadingError(line, String.format("Code attempts to set field '%s'", name), null));
 				return;
 			}
 
@@ -334,7 +353,7 @@ class SerializableLambdaReader {
 		public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
 			if (opcode == Opcodes.INVOKESPECIAL && name.equals("<init>")) {
-				errors.add(new ReadingError(line, "Lambda must not invoke constructors", null));
+				errors.add(new ReadingError(line, "Constructor calls not supported.", null));
 				return;
 			}
 
@@ -356,8 +375,8 @@ class SerializableLambdaReader {
 				Type[] argumentTypes = Type.getArgumentTypes(descriptor);
 				String signature = Arrays.stream(argumentTypes).map(Type::getClassName).collect(Collectors.joining(", "));
 				errors.add(new ReadingError(line,
-						"Cannot derive a method reference from method invocation '%s(%s)' on a different type than the owning one.%nExpected owning type: '%s', but was: '%s'"
-								.formatted(name, signature, this.owningType.getClassName(), ownerType.getClassName())));
+						"Cannot derive method reference from '%s#%s(%s)': Method calls allowed on owning type '%s' only."
+								.formatted(ownerType.getClassName(), name, signature, this.owningType.getClassName())));
 				return;
 			}
 

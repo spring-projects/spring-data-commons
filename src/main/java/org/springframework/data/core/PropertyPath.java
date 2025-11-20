@@ -45,38 +45,39 @@ import org.springframework.util.Assert;
  * @author Johannes Englmeier
  * @see PropertyReference
  * @see TypedPropertyPath
+ * @see java.beans.PropertyDescriptor
  */
 public interface PropertyPath extends Streamable<PropertyPath> {
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda.
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference to a Java beans property.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference.
 	 *
-	 * @param propertyPath the method reference or lambda.
+	 * @param property the method reference referring to a Java beans property.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 * @since 4.1
 	 */
-	static <T, P> TypedPropertyPath<T, P> of(PropertyReference<T, P> propertyPath) {
-		return TypedPropertyPaths.of(propertyPath);
+	static <T, P> TypedPropertyPath<T, P> of(PropertyReference<T, P> property) {
+		return TypedPropertyPaths.of(property);
 	}
 
 	/**
-	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference or lambda for a collection property.
+	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference to a Java beans collection property.
 	 * <p>
-	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference or lambda.
+	 * This method returns a resolved {@link TypedPropertyPath} by introspecting the given method reference.
 	 *
-	 * @param propertyPath the method reference or lambda.
+	 * @param property the method reference referring to a property.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property path.
 	 * @since 4.1
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static <T, P> TypedPropertyPath<T, P> ofMany(PropertyReference<T, ? extends Iterable<P>> propertyPath) {
-		return (TypedPropertyPath) TypedPropertyPaths.of(propertyPath);
+	static <T, P> TypedPropertyPath<T, P> ofMany(PropertyReference<T, ? extends Iterable<P>> property) {
+		return (TypedPropertyPath) TypedPropertyPaths.of(property);
 	}
 
 	/**

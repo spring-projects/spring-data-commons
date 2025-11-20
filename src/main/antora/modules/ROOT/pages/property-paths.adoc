@@ -131,6 +131,14 @@ Java::
 +
 [source,java,role="primary"]
 ----
+// Static import variant
+path(Person::getAddress)
+                 .then(Address::getCity);
+
+// Composition factory method
+path(Person::getAddress, Address::getCity);
+
+// Fluent composition
 TypedPropertyPath.of(Person::getAddress)
                  .then(Address::getCity);
 ----

@@ -252,12 +252,12 @@ class PropertyReferences {
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-			return PropertyUtil.equals(this, obj);
+			return PropertyPathUtil.equals(this, obj);
 		}
 
 		@Override
 		public int hashCode() {
-			return PropertyUtil.hashCode(this);
+			return PropertyPathUtil.hashCode(this);
 		}
 
 		@Override

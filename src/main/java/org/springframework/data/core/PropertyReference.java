@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * reference, for example:
  *
  * <pre class="code">
- * PropertyReference&lt;Person, String&gt; name = PropertyReference.of(Person::getName);
+ * PropertyReference.property(Person::getName);
  * </pre>
  *
  * The resulting object can be used to obtain the {@link #getName() property name} and to interact with the target
@@ -56,18 +56,23 @@ import org.jspecify.annotations.Nullable;
  * @param <P> the property value type.
  * @author Mark Paluch
  * @since 4.1
+ * @see #property(PropertyReference)
  * @see #then(PropertyReference)
+ * @see #of(PropertyReference)
+ * @see #ofMany(PropertyReference)
  * @see TypedPropertyPath
+ * @see java.beans.PropertyDescriptor
  */
 @FunctionalInterface
 public interface PropertyReference<T, P extends @Nullable Object> extends Serializable {
 
 	/**
-	 * Syntax sugar to create a {@link PropertyReference} from a method reference. Suitable for static imports.
+	 * Syntax sugar to create a {@link PropertyReference} from a method reference to a Java beans property. Suitable for
+	 * static imports.
 	 * <p>
 	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference.
 	 *
-	 * @param property the method reference.
+	 * @param property the method reference to a Java beans property.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
@@ -77,11 +82,11 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	}
 
 	/**
-	 * Syntax sugar to create a {@link PropertyReference} from a method reference.
+	 * Syntax sugar to create a {@link PropertyReference} from a method reference to a Java beans property.
 	 * <p>
 	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference.
 	 *
-	 * @param property the method reference.
+	 * @param property the method reference to a Java beans property.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
@@ -91,13 +96,13 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	}
 
 	/**
-	 * Syntax sugar to create a {@link PropertyReference} from a method reference or lambda for a collection property.
+	 * Syntax sugar to create a {@link PropertyReference} from a method reference to a Java beans property.
 	 * <p>
 	 * This method returns a resolved {@link PropertyReference} by introspecting the given method reference. Note that
 	 * {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
 	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
-	 * @param property the method reference.
+	 * @param property the method reference to a Java beans property.
 	 * @param <T> owning type.
 	 * @param <P> property type.
 	 * @return the typed property reference.
@@ -170,8 +175,8 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * Extend the property to a property path by appending the {@code next} path segment and return a new property path
 	 * instance.
 	 *
-	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
-	 *          and returning {@code N} as result of accessing a property.
+	 * @param next the next property path segment as method reference accepting the owner object {@code P} type and
+	 *          returning {@code N} as result of accessing the property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
@@ -186,8 +191,8 @@ public interface PropertyReference<T, P extends @Nullable Object> extends Serial
 	 * Note that {@link #get(Object)} becomes unusable for collection properties as the property type adapted from
 	 * {@code Iterable &lt;P&gt;} and a single {@code P} cannot represent a collection of items.
 	 *
-	 * @param next the next property path segment as method reference or lambda accepting the owner object {@code P} type
-	 *          and returning {@code N} as result of accessing a property.
+	 * @param next the next property path segment as method reference accepting the owner object {@code P} type and
+	 *          returning {@code N} as result of accessing the property.
 	 * @param <N> the new property value type.
 	 * @return a new composed {@code TypedPropertyPath}.
 	 */
