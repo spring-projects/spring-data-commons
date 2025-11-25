@@ -109,6 +109,7 @@ class SpringSecurityAuditorAware implements ReactiveAuditorAware<User> {
   public Mono<User> getCurrentAuditor() {
 
     return ReactiveSecurityContextHolder.getContext()
+                .filter(it -> it.getAuthentication() != null)
                 .map(SecurityContext::getAuthentication)
                 .filter(Authentication::isAuthenticated)
                 .map(Authentication::getPrincipal)
