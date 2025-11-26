@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.util.Lazy;
@@ -40,6 +41,7 @@ import org.springframework.data.util.TypeCollector;
 import org.springframework.data.util.TypeContributor;
 import org.springframework.data.util.TypeUtils;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -54,7 +56,8 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	private final Log logger = LogFactory.getLog(getClass());
 	private @Nullable String moduleIdentifier;
-	private Lazy<Environment> environment = Lazy.of(StandardEnvironment::new);
+	private static final Lazy<Environment> DEFAULT_ENVIRONMENT = Lazy.of(StandardEnvironment::new);
+	private @Nullable Environment environment = null;
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
 		this.moduleIdentifier = moduleIdentifier;
@@ -67,7 +70,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	@Override
 	public void setEnvironment(Environment environment) {
-		this.environment = Lazy.of(environment);
+		this.environment = environment;
 	}
 
 	@Override
@@ -77,7 +80,7 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 			return null;
 		}
 
-		DefaultAotContext aotContext = new DefaultAotContext(registeredBean.getBeanFactory(), environment.get());
+		DefaultAotContext aotContext = new DefaultAotContext(registeredBean.getBeanFactory(), getConfiguredEnvironmentOrTryToResolveOne(registeredBean));
 		return contribute(aotContext, resolveManagedTypes(registeredBean), registeredBean);
 	}
 
@@ -182,5 +185,22 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 	protected boolean matchesPrefix(@Nullable String beanName) {
 		return StringUtils.startsWithIgnoreCase(beanName, getModuleIdentifier());
+	}
+
+	protected Environment getConfiguredEnvironmentOrTryToResolveOne(RegisteredBean registeredBean) {
+
+		if (this.environment != null) {
+			return this.environment;
+		}
+
+		if (registeredBean.getBeanFactory() instanceof EnvironmentCapable ec) {
+			return ec.getEnvironment();
+		} else {
+			String[] beanNamesForType = registeredBean.getBeanFactory().getBeanNamesForType(Environment.class);
+			if (!ObjectUtils.isEmpty(beanNamesForType)) {
+				return registeredBean.getBeanFactory().getBean(beanNamesForType[0], Environment.class);
+			}
+		}
+		return DEFAULT_ENVIRONMENT.get();
 	}
 }
