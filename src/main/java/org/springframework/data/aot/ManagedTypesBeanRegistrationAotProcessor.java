@@ -54,9 +54,11 @@ import org.springframework.util.StringUtils;
  */
 public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistrationAotProcessor, EnvironmentAware {
 
-	private final Log logger = LogFactory.getLog(getClass());
-	private @Nullable String moduleIdentifier;
 	private static final Lazy<Environment> DEFAULT_ENVIRONMENT = Lazy.of(StandardEnvironment::new);
+
+	private final Log logger = LogFactory.getLog(getClass());
+
+	private @Nullable String moduleIdentifier;
 	private @Nullable Environment environment = null;
 
 	public void setModuleIdentifier(@Nullable String moduleIdentifier) {
@@ -195,12 +197,14 @@ public class ManagedTypesBeanRegistrationAotProcessor implements BeanRegistratio
 
 		if (registeredBean.getBeanFactory() instanceof EnvironmentCapable ec) {
 			return ec.getEnvironment();
-		} else {
-			String[] beanNamesForType = registeredBean.getBeanFactory().getBeanNamesForType(Environment.class);
-			if (!ObjectUtils.isEmpty(beanNamesForType)) {
-				return registeredBean.getBeanFactory().getBean(beanNamesForType[0], Environment.class);
-			}
 		}
+
+		String[] beanNamesForType = registeredBean.getBeanFactory().getBeanNamesForType(Environment.class);
+		if (!ObjectUtils.isEmpty(beanNamesForType)) {
+			return registeredBean.getBeanFactory().getBean(beanNamesForType[0], Environment.class);
+		}
+
 		return DEFAULT_ENVIRONMENT.get();
 	}
+
 }

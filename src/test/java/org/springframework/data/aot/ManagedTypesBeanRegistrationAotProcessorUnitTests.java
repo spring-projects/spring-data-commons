@@ -16,7 +16,6 @@
 package org.springframework.data.aot;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -28,6 +27,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.aot.test.generate.TestGenerationContext;
@@ -91,7 +91,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 		createPostProcessor("commons").processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
-		verify(beanFactory, never()).getBean(eq("commons.managed-types"), eq(ManagedTypes.class));
+		verify(beanFactory, never()).getBean("commons.managed-types", ManagedTypes.class);
 	}
 
 	@Test // GH-2593
@@ -128,7 +128,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 		createPostProcessor("commons").processAheadOfTime(RegisteredBean.of(beanFactory, "commons.managed-types"));
 
-		verify(beanFactory).getBean(eq("commons.managed-types"), eq(ManagedTypes.class));
+		verify(beanFactory).getBean("commons.managed-types", ManagedTypes.class);
 	}
 
 	@Test // GH-2593
@@ -157,8 +157,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 	@Test // GH-2593
 	void returnsEmptyContributionWhenBeanCannotBeLoaded() {
 
-		doThrow(new BeanCreationException("o_O")).when(beanFactory).getBean(eq("commons.managed-types"),
-				eq(ManagedTypes.class));
+		doThrow(new BeanCreationException("o_O")).when(beanFactory).getBean("commons.managed-types", ManagedTypes.class);
 
 		beanFactory.registerBeanDefinition("commons.managed-types", myManagedTypesDefinition);
 
@@ -170,7 +169,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 		contribution.applyTo(generationContext, null);
 
 		assertThat(generationContext.getRuntimeHints().reflection().typeHints()).isEmpty();
-		verify(beanFactory).getBean(eq("commons.managed-types"), eq(ManagedTypes.class));
+		verify(beanFactory).getBean("commons.managed-types", ManagedTypes.class);
 	}
 
 	@Test // GH-2680
@@ -282,7 +281,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 		contribution.applyTo(new TestGenerationContext(Object.class), null);
 
-		verify(env).getProperty(eq("spring.aot.data.accessors.enabled"), eq(Boolean.class), eq(true));
+		verify(env).getProperty("spring.aot.data.accessors.enabled", Boolean.class, true);
 	}
 
 	@Test // GH-3414
@@ -299,7 +298,7 @@ class ManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 		contribution.applyTo(new TestGenerationContext(Object.class), null);
 
-		verify(env).getProperty(eq("spring.aot.data.accessors.enabled"), eq(Boolean.class), eq(true));
+		verify(env).getProperty("spring.aot.data.accessors.enabled", Boolean.class, true);
 	}
 
 	private ManagedTypesBeanRegistrationAotProcessor createPostProcessor(String moduleIdentifier) {
