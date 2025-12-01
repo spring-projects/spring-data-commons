@@ -200,22 +200,54 @@ The following table describes the scope of the various `ExampleMatcher` settings
 [[query-by-example.fluent]]
 == Fluent API
 
-`QueryByExampleExecutor` offers one more method, which we did not mention so far: `<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction)`.
-As with other methods, it executes a query derived from an `Example`.
-However, with the second argument, you can control aspects of that execution that you cannot dynamically control otherwise.
-You do so by invoking the various methods of the `FetchableFluentQuery` in the second argument.
-`sortBy` lets you specify an ordering for your result.
-`as` lets you specify the type to which you want the result to be transformed.
-`project` limits the queried attributes.
-`first`, `firstValue`, `one`, `oneValue`, `all`, `page`, `slice`, `stream`, `count`, and `exists` define what kind of result you get and how the query behaves when more than the expected number of results are available.
+`QueryByExampleExecutor` defines fluent query methods for flexible execution of queries based on `Example` instances through `findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction)`.
 
+As with other methods, it executes a query derived from a `Example`.
+However, the query function allows you to take control over aspects of query execution that you cannot dynamically control otherwise.
+You do so by invoking the various intermediate and terminal methods of `FetchableFluentQuery`.
 
-.Use the fluent API to get the last of potentially many results, ordered by lastname.
+**Intermediate methods**
+
+* `sortBy`: Apply an ordering for your result.
+Repeated method calls append each `Sort` (note that `page(Pageable)` using a sorted `Pageable` overrides any previous sort order).
+* `limit`: Limit the result count.
+* `as`: Specify the type to be read or projected to.
+* `project`: Limit the queries properties.
+
+**Terminal methods**
+
+* `first`, `firstValue`: Return the first value. `first` returns an `Optional<T>` or `Optional.empty()` if the query did not yield any result. `firstValue` is its nullable variant without the need to use `Optional`.
+* `one`, `oneValue`: Return the one value. `one` returns an `Optional<T>` or `Optional.empty()` if the query did not yield any result. `oneValue` is its nullable variant without the need to use `Optional`.
+Throws `IncorrectResultSizeDataAccessException` if more than one match found.
+* `all`: Return all results as a `List<T>`.
+* `page(Pageable)`: Return all results as a `Page<T>`.
+* `slice(Pageable)`: Return all results as a `Slice<T>`.
+* `scroll(ScrollPosition)`: Use scrolling (offset, keyset) to retrieve results as a `Window<T>`.
+* `stream()`: Return a `Stream<T>` to process results lazily.
+The stream is stateful and must be closed after use.
+* `count` and `exists`: Return the count of matching entities or whether any match exists.
+
+NOTE: Intermediate and terminal methods must be invoked within the query function.
+
+.Use the fluent API to get a projected `Page`, ordered by `lastname`
+====
 [source,java]
 ----
-Optional<Person> match = repository.findBy(example,
-    q -> q
-        .sortBy(Sort.by("lastname").descending())
-        .first()
+Page<CustomerProjection> page = repository.findBy(example,
+    q -> q.as(CustomerProjection.class)
+          .page(PageRequest.of(0, 20, Sort.by("lastname")))
 );
 ----
+====
+
+.Use the fluent API to get the last of potentially many results, ordered by `lastname`
+====
+[source,java]
+----
+Optional<Customer> match = repository.findBy(example,
+    q -> q.sortBy(Sort.by("lastname").descending())
+          .first()
+);
+----
+====
+
