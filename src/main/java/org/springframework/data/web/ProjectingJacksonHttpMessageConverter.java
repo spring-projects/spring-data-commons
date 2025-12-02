@@ -151,7 +151,7 @@ public class ProjectingJacksonHttpMessageConverter extends JacksonJsonHttpMessag
 	}
 
 	@Override
-	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
+	public boolean canWrite(ResolvableType type, Class<?> clazz, @Nullable MediaType mediaType) {
 		return false;
 	}
 
