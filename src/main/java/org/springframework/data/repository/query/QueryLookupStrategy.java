@@ -32,14 +32,17 @@ import org.springframework.util.StringUtils;
  */
 public interface QueryLookupStrategy {
 
-	public static enum Key {
+	/**
+	 * Enumeration of available query lookup strategies.
+	 */
+	enum Key {
 
 		CREATE, USE_DECLARED_QUERY, CREATE_IF_NOT_FOUND;
 
 		/**
 		 * Returns a strategy key from the given XML value.
 		 *
-		 * @param xml
+		 * @param xml value represented as XML value.
 		 * @return a strategy key from the given XML value
 		 */
 		public static @Nullable Key create(String xml) {
