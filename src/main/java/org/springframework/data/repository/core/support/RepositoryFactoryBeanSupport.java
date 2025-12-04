@@ -90,7 +90,6 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private boolean lazyInit = Boolean.getBoolean(AbstractAotProcessor.AOT_PROCESSING); // use lazy-init in AOT processing
 	private @Nullable EvaluationContextProvider evaluationContextProvider;
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
-
 	private RepositoryFragments cachedFragments = RepositoryFragments.empty();
 	private @Nullable Lazy<T> repository;
 	private @Nullable RepositoryMetadata repositoryMetadata;
@@ -107,10 +106,12 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	}
 
 	/**
-	 * Configures the repository base class to be used.
+	 * Configures the repository base class to use when creating the repository. If not set, the factory will use the type
+	 * returned by {@link RepositoryFactorySupport#getRepositoryBaseClass(RepositoryMetadata)} by default.
 	 *
 	 * @param repositoryBaseClass the repositoryBaseClass to set, can be {@literal null}.
 	 * @since 1.11
+	 * @see RepositoryFactorySupport#setRepositoryBaseClass(Class)
 	 */
 	public void setRepositoryBaseClass(Class<?> repositoryBaseClass) {
 		this.repositoryBaseClass = repositoryBaseClass;

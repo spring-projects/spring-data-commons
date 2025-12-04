@@ -29,6 +29,7 @@ import org.springframework.data.aot.sample.ConfigWithCustomRepositoryBaseClass.C
 import org.springframework.data.aot.sample.ConfigWithFragments;
 import org.springframework.data.aot.sample.ConfigWithSimpleCrudRepository;
 import org.springframework.data.aot.sample.ReactiveConfig;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFragment;
@@ -104,7 +105,7 @@ class RepositoryBeanDefinitionReaderTests {
 		assertThat(repositoryInformation.getFragments()).isEmpty();
 	}
 
-	@Test // GH-3279, GH-3282
+	@Test // GH-3279, GH-3282, GH-3423
 	void readsCustomImplementationFromBeanFactory() {
 
 		RegisteredBean repoFactoryBean = repositoryFactory(ConfigWithCustomImplementation.class);
@@ -116,6 +117,7 @@ class RepositoryBeanDefinitionReaderTests {
 		RepositoryBeanDefinitionReader reader = new RepositoryBeanDefinitionReader(repoFactoryBean);
 		RepositoryInformation repositoryInformation = reader.getRepositoryInformation();
 
+		assertThat(repositoryInformation.getRepositoryBaseClass()).isEqualTo(PagingAndSortingRepository.class);
 		assertThat(repositoryInformation.getFragments()).satisfiesExactly(fragment -> {
 			assertThat(fragment.getImplementationClass())
 					.contains(ConfigWithCustomImplementation.RepositoryWithCustomImplementationImpl.class);
