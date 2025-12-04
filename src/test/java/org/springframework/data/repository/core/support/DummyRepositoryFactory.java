@@ -25,6 +25,8 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.data.projection.ProjectionFactory;
@@ -46,13 +48,15 @@ import org.springframework.data.repository.query.ValueExpressionDelegate;
  * @author Oliver Gierke
  * @author Christoph Strobl
  */
-public class DummyRepositoryFactory extends RepositoryFactorySupport {
+public class DummyRepositoryFactory extends RepositoryFactorySupport implements ApplicationEventPublisherAware {
 
 	public final MyRepositoryQuery queryOne = mock(MyRepositoryQuery.class);
 	public final RepositoryQuery queryTwo = mock(RepositoryQuery.class);
 	public final QueryLookupStrategy strategy = mock(QueryLookupStrategy.class);
 
 	private final ApplicationStartup applicationStartup;
+
+	private ApplicationEventPublisher publisher;
 
 	@SuppressWarnings("unchecked") private final QuerydslPredicateExecutor<Object> querydsl = mock(
 			QuerydslPredicateExecutor.class);
@@ -95,6 +99,15 @@ public class DummyRepositoryFactory extends RepositoryFactorySupport {
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
 			ValueExpressionDelegate valueExpressionDelegate) {
 		return Optional.of(strategy);
+	}
+
+	public ApplicationEventPublisher getPublisher() {
+		return publisher;
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
 	}
 
 	@Override

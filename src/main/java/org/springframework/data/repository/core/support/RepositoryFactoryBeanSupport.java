@@ -331,19 +331,23 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 				: QueryMethodValueEvaluationContextAccessor.DEFAULT_CONTEXT_PROVIDER);
 		this.factory.setBeanClassLoader(classLoader);
 
-		if (beanFactory != null) {
+		if (this.beanFactory != null) {
 			this.factory.setBeanFactory(beanFactory);
 		}
 
 		if (this.publisher != null) {
 			this.factory.addRepositoryProxyPostProcessor(new EventPublishingRepositoryProxyPostProcessor(publisher));
+
+			if (this.factory instanceof ApplicationEventPublisherAware aware) {
+				aware.setApplicationEventPublisher(this.publisher);
+			}
 		}
 
 		if (this.environment != null) {
 			this.factory.setEnvironment(this.environment);
 		}
 
-		if (repositoryBaseClass != null) {
+		if (this.repositoryBaseClass != null) {
 			this.factory.setRepositoryBaseClass(repositoryBaseClass);
 		}
 
