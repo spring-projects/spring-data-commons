@@ -23,6 +23,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -32,6 +33,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  *
  * @author Oliver Gierke
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
 class RepositoryFactoryBeanSupportUnitTests {
 
@@ -97,7 +99,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@Test // DATACMNS-1345
 	void reportsMappingContextUnavailableForPersistentEntityLookup() {
 
-		var bean = new RepositoryFactoryBeanSupport<SampleRepository, Object, Long>(
+		var bean = new RepositoryFactoryBeanSupport<>(
 				SampleRepository.class) {
 
 			@Override
@@ -110,6 +112,25 @@ class RepositoryFactoryBeanSupportUnitTests {
 
 		assertThatIllegalStateException() //
 				.isThrownBy(() -> bean.getPersistentEntity());
+	}
+
+	@Test // DATACMNS-1345
+	void setsApplicationEventPublisher() {
+
+		var bean = new RepositoryFactoryBeanSupport<>(SampleRepository.class) {
+
+			@Override
+			protected RepositoryFactorySupport createRepositoryFactory() {
+				return new DummyRepositoryFactory(mock(SampleRepository.class));
+			}
+		};
+
+		bean.setApplicationEventPublisher(event -> {});
+		bean.setLazyInit(true);
+		bean.afterPropertiesSet();
+
+		var factory = ReflectionTestUtils.getField(bean, "factory");
+		assertThat(factory).extracting("publisher").isNotNull();
 	}
 
 	interface SampleRepository extends Repository<Object, Long> {
