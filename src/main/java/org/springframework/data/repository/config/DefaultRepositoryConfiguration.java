@@ -17,6 +17,7 @@ package org.springframework.data.repository.config;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -114,8 +115,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 
 	@Override
 	public Optional<String> getRepositoryBaseClassName() {
-		return configurationSource.getRepositoryBaseClassName()
-				.or(() -> Optional.ofNullable(extension.getRepositoryBaseClassName()));
+		return configurationSource.getRepositoryBaseClassName();
 	}
 
 	@Override
@@ -166,8 +166,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	}
 
 	@Override
-	@org.jspecify.annotations.NonNull
-	public String getResourceDescription() {
+	public @NonNull String getResourceDescription() {
 		return String.format("%s defined in %s", getRepositoryInterface(), configurationSource.getResourceDescription());
 	}
 }

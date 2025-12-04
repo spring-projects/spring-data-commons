@@ -139,10 +139,6 @@ public abstract class RepositoryFactorySupport
 		this.projectionFactory = createProjectionFactory();
 	}
 
-	EvaluationContextProvider getEvaluationContextProvider() {
-		return evaluationContextProvider;
-	}
-
 	/**
 	 * Set whether the repository method metadata should be exposed by the repository factory as a ThreadLocal for
 	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
@@ -219,10 +215,10 @@ public abstract class RepositoryFactorySupport
 	}
 
 	/**
-	 * Configures the repository base class to use when creating the repository proxy. If not set, the factory will use
-	 * the type returned by {@link #getRepositoryBaseClass(RepositoryMetadata)} by default.
+	 * Configures the repository base class to use when creating the repository. If not set, the factory will use the type
+	 * returned by {@link #getRepositoryBaseClass(RepositoryMetadata)} by default.
 	 *
-	 * @param repositoryBaseClass the repository base class to back the repository proxy, can be {@literal null}.
+	 * @param repositoryBaseClass the repository base class to back the repository, can be {@literal null}.
 	 * @since 1.11
 	 */
 	public void setRepositoryBaseClass(@Nullable Class<?> repositoryBaseClass) {

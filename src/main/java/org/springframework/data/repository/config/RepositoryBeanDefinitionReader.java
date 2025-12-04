@@ -126,6 +126,10 @@ class RepositoryBeanDefinitionReader {
 
 		Object repoBaseClassName = beanDefinition.getPropertyValues().get("repositoryBaseClass");
 
+		if (repoBaseClassName == null && extension != null) {
+			repoBaseClassName = extension.getRepositoryBaseClassName();
+		}
+
 		if (repoBaseClassName != null) {
 			return forName(repoBaseClassName.toString());
 		}
