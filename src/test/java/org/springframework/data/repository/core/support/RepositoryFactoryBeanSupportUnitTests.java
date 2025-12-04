@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -41,14 +42,14 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void setsConfiguredClassLoaderOnRepositoryFactory() {
 
-		var classLoader = mock(ClassLoader.class);
+		ClassLoader classLoader = mock(ClassLoader.class);
 
 		RepositoryFactoryBeanSupport factoryBean = new DummyRepositoryFactoryBean(SampleRepository.class);
 		factoryBean.setBeanClassLoader(classLoader);
 		factoryBean.setLazyInit(true);
 		factoryBean.afterPropertiesSet();
 
-		var factory = ReflectionTestUtils.getField(factoryBean, "factory");
+		Object factory = ReflectionTestUtils.getField(factoryBean, "factory");
 		assertThat(ReflectionTestUtils.getField(factory, "classLoader")).isEqualTo(classLoader);
 	}
 
@@ -68,7 +69,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 				new DummyRepositoryFactoryBean<>(SampleWithQuerydslRepository.class);
 		factoryBean.afterPropertiesSet();
 
-		var information = factoryBean.getRepositoryInformation();
+		RepositoryInformation information = factoryBean.getRepositoryInformation();
 
 		assertThat(information.getQueryMethods()).isEmpty();
 	}
@@ -99,7 +100,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 	@Test // DATACMNS-1345
 	void reportsMappingContextUnavailableForPersistentEntityLookup() {
 
-		var bean = new RepositoryFactoryBeanSupport<>(
+		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> bean = new RepositoryFactoryBeanSupport<>(
 				SampleRepository.class) {
 
 			@Override
@@ -114,10 +115,11 @@ class RepositoryFactoryBeanSupportUnitTests {
 				.isThrownBy(() -> bean.getPersistentEntity());
 	}
 
-	@Test // DATACMNS-1345
+	@Test // GH-3424
 	void setsApplicationEventPublisher() {
 
-		var bean = new RepositoryFactoryBeanSupport<>(SampleRepository.class) {
+		RepositoryFactoryBeanSupport<SampleRepository, Object, Long> bean = new RepositoryFactoryBeanSupport<>(
+				SampleRepository.class) {
 
 			@Override
 			protected RepositoryFactorySupport createRepositoryFactory() {
@@ -129,7 +131,7 @@ class RepositoryFactoryBeanSupportUnitTests {
 		bean.setLazyInit(true);
 		bean.afterPropertiesSet();
 
-		var factory = ReflectionTestUtils.getField(bean, "factory");
+		Object factory = ReflectionTestUtils.getField(bean, "factory");
 		assertThat(factory).extracting("publisher").isNotNull();
 	}
 
