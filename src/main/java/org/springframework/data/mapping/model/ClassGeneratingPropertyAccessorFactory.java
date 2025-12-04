@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -57,7 +56,6 @@ import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.model.KotlinCopyMethod.KotlinCopyByProperty;
 import org.springframework.data.mapping.model.KotlinValueUtils.ValueBoxing;
-import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentLruCache;
@@ -318,9 +316,9 @@ public class ClassGeneratingPropertyAccessorFactory
 	 * 			// …
 	 * 			case 3357:
 	 * 				return bean.field;
-	 * 				// …
-	 * 				throw new UnsupportedOperationException(
-	 * 						String.format("No accessor to get property %s", new Object[] { property }));
+	 * 			// …
+	 * 			throw new UnsupportedOperationException(
+	 * 					String.format("No accessor to get property %s", new Object[] { property }));
 	 * 		}
 	 * 	}
 	 * }
@@ -609,27 +607,6 @@ public class ClassGeneratingPropertyAccessorFactory
 			}
 
 			return false;
-		}
-
-		/**
-		 * Retrieve all classes which are involved in property/getter/setter declarations as these elements may be
-		 * distributed across the type hierarchy.
-		 */
-		@SuppressWarnings("null")
-		private static List<Class<?>> getPropertyDeclaratingClasses(List<PersistentProperty<?>> persistentProperties) {
-
-			return persistentProperties.stream().flatMap(property -> {
-				return Optionals
-						.toStream(Optional.ofNullable(property.getField()), Optional.ofNullable(property.getGetter()),
-								Optional.ofNullable(property.getSetter()))
-
-						// keep it a lambda to infer the correct types, preventing
-						// LambdaConversionException: Invalid receiver type class java.lang.reflect.AccessibleObject; not a subtype
-						// of implementation type interface java.lang.reflect.Member
-						.map(Member::getDeclaringClass);
-
-			}).collect(Collectors.collectingAndThen(Collectors.toSet(), ArrayList::new));
-
 		}
 
 		/**
@@ -1281,8 +1258,8 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Creates the method signature containing parameter types (e.g. (Ljava/lang/Object)I for a method accepting
 		 * {@link Object} and returning a primitive {@code int}).
 		 *
-		 * @param method
-		 * @return
+		 * @param method must not be {@literal null}.
+		 * @return a string representation of the given method.
 		 * @since 2.1
 		 */
 		private static String getArgumentSignature(Method method) {
@@ -1401,13 +1378,6 @@ public class ClassGeneratingPropertyAccessorFactory
 			return true;
 		}
 
-		/**
-		 * Retrieves the class variable index with an offset of {@code 4}.
-		 */
-		private static int classVariableIndex5(List<Class<?>> list, Class<?> item) {
-			return 5 + list.indexOf(item);
-		}
-
 		static String generateClassName(PersistentEntity<?, ?> entity) {
 			return entity.getType().getName() + TAG + Integer.toString(Math.abs(entity.getType().getName().hashCode()), 36);
 		}
@@ -1473,7 +1443,7 @@ public class ClassGeneratingPropertyAccessorFactory
 	}
 
 	/**
-	 * @param property
+	 * @param property the persistent property to inspect.
 	 * @return {@literal true} if object mutation is supported.
 	 */
 	static boolean supportsMutation(PersistentProperty<?> property) {
