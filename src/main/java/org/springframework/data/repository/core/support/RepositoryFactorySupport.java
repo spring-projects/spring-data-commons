@@ -151,7 +151,7 @@ public abstract class RepositoryFactorySupport
 	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
 	 * repository information.
 	 * <p>
-	 * Default is {@literal "false"}, in order to avoid unnecessary extra interception. This means that no guarantees are
+	 * Default is {@literal false}, in order to avoid unnecessary extra interception. This means that no guarantees are
 	 * provided that {@code RepositoryMethodContext} access will work consistently within any method of the advised
 	 * object.
 	 * <p>
@@ -325,7 +325,7 @@ public abstract class RepositoryFactorySupport
 	 * @return the implemented repository interface.
 	 * @since 2.0
 	 */
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings({ "unchecked", "resource" })
 	public <T> T getRepository(Class<T> repositoryInterface, RepositoryFragments fragments) {
 
 		if (logger.isDebugEnabled()) {
@@ -493,10 +493,6 @@ public abstract class RepositoryFactorySupport
 	 * fragments hash code. In a typical Spring scenario, that shouldn't impose issues as one repository factory produces
 	 * only a single repository instance for one repository interface. Things might be different when using various
 	 * fragments for the same repository interface.
-	 *
-	 * @param metadata
-	 * @param fragments
-	 * @return
 	 */
 	private RepositoryStub getRepositoryStub(RepositoryMetadata metadata, RepositoryFragments fragments) {
 
@@ -542,10 +538,11 @@ public abstract class RepositoryFactorySupport
 	public abstract <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass);
 
 	/**
-	 * Create a repository instance as backing for the query proxy.
+	 * Create a instance of the repository base class providing store-specific built-in repository functionality of a
+	 * typical {@code CrudRepository}.
 	 *
-	 * @param metadata
-	 * @return
+	 * @param metadata repository metadata.
+	 * @return object implementing the repository base functionality.
 	 */
 	protected abstract Object getTargetRepository(RepositoryInformation metadata);
 
@@ -553,8 +550,8 @@ public abstract class RepositoryFactorySupport
 	 * Returns the base class backing the actual repository instance. Make sure
 	 * {@link #getTargetRepository(RepositoryInformation)} returns an instance of this class.
 	 *
-	 * @param metadata
-	 * @return
+	 * @param metadata repository metadata.
+	 * @return the repository base class.
 	 */
 	protected abstract Class<?> getRepositoryBaseClass(RepositoryMetadata metadata);
 
@@ -595,9 +592,6 @@ public abstract class RepositoryFactorySupport
 
 	/**
 	 * Validates the given repository interface as well as the given custom implementation.
-	 *
-	 * @param repositoryInformation
-	 * @param composition
 	 */
 	private void validate(RepositoryInformation repositoryInformation, RepositoryComposition composition) {
 
@@ -613,10 +607,6 @@ public abstract class RepositoryFactorySupport
 	/**
 	 * Creates a repository of the repository base class defined in the given {@link RepositoryInformation} using
 	 * reflection.
-	 *
-	 * @param information
-	 * @param constructorArguments
-	 * @return
 	 */
 	protected final <R> R getTargetRepositoryViaReflection(RepositoryInformation information,
 			Object... constructorArguments) {
@@ -646,10 +636,6 @@ public abstract class RepositoryFactorySupport
 	 * <p>
 	 * Note that this method tries to set the constructor accessible if given a non-accessible (that is, non-public)
 	 * constructor, and supports Kotlin classes with optional parameters and default values.
-	 *
-	 * @param baseClass
-	 * @param constructorArguments
-	 * @return
 	 * @since 2.6
 	 */
 	@SuppressWarnings("unchecked")
@@ -691,7 +677,7 @@ public abstract class RepositoryFactorySupport
 	 * Checks if at least one {@link RepositoryFragment} indicates need to access to {@link RepositoryMetadata} by being
 	 * flagged with {@link RepositoryMetadataAccess}.
 	 *
-	 * @param fragments
+	 * @param fragments the fragments to intospect.
 	 * @return {@literal true} if access to metadata is required.
 	 */
 	private static boolean shouldExposeMetadata(RepositoryFragments fragments) {

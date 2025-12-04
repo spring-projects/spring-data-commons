@@ -118,8 +118,9 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * retrieval via the {@code RepositoryMethodContext} class. This is useful if an advised object needs to obtain
 	 * repository information.
 	 * <p>
-	 * Default is "false", in order to avoid unnecessary extra interception. This means that no guarantees are provided
-	 * that {@code RepositoryMethodContext} access will work consistently within any method of the advised object.
+	 * Default is {@code false}, in order to avoid unnecessary extra interception. This means that no guarantees are
+	 * provided that {@code RepositoryMethodContext} access will work consistently within any method of the advised
+	 * object.
 	 *
 	 * @since 3.4
 	 */
@@ -130,16 +131,20 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	/**
 	 * Set the {@link QueryLookupStrategy.Key} to be used.
 	 *
-	 * @param queryLookupStrategyKey
+	 * @param queryLookupStrategyKey the lookup strategy key to be used.
 	 */
 	public void setQueryLookupStrategyKey(Key queryLookupStrategyKey) {
 		this.queryLookupStrategyKey = queryLookupStrategyKey;
 	}
 
 	/**
-	 * Setter to inject a custom repository implementation.
+	 * Setter to provide a single a custom repository implementation. Single custom implementations are considered first
+	 * when determining target method invocations routing. Single custom implementations were superseded by
+	 * {@link RepositoryFragments} that provide a more flexible way to compose repository implementations from multiple
+	 * fragments consisting of a fragment interface and its implementation.
 	 *
-	 * @param customImplementation
+	 * @param customImplementation the single custom implementation.
+	 * @see #setRepositoryFragments(RepositoryFragments)
 	 */
 	public void setCustomImplementation(Object customImplementation) {
 		this.customImplementation = Optional.of(customImplementation);
@@ -148,7 +153,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	/**
 	 * Setter to inject repository fragments.
 	 *
-	 * @param repositoryFragments
+	 * @param repositoryFragments the repository fragments to be used.
 	 */
 	public void setRepositoryFragments(RepositoryFragments repositoryFragments) {
 		this.repositoryFragments = Optional.of(repositoryFragments);
@@ -157,7 +162,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	/**
 	 * Setter to inject a {@link NamedQueries} instance.
 	 *
-	 * @param namedQueries the namedQueries to set
+	 * @param namedQueries the namedQueries to set.
 	 */
 	public void setNamedQueries(NamedQueries namedQueries) {
 		this.namedQueries = namedQueries;
@@ -167,7 +172,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	 * Configures the {@link MappingContext} to be used to lookup {@link PersistentEntity} instances for
 	 * {@link #getPersistentEntity()}.
 	 *
-	 * @param mappingContext
+	 * @param mappingContext mapping context to be used.
 	 */
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 		this.mappingContext = Optional.of(mappingContext);
