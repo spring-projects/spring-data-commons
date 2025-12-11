@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Persistent;
 
 /**
- * Unit tests for {@link AnnotatedTypeScannerUnitTests}.
+ * Unit tests for {@link AnnotatedTypeScanner}.
  *
  * @author Oliver Gierke
  */
