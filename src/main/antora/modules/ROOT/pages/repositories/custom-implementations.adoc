@@ -475,7 +475,7 @@ XML::
 [[repositories.customize-repository-factory]]
 == Customizing the Repository Factory
 
-Customizing the javadoc:org.springframework.data.repository.core.support.RepositoryFactorySupport[repository factory] through javadoc:org.springframework.data.repository.core.support.RepositoryFactoryCustomizer[] provides direct access to components involved with repository instance creation.
+Customizing the {spring-data-commons-docs-url}/api/java/org/springframework/data/repository/core/support/RepositoryFactorySupport.html[repository factory] through {spring-data-commons-docs-url}/api/java/org/springframework/data/repository/core/support/RepositoryFactoryCustomizer.html[`RepositoryFactoryCustomizer`] provides direct access to components involved with repository instance creation.
 This mechanism is useful when you want to adjust selected aspects of proxy creation without introducing a fully custom repository factory bean.
 The following example, demonstrates registering additional listeners and proxy advisors:
 
@@ -495,7 +495,8 @@ Note that customizer beans are not applied automatically to prevent unwanted wir
 [[repositories.customize-repository-factory-bean]]
 == Customize the Repository Factory Bean
 
-The most powerful approach to customize repository creation is to provide a custom repository factory bean, typically a subclass of javadoc:org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport[], javadoc:org.springframework.data.repository.core.support.TransactionalRepositoryFactoryBeanSupport[] or the store-specific repository factory bean.
+The most powerful approach to customize repository creation is to provide a custom repository factory bean, typically a subclass of {spring-data-commons-docs-url}/api/java/org/springframework/data/repository/core/support/RepositoryFactorySupport.html[`RepositoryFactorySupport`],
+{spring-data-commons-docs-url}/api/java/org/springframework/data/repository/core/support/TransactionalRepositoryFactoryBeanSupport.html[`TransactionalRepositoryFactoryBeanSupport`] or the store-specific repository factory bean.
 
 Customizing the repository factory bean allows you to change repository creation entirely with full access to the underlying repository factory.
 
@@ -504,7 +505,7 @@ Also, you need to take in consideration repository metadata derivation that is u
 The following summary outlines the key aspects:
 
 * `repositoryBaseClass`: The repository base class defines which methods are implemented by the base class and which methods require additional handling through aspects or custom implementations.
-* `repositoryFragmentsContributor`: A javadoc:org.springframework.data.repository.core.support.RepositoryFragmentsContributor[] allows contributions to repository composition after all standard fragments have been collected.
+* `repositoryFragmentsContributor`: A {spring-data-commons-docs-url}/api/java/org/springframework/data/repository/core/support/RepositoryFragmentsContributor.html[`RepositoryFragmentsContributor`] allows contributions to repository composition after all standard fragments have been collected.
 Store modules use this mechanism to add features such as Querydsl or Query-by-Example support.
 It also serves as an SPI for third-party extensions.
 * `exposeMetadata`: Controls whether <<expose-repository-metadata,invocation metadata>> is available through `RepositoryMethodContext.getContext()`.
