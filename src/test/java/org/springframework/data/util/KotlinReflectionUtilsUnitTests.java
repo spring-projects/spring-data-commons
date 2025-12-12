@@ -29,7 +29,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Unit tests for {@link KotlinReflectionUtilsUnitTests}.
+ * Unit tests for {@link KotlinReflectionUtils}.
  *
  * @author Mark Paluch
  */
