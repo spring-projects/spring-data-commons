@@ -26,7 +26,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.util.ClassUtils;
 
 /**
- * Unit tests for {@link DefaultImplementationLookupConfigurationUnitTests}.
+ * Unit tests for {@link DefaultImplementationLookupConfiguration}.
  *
  * @author Mark Paluch
  * @author Kyrylo Merzlikin
