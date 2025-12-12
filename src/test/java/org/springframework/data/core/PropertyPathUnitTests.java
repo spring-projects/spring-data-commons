@@ -23,8 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests for {@link PropertyPath}.
@@ -451,6 +455,22 @@ class PropertyPathUnitTests {
 	@Test // DATACMNS-1304
 	void detectsNestedSingleCharacterProperty() {
 		assertThat(from("category_B", Product.class).toDotPath()).isEqualTo("category.b");
+	}
+
+	@ParameterizedTest
+	@MethodSource("propertyPaths")
+	void verifyTck(PropertyPath actual, PropertyPath expected) {
+		PropertyPathTck.verify(actual, expected);
+	}
+
+	static Stream<Arguments.ArgumentSet> propertyPaths() {
+		return Stream.of(
+				Arguments.argumentSet("Sample.userName", PropertyPath.from("userName", Sample.class),
+						PropertyPath.from("userName", Sample.class)),
+				Arguments.argumentSet("Sample.user.name", PropertyPath.from("user.name", Sample.class),
+						PropertyPath.from("user.name", Sample.class)),
+				Arguments.argumentSet("Sample.bar.user.name", PropertyPath.from("bar.user.name", Sample.class),
+						PropertyPath.from("bar.user.name", Sample.class)));
 	}
 
 	private class Foo {
