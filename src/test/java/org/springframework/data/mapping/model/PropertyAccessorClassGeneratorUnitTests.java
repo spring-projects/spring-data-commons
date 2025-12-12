@@ -24,7 +24,7 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory.PropertyAccessorClassGenerator;
 
 /**
- * Unit tests for {@link PropertyAccessorClassGeneratorUnitTests}.
+ * Unit tests for {@link PropertyAccessorClassGenerator}.
  *
  * @author Oliver Drotbohm
  */
