@@ -85,5 +85,5 @@ In addition to filter predicates, the following list of modifiers is supported:
 |Keyword | Description
 |`IgnoreCase`, `IgnoringCase`| Used with a predicate keyword for case-insensitive comparison.
 |`AllIgnoreCase`, `AllIgnoringCase`| Ignore case for all suitable properties. Used somewhere in the query method predicate.
-|`OrderBy…`| Specify a static sorting order followed by the property path and direction (e. g. `OrderByFirstnameAscLastnameDesc`).
+|`OrderBy…`| Specify a static sorting order followed by the property path and direction (e.g. `OrderByFirstnameAscLastnameDesc`).
 |===============
