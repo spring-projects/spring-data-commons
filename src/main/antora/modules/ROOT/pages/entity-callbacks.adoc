@@ -7,7 +7,7 @@ An `EntityCallback` looks pretty much like a specialized `ApplicationListener`.
 Some Spring Data modules publish store specific events (such as `BeforeSaveEvent`) that allow modifying the given entity. In some cases, such as when working with immutable types, these events can cause trouble.
 Also, event publishing relies on `ApplicationEventMulticaster`. If configuring that with an asynchronous `TaskExecutor` it can lead to unpredictable outcomes, as event processing can be forked onto a Thread.
 
-Entity callbacks provide integration points with both synchronous and reactive APIs to guarantee in-order execution at well-defined checkpoints within the processing chain, returning a potentially modified entity or an reactive wrapper type.
+Entity callbacks provide integration points with both synchronous and reactive APIs to guarantee in-order execution at well-defined checkpoints within the processing chain, returning a potentially modified entity or a reactive wrapper type.
 
 Entity callbacks are typically separated by API type. This separation means that a synchronous API considers only synchronous entity callbacks and a reactive implementation considers only reactive entity callbacks.
 
@@ -61,7 +61,7 @@ public interface ReactiveBeforeSaveCallback<T> extends EntityCallback<T> {
 		String collection); // <3>
 }
 ----
-<1> `BeforeSaveCallback` specific method to be called on subscription, before an entity is saved. Emits a potentially modifed instance.
+<1> `BeforeSaveCallback` specific method to be called on subscription, before an entity is saved. Emits a potentially modified instance.
 <2> The entity right before persisting.
 <3> A number of store specific arguments like the _collection_ the entity is persisted to.
 

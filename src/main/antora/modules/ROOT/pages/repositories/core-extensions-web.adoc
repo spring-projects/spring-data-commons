@@ -161,7 +161,7 @@ class MyController {
 
   private final MyRepository repository;
 
-  // Constructor ommitted
+  // Constructor omitted
 
   @GetMapping("/page")
   PagedModel<?> page(Pageable pageable) {
@@ -211,7 +211,7 @@ class MyController {
 
   private final MyRepository repository;
 
-  // Constructor ommitted
+  // Constructor omitted
 
   @GetMapping("/page")
   Page<?> page(Pageable pageable) {

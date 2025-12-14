@@ -121,7 +121,7 @@ interface UserRepository extends Repository<User, Long> {
   User getByEmailAddress(EmailAddress emailAddress);                    <2>
 
   @Nullable
-  User findByEmailAddress(@Nullable EmailAddress emailAdress);          <3>
+  User findByEmailAddress(@Nullable EmailAddress emailAddress);          <3>
 
   Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); <4>
 }
