@@ -53,18 +53,18 @@ public class PropertyReferenceException extends RuntimeException {
 	 *
 	 * @param propertyName the name of the property not found on the given type, must not be {@literal null} or empty.
 	 * @param type the type the property could not be found on, must not be {@literal null}.
-	 * @param alreadyResolvedPah the previously calculated {@link PropertyPath}s, must not be {@literal null}.
+	 * @param alreadyResolvedPath the previously calculated {@link PropertyPath}s, must not be {@literal null}.
 	 */
 	public PropertyReferenceException(String propertyName, TypeInformation<?> type,
-			List<? extends PropertyPath> alreadyResolvedPah) {
+			List<? extends PropertyPath> alreadyResolvedPath) {
 
 		Assert.hasText(propertyName, "Property name must not be null");
 		Assert.notNull(type, "Type must not be null");
-		Assert.notNull(alreadyResolvedPah, "Already resolved paths must not be null");
+		Assert.notNull(alreadyResolvedPath, "Already resolved paths must not be null");
 
 		this.propertyName = propertyName;
 		this.type = type;
-		this.alreadyResolvedPath = alreadyResolvedPah;
+		this.alreadyResolvedPath = alreadyResolvedPath;
 		this.propertyMatches = Lazy.of(() -> detectPotentialMatches(propertyName, type.getType()));
 	}
 
