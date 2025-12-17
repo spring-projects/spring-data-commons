@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>4.0.2-SNAPSHOT</version>
+	<version>4.0.x-GH-3431-SNAPSHOT</version>
 
 	<name>Spring Data Core</name>
 	<description>Core Spring concepts underpinning every Spring Data module.</description>
@@ -34,6 +34,7 @@
 		<xmlbeam>1.4.26</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 		<kotlin.api.target>1.8</kotlin.api.target>
+		<spring>7.0.3-SNAPSHOT</spring>
 	</properties>
 
 	<dependencies>
