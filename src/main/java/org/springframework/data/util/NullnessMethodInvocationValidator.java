@@ -52,7 +52,6 @@ import org.springframework.util.ObjectUtils;
  */
 public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
-	private final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final Map<Method, MethodNullness> nullabilityCache = new ConcurrentHashMap<>(16);
 
 	/**
@@ -79,7 +78,7 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
 		if (nullness == null) {
 
-			nullness = MethodNullness.of(method, discoverer);
+			nullness = MethodNullness.of(method, DefaultParameterNameDiscoverer.getSharedInstance());
 			nullabilityCache.put(method, nullness);
 		}
 

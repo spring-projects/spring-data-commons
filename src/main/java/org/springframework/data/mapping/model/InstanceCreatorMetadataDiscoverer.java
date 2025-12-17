@@ -51,8 +51,6 @@ import org.springframework.data.mapping.PersistentProperty;
  */
 class InstanceCreatorMetadataDiscoverer {
 
-	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
-
 	/**
 	 * Discover an entity creator
 	 *
@@ -146,7 +144,7 @@ class InstanceCreatorMetadataDiscoverer {
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		List<TypeInformation<?>> types = entity.getTypeInformation().getParameterTypes(method);
 
-		String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
+		String[] parameterNames = DefaultParameterNameDiscoverer.getSharedInstance().getParameterNames(method);
 
 		for (int i = 0; i < parameters.length; i++) {
 

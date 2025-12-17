@@ -63,9 +63,8 @@ class MethodMetadata {
 		Map<String, MethodParameter> methodParameters = new LinkedHashMap<>();
 
 		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
-		ParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-		initializeMethodArguments(method, nameDiscoverer, repositoryInterface, methodArguments, methodParameters);
+		initializeMethodArguments(method, DefaultParameterNameDiscoverer.getSharedInstance(), repositoryInterface, methodArguments, methodParameters);
 
 		this.methodArguments = Collections.unmodifiableMap(methodArguments);
 		this.methodParameters = Collections.unmodifiableMap(methodParameters);

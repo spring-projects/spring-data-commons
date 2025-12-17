@@ -39,7 +39,6 @@ import org.springframework.util.Assert;
  */
 class MethodParameters {
 
-	private final static ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 	private final List<MethodParameter> parameters;
 
 	/**
@@ -66,7 +65,7 @@ class MethodParameters {
 		for (int i = 0; i < method.getParameterCount(); i++) {
 
 			MethodParameter parameter = new AnnotationNamingMethodParameter(method, i, namingAnnotation);
-			parameter.initParameterNameDiscovery(discoverer);
+			parameter.initParameterNameDiscovery(DefaultParameterNameDiscoverer.getSharedInstance());
 			parameters.add(parameter);
 		}
 	}
