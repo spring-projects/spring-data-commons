@@ -102,7 +102,7 @@ public class AotRepositoryBeanDefinitionPropertiesDecorator {
 			for (int i = 0; i < it.getParameterCount(); i++) {
 
 				MethodParameter parameter = new MethodParameter(it, i);
-				parameter.initParameterNameDiscovery(new DefaultParameterNameDiscoverer());
+				parameter.initParameterNameDiscovery(DefaultParameterNameDiscoverer.getSharedInstance());
 
 				callbackMethod.addParameter(parameter.getParameterType(), parameter.getParameterName());
 			}
