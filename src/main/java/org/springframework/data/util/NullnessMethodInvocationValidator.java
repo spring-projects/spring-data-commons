@@ -28,11 +28,9 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Nullness;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -78,7 +76,7 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 
 		if (nullness == null) {
 
-			nullness = MethodNullness.of(method, DefaultParameterNameDiscoverer.getSharedInstance());
+			nullness = MethodNullness.of(method);
 			nullabilityCache.put(method, nullness);
 		}
 
@@ -140,7 +138,7 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 			this.methodParameters = methodParameters;
 		}
 
-		static MethodNullness of(Method method, ParameterNameDiscoverer discoverer) {
+		static MethodNullness of(Method method) {
 
 			boolean nullableReturn = isNullableParameter(new MethodParameter(method, -1));
 			boolean[] nullableParameters = new boolean[method.getParameterCount()];
@@ -149,7 +147,6 @@ public class NullnessMethodInvocationValidator implements MethodInterceptor {
 			for (int i = 0; i < method.getParameterCount(); i++) {
 
 				MethodParameter parameter = new MethodParameter(method, i);
-				parameter.initParameterNameDiscovery(discoverer);
 				nullableParameters[i] = isNullableParameter(parameter);
 				methodParameters[i] = parameter;
 			}

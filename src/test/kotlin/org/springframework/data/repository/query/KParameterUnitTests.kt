@@ -17,7 +17,6 @@ package org.springframework.data.repository.query
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.core.DefaultParameterNameDiscoverer
 import org.springframework.core.MethodParameter
 import org.springframework.data.core.TypeInformation
 import kotlin.reflect.jvm.javaMethod
@@ -34,7 +33,6 @@ class KParameterUnitTests {
 
         val methodParameter =
             MethodParameter(MyCoroutineRepository::hello.javaMethod!!, 0)
-        methodParameter.initParameterNameDiscovery(DefaultParameterNameDiscoverer())
 		val parameter = Parameter(methodParameter, TypeInformation.OBJECT)
 
         assertThat(parameter.name).isEmpty()

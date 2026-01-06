@@ -24,9 +24,7 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
@@ -65,7 +63,6 @@ class MethodParameters {
 		for (int i = 0; i < method.getParameterCount(); i++) {
 
 			MethodParameter parameter = new AnnotationNamingMethodParameter(method, i, namingAnnotation);
-			parameter.initParameterNameDiscovery(DefaultParameterNameDiscoverer.getSharedInstance());
 			parameters.add(parameter);
 		}
 	}

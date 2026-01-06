@@ -27,9 +27,7 @@ import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.javapoet.TypeNames;
@@ -64,7 +62,7 @@ class MethodMetadata {
 
 		ResolvableType repositoryInterface = ResolvableType.forClass(repositoryInformation.getRepositoryInterface());
 
-		initializeMethodArguments(method, DefaultParameterNameDiscoverer.getSharedInstance(), repositoryInterface, methodArguments, methodParameters);
+		initializeMethodArguments(method, repositoryInterface, methodArguments, methodParameters);
 
 		this.methodArguments = Collections.unmodifiableMap(methodArguments);
 		this.methodParameters = Collections.unmodifiableMap(methodParameters);
@@ -75,7 +73,7 @@ class MethodMetadata {
 				: type.toResolvableType();
 	}
 
-	private static void initializeMethodArguments(Method method, ParameterNameDiscoverer nameDiscoverer,
+	private static void initializeMethodArguments(Method method,
 			ResolvableType repositoryInterface, Map<String, ParameterSpec> methodArguments,
 			Map<String, MethodParameter> methodParameters) {
 
@@ -85,7 +83,6 @@ class MethodMetadata {
 
 			MethodParameter methodParameter = MethodParameter.forParameter(parameter)
 					.withContainingClass(repositoryInterfaceType);
-			methodParameter.initParameterNameDiscovery(nameDiscoverer);
 
 			TypeName parameterType = parameterTypeName(methodParameter, repositoryInterfaceType);
 
