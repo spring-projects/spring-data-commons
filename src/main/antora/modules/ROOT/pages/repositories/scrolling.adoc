@@ -7,7 +7,7 @@ You can define simple sorting expressions by using property names and define sta
 You can concatenate expressions to collect multiple criteria into one expression.
 
 Scroll queries return a `Window<T>` that allows obtaining the element's scroll position to fetch the next `Window<T>` until your application has consumed the entire query result.
-Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of results, query result scrolling lets you access the a `ScrollPosition` through `Window.positionAt(…)`, as in the following example:
+Similar to consuming a Java `Iterator<List<…>>` by obtaining the next batch of results, query result scrolling lets you access a `ScrollPosition` through `Window.positionAt(…)`, as in the following example:
 
 [source,java]
 ----

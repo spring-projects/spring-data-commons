@@ -169,7 +169,7 @@ public final class KotlinReflectionUtils {
 	}
 
 	/**
-	 * Returns {@literal} whether the given {@link MethodParameter} is nullable. Its declaring method can reference a
+	 * Returns {@literal true} whether the given {@link MethodParameter} is nullable. Its declaring method can reference a
 	 * Kotlin function, property or interface property.
 	 *
 	 * @return {@literal true} if {@link MethodParameter} is nullable.
