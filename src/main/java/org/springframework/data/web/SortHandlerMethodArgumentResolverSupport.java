@@ -73,7 +73,7 @@ public abstract class SortHandlerMethodArgumentResolverSupport {
 
 	/**
 	 * Configures the delimiter used to separate property references and the direction to be sorted by. Defaults to
-	 * {@code}, which means sort values look like this: {@code firstname,lastname,asc}.
+	 * {@code ,} which means sort values look like this: {@code firstname,lastname,asc}.
 	 *
 	 * @param propertyDelimiter must not be {@literal null} or empty.
 	 */
