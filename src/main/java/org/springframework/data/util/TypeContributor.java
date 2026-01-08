@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
-import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.core.annotation.MergedAnnotation;
 
 /**
