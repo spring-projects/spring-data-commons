@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
