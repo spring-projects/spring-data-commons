@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
@@ -74,8 +73,7 @@ import org.springframework.util.StringUtils;
  * @author Johannes Englmeier
  * @since 1.13
  */
-public class ClassGeneratingPropertyAccessorFactory
-		implements PersistentPropertyAccessorFactory {
+public class ClassGeneratingPropertyAccessorFactory implements PersistentPropertyAccessorFactory {
 
 	// Pooling of parameter arrays to prevent excessive object allocation.
 	private final ThreadLocal<Object[]> argumentCache = ThreadLocal.withInitial(() -> new Object[1]);
@@ -316,9 +314,9 @@ public class ClassGeneratingPropertyAccessorFactory
 	 * 			// …
 	 * 			case 3357:
 	 * 				return bean.field;
-	 * 			// …
-	 * 			throw new UnsupportedOperationException(
-	 * 					String.format("No accessor to get property %s", new Object[] { property }));
+	 * 				// …
+	 * 				throw new UnsupportedOperationException(
+	 * 						String.format("No accessor to get property %s", new Object[] { property }));
 	 * 		}
 	 * 	}
 	 * }
@@ -653,8 +651,8 @@ public class ClassGeneratingPropertyAccessorFactory
 		 * Generate property setter/wither initializer.
 		 */
 		private static void visitPropertySetterInitializer(@Nullable Method method, PersistentProperty<?> property,
-				MethodVisitor mv, String internalClassName,
-				Function<PersistentProperty<?>, String> setterNameFunction, int localVariableIndex) {
+				MethodVisitor mv, String internalClassName, Function<PersistentProperty<?>, String> setterNameFunction,
+				int localVariableIndex) {
 
 			// method = <entity>.class.getDeclaredMethod()
 
