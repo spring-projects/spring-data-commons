@@ -493,7 +493,7 @@ public final class ReflectionUtils {
 	}
 
 	/**
-	 * Returns {@literal true} whether the given {@link MethodParameter} is nullable. Nullable parameters are reference types
+	 * Returns whether the given {@link MethodParameter} is nullable. Nullable parameters are reference types
 	 * and ones that are defined in Kotlin as such.
 	 *
 	 * @return {@literal true} if {@link MethodParameter} is nullable.
