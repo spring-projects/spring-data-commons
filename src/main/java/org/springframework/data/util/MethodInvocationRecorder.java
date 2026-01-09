@@ -44,7 +44,11 @@ import org.springframework.util.StringUtils;
  * @author Johannes Englmeier
  * @since 2.2
  * @soundtrack The Intersphere - Don't Think Twice (The Grand Delusion)
+ * @deprecated since 4.1 in favor of {@link org.springframework.data.core.PropertyReference} and
+ *             {@link org.springframework.data.core.TypedPropertyPath} infrastructure and limitations imposed by
+ *             subclass proxy limitations.
  */
+@Deprecated(since = "4.1")
 public class MethodInvocationRecorder {
 
 	public static PropertyNameDetectionStrategy DEFAULT = DefaultPropertyNameDetectionStrategy.INSTANCE;

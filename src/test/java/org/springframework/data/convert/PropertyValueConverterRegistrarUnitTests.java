@@ -26,6 +26,7 @@ import org.springframework.data.mapping.context.SamplePersistentProperty;
  * Unit tests for {@link ValueConverterRegistry}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 class PropertyValueConverterRegistrarUnitTests {
@@ -66,6 +67,20 @@ class PropertyValueConverterRegistrarUnitTests {
 				.buildRegistry().getConverter(Person.class, "name");
 		assertThat(name.write("foo", null)).isEqualTo("oof");
 		assertThat(name.read("off", null)).isEqualTo("off");
+	}
+
+	@Test // GH-3400
+	void allowsTypeSafeConverterRegistrationViaPropertyReference() {
+
+		PropertyValueConverterRegistrar<SamplePersistentProperty> registrar = new PropertyValueConverterRegistrar<>();
+		registrar.registerConverter(Person::getName) //
+				.writing(PropertyValueConverterRegistrarUnitTests::reverse) //
+				.readingAsIs();
+
+		PropertyValueConverter<String, String, ? extends ValueConversionContext<SamplePersistentProperty>> name = registrar
+				.buildRegistry().getConverter(Person.class, "name");
+		assertThat(name.write("foo", null)).isEqualTo("oof");
+		assertThat(name.read("мир", null)).isEqualTo("мир");
 	}
 
 	@Test // GH-1484
