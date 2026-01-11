@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * A {@link PersistentPropertyAccessor} that will use an entity's
  * {@link org.springframework.data.annotation.PersistenceCreator} to create a new instance of it to apply a new value
  * for a given {@link PersistentProperty}. Will only be used if the {@link PersistentProperty} is to be applied on a
- * completely immutable entity type exposing a entity creator.
+ * completely immutable entity type exposing an entity creator.
  *
  * @author Oliver Drotbohm
  * @author Mark Paluch

@@ -291,7 +291,7 @@ public abstract class CdiRepositoryBean<T> implements Bean<T>, PassivationCapabl
 
 	/**
 	 * Creates the actual component instance given a {@link RepositoryFactorySupport repository factory supplier} and the
-	 * repository {@link Class type}. This method is an utility for to create a repository. This method will obtain a
+	 * repository {@link Class type}. This method is a utility for to create a repository. This method will obtain a
 	 * {@link RepositoryFactorySupport repository factory} and configure it with {@link CdiRepositoryConfiguration}.
 	 *
 	 * @param factorySupplier must not be {@literal null}.
