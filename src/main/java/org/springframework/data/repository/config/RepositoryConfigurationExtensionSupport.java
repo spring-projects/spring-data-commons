@@ -251,7 +251,7 @@ public abstract class RepositoryConfigurationExtensionSupport implements Reposit
 	}
 
 	/**
-	 * Creates a actual {@link RepositoryConfiguration} instance for the given {@link RepositoryConfigurationSource} and
+	 * Creates an actual {@link RepositoryConfiguration} instance for the given {@link RepositoryConfigurationSource} and
 	 * interface name. Defaults to the {@link DefaultRepositoryConfiguration} but allows sub-classes to override this to
 	 * customize the behavior.
 	 *

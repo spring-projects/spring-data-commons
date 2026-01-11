@@ -65,7 +65,7 @@ public abstract class CdiRepositoryExtensionSupport implements Extension {
 	}
 
 	/**
-	 * Implementation of a an observer which checks for Spring Data repository types and stores them in
+	 * Implementation of an observer which checks for Spring Data repository types and stores them in
 	 * {@link #repositoryTypes} for later registration as bean type.
 	 *
 	 * @param <X> The type.
