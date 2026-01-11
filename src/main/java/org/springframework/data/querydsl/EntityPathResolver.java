@@ -18,7 +18,7 @@ package org.springframework.data.querydsl;
 import com.querydsl.core.types.EntityPath;
 
 /**
- * Strategy interface to abstract the ways to translate an plain domain class into a {@link EntityPath}.
+ * Strategy interface to abstract the ways to translate a plain domain class into a {@link EntityPath}.
  *
  * @author Oliver Gierke
  */
