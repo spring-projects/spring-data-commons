@@ -545,7 +545,7 @@ public abstract class RepositoryFactorySupport
 	}
 
 	/**
-	 * Create a instance of the repository base class providing store-specific built-in repository functionality of a
+	 * Create an instance of the repository base class providing store-specific built-in repository functionality of a
 	 * typical {@code CrudRepository}.
 	 *
 	 * @param metadata repository metadata.
