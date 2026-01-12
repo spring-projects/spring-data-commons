@@ -24,4 +24,5 @@ import kotlin.reflect.KProperty
  * @since 2.5
  * @see org.springframework.data.core.PropertyPath.toDotPath
  */
+@Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
 fun KProperty<*>.toDotPath(): String = asString(this)

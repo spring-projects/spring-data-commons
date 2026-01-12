@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.springframework.data.convert.PropertyValueConverter.FunctionPropertyValueConverter;
+import org.springframework.data.core.PropertyReference;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.lang.Contract;
@@ -50,11 +51,25 @@ public class PropertyValueConverterRegistrar<P extends PersistentProperty<P>> {
 	 *
 	 * @param <T> the domain type
 	 * @param <S> the property type
-	 * @param type the domain type to obtain the property from
 	 * @param property a {@link Function} to describe the property to be referenced.
 	 * Usually a method handle to a getter.
 	 * @return will never be {@literal null}.
 	 */
+	public <T, S> WritingConverterRegistrationBuilder<T, S, P> registerConverter(PropertyReference<T, S> property) {
+		return new WritingConverterRegistrationBuilder<>(property.getOwningType().getType(), property.getName(), this);
+	}
+
+	/**
+	 * Starts a converter registration by pointing to a property of a domain type.
+	 *
+	 * @param <T> the domain type
+	 * @param <S> the property type
+	 * @param type the domain type to obtain the property from
+	 * @param property a {@link Function} to describe the property to be referenced. Usually a method handle to a getter.
+	 * @return will never be {@literal null}.
+	 * @deprecated since 4.1, use {@link #registerConverter(PropertyReference)} instead.
+	 */
+	@Deprecated(since = "4.1")
 	public <T, S> WritingConverterRegistrationBuilder<T, S, P> registerConverter(Class<T> type, Function<T, S> property) {
 
 		String propertyName = MethodInvocationRecorder.forProxyOf(type).record(property).getPropertyPath()
