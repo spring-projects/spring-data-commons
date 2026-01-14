@@ -68,6 +68,9 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 
 		this.entities = entities;
 		this.metadataCache = new ConcurrentHashMap<>();
+
+		entities
+				.forEach(it -> entities.mapOnContext(it.getType(), (context, entity) -> getMetadata(context, it.getType())));
 	}
 
 	@Override
@@ -79,18 +82,24 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 				return super.getBeanWrapperFor(source);
 			}
 
-			return entities.mapOnContext(it.getClass(), (context, entity) -> {
+			Class<?> entityClass = it.getClass();
+			return entities.mapOnContext(entityClass, (context, entity) -> {
 
-				MappingAuditingMetadata metadata = metadataCache.computeIfAbsent(it.getClass(),
-						key -> new MappingAuditingMetadata(context, it.getClass()));
+				MappingAuditingMetadata metadata = getMetadata(context, entityClass);
 
-				return Optional.<AuditableBeanWrapper<T>> ofNullable(metadata.isAuditable() //
-						? new MappingMetadataAuditableBeanWrapper<>(getConversionService(), entity.getPropertyPathAccessor(it),
-								metadata)
-						: null);
+				if (metadata.isAuditable()) {
+					return Optional.<AuditableBeanWrapper<T>> of(new MappingMetadataAuditableBeanWrapper<>(getConversionService(),
+							entity.getPropertyPathAccessor(it), metadata));
+				}
 
+				return Optional.<AuditableBeanWrapper<T>> empty();
 			}).orElseGet(() -> super.getBeanWrapperFor(source));
 		});
+	}
+
+	private MappingAuditingMetadata getMetadata(MappingContext<?, ? extends PersistentProperty<?>> context,
+			Class<?> entityClass) {
+		return metadataCache.computeIfAbsent(entityClass, key -> new MappingAuditingMetadata(context, entityClass));
 	}
 
 	/**

@@ -136,7 +136,7 @@ public class PersistentEntities implements Streamable<PersistentEntity<?, ? exte
 	 * @return result of the {@link BiFunction}.
 	 */
 	public <T> Optional<T> mapOnContext(Class<?> type,
-			BiFunction<MappingContext<?, ? extends PersistentProperty<?>>, PersistentEntity<?, ?>, @Nullable T> combiner) {
+			BiFunction<MappingContext<?, ? extends PersistentProperty<?>>, PersistentEntity<?, ?>, T> combiner) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(combiner, "Combining BiFunction must not be null");

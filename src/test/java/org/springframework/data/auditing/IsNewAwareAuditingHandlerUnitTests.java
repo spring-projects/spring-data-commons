@@ -20,12 +20,12 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -34,24 +34,18 @@ import org.springframework.data.mapping.context.SampleMappingContext;
  * Unit test for {@code AuditingHandler}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 1.5
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class IsNewAwareAuditingHandlerUnitTests extends AuditingHandlerUnitTests {
 
-	SampleMappingContext mappingContext;
-
-	@BeforeEach
-	void init() {
-
-		this.mappingContext = new SampleMappingContext();
-		this.mappingContext.getPersistentEntity(AuditedUser.class);
-		this.mappingContext.afterPropertiesSet();
-	}
-
 	@Override
 	protected IsNewAwareAuditingHandler getHandler() {
+		SampleMappingContext mappingContext = new SampleMappingContext();
+		mappingContext.getPersistentEntity(AuditedUser.class);
+		mappingContext.afterPropertiesSet();
 		return new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 
