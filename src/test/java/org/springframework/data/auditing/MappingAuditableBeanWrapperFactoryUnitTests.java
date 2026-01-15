@@ -32,6 +32,12 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractLongAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -273,6 +279,61 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		wrapper.setCreatedDate(now);
 
 		assertThat(source.created).isEqualTo(now);
+	}
+
+	@Test // GH-3441
+	void getBeanWrapperForIsThreadSafe() throws Exception {
+
+		int threadCount = 50;
+		int iterationsPerThread = 100;
+		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		CountDownLatch startLatch = new CountDownLatch(1);
+		CountDownLatch completionLatch = new CountDownLatch(threadCount);
+
+		try {
+
+			var futures = IntStream.range(0, threadCount).mapToObj(threadIndex -> CompletableFuture.runAsync(() -> {
+				try {
+					startLatch.await();
+
+					for (int i = 0; i < iterationsPerThread; i++) {
+						var sample = new Sample();
+						var wrapper = factory.getBeanWrapperFor(sample);
+
+						assertThat(wrapper).isPresent();
+						assertThat(wrapper.get().getBean()).isSameAs(sample);
+
+						var sampleWithInstant = new SampleWithInstant();
+						var wrapperWithInstant = factory.getBeanWrapperFor(sampleWithInstant);
+
+						assertThat(wrapperWithInstant).isPresent();
+						assertThat(wrapperWithInstant.get().getBean()).isSameAs(sampleWithInstant);
+
+						var withEmbedded = new WithEmbedded();
+						var wrapperWithEmbedded = factory.getBeanWrapperFor(withEmbedded);
+
+						assertThat(wrapperWithEmbedded).isPresent();
+						assertThat(wrapperWithEmbedded.get().getBean()).isSameAs(withEmbedded);
+					}
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					throw new RuntimeException(e);
+				} finally {
+					completionLatch.countDown();
+				}
+			}, executor)).toList();
+
+			startLatch.countDown();
+
+			CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(30, TimeUnit.SECONDS);
+			assertThat(completionLatch.await(1, TimeUnit.SECONDS)).isTrue();
+
+			Map<?, ?> metadataCache = (Map<?, ?>) ReflectionTestUtils.getField(factory, "metadataCache");
+			assertThat(metadataCache).hasSize(4);
+		} finally {
+			executor.shutdown();
+			assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
+		}
 	}
 
 	private void assertLastModificationDate(Object source, TemporalAccessor expected) {
