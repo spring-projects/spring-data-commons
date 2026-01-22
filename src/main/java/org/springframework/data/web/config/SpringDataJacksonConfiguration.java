@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Marcus Voltolim
  * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
  */
 @SuppressWarnings("removal")
@@ -99,7 +100,9 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
-			}
+                org.springframework.data.util.ClassUtils.ifPresent("org.springframework.cloud.openfeign.support.PageJacksonModule$SimplePageImpl", null,
+                        targetType -> setMixInAnnotation(targetType, WrappingMixing.class));
+            }
 		}
 
 		/**

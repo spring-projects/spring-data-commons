@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Marcus Voltolim
  * @since 4.0
  */
 public class SpringDataJackson3Configuration implements SpringDataJackson3Modules {
@@ -95,6 +96,8 @@ public class SpringDataJackson3Configuration implements SpringDataJackson3Module
 
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
+                org.springframework.data.util.ClassUtils.ifPresent("org.springframework.cloud.openfeign.support.PageJacksonModule$SimplePageImpl", null,
+                        targetType -> setMixInAnnotation(targetType, WrappingMixing.class));
 			}
 		}
 
