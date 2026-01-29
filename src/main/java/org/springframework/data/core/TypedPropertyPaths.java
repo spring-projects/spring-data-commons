@@ -354,6 +354,16 @@ class TypedPropertyPaths {
 		}
 
 		@Override
+		public @Nullable PropertyPath next() {
+			return null;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
 		public TypeInformation<T> getOwningType() {
 			return property.getOwningType();
 		}
@@ -421,6 +431,16 @@ class TypedPropertyPaths {
 			return function.get(obj);
 		}
 
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
+		public @Nullable PropertyPath next() {
+			return null;
+		}
+
 	}
 
 	/**
@@ -441,6 +461,16 @@ class TypedPropertyPaths {
 		@Override
 		public @Nullable P get(T obj) {
 			return function.get(obj);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
+		public @Nullable PropertyPath next() {
+			return null;
 		}
 
 	}
@@ -471,6 +501,15 @@ class TypedPropertyPaths {
 			return property.call(obj);
 		}
 
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
+		public @Nullable PropertyPath next() {
+			return null;
+		}
 	}
 
 	/**

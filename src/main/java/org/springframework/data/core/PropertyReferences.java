@@ -315,6 +315,7 @@ class PropertyReferences {
 			return property.call(obj);
 		}
 
+
 	}
 
 }

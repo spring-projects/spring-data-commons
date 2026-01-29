@@ -147,12 +147,12 @@ public interface TypedPropertyPath<T, P extends @Nullable Object> extends Proper
 	@Override
 	@Nullable
 	default PropertyPath next() {
-		return null;
+		return TypedPropertyPath.of(this).next();
 	}
 
 	@Override
 	default boolean hasNext() {
-		return false;
+		return TypedPropertyPath.of(this).hasNext();
 	}
 
 	@Override
