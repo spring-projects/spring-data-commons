@@ -106,7 +106,7 @@ NOTE: For implementation details, refer to <<property-path-internals>> for more 
 === Property Path Internals
 
 The {spring-data-commons-javadoc-base}/org/springframework/data/core/package-summary.html[`org.springframework.data.core`] package is the basis for Spring Data's navigation across domain classes.
-The javadoc:org.springframework.data.core.TypeInformation[] interface provides type introspection capable of resolving the type of a property. javadoc:org.springframework.data.core.PropertyPath[] represents a textual navigation path through a domain class.
+The {spring-data-commons-javadoc-base}/org/springframework/data/core/TypeInformation.html[`TypeInformation`] interface provides type introspection capable of resolving the type of a property. {spring-data-commons-javadoc-base}/org/springframework/data/core/PropertyPath.html[`PropertyPath`] represents a textual navigation path through a domain class.
 
 Together they provide:
 
@@ -121,7 +121,7 @@ Type-safe property-references eliminate a common source of errors in data access
 This section explains how method references can be used to express refactoring-safe property paths.
 
 While a property path is a simple representation of object navigation, String-based property paths are inherently fragile during refactoring as they can be easily missed with an increasing distance between the property definition and its usage.
-Type-safe alternatives derive property paths from method references, enabling the compiler to validate property names and IDEs to support refactoring operations.
+Type-safe alternatives through {spring-data-commons-javadoc-base}/org/springframework/data/core/TypedPropertyPath.html[`TypedPropertyPath`] derive property paths from method references, enabling the compiler to validate property names and IDEs to support refactoring operations.
 
 [tabs]
 ======
@@ -194,7 +194,7 @@ TypedPropertyPath.of(Person::address / Address::city)
 When using (or building) APIs using type-safe property-references, consider the following recommendations:
 
 * **Use method references**: Accept method references (e.g., `Person::getFirstName`) instead of strings to leverage compile-time validation and IDE refactoring support.
-Method references are preferred as they share similary representations with both Java and Kotlin.
+Method references are preferred as they share similar representations with both Java and Kotlin.
 Additionally, method references provide a better performance baseline compared to lambdas due to their simpler representation.
 * **Leverage the `T` type of `TypedPropertyPath`**: Whenever accepting a typed property path, consider using the generic type `T` of `TypedPropertyPath<T, P>`.
 Limiting property paths to a specific domain type that is used within the current operation reduces the potential of using unintended properties from other types. +
