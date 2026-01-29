@@ -11,7 +11,7 @@ ext:
       scan:
         dir: target/classes/antora-resources/
     - run:
-        command: ./mvnw package -Pdistribute
+        command: ./mvnw package -Pdistribute -Dmaven.main.skip=true
         local: true
       scan:
         dir: target/antora
