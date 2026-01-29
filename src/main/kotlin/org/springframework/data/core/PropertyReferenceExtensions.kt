@@ -30,7 +30,7 @@ import kotlin.reflect.jvm.javaGetter
  *
  * @since 4.1
  */
-fun <T : Any, P : Any?, N : Any> PropertyReference<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
+fun <T : Any, P : Any, N : Any> PropertyReference<T, P>.then(next: KProperty1<T, P?>): TypedPropertyPath<T, N> {
 	val nextPath = KPropertyReference.of<T, P>(next) as PropertyReference<P, N>
 	return TypedPropertyPaths.compose(this, nextPath)
 }
@@ -40,7 +40,7 @@ fun <T : Any, P : Any?, N : Any> PropertyReference<T, P>.then(next: KProperty1<T
  *
  * @since 4.1
  */
-fun <T : Any, P : Any?, N : Any> PropertyReference<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
+fun <T : Any, P : Any, N : Any> PropertyReference<T, P>.then(next: KProperty<P?>): TypedPropertyPath<T, N> {
 	val nextPath = KPropertyReference.of<T, P>(next) as PropertyReference<P, N>
 	return TypedPropertyPaths.compose(this, nextPath)
 }
@@ -61,7 +61,7 @@ class KPropertyReference {
 		 * Create a [PropertyReference] from a [KProperty1] reference.
 		 * @param property the property reference, must not be a property path.
 		 */
-		fun <T : Any, P : Any> of(property: KProperty1<T, P?>): PropertyReference<T, P> {
+		fun <T : Any, P : Any> of(property: KProperty1<T, P?>): PropertyReference<T, out P> {
 			return of((property as KProperty<P?>))
 		}
 
@@ -70,14 +70,14 @@ class KPropertyReference {
 		 * @param property the property reference, must not be a property path.
 		 */
 		@JvmName("ofMany")
-		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P?>?>): PropertyReference<T, P> {
+		fun <T : Any, P : Any> of(property: KProperty1<T, Iterable<P?>?>): PropertyReference<T, out P> {
 			return of((property as KProperty<P?>))
 		}
 
 		/**
 		 * Create a [PropertyReference] from a [KProperty].
 		 */
-		fun <T, P> of(property: KProperty<P?>): PropertyReference<T, P> {
+		fun <T : Any, P> of(property: KProperty<P?>): PropertyReference<T, out P> {
 
 			if (property is KPropertyPath<*, *>) {
 				throw IllegalArgumentException("Property reference '${property.toDotPath()}' must be a single property reference, not a property path")
@@ -86,8 +86,8 @@ class KPropertyReference {
 			if (property is KProperty1<*, *>) {
 
 				val property1 = property as KProperty1<*, *>
-				val owner = property1.javaField?.declaringClass
-					?: property1.javaGetter?.declaringClass
+				val owner = (property1.javaField?.declaringClass
+					?: property1.javaGetter?.declaringClass) as Class<Any>
 				val metadata = PropertyReferences.KPropertyMetadata.of(
 					MemberDescriptor.KPropertyReferenceDescriptor.create(
 						owner,

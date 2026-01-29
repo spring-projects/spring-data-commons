@@ -35,7 +35,7 @@ fun KProperty<*>.toDotPath(): String = asString(this)
  * @since 4.1
  * @see org.springframework.data.core.PropertyPath.toDotPath
  */
-fun <T : Any, P> KProperty1<T, P>.toPropertyPath(): TypedPropertyPath<T, P> =
+fun <T : Any, P> KProperty1<T, P>.toPropertyPath(): TypedPropertyPath<T, out P> =
 	KTypedPropertyPath.of(this)
 
 /**

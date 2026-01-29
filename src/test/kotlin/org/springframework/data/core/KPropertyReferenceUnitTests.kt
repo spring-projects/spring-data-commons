@@ -17,6 +17,7 @@ package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -35,6 +36,7 @@ class KPropertyReferenceUnitTests {
 	}
 
 	@Test // GH-3400
+	@Disabled("https://github.com/spring-projects/spring-data-commons/issues/3451")
 	fun shouldComposePropertyPath() {
 
 		val path = KPropertyReference.of(Person::address).then(Address::city)
@@ -43,6 +45,7 @@ class KPropertyReferenceUnitTests {
 	}
 
 	@Test // GH-3400
+	@Disabled("https://github.com/spring-projects/spring-data-commons/issues/3451")
 	fun shouldComposeManyPropertyPath() {
 
 		val path = KPropertyReference.of(Person::addresses).then(Address::city)

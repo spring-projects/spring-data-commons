@@ -32,7 +32,7 @@ public interface RepositoryQuery {
 	 * @return execution result. Can be {@literal null}.
 	 */
 	@Nullable
-	Object execute(Object[] parameters);
+	Object execute(@Nullable Object[] parameters);
 
 	/**
 	 * Returns the related {@link QueryMethod}.

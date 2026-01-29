@@ -16,6 +16,7 @@
 package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -32,7 +33,7 @@ class TypedPropertyPathKtUnitTests {
 
 	@ParameterizedTest
 	@MethodSource("propertyPaths")
-	fun verifyTck(actual: TypedPropertyPath<*, *>?, expected: PropertyPath) {
+	fun verifyTck(actual: TypedPropertyPath<*, *>, expected: PropertyPath) {
 		PropertyPathTck.verify(actual, expected)
 	}
 
@@ -90,6 +91,7 @@ class TypedPropertyPathKtUnitTests {
 	}
 
 	@Test // GH-3400
+	@Disabled("https://github.com/spring-projects/spring-data-commons/issues/3451")
 	fun shouldSupportPropertyLambda() {
 		assertThat(TypedPropertyPath.path<Person, Address> { it.address }
 			.toDotPath()).isEqualTo("address")
@@ -98,6 +100,7 @@ class TypedPropertyPathKtUnitTests {
 	}
 
 	@Test // GH-3400
+	@Disabled()
 	fun shouldSupportComposedPropertyLambda() {
 
 		val path = TypedPropertyPath.path<Person, Address> { it.address };

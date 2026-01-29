@@ -55,7 +55,7 @@ internal class KTypedPropertyPath {
 		/**
 		 * Create a [TypedPropertyPath] from a [KProperty].
 		 */
-		fun <T, P> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
+		fun <T : Any, P : Any> of(property: KProperty<P?>): TypedPropertyPath<T, P> {
 
 			if (property is KPropertyPath<*, *>) {
 
@@ -73,8 +73,8 @@ internal class KTypedPropertyPath {
 			if (property is KProperty1<*, *>) {
 
 				val property1 = property as KProperty1<*, *>
-				val owner = property1.javaField?.declaringClass
-					?: property1.javaGetter?.declaringClass
+				val owner = (property1.javaField?.declaringClass
+					?: property1.javaGetter?.declaringClass) as Class<Any>
 				val metadata = TypedPropertyPaths.KPropertyPathMetadata.of(
 					MemberDescriptor.KPropertyReferenceDescriptor.create(
 						owner,
