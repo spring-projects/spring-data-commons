@@ -33,7 +33,6 @@
 		<scala>2.11.7</scala>
 		<xmlbeam>1.4.26</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
-		<kotlin.api.target>1.8</kotlin.api.target>
 	</properties>
 
 	<dependencies>
