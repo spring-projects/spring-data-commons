@@ -208,7 +208,7 @@ class SortUnitTests {
 		assertThat(result.isIgnoreCase()).isEqualTo(source.isIgnoreCase());
 	}
 
-	@Test
+	@Test // GH-3400
 	void createsNewOrderForDifferentPropertyPath() {
 
 		var source = Order.desc("foo").nullsFirst().ignoreCase();

@@ -121,7 +121,7 @@ class ExampleMatcherUnitTests {
 		assertThat(matcher.getIgnoredPaths()).hasSize(2);
 	}
 
-	@Test //
+	@Test // GH-3400
 	void ignoredPropertyPathsShouldReturnUniqueProperties() {
 
 		matcher = matching().withIgnorePaths(Person::getFirstname, Person::getLastname, Person::getFirstname);
