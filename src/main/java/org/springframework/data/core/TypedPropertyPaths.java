@@ -17,14 +17,16 @@ package org.springframework.data.core;
 
 import kotlin.reflect.KProperty;
 import kotlin.reflect.KProperty1;
-import kotlin.reflect.jvm.internal.KProperty1Impl;
-import kotlin.reflect.jvm.internal.KPropertyImpl;
+import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -228,29 +230,19 @@ class TypedPropertyPaths {
 		public static <T, P> TypedPropertyPath<T, P> of(Object property) {
 
 			if (property instanceof KPropertyPath paths) {
-
-				TypedPropertyPath parent = of(paths.getProperty());
-				TypedPropertyPath child = of(paths.getLeaf());
-
-				return TypedPropertyPaths.compose(parent, child);
-			}
-
-			if (property instanceof KPropertyImpl impl) {
-
-				Class<?> owner = impl.getJavaField() != null ? impl.getJavaField().getDeclaringClass()
-						: impl.getGetter().getCaller().getMember().getDeclaringClass();
-				KPropertyPathMetadata metadata = TypedPropertyPaths.KPropertyPathMetadata
-						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, (KProperty1) impl));
-				return new TypedPropertyPaths.ResolvedKPropertyPath(metadata);
+				return TypedPropertyPaths.compose(of(paths.getProperty()), of(paths.getLeaf()));
 			}
 
 			if (property instanceof KProperty1 kProperty) {
 
-				if (kProperty.getGetter().getProperty() instanceof KProperty1Impl impl) {
-					return of(impl);
-				}
+				Field javaField = ReflectJvmMapping.getJavaField(kProperty);
+				Method getter = ReflectJvmMapping.getJavaGetter(kProperty);
 
-				throw new IllegalArgumentException("Property " + kProperty.getName() + " is not a KProperty");
+				Class<?> owner = javaField != null ? javaField.getDeclaringClass()
+						: Objects.requireNonNull(getter).getDeclaringClass();
+				KPropertyPathMetadata metadata = TypedPropertyPaths.KPropertyPathMetadata
+						.of(MemberDescriptor.KPropertyReferenceDescriptor.create(owner, kProperty));
+				return new TypedPropertyPaths.ResolvedKPropertyPath(metadata);
 			}
 
 			throw new IllegalArgumentException("Property " + property + " is not a KProperty");

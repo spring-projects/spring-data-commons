@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.asm.ClassReader;
 import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.Label;
@@ -52,6 +54,7 @@ import org.springframework.data.core.MemberDescriptor.KPropertyPathDescriptor;
 import org.springframework.data.core.MemberDescriptor.KPropertyReferenceDescriptor;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -138,9 +141,16 @@ class SerializableLambdaReader {
 	 */
 	public MemberDescriptor read(Object lambdaObject) {
 
+		// Kotlin 2.0
+		Object k2Lambda = KotlinDetectorUtils.detectKotlin2SamLambda(lambdaObject);
+		if (k2Lambda != null) {
+			return KotlinDelegate.read(k2Lambda, lambdaObject);
+		}
+
 		SerializedLambda lambda = serialize(lambdaObject);
 
-		if (isKotlinPropertyReference(lambda)) {
+		// Kotlin 1.x
+		if (KotlinDetectorUtils.isKotlinPropertyReference(lambda)) {
 			return KotlinDelegate.read(lambda);
 		}
 
@@ -183,12 +193,14 @@ class SerializableLambdaReader {
 		}
 	}
 
-	private MemberDescriptor getMemberDescriptor(Object lambdaObject, SerializedLambda lambda) throws IOException {
+	private MemberDescriptor getMemberDescriptor(Object lambdaObject, SerializedLambda lambda)
+			throws IOException, ReflectiveOperationException {
 
+		ClassLoader classLoader = lambdaObject.getClass().getClassLoader();
 		String implClass = Type.getObjectType(lambda.getImplClass()).getClassName();
 		Type owningType = Type.getArgumentTypes(lambda.getImplMethodSignature())[0];
 		String classFileName = implClass.replace('.', '/') + ".class";
-		InputStream classFile = ClassLoader.getSystemResourceAsStream(classFileName);
+		InputStream classFile = classLoader.getResourceAsStream(classFileName);
 
 		if (classFile == null) {
 			throw new IllegalStateException("Cannot find class file '%s' for lambda introspection".formatted(classFileName));
@@ -197,8 +209,8 @@ class SerializableLambdaReader {
 		try (classFile) {
 
 			ClassReader cr = new ClassReader(classFile);
-			LambdaReadingVisitor classVisitor = new LambdaReadingVisitor(lambdaObject.getClass().getClassLoader(),
-					lambda.getImplMethodName(), owningType);
+			LambdaReadingVisitor classVisitor = new LambdaReadingVisitor(classLoader, lambda.getImplMethodName(), owningType,
+					KotlinDetector.isKotlinType(ClassUtils.forName(implClass, classLoader)));
 			cr.accept(classVisitor, ClassReader.SKIP_FRAMES);
 			return classVisitor.getMemberReference(lambda);
 		}
@@ -216,12 +228,50 @@ class SerializableLambdaReader {
 		}
 	}
 
-	private static boolean isKotlinPropertyReference(SerializedLambda lambda) {
+	/**
+	 * Kotlin Lambda detector utilities.
+	 */
+	static class KotlinDetectorUtils {
 
-		return KotlinDetector.isKotlinReflectPresent() //
-				&& lambda.getCapturedArgCount() == 1 //
-				&& lambda.getCapturedArg(0) != null //
-				&& KotlinDetector.isKotlinType(lambda.getCapturedArg(0).getClass());
+		/**
+		 * Detect whether the given lambda object is a Kotlin 2 SAM wrapper around a property reference
+		 * {@link kotlin.reflect.KProperty} usage with {@link PropertyReference} or {@link TypedPropertyPath}.
+		 * <p>
+		 * Kotlin 1 lambdas use {@link SerializedLambda} directly and provide the function object through
+		 * {@link SerializedLambda#getCapturedArg(int) argument capture}.
+		 *
+		 * @param lambdaObject the lambda object to introspect.
+		 * @return the function object or {@code null} if not detected.
+		 */
+		public static @Nullable Object detectKotlin2SamLambda(Object lambdaObject) {
+
+			Class<?> cls = lambdaObject.getClass();
+			if (!KotlinDetector.isKotlinType(cls)) {
+				return null;
+			}
+
+			Field field = ReflectionUtils.findField(lambdaObject.getClass(), "function");
+			if (field == null) {
+				return null;
+			}
+
+			ReflectionUtils.makeAccessible(field);
+			Object function = ReflectionUtils.getField(field, lambdaObject);
+			return isKotlinPropertyReference(function) ? function : null;
+		}
+
+		public static boolean isKotlinPropertyReference(SerializedLambda lambda) {
+
+			return KotlinDetector.isKotlinReflectPresent() //
+					&& lambda.getCapturedArgCount() == 1 //
+					&& lambda.getCapturedArg(0) != null //
+					&& isKotlinPropertyReference(lambda.getCapturedArg(0));
+		}
+
+		private static boolean isKotlinPropertyReference(@Nullable Object capturedObject) {
+			return capturedObject != null && KotlinDetector.isKotlinType(capturedObject.getClass());
+		}
+
 	}
 
 	/**
@@ -232,8 +282,10 @@ class SerializableLambdaReader {
 	static class KotlinDelegate {
 
 		public static MemberDescriptor read(SerializedLambda lambda) {
+			return read(lambda.getCapturedArg(0), lambda);
+		}
 
-			Object captured = lambda.getCapturedArg(0);
+		public static MemberDescriptor read(Object captured, Object lambda) {
 
 			if (captured instanceof PropertyReference propRef //
 					&& propRef.getOwner() instanceof KClass<?> owner //
@@ -255,10 +307,10 @@ class SerializableLambdaReader {
 		private final String implMethodName;
 		private final LambdaMethodVisitor methodVisitor;
 
-		public LambdaReadingVisitor(ClassLoader classLoader, String implMethodName, Type owningType) {
+		public LambdaReadingVisitor(ClassLoader classLoader, String implMethodName, Type owningType, boolean kotlin) {
 			super(SpringAsmInfo.ASM_VERSION);
 			this.implMethodName = implMethodName;
-			this.methodVisitor = new LambdaMethodVisitor(classLoader, owningType);
+			this.methodVisitor = new LambdaMethodVisitor(classLoader, owningType, kotlin);
 		}
 
 		public MemberDescriptor getMemberReference(SerializedLambda lambda) {
@@ -283,17 +335,20 @@ class SerializableLambdaReader {
 				Type.getInternalName(Boolean.class));
 
 		private static final String BOXING_METHOD = "valueOf";
+		private static final String KOTLIN_INTRINSICS_CLASS = "kotlin/jvm/internal/Intrinsics";
 
 		private final ClassLoader classLoader;
 		private final Type owningType;
+		private final boolean kotlinCode;
 		private int line;
 		private final List<MemberDescriptor> memberDescriptors = new ArrayList<>();
 		private final Set<ReadingError> errors = new LinkedHashSet<>();
 
-		public LambdaMethodVisitor(ClassLoader classLoader, Type owningType) {
+		public LambdaMethodVisitor(ClassLoader classLoader, Type owningType, boolean kotlinCode) {
 			super(SpringAsmInfo.ASM_VERSION);
 			this.classLoader = classLoader;
 			this.owningType = owningType;
+			this.kotlinCode = kotlinCode;
 		}
 
 		@Override
@@ -324,6 +379,11 @@ class SerializableLambdaReader {
 
 		@Override
 		public void visitLdcInsn(Object value) {
+
+			if (kotlinCode) {
+				return;
+			}
+
 			errors.add(new ReadingError(line,
 					"Code loads a constant. Only method calls to getters, record components, or field access allowed.", null));
 		}
@@ -362,6 +422,10 @@ class SerializableLambdaReader {
 			if (count != 0) {
 
 				if (BOXING_TYPES.contains(owner) && name.equals(BOXING_METHOD)) {
+					return;
+				}
+
+				if (owner.equals(KOTLIN_INTRINSICS_CLASS)) {
 					return;
 				}
 
@@ -487,17 +551,24 @@ class SerializableLambdaReader {
 			@Nullable Function<StackTraceElement, StackTraceElement> syntheticSupplier) {
 
 		int filterIndex = findEntryPoint(stackTrace);
+		int offset = syntheticSupplier == null ? 0 : 1;
 
 		if (filterIndex != -1) {
 
-			int offset = syntheticSupplier == null ? 0 : 1;
+			StackTraceElement synthetic;
+			if (syntheticSupplier != null) {
+				synthetic = syntheticSupplier.apply(stackTrace[filterIndex + 1]);
+				if (synthetic.getLineNumber() == 0) {
+					return stackTrace;
+				}
+			} else {
+				synthetic = null;
+			}
 
 			StackTraceElement[] copy = new StackTraceElement[(stackTrace.length - filterIndex) + offset];
 			System.arraycopy(stackTrace, filterIndex, copy, offset, stackTrace.length - filterIndex);
 
-			if (syntheticSupplier != null) {
-				StackTraceElement userCode = copy[1];
-				StackTraceElement synthetic = syntheticSupplier.apply(userCode);
+			if (synthetic != null) {
 				copy[0] = synthetic;
 			}
 			return copy;
