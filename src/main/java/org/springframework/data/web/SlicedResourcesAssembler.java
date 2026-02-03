@@ -143,10 +143,11 @@ public class SlicedResourcesAssembler<T>
 	 * @param slice must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
 	 * @param link must not be {@literal null}.
-	 * @return
+	 * @return a {@link SlicedModel} must not be {@literal null}.
 	 */
 	public <R extends RepresentationModel<?>> SlicedModel<R> toModel(Slice<T> slice,
 			RepresentationModelAssembler<T, R> assembler, Link link) {
+		Assert.notNull(link, "Link must not be null");
 		return createModel(slice, assembler, link);
 	}
 
@@ -166,15 +167,14 @@ public class SlicedResourcesAssembler<T>
 	 *
 	 * @param slice must not be {@literal null}, content must be empty.
 	 * @param type must not be {@literal null}.
-	 * @param link must not be {@literal null}.
-	 * @return
+	 * @param link can be {@literal null}.
+	 * @return a {@link SlicedModel} must not be {@literal null}.
 	 */
 	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, @Nullable Link link) {
 
 		Assert.notNull(slice, "Slice must not be null");
 		Assert.isTrue(!slice.hasContent(), "Slice must not have any content");
 		Assert.notNull(type, "Type must not be null");
-		Assert.notNull(link, "Link must not be null");
 
 		SliceMetadata metadata = asSliceMetadata(slice);
 
@@ -187,6 +187,7 @@ public class SlicedResourcesAssembler<T>
 
 	@Deprecated
 	public SlicedModel<?> toEmptyModel(Slice<?> slice, Class<?> type, Optional<Link> link) {
+		Assert.notNull(link, "Link must not be null");
 		return toEmptyModel(slice, type, link.orElse(null));
 	}
 
