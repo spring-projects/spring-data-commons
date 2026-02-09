@@ -115,7 +115,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		// Parameter annotated with @ModelAttribute
 		if (parameter.hasParameterAnnotation(ModelAttribute.class)) {
 			this.deprecationLogger.logDeprecationForParameter(parameter);
-			return true;
+			return false;
 		}
 
 		// Exclude any other parameters annotated with Spring annotation
@@ -131,7 +131,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		String packageName = ClassUtils.getPackageName(type);
 		if (IGNORED_PACKAGES.stream().noneMatch(packageName::startsWith)) {
 			this.deprecationLogger.logDeprecationForParameter(parameter);
-			return true;
+			return false;
 		}
 
 		return false;
@@ -157,7 +157,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	 */
 	static class ProjectedPayloadDeprecationLogger {
 
-		private static final String MESSAGE = "Parameter %sat index %s in [%s] is not annotated with @ProjectedPayload. Support for parameters not annotated with @ProjectedPayload (at the parameter or type level) will be dropped in a future version.";
+		private static final String MESSAGE = "Parameter %sat index %s in [%s] is not annotated with @ProjectedPayload. Make sure to annotate it with @ProjectedPayload (at the parameter or type level) to use it for projections.";
 
 		private final Set<MethodParameter> loggedParameters = Collections.synchronizedSet(new HashSet<>());
 
