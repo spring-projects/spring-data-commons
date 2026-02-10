@@ -22,10 +22,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +47,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Michael Schout
  * @author Oliver Drotbohm
- * @since 3.1
  */
 class SlicedResourcesAssemblerUnitTest {
 
