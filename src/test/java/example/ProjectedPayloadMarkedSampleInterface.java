@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package example;
+
+import org.springframework.data.web.ProjectedPayload;
 
 /**
  * @author Chris Bono
  * @see org.springframework.data.web.ProxyingHandlerMethodArgumentResolverUnitTests
  */
-package example;
-
-import org.springframework.data.web.ProjectedPayload;
-
 @ProjectedPayload
 public interface ProjectedPayloadMarkedSampleInterface {}
