@@ -22,7 +22,7 @@ import java.sql.Timestamp
  */
 data class UnusedCustomCopy internal constructor(val date: Timestamp) {
 
-	fun copy(date: Long): UnusedCustomCopy {
+	internal fun copy(date: Long): UnusedCustomCopy {
 		return UnusedCustomCopy(Timestamp(date))
 	}
 }

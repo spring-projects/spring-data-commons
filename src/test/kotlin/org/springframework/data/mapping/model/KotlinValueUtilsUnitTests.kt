@@ -214,7 +214,7 @@ class KotlinValueUtilsUnitTests {
 		val vh = KotlinValueUtils.getCopyValueHierarchy(
 			copyFunction.parameters.get(1)
 		)
-		assertThat(vh.actualType).isEqualTo(Object::class.java)
+		assertThat(vh.actualType).isEqualTo(Any::class.java)
 	}
 
 	@Test // GH-2986
@@ -226,7 +226,7 @@ class KotlinValueUtilsUnitTests {
 		val vh = KotlinValueUtils.getCopyValueHierarchy(
 			copyFunction.parameters.get(1)
 		)
-		assertThat(vh.actualType).isEqualTo(Object::class.java)
+		assertThat(vh.actualType).isEqualTo(Any::class.java)
 	}
 
 	@Test // GH-1947
@@ -267,7 +267,7 @@ class KotlinValueUtilsUnitTests {
 		assertThat(charseq.appliesBoxing()).isFalse
 
 		val recursive = KotlinValueUtils.getConstructorValueHierarchy(parameters[3]);
-		assertThat(recursive.actualType).isEqualTo(Object::class.java)
+		assertThat(recursive.actualType).isEqualTo(Any::class.java)
 		assertThat(recursive.parameterType).isEqualTo(MyGenericValue::class.java)
 		assertThat(recursive.appliesBoxing()).isFalse
 	}
