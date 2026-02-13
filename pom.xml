@@ -388,6 +388,47 @@
 			</build>
 		</profile>
 		<profile>
+			<id>distribute</id>
+			<build> <!-- Required for compilation of Javadoc generation -->
+				<plugins>
+					<plugin>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-plugin</artifactId>
+						<inherited>false</inherited>
+						<configuration>
+							<apiVersion>${kotlin.api.target}</apiVersion>
+							<languageVersion>${kotlin.api.target}</languageVersion>
+							<jvmTarget>${kotlin.jvm.target}</jvmTarget>
+							<javaParameters>true</javaParameters>
+							<args>
+								<arg>-Xjsr305=strict</arg>
+								<arg>-Xsuppress-version-warnings</arg>
+								<arg>-opt-in=kotlin.RequiresOptIn</arg>
+								<arg>-Xannotation-default-target=param-property</arg>
+							</args>
+						</configuration>
+						<executions>
+							<execution>
+								<id>compile</id>
+								<phase>compile</phase>
+								<goals>
+									<goal>compile</goal>
+								</goals>
+								<configuration>
+									<sourceDirs>
+										<sourceDir>${project.basedir}/src/main/kotlin
+										</sourceDir>
+										<sourceDir>${project.basedir}/src/main/java
+										</sourceDir>
+									</sourceDirs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<id>jmh</id>
 			<dependencies>
 				<dependency>
