@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.Assert;
@@ -95,7 +96,10 @@ public class DefaultRepositoryInvokerFactory implements RepositoryInvokerFactory
 	@SuppressWarnings("unchecked")
 	protected RepositoryInvoker createInvoker(RepositoryInformation information, Object repository) {
 
-		if (repository instanceof PagingAndSortingRepository && repository instanceof CrudRepository) {
+		if (repository instanceof ReactiveCrudRepository) {
+			return new ReactiveCrudRepositoryInvoker((ReactiveCrudRepository<Object, Object>) repository, information,
+					conversionService);
+		} else if (repository instanceof PagingAndSortingRepository && repository instanceof CrudRepository) {
 			return new PagingAndSortingRepositoryInvoker((PagingAndSortingRepository<Object, Object>) repository, information,
 					conversionService);
 		} else if (repository instanceof CrudRepository) {
