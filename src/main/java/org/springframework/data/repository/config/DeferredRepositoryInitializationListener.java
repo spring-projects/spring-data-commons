@@ -19,7 +19,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.data.repository.Repository;
@@ -44,6 +46,15 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
+
+		ApplicationContext context = event.getApplicationContext();
+
+		// Ignore events from child contexts (e.g., Spring Cloud OpenFeign, LoadBalancer)
+		// to avoid premature repository initialization.
+		// See https://github.com/spring-projects/spring-boot/commit/708cbd72942e65906ea32ab3204af6c4e58a7314
+		if (context instanceof ConfigurableApplicationContext cac && cac.getBeanFactory() != beanFactory) {
+			return;
+		}
 
 		logger.info("Triggering deferred initialization of Spring Data repositories…");
 
