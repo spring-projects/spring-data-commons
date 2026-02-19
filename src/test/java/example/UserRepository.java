@@ -20,13 +20,14 @@ import example.UserRepository.User;
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 /**
  * @author Christoph Strobl
  */
 public interface UserRepository extends CrudRepository<User, Long>, UserRepositoryExtension {
 
-	User findByFirstname(String firstname);
+	User findByFirstname(@Param("hello") String firstname);
 
 	List<User> findByFirstnameIn(List<String> firstnames);
 

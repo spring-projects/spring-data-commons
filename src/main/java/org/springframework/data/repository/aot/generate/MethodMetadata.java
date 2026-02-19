@@ -15,6 +15,7 @@
  */
 package org.springframework.data.repository.aot.generate;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -31,9 +32,12 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.javapoet.AnnotationSpec;
 import org.springframework.javapoet.ParameterSpec;
 import org.springframework.javapoet.TypeName;
 import org.springframework.util.Assert;
@@ -91,7 +95,7 @@ class MethodMetadata {
 			TypeName parameterType = parameterTypeName(methodParameter, repositoryInterfaceType);
 
 			Assert.notNull(methodParameter.getParameterName(), "MethodParameter.getParameterName() must not be null");
-			ParameterSpec parameterSpec = ParameterSpec.builder(parameterType, methodParameter.getParameterName()).build();
+			ParameterSpec parameterSpec = buildParameter(parameterType, methodParameter);
 
 			if (methodArguments.containsKey(parameterSpec.name())) {
 				throw new IllegalStateException("Parameter with name '" + parameterSpec.name() + "' already exists.");
@@ -102,7 +106,19 @@ class MethodMetadata {
 		}
 	}
 
-    @SuppressWarnings("NullAway")
+	private static ParameterSpec buildParameter(TypeName parameterType, MethodParameter methodParameter) {
+
+		ParameterSpec.Builder builder = ParameterSpec.builder(parameterType, methodParameter.getParameterName());
+		MergedAnnotations annotations = MergedAnnotations.from(methodParameter.getParameterAnnotations());
+
+		for (MergedAnnotation<Annotation> annotation : annotations) {
+			builder.addAnnotation(AnnotationSpec.get(annotation.synthesize()));
+		}
+
+		return builder.build();
+	}
+
+	@SuppressWarnings("NullAway")
 	static TypeName parameterTypeName(MethodParameter methodParameter, Class<?> repositoryInterface) {
 
 		ResolvableType resolvableParameterType = ResolvableType.forMethodParameter(methodParameter);
