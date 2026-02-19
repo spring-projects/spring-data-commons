@@ -280,7 +280,7 @@ public interface AotContext extends EnvironmentCapable {
 	interface TypeIntrospector {
 
 		/**
-		 * Determines whether @link Class type} is present on the application classpath.
+		 * Determines whether {@link Class type} is present on the application classpath.
 		 *
 		 * @return {@literal true} if the {@link Class type} is present on the application classpath.
 		 * @see #getClassLoader()
