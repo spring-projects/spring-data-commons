@@ -55,7 +55,7 @@ class AotRepositoryMethodBuilderUnitTests {
 		when(methodGenerationContext.getExpressionMarker()).thenReturn(new ExpressionMarker());
 	}
 
-	@Test // GH-3279
+	@Test // GH-3279, GH-3458
 	void generatesMethodSkeletonBasedOnGenerationMetadata() throws NoSuchMethodException {
 
 		Method method = UserRepository.class.getMethod("findByFirstname", String.class);
@@ -66,8 +66,8 @@ class AotRepositoryMethodBuilderUnitTests {
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 
 		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
-		assertThat(builder.buildMethod().toString()) //
-				.containsPattern("public .*User findByFirstname\\(.*String firstname\\)");
+		assertThat(builder.buildMethod().toString().replaceAll(System.lineSeparator(), " ")) //
+				.containsPattern("findByFirstname\\(.*@.*Param\\(\"hello\"\\).*String firstname\\)");
 	}
 
 	@Test // GH-3279
