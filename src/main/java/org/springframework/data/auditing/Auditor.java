@@ -57,7 +57,7 @@ class Auditor<T> {
 	 *
 	 * @param source can be {@literal null}.
 	 * @param <T>
-	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }
+	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}.
 	 */
 	public static <T> Auditor<T> of(@Nullable T source) {
 
@@ -75,7 +75,7 @@ class Auditor<T> {
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param <T>
-	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}. }
+	 * @return {@link Auditor#none()} if the given {@literal source} is {@literal null}.
 	 */
 	public static <T> Auditor<T> ofOptional(@Nullable Optional<T> source) {
 		return Auditor.of(source.orElse(null));
