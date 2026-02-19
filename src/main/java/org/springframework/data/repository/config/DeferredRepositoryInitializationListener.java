@@ -48,18 +48,12 @@ class DeferredRepositoryInitializationListener implements ApplicationListener<Co
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
 		ApplicationContext context = event.getApplicationContext();
-
-		// Ignore events from child contexts (e.g., Spring Cloud OpenFeign, LoadBalancer)
-		// to avoid premature repository initialization.
-		// See https://github.com/spring-projects/spring-boot/commit/708cbd72942e65906ea32ab3204af6c4e58a7314
-		if (context instanceof ConfigurableApplicationContext cac && cac.getBeanFactory() != beanFactory) {
+		if (context instanceof ConfigurableApplicationContext cac && !cac.getBeanFactory().equals(beanFactory)) {
 			return;
 		}
 
 		logger.info("Triggering deferred initialization of Spring Data repositories…");
-
 		beanFactory.getBeansOfType(Repository.class);
-
 		logger.info("Spring Data repositories initialized");
 	}
 
