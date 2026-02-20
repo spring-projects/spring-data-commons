@@ -26,6 +26,8 @@ import org.mockito.Mockito;
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.Param;
+import org.springframework.javapoet.ParameterSpec;
 
 /**
  * Unit tests for {@link MethodMetadata}.
@@ -42,6 +44,15 @@ class MethodMetadataUnitTests {
 		assertThat(metadata.getParameterName(0)).isEqualTo("arg0");
 		assertThat(metadata.getParameterName(1)).isEqualTo("arg1");
 		assertThat(metadata.getParameterName(2)).isEqualTo("arg2");
+	}
+
+	@Test // GH-3458
+	void addsAnnotations() throws NoSuchMethodException {
+
+		MethodMetadata metadata = methodMetadataFor("threeArgsMethod");
+
+		ParameterSpec spec = metadata.getMethodArguments().get("arg2");
+		assertThat(spec.annotations()).hasSize(1);
 	}
 
 	@Test // GH-3270
@@ -82,6 +93,6 @@ class MethodMetadataUnitTests {
 
 		String noArgsMethod();
 
-		String threeArgsMethod(Object arg0, Pageable arg1, Object arg2);
+		String threeArgsMethod(Object arg0, Pageable arg1, @Param("foo") Object arg2);
 	}
 }
