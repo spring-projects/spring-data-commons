@@ -107,21 +107,21 @@ public class PageRequest extends AbstractPageRequest {
 	}
 
 	@Override
-	@Contract("_ -> new")
+	@Contract(" -> new")
 	@CheckReturnValue
 	public PageRequest next() {
 		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
 	}
 
 	@Override
-	@Contract("_ -> new")
+	@Contract(" -> new")
 	@CheckReturnValue
 	public PageRequest previous() {
 		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
 	}
 
 	@Override
-	@Contract("_ -> new")
+	@Contract(" -> new")
 	@CheckReturnValue
 	public PageRequest first() {
 		return new PageRequest(0, getPageSize(), getSort());

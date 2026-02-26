@@ -405,7 +405,7 @@ class SerializableLambdaReader {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Failed to resolve field '%s.%s'".formatted(owner, name), e);
 				}
-				errors.add(new ReadingError(line, e.getMessage()));
+				errors.add(new ReadingError(line, e.getMessage() != null ? e.getMessage() : ""));
 			}
 		}
 
@@ -451,7 +451,7 @@ class SerializableLambdaReader {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Failed to resolve method '%s.%s'".formatted(owner, name), e);
 				}
-				errors.add(new ReadingError(line, e.getMessage()));
+				errors.add(new ReadingError(line, e.getMessage() != null ? e.getMessage() : ""));
 			}
 		}
 

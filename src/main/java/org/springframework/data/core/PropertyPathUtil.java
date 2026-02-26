@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -49,7 +50,7 @@ public class PropertyPathUtil {
 		return TypedPropertyPaths.of(new SerializableWrapper((Serializable) obj));
 	}
 
-	private record SerializableWrapper(Serializable serializable) implements PropertyReference<Object, Object> {
+	private record SerializableWrapper(Serializable serializable) implements PropertyReference<Object, @Nullable Object> {
 
 		@Override
 		public @Nullable Object get(Object obj) {
@@ -57,7 +58,7 @@ public class PropertyPathUtil {
 		}
 
 		// serializable bridge
-		public SerializedLambda writeReplace() {
+		public @Nullable SerializedLambda writeReplace() {
 
 			Method method = ReflectionUtils.findMethod(serializable.getClass(), "writeReplace");
 

@@ -72,7 +72,7 @@ class TypedPropertyPaths {
 	/**
 	 * Compose a {@link TypedPropertyPath} by appending {@code next}.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked", "NullAway" })
 	public static <T, M, P> TypedPropertyPath<T, P> compose(TypedPropertyPath<T, M> owner, TypedPropertyPath<M, P> next) {
 
 		if (owner instanceof ForwardingPropertyPath<?, ?, ?> fwd) {

@@ -203,17 +203,17 @@ public class ResultProcessor {
 		}
 	}
 
-	private static class ChainingConverter implements Converter<Object, Object> {
+	private static class ChainingConverter implements Converter<Object, @Nullable Object> {
 
 		private final Class<?> targetType;
 		private final Converter<Object, Object> delegate;
 
-		private ChainingConverter(Class<?> targetType, Converter<Object, Object> delegate) {
+		private ChainingConverter(Class<?> targetType, Converter<Object, @Nullable Object> delegate) {
 			this.targetType = targetType;
 			this.delegate = delegate;
 		}
 
-		public static ChainingConverter of(Class<?> targetType, Converter<Object, Object> delegate) {
+		public static ChainingConverter of(Class<?> targetType, Converter<Object, @Nullable Object> delegate) {
 			return new ChainingConverter(targetType, delegate);
 		}
 
@@ -224,7 +224,8 @@ public class ResultProcessor {
 		 * @param converter must not be {@literal null}.
 		 * @return
 		 */
-		public ChainingConverter and(final Converter<Object, Object> converter) {
+		@SuppressWarnings("NullAway")
+		public ChainingConverter and(final Converter<Object, @Nullable Object> converter) {
 
 			Assert.notNull(converter, "Converter must not be null");
 
@@ -242,7 +243,8 @@ public class ResultProcessor {
 		}
 
 		@Override
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings("NullAway")
+		public Object convert(Object source) {
 			return delegate.convert(source);
 		}
 	}
@@ -263,7 +265,7 @@ public class ResultProcessor {
 		}
 	}
 
-	private static class ProjectingConverter implements Converter<Object, Object> {
+	private static class ProjectingConverter implements Converter<Object,  @Nullable Object> {
 
 		private final ReturnedType type;
 		private final ProjectionFactory factory;
@@ -299,7 +301,8 @@ public class ResultProcessor {
 		}
 
 		@Override
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings("NullAway")
+		public Object convert(Object source) {
 
 			Class<?> targetType = type.getReturnedType();
 
