@@ -66,8 +66,8 @@ class AotRepositoryMethodBuilderUnitTests {
 		when(methodGenerationContext.getTargetMethodMetadata()).thenReturn(methodMetadata);
 
 		AotRepositoryMethodBuilder builder = new AotRepositoryMethodBuilder(methodGenerationContext);
-		assertThat(builder.buildMethod().toString().replaceAll(System.lineSeparator(), " ")) //
-				.containsPattern("findByFirstname\\(.*@.*Param\\(\"hello\"\\).*String firstname\\)");
+		assertThat(builder.buildMethod().toString()) //
+			.containsSubsequence("findByFirstname(", "@", "Param(\"hello\")", "String firstname)");
 	}
 
 	@Test // GH-3279
