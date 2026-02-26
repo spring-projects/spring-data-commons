@@ -61,6 +61,7 @@ public enum DistanceFormatter implements Converter<String, Distance>, Formatter<
 
 	@Contract("null -> null; !null -> !null")
 	@Override
+	@SuppressWarnings("NullAway")
 	public final @Nullable Distance convert(@Nullable String source) {
 		return source == null ? null : doConvert(source.trim().toLowerCase(Locale.US));
 	}

@@ -376,12 +376,13 @@ public abstract class NullableWrapperConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
-	private enum GuavaOptionalUnwrapper implements Converter<Object, Object> {
+	private enum GuavaOptionalUnwrapper implements Converter<Object, @Nullable Object> {
 
 		INSTANCE;
 
 		@Override
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings("NullAway")
+		public Object convert(Object source) {
 			return source instanceof Optional ? ((Optional<?>) source).orNull() : source;
 		}
 	}
@@ -391,12 +392,13 @@ public abstract class NullableWrapperConverters {
 	 *
 	 * @author Oliver Gierke
 	 */
-	private enum Jdk8OptionalUnwrapper implements Converter<Object, Object> {
+	private enum Jdk8OptionalUnwrapper implements Converter<Object, @Nullable Object> {
 
 		INSTANCE;
 
 		@Override
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings("NullAway")
+		public Object convert(Object source) {
 			return source instanceof java.util.Optional ? ((java.util.Optional<?>) source).orElse(null) : source;
 		}
 	}
@@ -408,7 +410,7 @@ public abstract class NullableWrapperConverters {
 	 * @author Mark Paluch
 	 * @since 1.12
 	 */
-	private enum ScalOptionUnwrapper implements Converter<Object, Object> {
+	private enum ScalOptionUnwrapper implements Converter<Object, @Nullable Object> {
 
 		INSTANCE;
 
@@ -421,7 +423,8 @@ public abstract class NullableWrapperConverters {
 		};
 
 		@Override
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings("NullAway")
+		public Object convert(Object source) {
 			return source instanceof Option ? ((Option<?>) source).getOrElse(alternative) : source;
 		}
 	}
@@ -432,13 +435,13 @@ public abstract class NullableWrapperConverters {
 	 * @author Oliver Gierke
 	 * @since 2.0
 	 */
-	private enum VavrOptionUnwrapper implements Converter<Object, Object> {
+	private enum VavrOptionUnwrapper implements Converter<Object, @Nullable Object> {
 
 		INSTANCE;
 
 		@Override
-		@SuppressWarnings("unchecked")
-		public @Nullable Object convert(Object source) {
+		@SuppressWarnings({ "unchecked", "NullAway" })
+		public Object convert(Object source) {
 
 			if (source instanceof io.vavr.control.Option) {
 				return ((io.vavr.control.Option<Object>) source).getOrElse(() -> null);

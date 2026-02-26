@@ -501,7 +501,7 @@ public class CustomCollections {
 			registry.addConverter(JavaToEclipseConverter.INSTANCE);
 		}
 
-		enum EclipseToJavaConverter implements Converter<Object, Object>, ConditionalConverter {
+		enum EclipseToJavaConverter implements Converter<Object, @Nullable Object>, ConditionalConverter {
 
 			INSTANCE;
 
@@ -514,9 +514,9 @@ public class CustomCollections {
 						&& COLLECTIONS_AND_MAP.contains(targetType.getType());
 			}
 
-			@Contract("null -> null; !null -> !null")
 			@Override
-			public @Nullable Object convert(@Nullable Object source) {
+			@SuppressWarnings("NullAway")
+			public @Nullable Object convert(Object source) {
 
 				if (source instanceof ImmutableList) {
 					return ((ImmutableList<?>) source).toList();
