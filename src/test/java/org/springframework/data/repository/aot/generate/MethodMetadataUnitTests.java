@@ -22,17 +22,18 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.web.SortDefault;
 import org.springframework.javapoet.ParameterSpec;
 
 /**
  * Unit tests for {@link MethodMetadata}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 class MethodMetadataUnitTests {
 
@@ -51,8 +52,13 @@ class MethodMetadataUnitTests {
 
 		MethodMetadata metadata = methodMetadataFor("threeArgsMethod");
 
-		ParameterSpec spec = metadata.getMethodArguments().get("arg2");
-		assertThat(spec.annotations()).hasSize(1);
+		ParameterSpec arg1 = metadata.getMethodArguments().get("arg1");
+		assertThat(arg1.annotations()).extracting(annotationSpec -> annotationSpec.type().toString())
+				.containsExactly(SortDefault.class.getTypeName());
+
+		ParameterSpec arg2 = metadata.getMethodArguments().get("arg2");
+		assertThat(arg2.annotations()).extracting(annotationSpec -> annotationSpec.type().toString())
+				.containsExactly(SortDefault.class.getTypeName(), Param.class.getTypeName());
 	}
 
 	@Test // GH-3270
@@ -93,6 +99,6 @@ class MethodMetadataUnitTests {
 
 		String noArgsMethod();
 
-		String threeArgsMethod(Object arg0, Pageable arg1, @Param("foo") Object arg2);
+		String threeArgsMethod(Object arg0, @SortDefault Pageable arg1, @SortDefault @Param("foo") Object arg2);
 	}
 }
