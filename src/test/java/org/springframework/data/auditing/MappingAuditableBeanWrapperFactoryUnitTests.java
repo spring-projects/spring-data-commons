@@ -45,12 +45,14 @@ import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.context.SampleMappingContext;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link MappingAuditableBeanWrapperFactory}.
  *
  * @author Oliver Gierke
  * @author Jens Schauder
+ * @author Mark Paluch
  * @since 1.8
  */
 class MappingAuditableBeanWrapperFactoryUnitTests {
@@ -67,6 +69,13 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 
 		var entities = PersistentEntities.of(context);
 		factory = new MappingAuditableBeanWrapperFactory(entities);
+	}
+
+	@Test // GH-3441
+	void cacheWarmedWithKnownPersistentEntities() {
+
+		Map<?, ?> metadataCache = (Map<?, ?>) ReflectionTestUtils.getField(factory, "metadataCache");
+		assertThat(metadataCache).hasSize(4);
 	}
 
 	@Test // DATACMNS-365
