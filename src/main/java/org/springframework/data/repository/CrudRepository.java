@@ -28,6 +28,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
  * @author Oliver Gierke
  * @author Eberhard Wolff
  * @author Jens Schauder
+ * @author wonderfulrosemari
  */
 @NoRepositoryBean
 public interface CrudRepository<T, ID> extends Repository<T, ID> {
@@ -36,7 +37,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
 	 * entity instance completely.
 	 *
-	 * @param entity must not be {@literal null}.
+	 * @param entity the entity to save; must not be {@literal null}.
 	 * @return the saved entity; will never be {@literal null}.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
 	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with

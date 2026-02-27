@@ -29,6 +29,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author wonderfulrosemari
  * @since 1.10
  */
 public final class Range<T> {
@@ -172,7 +173,7 @@ public final class Range<T> {
 	/**
 	 * Creates a new Range with the given value as sole member.
 	 *
-	 * @param <T> the type of the range.>
+	 * @param <T> the type of the range.
 	 * @param value must not be {@literal null}.
 	 * @return a range containing the given value.
 	 * @see Range#closed(Object, Object)
