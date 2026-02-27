@@ -35,7 +35,7 @@ public class RepositoryMethodContextHolder {
 
 	/**
 	 * ThreadLocal holder for repository method associated with this thread. Will contain {@code null} unless the
-	 * "exposeMetadata" property on the controlling repository factory configuration has been set to {@code true}.
+	 * "exposeMetadata" property on the controlling repository factory configuration has been set to {@literal true}.
 	 */
 	private static final ThreadLocal<RepositoryMethodContext> currentMethod = new NamedThreadLocal<>(
 			"Current Repository Method");

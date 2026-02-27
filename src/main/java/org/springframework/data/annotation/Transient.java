@@ -22,13 +22,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field to be transient for the mapping framework. Thus the property will not be persisted and not further
- * inspected by the mapping framework.
+ * Marks a field to be transient for the mapping framework. Thus, the property will not be persisted.
+ * <p>
+ * Excluding properties from the persistence mechanism is separate from Java's {@code transient} keyword that serves the
+ * purpose of excluding properties from being serialized through Java Serialization.
+ * <p>
+ * Transient properties can be used in {@link PersistenceCreator constructor creation/factory methods}, however they
+ * will use Java default values. We highly recommend using {@link org.springframework.beans.factory.annotation.Value
+ * SpEL expressions through @Value(…)} to provide a meaningful value.
  *
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Mark Paluch
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = { FIELD, METHOD, ANNOTATION_TYPE })
+@Target(value = { FIELD, METHOD, ANNOTATION_TYPE, RECORD_COMPONENT })
 public @interface Transient {
 }

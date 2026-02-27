@@ -60,18 +60,18 @@ public interface Predicates {
 	}
 
 	/**
-	 * A {@link Predicate} that yields always {@code true}.
+	 * A {@link Predicate} that yields always {@literal true}.
 	 *
-	 * @return a {@link Predicate} that yields always {@code true}.
+	 * @return a {@link Predicate} that yields always {@literal true}.
 	 */
 	static <T> Predicate<T> isTrue() {
 		return t -> true;
 	}
 
 	/**
-	 * A {@link Predicate} that yields always {@code false}.
+	 * A {@link Predicate} that yields always {@literal false}.
 	 *
-	 * @return a {@link Predicate} that yields always {@code false}.
+	 * @return a {@link Predicate} that yields always {@literal false}.
 	 */
 	static <T> Predicate<T> isFalse() {
 		return t -> false;

@@ -49,8 +49,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @return {@literal null} in case no suitable creation mechanism for automatic construction can be found. This
 	 *         usually indicates that the instantiation of the object of that persistent entity is done through either a
-	 *         customer {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom
-	 *         conversion mechanisms entirely.
+	 *         customer {@link org.springframework.data.mapping.model.EntityInstantiator} or handled by custom conversion
+	 *         mechanisms entirely.
 	 * @since 3.0
 	 */
 	@Nullable
@@ -110,8 +110,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	}
 
 	/**
-	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property
-	 * is available on the entity.
+	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
+	 * available on the entity.
 	 *
 	 * @return the version property of the {@link PersistentEntity}.
 	 */
@@ -119,8 +119,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	P getVersionProperty();
 
 	/**
-	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property
-	 * is available on the entity.
+	 * Returns the version property of the {@link PersistentEntity}. Can be {@literal null} in case no version property is
+	 * available on the entity.
 	 *
 	 * @return the version property of the {@link PersistentEntity}.
 	 * @throws IllegalStateException if {@link PersistentEntity} does not define a {@literal version} property.
@@ -140,7 +140,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	/**
 	 * Obtains a {@link PersistentProperty} instance by name.
 	 *
-	 * @param name The name of the property. Can be {@literal null}.
+	 * @param name the name of the property. Can be {@literal null}.
 	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
 	 */
 	@Nullable
@@ -187,6 +187,28 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	Iterable<P> getPersistentProperties(Class<? extends Annotation> annotationType);
 
 	/**
+	 * Obtains a transient {@link PersistentProperty} instance by name. You can check with {@link #isTransient(String)}
+	 * whether there is a transient property before calling this method.
+	 *
+	 * @param name the name of the property. Can be {@literal null}.
+	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
+	 * @since 4.1
+	 * @see #isTransient(String)
+	 */
+	@Nullable
+	P getTransientProperty(String name);
+
+	/**
+	 * Returns whether the property is transient.
+	 *
+	 * @param property name of the property.
+	 * @return {@literal true} if the property is transient. Applies only for existing properties. {@literal false} if the
+	 *         property does not exist or is not transient.
+	 * @since 4.1
+	 */
+	boolean isTransient(String property);
+
+	/**
 	 * Returns whether the {@link PersistentEntity} has an id property. If this call returns {@literal true},
 	 * {@link #getIdProperty()} will return a non-{@literal null} value.
 	 *
@@ -210,8 +232,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	Class<T> getType();
 
 	/**
-	 * Returns the alias to be used when storing type information. Might be {@literal null} to indicate that there was
-	 * no alias defined through the mapping metadata.
+	 * Returns the alias to be used when storing type information. Might be {@literal null} to indicate that there was no
+	 * alias defined through the mapping metadata.
 	 *
 	 * @return
 	 */
@@ -241,8 +263,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	void doWithProperties(SimplePropertyHandler handler);
 
 	/**
-	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this
-	 * {@link PersistentEntity}. The iteration order is undefined.
+	 * Applies the given {@link AssociationHandler} to all {@link Association} contained in this {@link PersistentEntity}.
+	 * The iteration order is undefined.
 	 *
 	 * @param handler must not be {@literal null}.
 	 */
@@ -257,8 +279,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	void doWithAssociations(SimpleAssociationHandler handler);
 
 	/**
-	 * Applies the given {@link PropertyHandler} to both all {@link PersistentProperty}s as well as all inverse
-	 * properties of all {@link Association}s. The iteration order is undefined.
+	 * Applies the given {@link PropertyHandler} to both all {@link PersistentProperty}s as well as all inverse properties
+	 * of all {@link Association}s. The iteration order is undefined.
 	 *
 	 * @param handler must not be {@literal null}.
 	 * @since 2.5
@@ -342,7 +364,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @param bean must not be {@literal null}.
 	 * @throws IllegalArgumentException in case the given bean is not an instance of the typ represented by the
-	 *             {@link PersistentEntity}.
+	 *           {@link PersistentEntity}.
 	 * @return whether the given bean is considered a new instance.
 	 */
 	boolean isNew(Object bean);
@@ -358,8 +380,8 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	boolean isImmutable();
 
 	/**
-	 * Returns whether the entity needs properties to be populated, i.e. if any property exists that's not initialized
-	 * by the constructor.
+	 * Returns whether the entity needs properties to be populated, i.e. if any property exists that's not initialized by
+	 * the constructor.
 	 *
 	 * @return
 	 * @since 2.1

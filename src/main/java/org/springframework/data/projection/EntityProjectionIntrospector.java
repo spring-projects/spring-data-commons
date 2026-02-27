@@ -223,13 +223,13 @@ public class EntityProjectionIntrospector {
 		 *
 		 * @param target the target type.
 		 * @param underlyingType the underlying type.
-		 * @return {@code true} if the input argument matches the predicate, otherwise {@code false}.
+		 * @return {@literal true} if the input argument matches the predicate, otherwise {@literal false}.
 		 */
 		boolean test(Class<?> target, Class<?> underlyingType);
 
 		/**
 		 * Return a composed predicate that represents a short-circuiting logical AND of this predicate and another. When
-		 * evaluating the composed predicate, if this predicate is {@code false}, then the {@code other} predicate is not
+		 * evaluating the composed predicate, if this predicate is {@literal false}, then the {@code other} predicate is not
 		 * evaluated.
 		 * <p>
 		 * Any exceptions thrown during evaluation of either predicate are relayed to the caller; if evaluation of this

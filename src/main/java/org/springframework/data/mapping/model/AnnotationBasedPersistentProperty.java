@@ -262,10 +262,10 @@ public abstract class AnnotationBasedPersistentProperty<P extends PersistentProp
 	}
 
 	/**
-	 * Returns whether the property carries the an annotation of the given type.
+	 * Returns whether the property carries the annotation of the given type.
 	 *
 	 * @param annotationType the annotation type to look up.
-	 * @return
+	 * @return {@literal true} if the annotation is present, {@literal false} otherwise.
 	 */
 	@Override
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {

@@ -646,10 +646,6 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			P property = createPersistentProperty(input, entity, simpleTypeHolder);
 
-			if (property.isTransient()) {
-				return;
-			}
-
 			if (!input.isFieldBacked() && !property.usePropertyAccess()) {
 				return;
 			}
