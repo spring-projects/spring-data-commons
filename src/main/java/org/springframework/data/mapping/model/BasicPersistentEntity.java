@@ -297,7 +297,7 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>>
 	}
 
 	@Override
-	public P getTransientProperty(String name) {
+	public @Nullable P getTransientProperty(String name) {
 		return transientPropertyCache.get(name);
 	}
 

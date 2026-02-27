@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
  * @author Oliver Drotbohm
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Christoph Strobl
  * @since 2.3
  */
 public class InstantiationAwarePropertyAccessor<T> implements PersistentPropertyAccessor<T> {
@@ -110,9 +111,16 @@ public class InstantiationAwarePropertyAccessor<T> implements PersistentProperty
 			@SuppressWarnings("NullAway")
 			public @Nullable Object getParameterValue(Parameter parameter) {
 
-				return property.getName().equals(parameter.getName()) //
-						? value
-						: delegate.getProperty(owner.getRequiredPersistentProperty(parameter.getName()));
+				if (property.getName().equals(parameter.getName())) {
+					return value;
+				}
+
+				String paramName = parameter.getName();
+				if (paramName != null && parameter.isTransient()) {
+					return ParameterValueProvider.getDefaultValue(parameter.getRawType());
+				}
+
+				return delegate.getProperty(owner.getRequiredPersistentProperty(paramName));
 			}
 		});
 	}

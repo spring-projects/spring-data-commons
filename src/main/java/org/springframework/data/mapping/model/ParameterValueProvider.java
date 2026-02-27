@@ -16,14 +16,15 @@
 package org.springframework.data.mapping.model;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.ReflectionUtils;
 
 /**
  * Callback interface to lookup values for a given {@link Parameter}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public interface ParameterValueProvider<P extends PersistentProperty<P>> {
 
@@ -34,4 +35,13 @@ public interface ParameterValueProvider<P extends PersistentProperty<P>> {
 	 * @return the property value. Can be {@literal null}.
 	 */
 	<T> @Nullable T getParameterValue(Parameter<T, P> parameter);
+
+	/**
+	 * @param parameterType raw parameter type
+	 * @return {@literal null} or primitive default for given parameter type.
+	 * @since 4.1
+	 */
+	static @Nullable Object getDefaultValue(Class<?> parameterType) {
+		return parameterType.isPrimitive() ? ReflectionUtils.getPrimitiveDefault(parameterType) : null;
+	}
 }
