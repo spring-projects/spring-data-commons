@@ -16,7 +16,6 @@
 package org.springframework.data.convert;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.Parameter;
@@ -37,6 +36,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Oliver Drotbohm
+ * @author Christoph Strobl
  * @since 2.7
  */
 public class DtoInstantiatingConverter implements Converter<Object, Object> {
@@ -89,6 +89,10 @@ public class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 				if (name == null) {
 					throw new IllegalArgumentException(String.format("Parameter %s does not have a name", parameter));
+				}
+
+				if (parameter.isTransient()) {
+					return ParameterValueProvider.getDefaultValue(parameter.getRawType());
 				}
 
 				return sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty(name));

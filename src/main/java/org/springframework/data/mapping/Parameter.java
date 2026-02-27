@@ -19,9 +19,9 @@ import java.lang.annotation.Annotation;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
@@ -46,6 +46,7 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 
 	private final Lazy<Boolean> enclosingClassCache;
 	private final Lazy<Boolean> hasExpression;
+	private final Lazy<Boolean> isTransient;
 
 	/**
 	 * Creates a new {@link Parameter} with the given name, {@link TypeInformation} as well as an array of
@@ -80,6 +81,8 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 		});
 
 		this.hasExpression = Lazy.of(() -> StringUtils.hasText(getValueExpression()));
+		this.isTransient = Lazy.of(() -> getAnnotations().isPresent(Transient.class)
+				|| (entity != null && name != null && entity.isTransient(name)));
 	}
 
 	private static @Nullable String getValue(MergedAnnotations annotations) {
@@ -175,6 +178,16 @@ public class Parameter<T, P extends PersistentProperty<P>> {
 	@Nullable
 	public String getValueExpression() {
 		return expression;
+	}
+
+	/**
+	 * @return if {@literal true} if the parameter is considered transient which means it is either annotated directly
+	 *         with {@link Transient} or the targeted {@link org.springframework.data.mapping.model.Property} is
+	 *         transient.
+	 * @since 4.1
+	 */
+	public boolean isTransient() {
+		return isTransient.get();
 	}
 
 	/**

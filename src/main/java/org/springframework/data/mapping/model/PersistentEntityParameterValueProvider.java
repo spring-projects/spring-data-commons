@@ -17,13 +17,11 @@ package org.springframework.data.mapping.model;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.ReflectionUtils;
 
 /**
  * {@link ParameterValueProvider} based on a {@link PersistentEntity} to use a {@link PropertyValueProvider} to lookup
@@ -59,8 +57,8 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 			return (T) parent;
 		}
 
-		if (parameter.getAnnotations().isPresent(Transient.class) || (name != null && entity.isTransient(name))) {
-			return (T) getTransientDefault(parameter.getRawType());
+		if (parameter.isTransient()) {
+			return (T) ParameterValueProvider.getDefaultValue(parameter.getRawType());
 		}
 
 		if (name == null) {
@@ -76,10 +74,4 @@ public class PersistentEntityParameterValueProvider<P extends PersistentProperty
 
 		return provider.getPropertyValue(property);
 	}
-
-	@Nullable
-	private static Object getTransientDefault(Class<?> parameterType) {
-		return parameterType.isPrimitive() ? ReflectionUtils.getPrimitiveDefault(parameterType) : null;
-	}
-
 }

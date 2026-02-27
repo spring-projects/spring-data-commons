@@ -192,7 +192,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 *
 	 * @param name the name of the property. Can be {@literal null}.
 	 * @return the {@link PersistentProperty} or {@literal null} if it doesn't exist.
-	 * @since 3.3
+	 * @since 4.1
 	 * @see #isTransient(String)
 	 */
 	@Nullable
@@ -204,7 +204,7 @@ public interface PersistentEntity<T, P extends PersistentProperty<P>> extends It
 	 * @param property name of the property.
 	 * @return {@literal true} if the property is transient. Applies only for existing properties. {@literal false} if the
 	 *         property does not exist or is not transient.
-	 * @since 3.3
+	 * @since 4.1
 	 */
 	boolean isTransient(String property);
 

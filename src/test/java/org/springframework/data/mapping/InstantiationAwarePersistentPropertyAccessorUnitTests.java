@@ -18,6 +18,7 @@ package org.springframework.data.mapping;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.context.SamplePersistentProperty;
 import org.springframework.data.mapping.model.EntityInstantiators;
@@ -28,6 +29,7 @@ import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessor
  *
  * @author Oliver Drotbohm
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class InstantiationAwarePersistentPropertyAccessorUnitTests {
 
@@ -88,6 +90,32 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		assertThat(wrapper.getBean()).isEqualTo(new WithSingleArgConstructor(41L, "Oliver August"));
 	}
 
+	/**
+	 * Reproduces failure: when an entity has both persistent and transient constructor parameters, setting a
+	 * persistent property via the copy path (InstantiationAwarePropertyAccessor) should succeed and leave the
+	 * transient parameter at its default (null). Currently throws IllegalStateException because
+	 * getRequiredPersistentProperty(transientParamName) is used for constructor arguments.
+	 */
+	@Test // GH-2942
+	void shouldSetPersistentPropertyWhenEntityHasTransientConstructorParameter() {
+
+		var instantiators = new EntityInstantiators();
+		var context = new SampleMappingContext();
+
+		PersistentEntity<Object, SamplePersistentProperty> entity = context
+				.getRequiredPersistentEntity(RecordWithPersistentAndTransientParams.class);
+
+		var bean = new RecordWithPersistentAndTransientParams(42L, "Alice", null);
+
+		PersistentPropertyAccessor<RecordWithPersistentAndTransientParams> wrapper = new InstantiationAwarePropertyAccessor<>(
+				bean, entity::getPropertyAccessor, instantiators);
+
+		wrapper.setProperty(entity.getRequiredPersistentProperty("name"), "Bob");
+		wrapper.setProperty(entity.getRequiredPersistentProperty("id"), 42L);
+
+		assertThat(wrapper.getBean()).isEqualTo(new RecordWithPersistentAndTransientParams(42L, "Bob", null));
+	}
+
 	record Sample(String firstname, String lastname, int age) {
 
 	}
@@ -99,4 +127,5 @@ class InstantiationAwarePersistentPropertyAccessorUnitTests {
 		}
 	}
 
+	record RecordWithPersistentAndTransientParams(Long id, String name, @Transient String displayName) {}
 }

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Reference;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.context.SampleMappingContext;
 import org.springframework.data.mapping.model.EntityInstantiators;
 
@@ -27,10 +28,11 @@ import org.springframework.data.mapping.model.EntityInstantiators;
  * Unit tests for {@link DtoInstantiatingConverter}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class DtoInstantiatingConverterUnitTests {
 
-	@Test // GH- 3104
+	@Test // GH-3104
 	void dtoProjectionShouldConsiderPropertiesAndAssociations() {
 
 		TheOtherThing ref = new TheOtherThing();
@@ -42,6 +44,20 @@ class DtoInstantiatingConverterUnitTests {
 
 		assertThat(projection.id).isEqualTo("1");
 		assertThat(projection.ref).isSameAs(ref);
+	}
+
+	@Test // GH-2942
+	void shouldDefaultTransientConstructorParameterWhenConvertingToDto() {
+
+		SourceEntity source = new SourceEntity("1", "Alice");
+		DtoInstantiatingConverter converter = new DtoInstantiatingConverter(DtoWithTransientParam.class,
+				new SampleMappingContext(), new EntityInstantiators());
+
+		DtoWithTransientParam dto = (DtoWithTransientParam) converter.convert(source);
+
+		assertThat(dto.id).isEqualTo("1");
+		assertThat(dto.name).isEqualTo("Alice");
+		assertThat(dto.summary).isNull();
 	}
 
 	static class MyAssociativeEntity {
@@ -65,6 +81,19 @@ class DtoInstantiatingConverterUnitTests {
 
 		@Reference TheOtherThing ref;
 	}
+
+	static class SourceEntity {
+
+		String id;
+		String name;
+
+		public SourceEntity(String id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+	}
+
+	record DtoWithTransientParam(String id, String name, @Transient String summary) {}
 
 	static class TheOtherThing {
 		String id;
