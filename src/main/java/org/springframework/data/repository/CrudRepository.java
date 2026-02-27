@@ -36,8 +36,8 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
 	 * entity instance completely.
 	 *
-	 * @param entity must not be {@literal null}.
-	 * @return the saved entity; will never be {@literal null}.
+	 * @param entity the entity to save, must not be {@literal null}.
+	 * @return the saved entity.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
 	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
 	 *           a different value from that found in the persistence store. Also thrown if the entity is assumed to be
@@ -49,8 +49,8 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves all given entities.
 	 *
 	 * @param entities must not be {@literal null} nor must it contain {@literal null}.
-	 * @return the saved entities; will never be {@literal null}. The returned {@literal Iterable} will have the same size
-	 *         as the {@literal Iterable} passed as an argument.
+	 * @return the saved entities. The returned {@literal Iterable} will have the same size as the {@literal Iterable}
+	 *         passed as an argument.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
 	 * @throws OptimisticLockingFailureException when at least one entity uses optimistic locking and has a version
@@ -92,8 +92,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 	 * Note that the order of elements in the result is not guaranteed.
 	 *
 	 * @param ids must not be {@literal null} nor contain any {@literal null} values.
-	 * @return guaranteed to be not {@literal null}. The size can be equal or less than the number of given
-	 *         {@literal ids}.
+	 * @return iterable of found entities. The size can be equal or less than the number of given {@literal ids}.
 	 * @throws IllegalArgumentException in case the given {@link Iterable ids} or one of its items is {@literal null}.
 	 */
 	Iterable<T> findAllById(Iterable<ID> ids);

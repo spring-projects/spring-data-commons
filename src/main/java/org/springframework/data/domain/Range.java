@@ -170,7 +170,7 @@ public final class Range<T> {
 	/**
 	 * Creates a new Range with the given value as sole member.
 	 *
-	 * @param <T>
+	 * @param <T> the type of the range.
 	 * @param value must not be {@literal null}.
 	 * @return
 	 * @see Range#closed(Object, Object)

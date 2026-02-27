@@ -52,7 +52,7 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
 	 * entity instance completely.
 	 *
-	 * @param entity must not be {@literal null}.
+	 * @param entity the entity to save, must not be {@literal null}.
 	 * @return {@link Mono} emitting the saved entity.
 	 * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
 	 * @throws OptimisticLockingFailureException when the entity uses optimistic locking and has a version attribute with
@@ -64,7 +64,7 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	/**
 	 * Saves all given entities.
 	 *
-	 * @param entities must not be {@literal null}.
+	 * @param entities must not be {@literal null} nor must it contain {@literal null}.
 	 * @return {@link Flux} emitting the saved entities.
 	 * @throws IllegalArgumentException in case the given {@link Iterable entities} or one of its entities is
 	 *           {@literal null}.
@@ -242,4 +242,5 @@ public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
 	 * @return {@link Mono} signaling when operation has completed.
 	 */
 	Mono<Void> deleteAll();
+
 }
