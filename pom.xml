@@ -116,7 +116,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!--  Project Reactor -->
+		<!-- Project Reactor -->
 
 		<dependency>
 			<groupId>io.projectreactor</groupId>
@@ -130,7 +130,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--  RxJava -->
+		<!-- RxJava -->
 
 		<dependency>
 			<groupId>io.reactivex.rxjava3</groupId>
@@ -235,6 +235,7 @@
 		</dependency>
 
 		<!-- Groovy -->
+
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
@@ -243,6 +244,7 @@
 		</dependency>
 
 		<!-- Kotlin extension -->
+
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib</artifactId>
@@ -288,11 +290,21 @@
 		</dependency>
 
 		<!-- Scala -->
+
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>${scala}</version>
 			<optional>true</optional>
+		</dependency>
+
+		<!-- Graal Native SDK -->
+
+		<dependency>
+			<groupId>org.graalvm.sdk</groupId>
+			<artifactId>graal-sdk</artifactId>
+			<version>25.0.2</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
