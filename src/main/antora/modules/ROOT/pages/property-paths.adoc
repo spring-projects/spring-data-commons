@@ -201,5 +201,7 @@ Limiting property paths to a specific domain type that is used within the curren
  +
 Whenever accepting or providing multiple property paths, consider using `TypedPropertyPath<T, ?>` to allow for properties within the context of the owning type `T` to limit property paths to a common owning type.
 
-NOTE: When using Graal Native Image compilation, you need to provide reachability metadata for serializable `TypedPropertyPath` lambdas.
-When using lambda expressions instead of method references you will have to include the Java source code of the class containing the lambda expression in the native image configuration.
+NOTE: Graal Native Image compilation requires reachability metadata for serializable `TypedPropertyPath` lambdas.
+Spring Data ships a built-in https://www.graalvm.org/sdk/javadoc/org/graalvm/nativeimage/hosted/Feature.html[feature] through `org.springframework.data.core.TypedPropertyPathFeature`.
+The feature is auto-activated and registers required serialization- and reflection metadata for lambda parsing and referenced reflective members (fields and methods).
+Note also, when using lambda expressions instead of method references you will have to include the Java source code of the class containing the lambda expression in the native image configuration yourself.
