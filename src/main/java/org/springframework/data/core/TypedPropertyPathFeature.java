@@ -26,6 +26,7 @@ import org.graalvm.nativeimage.hosted.RuntimeReflection;
 import org.graalvm.nativeimage.hosted.RuntimeSerialization;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.aot.AotProcessingException;
 
 /**
  * GraalVM {@link Feature} that registers serializable {@link TypedPropertyPath} and {@link PropertyReference} lambdas.
@@ -64,7 +65,9 @@ class TypedPropertyPathFeature implements Feature {
 					registerLambdaSerialization(cls);
 					registerDomainModel(cls);
 				} catch (Exception e) {
-					e.printStackTrace();
+
+					Class<?> type = cls.getEnclosingClass() != null ? cls.getEnclosingClass() : cls;
+					throw new AotProcessingException("Unable to process TypedPropertyPath in [%s]. Please consider switching to String based dot notation.".formatted(type), e);
 				}
 			}
 		};
