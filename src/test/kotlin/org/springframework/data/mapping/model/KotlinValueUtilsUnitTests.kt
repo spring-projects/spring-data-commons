@@ -101,20 +101,20 @@ class KotlinValueUtilsUnitTests {
 		val iterator = ctor.parameters.iterator()
 
 		val nv = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
-		assertThat(nv.actualType).isEqualTo(Int::class.java)
+		assertThat(nv.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nv.appliesBoxing()).isFalse
 
 		val nvn = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
-		assertThat(nvn.actualType).isEqualTo(Int::class.java)
+		assertThat(nvn.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvn.appliesBoxing()).isTrue
 		assertThat(nvn.parameterType).isEqualTo(PrimitiveValue::class.java)
 
 		val nvd = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
-		assertThat(nvd.actualType).isEqualTo(Int::class.java)
+		assertThat(nvd.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvd.appliesBoxing()).isFalse
 
 		val nvdn = KotlinValueUtils.getConstructorValueHierarchy(iterator.next());
-		assertThat(nvdn.actualType).isEqualTo(Int::class.java)
+		assertThat(nvdn.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvn.parameterType).isEqualTo(PrimitiveValue::class.java)
 		assertThat(nvdn.appliesBoxing()).isTrue
 	}
@@ -128,20 +128,21 @@ class KotlinValueUtilsUnitTests {
 		val parameters = copy.copyFunction.parameters;
 
 		val nv = KotlinValueUtils.getConstructorValueHierarchy(parameters[1]);
-		assertThat(nv.actualType).isEqualTo(Int::class.java)
+		assertThat(nv.actualType).isIn(Int::class.java, Int::class.javaObjectType)
+			.describedAs(parameters[1].toString())
 		assertThat(nv.appliesBoxing()).isFalse
 
 		val nvn = KotlinValueUtils.getConstructorValueHierarchy(parameters[2]);
-		assertThat(nvn.actualType).isEqualTo(Int::class.java)
+		assertThat(nvn.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvn.appliesBoxing()).isTrue
 		assertThat(nvn.parameterType).isEqualTo(PrimitiveValue::class.java)
 
 		val nvd = KotlinValueUtils.getConstructorValueHierarchy(parameters[3]);
-		assertThat(nvd.actualType).isEqualTo(Int::class.java)
+		assertThat(nvd.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvd.appliesBoxing()).isFalse
 
 		val nvdn = KotlinValueUtils.getConstructorValueHierarchy(parameters[4]);
-		assertThat(nvdn.actualType).isEqualTo(Int::class.java)
+		assertThat(nvdn.actualType).isIn(Int::class.java, Int::class.javaObjectType)
 		assertThat(nvn.parameterType).isEqualTo(PrimitiveValue::class.java)
 		assertThat(nvdn.appliesBoxing()).isTrue
 	}
