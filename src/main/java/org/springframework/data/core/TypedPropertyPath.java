@@ -55,9 +55,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Implement {@code TypedPropertyPath} using method references (strongly recommended)s that directly access a property
  * getter. Constructor references, method calls with parameters, and complex expressions are not supported and result in
- * {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references, introspection of lambda
- * expressions requires bytecode analysis of the declaration site classes and thus depends on their availability at
- * runtime.
+ * {@link PropertyResolutionException}. Unlike method references, introspection of lambda expressions requires bytecode
+ * analysis of the declaration site classes and thus depends on their availability at runtime.
  *
  * @param <T> the owning type of this path segment; the root type for composed paths.
  * @param <P> the property value type at this path segment.

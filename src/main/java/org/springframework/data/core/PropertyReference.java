@@ -48,9 +48,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Implement {@code PropertyReference} using method references (strongly recommended) or lambdas that directly access a
  * property getter. Constructor references, method calls with parameters, and complex expressions are not supported and
- * result in {@link org.springframework.dao.InvalidDataAccessApiUsageException}. Unlike method references, introspection
- * of lambda expressions requires bytecode analysis of the declaration site classes and thus depends on their
- * availability at runtime.
+ * result in {@link PropertyResolutionException}. Unlike method references, introspection of lambda expressions requires
+ * bytecode analysis of the declaration site classes and thus depends on their availability at runtime.
  *
  * @param <T> the owning type of this property.
  * @param <P> the property value type.

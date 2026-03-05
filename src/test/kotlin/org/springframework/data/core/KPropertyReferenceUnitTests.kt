@@ -16,7 +16,7 @@
 package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Test
 
 /**
@@ -52,12 +52,16 @@ class KPropertyReferenceUnitTests {
 
 	@Test // GH-3400
 	fun composedReferenceCreationShouldFail() {
-		assertThatIllegalArgumentException().isThrownBy {
+		assertThatExceptionOfType(PropertyResolutionException::class.java).isThrownBy {
 			PropertyReference.property(
 				Person::address / Address::city
 			)
 		}
-		assertThatIllegalArgumentException().isThrownBy { KPropertyReference.of(Person::address / Address::city) }
+		assertThatExceptionOfType(PropertyResolutionException::class.java).isThrownBy {
+			KPropertyReference.of(
+				Person::address / Address::city
+			)
+		}
 	}
 
 	class Person {

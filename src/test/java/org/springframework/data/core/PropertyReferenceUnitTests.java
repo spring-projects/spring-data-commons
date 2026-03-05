@@ -22,7 +22,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
  * Unit tests for {@link PropertyReference}.
@@ -101,7 +100,7 @@ class PropertyReferenceUnitTests {
 	@Test // GH-3400
 	void switchingOwningTypeFails() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					return ((SuperClass) person).getTenant();
 				}));
@@ -110,25 +109,25 @@ class PropertyReferenceUnitTests {
 	@Test // GH-3400
 	void constructorCallsShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> new PersonQuery(person)));
 	}
 
 	@Test // GH-3400
 	void enumShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of(NotSupported.INSTANCE));
 	}
 
 	@Test // GH-3400
 	void returningSomethingShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> null));
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> 1));
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PropertyReference<Object, Object>) obj -> ""));
 	}
 
@@ -136,7 +135,7 @@ class PropertyReferenceUnitTests {
 	@SuppressWarnings("Convert2Lambda")
 	void classImplementationShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of(new PropertyReference<Object, Object>() {
 					@Override
 					public @Nullable Object get(Object obj) {
@@ -148,14 +147,14 @@ class PropertyReferenceUnitTests {
 	@Test // GH-3400
 	void constructorMethodReferenceShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.<PersonQuery, PersonQuery> of(PersonQuery::new));
 	}
 
 	@Test // GH-3400
 	void failsResolutionWith$StrangeStuff() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					int a = 1 + 2;
 					Integer.valueOf(a).toString();
@@ -165,7 +164,7 @@ class PropertyReferenceUnitTests {
 
 	@Test // GH-3400
 	void arithmeticOpsFail() {
-		assertThatExceptionOfType(TypeParsingException.class).isThrownBy(() -> {
+		assertThatExceptionOfType(LambdaIntrospectionException.class).isThrownBy(() -> {
 			PropertyReference.of((PersonQuery person) -> {
 				int a = 1 + 2;
 				return person.getName();
@@ -176,7 +175,7 @@ class PropertyReferenceUnitTests {
 	@Test // GH-3400
 	void failsResolvingCallingLocalMethod() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyReference.of((PersonQuery person) -> {
 					failsResolutionWith$StrangeStuff();
 					return person.getName();

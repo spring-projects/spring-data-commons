@@ -16,7 +16,7 @@
 package org.springframework.data.core
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Test
 
 /**
@@ -33,7 +33,7 @@ class PropertyReferenceKtUnitTests {
 
 	@Test // GH-3400
 	fun resolutionShouldFailForComposedPropertyPath() {
-		assertThatIllegalArgumentException()
+		assertThatExceptionOfType(PropertyResolutionException::class.java)
 			.isThrownBy { PropertyReference.property(Person::address / Address::city) }
 	}
 

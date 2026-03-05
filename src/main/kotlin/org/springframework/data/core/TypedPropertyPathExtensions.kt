@@ -84,7 +84,7 @@ internal class KTypedPropertyPath {
 				return TypedPropertyPaths.ResolvedKPropertyPath(metadata)
 			}
 
-			throw IllegalArgumentException("Property '${property.name}' is not a KProperty")
+			throw PropertyResolutionException("Property '${property.name}' is not a KProperty")
 		}
 
 	}

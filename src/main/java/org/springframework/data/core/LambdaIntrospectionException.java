@@ -16,10 +16,10 @@
 package org.springframework.data.core;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.core.NestedRuntimeException;
 
 /**
- * {@link RuntimeException} for errors during parsing or introspection of types.
+ * {@link RuntimeException} for errors during {@link java.lang.invoke.SerializedLambda} parsing or introspection of
+ * types.
  * <p>
  * Typically, thrown when a lambda or method reference is not a serializable lambda, or violates supported patterns
  * (e.g. constructor references, multi-step access).
@@ -27,13 +27,25 @@ import org.springframework.core.NestedRuntimeException;
  * @author Christoph Strobl
  * @since 4.1
  */
-public class TypeParsingException extends NestedRuntimeException { // TypeIntrospectionException ???
+public class LambdaIntrospectionException extends PropertyResolutionException {
 
-	public TypeParsingException(@Nullable String msg) {
+	/**
+	 * Construct a {@code LambdaIntrospectionException} with the specified detail message.
+	 *
+	 * @param msg the detail message.
+	 */
+	public LambdaIntrospectionException(@Nullable String msg) {
 		super(msg);
 	}
 
-	public TypeParsingException(@Nullable String msg, @Nullable Throwable cause) {
+	/**
+	 * Construct a {@code LambdaIntrospectionException} with the specified detail message and nested exception.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the nested exception.
+	 */
+	public LambdaIntrospectionException(@Nullable String msg, @Nullable Throwable cause) {
 		super(msg, cause);
 	}
+
 }

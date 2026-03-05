@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
  * @author Christoph Strobl
  * @author John Blum
  */
-public class PropertyReferenceException extends RuntimeException {
+public class PropertyReferenceException extends PropertyResolutionException {
 
 	private static final @Serial long serialVersionUID = -5254424051438976570L;
 
@@ -57,6 +57,8 @@ public class PropertyReferenceException extends RuntimeException {
 	 */
 	public PropertyReferenceException(String propertyName, TypeInformation<?> type,
 			List<? extends PropertyPath> alreadyResolvedPath) {
+
+		super(null);
 
 		Assert.hasText(propertyName, "Property name must not be null");
 		Assert.notNull(type, "Type must not be null");
