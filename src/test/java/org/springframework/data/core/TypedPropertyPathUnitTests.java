@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
  * Unit tests for {@link TypedPropertyPath}.
@@ -127,7 +126,7 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void switchingOwningTypeFails() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
 					return ((SuperClass) person).getTenant();
 				}));
@@ -136,25 +135,25 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void constructorCallsShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> new PersonQuery(person)));
 	}
 
 	@Test // GH-3400
 	void enumShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> TypedPropertyPath.of(NotSupported.INSTANCE));
 	}
 
 	@Test // GH-3400
 	void returningSomethingShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> null));
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> 1));
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> TypedPropertyPath.of((TypedPropertyPath<Object, Object>) obj -> ""));
 	}
 
@@ -162,7 +161,7 @@ class TypedPropertyPathUnitTests {
 	@SuppressWarnings("Convert2Lambda")
 	void classImplementationShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> TypedPropertyPath.of(new TypedPropertyPath<Object, Object>() {
 					@Override
 					public @Nullable Object get(Object obj) {
@@ -174,7 +173,7 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void constructorMethodReferenceShouldFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyPath.<PersonQuery, PersonQuery> of(PersonQuery::new));
 	}
 
@@ -190,7 +189,7 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void failsResolutionWith$StrangeStuff() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
 					int a = 1 + 2;
 					new Integer(a).toString();
@@ -201,7 +200,7 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void arithmeticOpsFail() {
 
-		assertThatExceptionOfType(TypeParsingException.class).isThrownBy(() -> {
+		assertThatExceptionOfType(LambdaIntrospectionException.class).isThrownBy(() -> {
 			PropertyPath.of((PersonQuery person) -> {
 				int a = 1 + 2;
 				return person.getName();
@@ -212,7 +211,7 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void failsResolvingCallingLocalMethod() {
 
-		assertThatExceptionOfType(TypeParsingException.class)
+		assertThatExceptionOfType(LambdaIntrospectionException.class)
 				.isThrownBy(() -> PropertyPath.of((PersonQuery person) -> {
 					failsResolutionWith$StrangeStuff();
 					return person.getName();

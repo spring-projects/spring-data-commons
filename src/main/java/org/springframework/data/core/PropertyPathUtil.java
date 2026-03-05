@@ -22,9 +22,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -63,7 +61,7 @@ public class PropertyPathUtil {
 			Method method = ReflectionUtils.findMethod(serializable.getClass(), "writeReplace");
 
 			if (method == null) {
-				throw new InvalidDataAccessApiUsageException(
+				throw new LambdaIntrospectionException(
 						"Cannot find writeReplace method on " + serializable.getClass().getName());
 			}
 

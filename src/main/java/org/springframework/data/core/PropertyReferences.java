@@ -86,7 +86,7 @@ class PropertyReferences {
 				&& reference instanceof MemberDescriptor.KotlinMemberDescriptor kProperty) {
 
 			if (kProperty instanceof MemberDescriptor.KPropertyPathDescriptor) {
-				throw new IllegalArgumentException("PropertyReference " + kProperty.getKotlinProperty().getName()
+				throw new PropertyResolutionException("PropertyReference " + kProperty.getKotlinProperty().getName()
 						+ " is a property path. Use a single property reference.");
 			}
 
@@ -125,7 +125,7 @@ class PropertyReferences {
 		public static PropertyMetadata ofMethod(MethodDescriptor descriptor) {
 
 			return resolveProperty(descriptor,
-					() -> new IllegalArgumentException("Cannot find PropertyDescriptor from method '%s.%s()'"
+					() -> new PropertyResolutionException("Cannot find PropertyDescriptor from method '%s.%s()'"
 							.formatted(descriptor.owner().getName(), descriptor.getMember().getName())));
 		}
 
