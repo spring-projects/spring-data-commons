@@ -15,6 +15,7 @@
  */
 package org.springframework.data.core;
 
+import java.lang.annotation.Annotation;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
@@ -43,12 +44,13 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Mariusz Mączkowski
  * @author Johannes Englmeier
+ * @author Kamil Krzywański
  * @see PropertyReference
  * @see TypedPropertyPath
  * @see java.beans.PropertyDescriptor
  */
 public interface PropertyPath extends Streamable<PropertyPath> {
-
+	Annotation[] NO_ANNOTATIONS = new Annotation[0];
 	/**
 	 * Syntax sugar to create a {@link TypedPropertyPath} from a method reference to a Java beans property.
 	 * <p>
@@ -209,6 +211,30 @@ public interface PropertyPath extends Streamable<PropertyPath> {
 		String lookup = toDotPath().concat(".").concat(path);
 
 		return SimplePropertyPath.from(lookup, getOwningType());
+	}
+
+		/**
+	 * Returns the annotations declared on the underlying field.
+	 * <p>
+	 * This exposes annotations present directly on the represented {@link java.lang.reflect.Field}
+	 * (field-level annotations), for example {@code @Id} or {@code @Column}.
+	 *
+	 * @return annotations declared on the underlying field; never {@literal null}.
+	 */
+	default Annotation[] getPropertyAnnotations(){
+		return NO_ANNOTATIONS;
+	}
+
+	/**
+	 * Returns the {@link java.lang.reflect.Field#getModifiers() modifiers} of the underlying field.
+	 * <p>
+	 * This exposes the field modifier bitmask such as {@code public}, {@code protected}, {@code private},
+	 * {@code static}, {@code final}, {@code transient}, {@code volatile}, etc.
+	 *
+	 * @return modifier bitmask as defined by {@link java.lang.reflect.Modifier}.
+	 */
+	default int getPropertyModifiers(){
+		return 0;
 	}
 
 	/**

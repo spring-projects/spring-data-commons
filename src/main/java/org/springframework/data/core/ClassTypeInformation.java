@@ -15,10 +15,12 @@
  */
 package org.springframework.data.core;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentLruCache;
@@ -29,11 +31,12 @@ import org.springframework.util.ConcurrentLruCache;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Kamil Krzywański
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
-	private static final ConcurrentLruCache<ResolvableType, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(128,
+	private static final ConcurrentLruCache<ResolvableTypeHolder, ClassTypeInformation<?>> cache = new ConcurrentLruCache<>(128,
 			ClassTypeInformation::new);
 
 	private static final ConcurrentLruCache<Class<?>, ResolvableType> resolvableTypeCache = new ConcurrentLruCache<>(128,
@@ -41,12 +44,16 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 
 	private final Class<S> type;
 
-	ClassTypeInformation(Class<?> type) {
-		this(ResolvableType.forType(type));
+	ClassTypeInformation(ResolvableTypeHolder resolvableTypeHolder) {
+		this(resolvableTypeHolder.type, resolvableTypeHolder.field);
 	}
 
-	ClassTypeInformation(ResolvableType type) {
-		super(type);
+	ClassTypeInformation(Class<?> type) {
+		this(ResolvableType.forType(type), null);
+	}
+
+	ClassTypeInformation(ResolvableType type, @Nullable Field field) {
+		super(type, field);
 		this.type = (Class<S>) type.resolve(Object.class);
 	}
 
@@ -70,7 +77,7 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 		return from(resolvableTypeCache.get(type));
 	}
 
-	static <S> ClassTypeInformation<S> from(ResolvableType type) {
+	static <S> ClassTypeInformation<S> from(ResolvableType type, @Nullable Field field) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -84,7 +91,11 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 			return (ClassTypeInformation<S>) TypeInformation.MAP;
 		}
 
-		return (ClassTypeInformation<S>) cache.get(type);
+		return (ClassTypeInformation<S>) cache.get(new ResolvableTypeHolder(type, field));
+	}
+
+	static <S> ClassTypeInformation<S> from(ResolvableType type) {
+		return from(type, null);
 	}
 
 	@Override
@@ -111,4 +122,7 @@ class ClassTypeInformation<S> extends TypeDiscoverer<S> {
 	public String toString() {
 		return type.getName();
 	}
+
+	private record ResolvableTypeHolder(ResolvableType type, @Nullable Field field){}
+
 }

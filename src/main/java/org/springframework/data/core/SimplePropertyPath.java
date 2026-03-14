@@ -16,6 +16,7 @@
 package org.springframework.data.core;
 
 import java.beans.Introspector;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Mariusz Mączkowski
  * @author Johannes Englmeier
+ * @author Kamil Krzywański
  */
 class SimplePropertyPath implements PropertyPath {
 
@@ -56,6 +58,8 @@ class SimplePropertyPath implements PropertyPath {
 	private final TypeInformation<?> typeInformation;
 	private final TypeInformation<?> actualTypeInformation;
 	private final boolean isCollection;
+	private final int fieldModifiers;
+	private final Annotation[] fieldAnnotations;
 
 	private @Nullable SimplePropertyPath next;
 
@@ -99,6 +103,8 @@ class SimplePropertyPath implements PropertyPath {
 		this.isCollection = this.typeInformation.isCollectionLike();
 		this.actualTypeInformation = this.typeInformation.getActualType() == null ? this.typeInformation
 				: this.typeInformation.getRequiredActualType();
+		this.fieldAnnotations = property.annotations;
+		this.fieldModifiers = property.modifiers;
 	}
 
 	private static @Nullable Property lookupProperty(TypeInformation<?> owningType, String name) {
@@ -361,14 +367,29 @@ class SimplePropertyPath implements PropertyPath {
 		return String.format("%s.%s", owningType.getType().getSimpleName(), toDotPath());
 	}
 
+
+	@Override
+    public int getPropertyModifiers() {
+        return fieldModifiers;
+    }
+
+	@Override
+    public Annotation[] getPropertyAnnotations() {
+        return fieldAnnotations;
+    }
+
 	private static final class Property {
 
 		private final TypeInformation<?> type;
 		private final String path;
+		private final int modifiers;
+		private final Annotation[] annotations;
 
 		private Property(TypeInformation<?> type, String path) {
 			this.type = type;
 			this.path = path;
+			this.annotations = type.getFieldAnnotations();
+			this.modifiers = type.getFieldModifiers();
 		}
 
 		@Override
@@ -392,8 +413,7 @@ class SimplePropertyPath implements PropertyPath {
 
 		@Override
 		public String toString() {
-
-			return "Key[" + "type=" + type + ", " + "path=" + path + ']';
+			return "Property[type=" + type + ", path=" + path + ']';
 		}
 	}
 }

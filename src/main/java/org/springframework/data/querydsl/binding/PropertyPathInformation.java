@@ -36,6 +36,7 @@ import com.querydsl.core.types.dsl.CollectionPathBase;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Kamil Krzywański
  * @since 1.13
  */
 record PropertyPathInformation(PropertyPath path) implements PathInformation {
@@ -62,7 +63,7 @@ record PropertyPathInformation(PropertyPath path) implements PathInformation {
 		return PropertyPathInformation.of(PropertyPath.from(path, type));
 	}
 
-	private static PropertyPathInformation of(PropertyPath path) {
+	public static PropertyPathInformation of(PropertyPath path) {
 		return new PropertyPathInformation(path);
 	}
 
