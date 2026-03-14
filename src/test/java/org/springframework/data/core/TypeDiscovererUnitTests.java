@@ -344,7 +344,7 @@ public class TypeDiscovererUnitTests {
 		ResolvableType type = ResolvableType.forClass(Object.class);
 
 		var discoverer = new TypeDiscoverer<>(type);
-		var classTypeInformation = new ClassTypeInformation<>(type);
+		var classTypeInformation = new ClassTypeInformation<>(type, null);
 
 		assertThat(discoverer).isNotEqualTo(classTypeInformation);
 		assertThat(classTypeInformation).isNotEqualTo(type);

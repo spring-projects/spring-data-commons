@@ -16,7 +16,9 @@
 package org.springframework.data.core;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,11 +52,13 @@ import org.springframework.util.ReflectionUtils;
  * @author Jürgen Diez
  * @author Alessandro Nistico
  * @author Johannes Englmeier
+ * @author Kamil Krzywański
  */
 class TypeDiscoverer<S> implements TypeInformation<S> {
 
-	private static final ConcurrentLruCache<ResolvableType, TypeInformation<?>> CACHE = new ConcurrentLruCache<>(64,
+	private static final ConcurrentLruCache<TypeHolder, TypeInformation<?>> CACHE = new ConcurrentLruCache<>(64,
 			TypeDiscoverer::new);
+	private static final Annotation[] NO_ANNOTATIONS = new Annotation[0];
 
 	private final ResolvableType resolvableType;
 	private final Map<String, Optional<TypeInformation<?>>> fields = new ConcurrentHashMap<>();
@@ -74,11 +78,20 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private final Lazy<List<TypeInformation<?>>> typeArguments;
 
 	private final Lazy<List<TypeInformation<?>>> resolvedGenerics;
+	private final Annotation[] annotations;
+	private final int modifier;
+
+	private TypeDiscoverer(TypeHolder type) {
+		this(type.type, type.field);
+	}
 
 	protected TypeDiscoverer(ResolvableType type) {
+		this(type, null);
+	}
+
+	protected TypeDiscoverer(ResolvableType type, @Nullable Field field) {
 
 		Assert.notNull(type, "Type must not be null");
-
 		this.resolvableType = type;
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
@@ -87,13 +100,17 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 				.map(TypeInformation::of) // use TypeInformation comparison to remove any attachments to variableResolver
 																	// holding the type source
 				.collect(Collectors.toList()));
+		this.modifier = field == null ? 0 : field.getModifiers();
+		this.annotations = field == null ? NO_ANNOTATIONS: field.getAnnotations();
 	}
 
-	static TypeDiscoverer<?> ofCached(ResolvableType type) {
+	static TypeDiscoverer<?> ofCached(ResolvableType type, @Nullable Field field) {
 
 		Assert.notNull(type, "Type must not be null");
 
-		return (TypeDiscoverer<?>) CACHE.get(type);
+		var typeHolder = new TypeHolder(type, field);
+
+		return (TypeDiscoverer<?>) CACHE.get(typeHolder);
 	}
 
 	@Override
@@ -209,7 +226,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	@Override
 	public TypeInformation<?> getRawTypeInformation() {
-		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()));
+		return new ClassTypeInformation<>(ResolvableType.forRawClass(resolvableType.toClass()), null);
 	}
 
 	@Override
@@ -271,7 +288,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var noGenericsResolvable = !Arrays.stream(resolvableSuperType.resolveGenerics()).filter(it -> it != null).findAny()
 				.isPresent();
 
-		return noGenericsResolvable ? new ClassTypeInformation<>(ResolvableType.forRawClass(superType))
+		return noGenericsResolvable ? new ClassTypeInformation<>(ResolvableType.forRawClass(superType), null)
 				: TypeInformation.of(resolvableSuperType);
 	}
 
@@ -320,6 +337,16 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		}
 
 		return TypeInformation.of((Class<S>) type.getType());
+	}
+
+	@Override
+	public Annotation[] getFieldAnnotations() {
+		return annotations;
+	}
+
+	@Override
+	public int getFieldModifiers() {
+		return modifier;
 	}
 
 	@Override
@@ -385,9 +412,9 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var rawType = getType();
 		var field = ReflectionUtils.findField(rawType, fieldname);
 
-		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
+		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType), field))
 				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
-						.filter(it -> it.getName().equals(fieldname)).map(it -> from(it, rawType)).map(TypeInformation::of);
+						.filter(it -> it.getName().equals(fieldname)).map(it -> from(it, rawType)).map(type -> TypeInformation.of(type, field));
 	}
 
 	private ResolvableType from(PropertyDescriptor descriptor, Class<?> rawType) {
@@ -410,4 +437,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 	private boolean isNullableWrapper() {
 		return NullableWrapperConverters.supports(getType());
 	}
+
+	private record TypeHolder(ResolvableType type,@Nullable Field field){}
 }

@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.Address;
+import org.springframework.data.querydsl.Example;
+import org.springframework.data.querydsl.QExample;
 import org.springframework.data.querydsl.QSpecialUser;
 import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.QUserWrapper;
@@ -48,6 +50,7 @@ import com.querydsl.core.types.dsl.StringPath;
  * @author Christoph Strobl
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Kamil Krzywański
  */
 class QuerydslPredicateBuilderUnitTests {
 
@@ -255,4 +258,32 @@ class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(QuerydslPredicateBuilder.isEmpty(builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS))).isTrue();
 	}
+
+	@Test // GH-2176
+	void shouldIgnorePropertiesPresentOnDomainTypeButNotOnQType() {
+
+		var type = TypeInformation.of(Example.class);
+
+//		// queryable
+		values.add("four", "foo");
+		values.add("one", "foo");
+		values.add("two", "bar");
+		values.add("three", "baz");
+
+		var predicate = builder.getPredicate(type, values, DEFAULT_BINDINGS);
+
+		assertThat(predicate).isEqualTo(QExample.example.one.eq("foo"));
+	}
+
+	@Test // GH-2176
+	void shouldReturnEmptyPredicateIfOnlyNonQueryablePropertiesAreProvided() {
+
+		var type = TypeInformation.of(Example.class);
+		values.add("two", "bar");
+		values.add("three", "baz");
+		var predicate = builder.getPredicate(type, values, DEFAULT_BINDINGS);
+
+		assertThat(QuerydslPredicateBuilder.isEmpty(predicate)).isTrue();
+	}
+
 }

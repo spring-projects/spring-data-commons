@@ -15,6 +15,8 @@
  */
 package org.springframework.data.querydsl.binding;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -23,6 +25,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryTransient;
+import com.querydsl.core.annotations.QueryType;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.core.PropertyPath;
@@ -61,6 +66,7 @@ import com.querydsl.core.types.Path;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Kamil Krzywański
  * @since 1.11
  * @see QuerydslBinderCustomizer
  */
@@ -267,8 +273,12 @@ public class QuerydslBindings {
 		}
 
 		try {
-			PathInformation propertyPath = PropertyPathInformation.of(path, type);
-			return isPathVisible(propertyPath) ? propertyPath : null;
+			var propertyPath = PropertyPath.from(path, type);
+			if (!isPathAccessible(propertyPath))
+				return null;
+
+			PathInformation propertyPathInformation = PropertyPathInformation.of(propertyPath);
+			return isPathVisible(propertyPathInformation) ? propertyPathInformation : null;
 		} catch (PropertyReferenceException o_O) {
 			return null;
 		}
@@ -320,6 +330,53 @@ public class QuerydslBindings {
 		}
 
 		return true;
+	}
+
+	private boolean isPathAccessible(PropertyPath propertyPath) {
+		return !isTransient(propertyPath) && !isStatic(propertyPath) && !isExcluded(propertyPath);
+	}
+
+	private static boolean isTransient(PropertyPath propertyPath) {
+		return Modifier.isTransient(propertyPath.getPropertyModifiers());
+	}
+
+	private static boolean isStatic(PropertyPath propertyPath) {
+		return Modifier.isStatic(propertyPath.getPropertyModifiers());
+	}
+
+	private boolean isExcluded(PropertyPath propertyPath) {
+		return isPropertyExcluded(propertyPath.getPropertyAnnotations());
+	}
+
+	/**
+	 * Determines whether a property should be excluded from Querydsl binding based on its annotations.
+	 * <p>
+	 * A property is considered excluded if any of the following conditions match:
+	 * <ul>
+	 *   <li>it is annotated with {@link QueryType} and its {@link QueryType#value()} equals {@link PropertyType#NONE},</li>
+	 *   <li>it is annotated with {@link QueryTransient},</li>
+	 *   <li>it is annotated with {@code jakarta.persistence.Transient} (detected by fully-qualified name to avoid
+	 *   a hard dependency on Jakarta Persistence).</li>
+	 * </ul>
+	 *
+	 * @param annotations the annotations declared for the inspected element (must not be {@literal null}).
+	 * @return {@literal true} if the property should be excluded; {@literal false} otherwise.
+	 */
+	private boolean isPropertyExcluded(Annotation[] annotations) {
+		for (Annotation annotation : annotations) {
+			if (annotation instanceof QueryType queryType) {
+				if (queryType.value() == PropertyType.NONE) {
+					return true;
+				}
+			}
+			if (annotation instanceof QueryTransient) {
+				return true;
+			}
+			if (annotation.annotationType().getName().equals("jakarta.persistence.Transient")) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -434,7 +491,7 @@ public class QuerydslBindings {
 		/**
 		 * Creates a new {@link AliasingPathBinder} for the given {@link Path}.
 		 *
-		 * @param paths must not be {@literal null}.
+		 * @param path must not be {@literal null}.
 		 */
 		AliasingPathBinder(P path) {
 			this(null, path);

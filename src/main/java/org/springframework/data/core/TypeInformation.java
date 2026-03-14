@@ -15,7 +15,9 @@
  */
 package org.springframework.data.core;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
@@ -40,9 +42,10 @@ import org.springframework.util.Assert;
  * @author Alessandro Nistico
  * @author Johannes Englmeier
  * @author Christoph Strobl
+ * @author Kamil Krzywański
  */
 public interface TypeInformation<S> {
-
+	Annotation[] NO_ANNOTATIONS = new Annotation[0];
 	@SuppressWarnings("rawtypes") TypeInformation<Collection> COLLECTION = new ClassTypeInformation<>(Collection.class);
 	@SuppressWarnings("rawtypes") TypeInformation<List> LIST = new ClassTypeInformation<>(List.class);
 	@SuppressWarnings("rawtypes") TypeInformation<Set> SET = new ClassTypeInformation<>(Set.class);
@@ -56,12 +59,16 @@ public interface TypeInformation<S> {
 	 * @return will never be {@literal null}.
 	 * @since 3.0
 	 */
-	static TypeInformation<?> of(ResolvableType type) {
+	static TypeInformation<?> of(ResolvableType type, @Nullable Field field) {
 
 		Assert.notNull(type, "Type must not be null");
 
 		return type.hasGenerics() || (type.isArray() && type.getComponentType().hasGenerics()) //
-				|| (type.getType() instanceof TypeVariable) ? TypeDiscoverer.ofCached(type) : ClassTypeInformation.from(type);
+				|| (type.getType() instanceof TypeVariable) ? TypeDiscoverer.ofCached(type, field) : ClassTypeInformation.from(type, field);
+	}
+
+	static TypeInformation<?> of(ResolvableType type) {
+		return of(type, null);
 	}
 
 	/**
@@ -375,6 +382,31 @@ public interface TypeInformation<S> {
 	default boolean isSubTypeOf(Class<?> type) {
 		return !type.equals(getType()) && type.isAssignableFrom(getType());
 	}
+
+	/**
+	 * Returns the annotations declared on the underlying field.
+	 * <p>
+	 * This exposes annotations present directly on the represented {@link java.lang.reflect.Field}
+	 * (field-level annotations), for example {@code @Id} or {@code @Column}.
+	 *
+	 * @return annotations declared on the underlying field; never {@literal null}.
+	 */
+	default Annotation[] getFieldAnnotations(){
+		return NO_ANNOTATIONS;
+	}
+
+	/**
+	 * Returns the {@link java.lang.reflect.Field#getModifiers() modifiers} of the underlying field.
+	 * <p>
+	 * This exposes the field modifier bitmask such as {@code public}, {@code protected}, {@code private},
+	 * {@code static}, {@code final}, {@code transient}, {@code volatile}, etc.
+	 *
+	 * @return modifier bitmask as defined by {@link java.lang.reflect.Modifier}.
+	 */
+	default int getFieldModifiers(){
+		return 0;
+	}
+
 
 	/**
 	 * Returns the {@link TypeDescriptor} equivalent of this {@link TypeInformation}.
