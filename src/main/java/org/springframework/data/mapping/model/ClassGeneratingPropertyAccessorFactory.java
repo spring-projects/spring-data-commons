@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
@@ -1018,11 +1019,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 				mv.visitLabel(propertyStackAddress.label);
 				mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
-				if (supportsMutation(property)) {
-					visitSetProperty0(entity, property, mv, internalClassName);
-				} else {
-					mv.visitJumpInsn(GOTO, dfltLabel);
-				}
+				visitSetProperty0(entity, property, mv, internalClassName, () -> mv.visitJumpInsn(GOTO, dfltLabel));
 			}
 
 			mv.visitLabel(dfltLabel);
@@ -1035,7 +1032,7 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		 * called as if the method had the expected signature and not array/varargs.
 		 */
 		private static void visitSetProperty0(PersistentEntity<?, ?> entity, PersistentProperty<?> property,
-				MethodVisitor mv, String internalClassName) {
+				MethodVisitor mv, String internalClassName, Runnable onImmutable) {
 
 			Method setter = property.getSetter();
 			Method wither = property.getWither();
@@ -1044,12 +1041,12 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 
 				if (wither != null) {
 					visitWithProperty(entity, property, mv, internalClassName, wither);
-				}
-
-				if (KotlinDetector.isKotlinType(entity.getType()) && KotlinCopyMethod.hasKotlinCopyMethodFor(property)) {
+				} else if (KotlinDetector.isKotlinType(entity.getType()) && KotlinCopyMethod.hasKotlinCopyMethodFor(property)) {
 					visitKotlinCopy(entity, property, mv, internalClassName);
+				} else {
+					onImmutable.run();
+					return;
 				}
-
 			} else if (property.usePropertyAccess() && setter != null) {
 				visitSetProperty(entity, property, mv, internalClassName, setter);
 			} else {
@@ -1225,30 +1222,29 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		private static void visitSetField(PersistentEntity<?, ?> entity, PersistentProperty<?> property, MethodVisitor mv,
 				String internalClassName) {
 
-			Field field = property.getField();
-			if (field != null) {
-				if (generateSetterMethodHandle(entity, field)) {
-					// $fieldSetter.invoke(this.bean, object)
-					mv.visitFieldInsn(GETSTATIC, internalClassName, fieldSetterName(property),
-							referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
-					mv.visitVarInsn(ALOAD, 0);
-					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
-					mv.visitVarInsn(ALOAD, 2);
-					mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
-							String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
-				} else {
-					// this.bean.field
-					mv.visitVarInsn(ALOAD, 0);
-					mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
-					mv.visitVarInsn(ALOAD, 2);
+			Field field = property.getRequiredField();
 
-					Class<?> fieldType = field.getType();
+			if (generateSetterMethodHandle(entity, field)) {
+				// $fieldSetter.invoke(this.bean, object)
+				mv.visitFieldInsn(GETSTATIC, internalClassName, fieldSetterName(property),
+						referenceName(JAVA_LANG_INVOKE_METHOD_HANDLE));
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+				mv.visitVarInsn(ALOAD, 2);
+				mv.visitMethodInsn(INVOKEVIRTUAL, JAVA_LANG_INVOKE_METHOD_HANDLE, "invoke",
+						String.format("(%s%s)V", referenceName(JAVA_LANG_OBJECT), referenceName(JAVA_LANG_OBJECT)), false);
+			} else {
+				// this.bean.field
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, internalClassName, BEAN_FIELD, getAccessibleTypeReferenceName(entity));
+				mv.visitVarInsn(ALOAD, 2);
 
-					mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(fieldType)));
-					autoboxIfNeeded(autoboxType(fieldType), fieldType, mv);
-					mv.visitFieldInsn(PUTFIELD, Type.getInternalName(field.getDeclaringClass()), field.getName(),
-							signatureTypeName(fieldType));
-				}
+				Class<?> fieldType = field.getType();
+
+				mv.visitTypeInsn(CHECKCAST, Type.getInternalName(autoboxType(fieldType)));
+				autoboxIfNeeded(autoboxType(fieldType), fieldType, mv);
+				mv.visitFieldInsn(PUTFIELD, Type.getInternalName(field.getDeclaringClass()), field.getName(),
+						signatureTypeName(fieldType));
 			}
 		}
 

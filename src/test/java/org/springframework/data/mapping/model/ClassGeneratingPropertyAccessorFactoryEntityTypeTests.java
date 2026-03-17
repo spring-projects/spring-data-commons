@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.SampleMappingContext;
@@ -55,13 +56,23 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 		assertThat(getEntityInformation(Person.class).getId(jonDoe)).isEqualTo(jonDoe.name);
 	}
 
-	@Test // #2324
+	@Test // GH-2324
 	void shouldGeneratePropertyAccessorForKotlinClassWithMultipleCopyMethods() {
 
 		var factory = new ClassGeneratingPropertyAccessorFactory();
 		var propertyAccessor = factory.getPropertyAccessor(
 				mappingContext.getRequiredPersistentEntity(WithCustomCopyMethod.class),
 				new WithCustomCopyMethod("", "", "", 1, LocalDateTime.MAX, LocalDateTime.MAX, ""));
+
+		assertThat(propertyAccessor).isNotNull();
+	}
+
+	@Test // GH-3472
+	void shouldIgnoreStaticWithMethod() {
+
+		var factory = new ClassGeneratingPropertyAccessorFactory();
+		var propertyAccessor = factory.getPropertyAccessor(mappingContext.getRequiredPersistentEntity(WithStaticWith.class),
+				new WithStaticWith(null));
 
 		assertThat(propertyAccessor).isNotNull();
 	}
@@ -92,6 +103,13 @@ public class ClassGeneratingPropertyAccessorFactoryEntityTypeTests {
 
 		Person(String name) {
 			this.name = name;
+		}
+	}
+
+	public record WithStaticWith(String string) {
+
+		public static WithStaticWith withString(String string) {
+			return new WithStaticWith(string);
 		}
 	}
 }

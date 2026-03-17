@@ -86,6 +86,13 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	@Nullable
 	Method getGetter();
 
+	/**
+	 * Returns the required getter method to access the property value or throw {@link IllegalStateException} if no getter
+	 * method is available.
+	 *
+	 * @return the getter method to access the property value.
+	 * @throws IllegalStateException if no getter method available.
+	 */
 	default Method getRequiredGetter() {
 
 		Method getter = getGetter();
@@ -106,6 +113,14 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	@Nullable
 	Method getSetter();
 
+	/**
+	 * Returns the required setter method to set a property value or throw {@link IllegalStateException} if no setter
+	 * method is available.
+	 *
+	 * @return the setter method to set a property value.
+	 * @throws IllegalStateException if no setter method available.
+	 * @see #getSetter()
+	 */
 	default Method getRequiredSetter() {
 
 		Method setter = getSetter();
@@ -118,11 +133,11 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	}
 
 	/**
-	 * Returns the with {@link Method} to set a property value on a new object instance. Might return {@literal null} in
-	 * case there is no with available.
+	 * Returns the {@code with} {@link Method} to set a property value on a new object instance. Might return
+	 * {@literal null} in case there is no {@code with} available.
 	 * <p>
-	 * With {@link Method methods} are property-bound instance {@link Method methods} that accept a single argument of the
-	 * property type creating a new object instance.
+	 * {@code with} {@link Method methods} are property-bound instance {@link Method methods} that accept a single
+	 * argument of the property type creating a new object instance.
 	 *
 	 * <pre class="code">
 	 * class Person {
@@ -144,6 +159,14 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	@Nullable
 	Method getWither();
 
+	/**
+	 * Returns the required {@code with} {@link Method} to set a property value on a new object instance or throw
+	 * {@link IllegalStateException} if no wither method is available.
+	 *
+	 * @return the with {@link Method} to set a property value on and return a new object instance.
+	 * @throws IllegalStateException if no with {@code with} {@link Method} available.
+	 * @see #getWither()
+	 */
 	default Method getRequiredWither() {
 
 		Method wither = getWither();
@@ -155,9 +178,20 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 		return wither;
 	}
 
+	/**
+	 * Returns the backing {@link Field} if available. Might return {@literal null} in case there is no backing field.
+	 *
+	 * @return the backing {@link Field} if available, otherwise {@literal null}.
+	 */
 	@Nullable
 	Field getField();
 
+	/**
+	 * Returns the required backing {@link Field} or throw {@link IllegalStateException} if no backing field is available.
+	 *
+	 * @return the required backing {@link Field}.
+	 * @throws IllegalStateException if no backing field available.
+	 */
 	default Field getRequiredField() {
 
 		Field field = getField();
@@ -182,7 +216,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	Association<P> getAssociation();
 
 	/**
-	 * Get the {@link Association} of this property.
+	 * Get the requires {@link Association} of this property.
 	 *
 	 * @return never {@literal null}.
 	 * @throws IllegalStateException if not involved in an {@link Association}.
