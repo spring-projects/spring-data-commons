@@ -19,6 +19,7 @@ import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -273,7 +274,7 @@ public class Property {
 			if (owner.isAssignableFrom(owner.getReturnType(it))) {
 				resultHolder.set(it);
 			}
-		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType));
+		}, it -> isMethodWithSingleParameterOfType(it, methodName, rawType) && !Modifier.isStatic(it.getModifiers()));
 
 		Method method = resultHolder.get();
 		return method != null ? Optional.of(method) : Optional.empty();
