@@ -18,6 +18,7 @@ package org.springframework.data.mapping.model;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -28,21 +29,18 @@ import org.springframework.util.ReflectionUtils;
  */
 class PropertyUnitTests {
 
-	@Test // DATACMNS-1322
+	@Test // DATACMNS-1322, GH-3472
 	void shouldNotFindWitherMethod() {
 
-		assertThat(Property
-				.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "id")).getWither())
-						.isEmpty();
-		assertThat(
-				Property.of(TypeInformation.of(ImmutableType.class), ReflectionUtils.findField(ImmutableType.class, "name"))
-						.getWither()).isEmpty();
+		assertThat(getProperty(ImmutableType.class, "id").getWither()).isEmpty();
+		assertThat(getProperty(ImmutableType.class, "name").getWither()).isEmpty();
+		assertThat(getProperty(StaticWither.class, "someField").getWither()).isEmpty();
 	}
 
 	@Test // DATACMNS-1322
 	void shouldDiscoverWitherMethod() {
 
-		var property = Property.of(TypeInformation.of(WitherType.class), ReflectionUtils.findField(WitherType.class, "id"));
+		var property = getProperty(WitherType.class, "id");
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
 			assertThat(actual.getName()).isEqualTo("withId");
@@ -53,8 +51,7 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldDiscoverDerivedWitherMethod() {
 
-		var property = Property.of(TypeInformation.of(DerivedWitherClass.class),
-				ReflectionUtils.findField(DerivedWitherClass.class, "id"));
+		var property = getProperty(DerivedWitherClass.class, "id");
 
 		assertThat(property.getWither()).isPresent().hasValueSatisfying(actual -> {
 			assertThat(actual.getName()).isEqualTo("withId");
@@ -66,10 +63,13 @@ class PropertyUnitTests {
 	@Test // DATACMNS-1421
 	void shouldNotDiscoverWitherMethodWithIncompatibleReturnType() {
 
-		var property = Property.of(TypeInformation.of(AnotherLevel.class),
-				ReflectionUtils.findField(AnotherLevel.class, "id"));
+		var property = getProperty(AnotherLevel.class, "id");
 
 		assertThat(property.getWither()).isEmpty();
+	}
+
+	private static Property getProperty(Class<?> type, String fieldName) {
+		return Property.of(TypeInformation.of(type), ReflectionUtils.findField(type, fieldName));
 	}
 
 	static class ImmutableType {
@@ -166,4 +166,12 @@ class PropertyUnitTests {
 			return new AnotherLevel(id);
 		}
 	}
+
+	public record StaticWither(String someField) {
+
+		public static StaticWither withSomeField(String someField) {
+			return new StaticWither(someField);
+		}
+	}
+
 }
