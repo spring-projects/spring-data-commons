@@ -15,6 +15,7 @@
  */
 package org.springframework.data.aot;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.time.LocalDateTime;
@@ -35,11 +36,13 @@ import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.TypeCollector;
 
 /**
  * Simple {@link AbstractMappingContext} for processing of AOT contributions.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 4.0
  */
 class AotMappingContext extends
@@ -47,6 +50,19 @@ class AotMappingContext extends
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 	private final AotAccessorFactory propertyAccessorFactory = new AotAccessorFactory();
+	private final Predicate<Class<?>> typeCollectorFilter;
+
+	AotMappingContext() {
+		this(TypeCollector.typeFilter(typeCollector -> {}));
+	}
+
+	/**
+	 * @param typeFilter used for filtering during {@link #shouldCreatePersistentEntityFor(TypeInformation)}
+	 * @since 4.1
+	 */
+	AotMappingContext(Predicate<Class<?>> typeFilter) {
+		this.typeCollectorFilter = typeFilter;
+	}
 
 	/**
 	 * Contribute entity instantiators and property accessors for the given {@link PersistentEntity} that are captured
@@ -85,9 +101,14 @@ class AotMappingContext extends
 				|| isInPackage.test(BigDecimal.class) // java.math
 				|| isInPackage.test(LocalDateTime.class) // java.time
 				|| isInPackage.test(Format.class) // java.text
+				|| isInPackage.test(File.class) // java.io
 				|| isInPackage.test(Point.class) // org.springframework.data.geo
 				|| isInPackage.test(Page.class) // org.springframework.data.domain
 				|| type.getPackageName().startsWith("javax")) {
+			return false;
+		}
+
+		if (!typeCollectorFilter.test(type)) {
 			return false;
 		}
 
