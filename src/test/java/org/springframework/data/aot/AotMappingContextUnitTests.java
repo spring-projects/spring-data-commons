@@ -18,12 +18,14 @@ package org.springframework.data.aot;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.BitSet;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.core.TypeInformation;
+import org.springframework.data.util.TypeCollector;
 
 /**
  * Unit tests for {@link AotMappingContext}.
@@ -60,6 +62,17 @@ public class AotMappingContextUnitTests {
 		assertThatNoException().isThrownBy(() -> {
 			context.contribute(ConcretePerson.class);
 		});
+	}
+
+	@Test // GH-3474
+	void doesNotCreateEntityWhenTypeCollectorFilterExcludesNestedType() {
+
+		Predicate<Class<?>> filter = TypeCollector
+				.typeFilter(c -> c.filterTypes(cls -> cls != ExcludedByFilterNested.class));
+		AotMappingContext filteredContext = new AotMappingContext(filter);
+
+		assertThat(filteredContext.getPersistentEntity(EntityWithFilteredNested.class)).isNotNull();
+		assertThat(filteredContext.getPersistentEntity(ExcludedByFilterNested.class)).isNull();
 	}
 
 	static class DemoEntity {
@@ -110,6 +123,17 @@ public class AotMappingContextUnitTests {
 		public void setName(String name) {
 			this.name = name;
 		}
+	}
+
+	static class ExcludedByFilterNested {
+
+		String value;
+	}
+
+	static class EntityWithFilteredNested {
+
+		@Id String id;
+		ExcludedByFilterNested nested;
 	}
 
 }

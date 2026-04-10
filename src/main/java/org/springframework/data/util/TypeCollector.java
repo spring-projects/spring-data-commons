@@ -127,6 +127,32 @@ public class TypeCollector {
 	}
 
 	/**
+	 * Return the combined type filter used when collecting reachable types (SPI {@link TypeCollectorFilters} plus any
+	 * {@link #filterTypes(Predicate) filterTypes} predicates).
+	 *
+	 * @return the type filter; never {@literal null}.
+	 * @since 4.1
+	 */
+	public Predicate<Class<?>> getTypeFilter() {
+		return this.typeFilter;
+	}
+
+	/**
+	 * Build the combined type filter for the given configuration, matching the filter applied by
+	 * {@link #inspect(Consumer, Collection)} for the same customizer.
+	 *
+	 * @param customizer configures the collector; must not be {@literal null}.
+	 * @return the type filter; never {@literal null}.
+	 * @since 4.1
+	 */
+	public static Predicate<Class<?>> typeFilter(Consumer<TypeCollector> customizer) {
+
+		TypeCollector collector = new TypeCollector();
+		customizer.accept(collector);
+		return collector.getTypeFilter();
+	}
+
+	/**
 	 * Inspect the given type and resolve those reachable via fields, methods, generics, ...
 	 *
 	 * @param types the types to inspect
