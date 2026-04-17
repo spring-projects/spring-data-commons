@@ -44,31 +44,23 @@ public @interface SortDefault {
 
 	/**
 	 * Alias for {@link #sort()} to make a declaration configuring fields only more concise.
-	 *
-	 * @return
 	 */
 	@AliasFor("sort")
 	String[] value() default {};
 
 	/**
-	 * The properties to sort by default. If unset, no sorting will be applied at all.
-	 *
-	 * @return
+	 * The properties to sort by default. If not set, no sorting will be applied at all.
 	 */
 	@AliasFor("value")
 	String[] sort() default {};
 
 	/**
 	 * The direction to sort by. Defaults to {@link Direction#ASC}.
-	 *
-	 * @return
 	 */
 	Direction direction() default Direction.ASC;
 
 	/**
 	 * Specifies whether to apply case-sensitive sorting. Defaults to {@literal true}.
-	 *
-	 * @return
 	 * @since 2.3
 	 */
 	boolean caseSensitive() default true;
@@ -76,8 +68,7 @@ public @interface SortDefault {
 	/**
 	 * Specifies which null handling to apply. Defaults to {@link NullHandling#NATIVE}.
 	 *
-	 * @return
-	 * @since 3.4
+	 * @since 4.0.5
 	 */
 	NullHandling nullHandling() default NullHandling.NATIVE;
 
@@ -94,9 +85,9 @@ public @interface SortDefault {
 
 		/**
 		 * The individual {@link SortDefault} declarations to be sorted by.
-		 *
-		 * @return
 		 */
 		SortDefault[] value();
+
 	}
+
 }
