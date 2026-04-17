@@ -15,22 +15,13 @@
  */
 package org.springframework.data.aot;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.aot.types.AbstractType;
-import org.springframework.data.aot.types.CyclicGenerics;
-import org.springframework.data.aot.types.CyclicPropertiesA;
-import org.springframework.data.aot.types.CyclicPropertiesB;
-import org.springframework.data.aot.types.CyclicPropertiesSelf;
-import org.springframework.data.aot.types.EmptyType1;
-import org.springframework.data.aot.types.EmptyType2;
-import org.springframework.data.aot.types.FieldsAndMethods;
-import org.springframework.data.aot.types.InterfaceType;
-import org.springframework.data.aot.types.TypesInMethodSignatures;
-import org.springframework.data.aot.types.WithDeclaredClass;
+
+import org.springframework.data.aot.types.*;
 import org.springframework.data.util.TypeCollector;
 
 /**
@@ -92,7 +83,7 @@ public class TypeCollectorUnitTests {
 	@Test // GH-3474
 	void typeFilterStaticMatchesInspectWithSameCustomizer() {
 
-		Predicate<Class<?>> fromStatic = TypeCollector.typeFilter(tc -> {});
+		Predicate<Class<?>> fromStatic = TypeCollector.create(tc -> {}).getTypeFilter();
 		TypeCollector collector = new TypeCollector();
 
 		assertThat(fromStatic.test(FieldsAndMethods.class))
@@ -102,7 +93,7 @@ public class TypeCollectorUnitTests {
 	@Test // GH-3474
 	void typeFilterReflectsAdditionalTypeFilters() {
 
-		Predicate<Class<?>> filter = TypeCollector.typeFilter(c -> c.filterTypes(cls -> false));
+		Predicate<Class<?>> filter = TypeCollector.create(c -> c.filterTypes(cls -> false)).getTypeFilter();
 
 		assertThat(filter.test(FieldsAndMethods.class)).isFalse();
 		assertThat(TypeCollector.inspect(c -> c.filterTypes(cls -> false), FieldsAndMethods.class).list()).isEmpty();
