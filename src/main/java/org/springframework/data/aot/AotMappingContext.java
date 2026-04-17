@@ -36,6 +36,7 @@ import org.springframework.data.mapping.model.EntityInstantiatorSource;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeCollector;
 
 /**
@@ -48,12 +49,13 @@ import org.springframework.data.util.TypeCollector;
 class AotMappingContext extends
 		AbstractMappingContext<BasicPersistentEntity<?, AotMappingContext.AotPersistentProperty>, AotMappingContext.AotPersistentProperty> {
 
+	private final static Lazy<TypeCollector> DEFAULT_TYPE_COLLECTOR = Lazy.of(TypeCollector::new);
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 	private final AotAccessorFactory propertyAccessorFactory = new AotAccessorFactory();
 	private final Predicate<Class<?>> typeCollectorFilter;
 
 	AotMappingContext() {
-		this(TypeCollector.typeFilter(typeCollector -> {}));
+		this(DEFAULT_TYPE_COLLECTOR.get().getTypeFilter());
 	}
 
 	/**

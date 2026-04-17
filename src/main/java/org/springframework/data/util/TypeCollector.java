@@ -52,9 +52,9 @@ import org.springframework.util.ReflectionUtils;
  * that returns {@code false}. Filters are {@link Predicate#and(Predicate) combined} so that multiple filters can be
  * taken into account. A type/field/method must pass all filters to be considered for further inspection.
  * <p>
- * The collector uses {@link AotServices} to discover implementations of {@link TypeCollectorFilters} so that
- * components using {@link TypeCollector} can contribute their own filtering logic to exclude types, fields, and methods
- * from being inspected.
+ * The collector uses {@link AotServices} to discover implementations of {@link TypeCollectorFilters} so that components
+ * using {@link TypeCollector} can contribute their own filtering logic to exclude types, fields, and methods from being
+ * inspected.
  *
  * @author Christoph Strobl
  * @author Sebastien Deleuze
@@ -89,67 +89,17 @@ public class TypeCollector {
 	}
 
 	/**
-	 * Add a filter to exclude types from being introspected.
+	 * Create a new {@code TypeCollector} applying {@code customizer} to configure the {@code TypeCollector}.
 	 *
-	 * @param filter filter predicate matching a {@link Class}.
-	 * @return {@code this} TypeCollector instance.
+	 * @param customizer customizer function to configure the {@code TypeCollector}.
+	 * @return the configured {@code TypeCollector}.
+	 * @since 4.0.5
 	 */
-	@Contract("_ -> this")
-	public TypeCollector filterTypes(Predicate<Class<?>> filter) {
-		this.typeFilter = this.typeFilter.and(filter);
-		return this;
-	}
-
-	/**
-	 * Add a filter to exclude methods from being introspected.
-	 *
-	 * @param filter filter predicate matching a {@link Class}.
-	 * @return {@code this} TypeCollector instance.
-	 * @since 4.0
-	 */
-	@Contract("_ -> this")
-	public TypeCollector filterMethods(Predicate<Method> filter) {
-		this.methodFilter = methodFilter.and(filter);
-		return this;
-	}
-
-	/**
-	 * Add a filter to exclude fields from being introspected.
-	 *
-	 * @param filter filter predicate matching a {@link Class}.
-	 * @return {@code this} TypeCollector instance.
-	 * @since 4.0
-	 */
-	@Contract("_ -> this")
-	public TypeCollector filterFields(Predicate<Field> filter) {
-		this.fieldFilter = fieldFilter.and(filter);
-		return this;
-	}
-
-	/**
-	 * Return the combined type filter used when collecting reachable types (SPI {@link TypeCollectorFilters} plus any
-	 * {@link #filterTypes(Predicate) filterTypes} predicates).
-	 *
-	 * @return the type filter; never {@literal null}.
-	 * @since 4.1
-	 */
-	public Predicate<Class<?>> getTypeFilter() {
-		return this.typeFilter;
-	}
-
-	/**
-	 * Build the combined type filter for the given configuration, matching the filter applied by
-	 * {@link #inspect(Consumer, Collection)} for the same customizer.
-	 *
-	 * @param customizer configures the collector; must not be {@literal null}.
-	 * @return the type filter; never {@literal null}.
-	 * @since 4.1
-	 */
-	public static Predicate<Class<?>> typeFilter(Consumer<TypeCollector> customizer) {
+	public static TypeCollector create(Consumer<TypeCollector> customizer) {
 
 		TypeCollector collector = new TypeCollector();
 		customizer.accept(collector);
-		return collector.getTypeFilter();
+		return collector;
 	}
 
 	/**
@@ -196,6 +146,55 @@ public class TypeCollector {
 		TypeCollector typeCollector = new TypeCollector();
 		collectorCustomizer.accept(typeCollector);
 		return new ReachableTypes(typeCollector, types);
+	}
+
+	/**
+	 * Add a filter to exclude types from being introspected.
+	 *
+	 * @param filter filter predicate matching a {@link Class}.
+	 * @return {@code this} TypeCollector instance.
+	 */
+	@Contract("_ -> this")
+	public TypeCollector filterTypes(Predicate<Class<?>> filter) {
+		this.typeFilter = this.typeFilter.and(filter);
+		return this;
+	}
+
+	/**
+	 * Add a filter to exclude methods from being introspected.
+	 *
+	 * @param filter filter predicate matching a {@link Class}.
+	 * @return {@code this} TypeCollector instance.
+	 * @since 4.0
+	 */
+	@Contract("_ -> this")
+	public TypeCollector filterMethods(Predicate<Method> filter) {
+		this.methodFilter = methodFilter.and(filter);
+		return this;
+	}
+
+	/**
+	 * Add a filter to exclude fields from being introspected.
+	 *
+	 * @param filter filter predicate matching a {@link Class}.
+	 * @return {@code this} TypeCollector instance.
+	 * @since 4.0
+	 */
+	@Contract("_ -> this")
+	public TypeCollector filterFields(Predicate<Field> filter) {
+		this.fieldFilter = fieldFilter.and(filter);
+		return this;
+	}
+
+	/**
+	 * Return the combined type filter used when collecting reachable types (SPI {@link TypeCollectorFilters} including
+	 * any {@link #filterTypes(Predicate) filterTypes} predicates).
+	 *
+	 * @return the type filter.
+	 * @since 4.0.5
+	 */
+	public Predicate<Class<?>> getTypeFilter() {
+		return this.typeFilter;
 	}
 
 	private void process(Class<?> root, Consumer<ResolvableType> consumer) {
@@ -323,7 +322,7 @@ public class TypeCollector {
 		}
 
 		/**
-		 * Return all reachable types as list of {@link Class classes}. The resulting list is unmodifiable.
+		 * Return all reachable types as List of {@link Class classes}. The resulting list is unmodifiable.
 		 *
 		 * @return an unmodifiable list of reachable types.
 		 */
@@ -411,8 +410,8 @@ public class TypeCollector {
 	}
 
 	/**
-	 * Default implementation of {@link TypeCollectorFilters} that excludes types from certain packages and
-	 * filters out unwanted fields and methods.
+	 * Default implementation of {@link TypeCollectorFilters} that excludes types from certain packages and filters out
+	 * unwanted fields and methods.
 	 *
 	 * @since 4.0
 	 */
@@ -458,6 +457,7 @@ public class TypeCollector {
 		}
 
 		@Override
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Predicate<Field> fieldPredicate() {
 			return (Predicate) UNWANTED_FIELDS.negate();
 		}

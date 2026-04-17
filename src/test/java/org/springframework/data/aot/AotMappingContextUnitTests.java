@@ -68,7 +68,7 @@ public class AotMappingContextUnitTests {
 	void doesNotCreateEntityWhenTypeCollectorFilterExcludesNestedType() {
 
 		Predicate<Class<?>> filter = TypeCollector
-				.typeFilter(c -> c.filterTypes(cls -> cls != ExcludedByFilterNested.class));
+				.create(c -> c.filterTypes(cls -> cls != ExcludedByFilterNested.class)).getTypeFilter();
 		AotMappingContext filteredContext = new AotMappingContext(filter);
 
 		assertThat(filteredContext.getPersistentEntity(EntityWithFilteredNested.class)).isNotNull();

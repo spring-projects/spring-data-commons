@@ -36,6 +36,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.data.util.TypeCollector;
 import org.springframework.data.util.TypeScanner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -67,7 +68,6 @@ public interface AotContext extends EnvironmentCapable {
 	static AotContext from(BeanFactory beanFactory) {
 
 		Assert.notNull(beanFactory, "BeanFactory must not be null");
-
 		return new DefaultAotContext(beanFactory, new StandardEnvironment());
 	}
 
@@ -85,6 +85,13 @@ public interface AotContext extends EnvironmentCapable {
 		Assert.notNull(environment, "Environment must not be null");
 
 		return new DefaultAotContext(beanFactory, environment);
+	}
+
+	/**
+	 * Create a {@code AotContext} builder.
+	 */
+	public static AotContextBuilder builder() {
+		return new DefaultAotContextBuilder();
 	}
 
 	/**
@@ -269,6 +276,47 @@ public interface AotContext extends EnvironmentCapable {
 	 * @param generationContext the context to contribute the type configurations to.
 	 */
 	void contributeTypeConfigurations(GenerationContext generationContext);
+
+	/**
+	 * Builder to create {@link AotContext} instances.
+	 *
+	 * @since 4.0.5
+	 */
+	interface AotContextBuilder {
+
+		/**
+		 * Configure the {@link BeanFactory} to use. Must be provided.
+		 *
+		 * @param beanFactory the bean factory to use.
+		 * @return this builder.
+		 */
+		AotContextBuilder beanFactory(BeanFactory beanFactory);
+
+		/**
+		 * Configure the {@link Environment} to use. Defaults to {@link StandardEnvironment} if not configured.
+		 *
+		 * @param environment the environment to use.
+		 * @return this builder.
+		 */
+		AotContextBuilder environment(Environment environment);
+
+		/**
+		 * Provide a consumer to customize {@link TypeCollector}.
+		 *
+		 * @param typeCollectorConsumer the consumer to configure {@link TypeCollector}.
+		 * @return this builder.
+		 */
+		AotContextBuilder customizeTypeCollector(Consumer<TypeCollector> typeCollectorConsumer);
+
+		/**
+		 * Build the {@link AotContext} to use. Building the AotContext requires {@link #beanFactory(BeanFactory)} to be
+		 * configured.
+		 *
+		 * @return the build {@link AotContext} to use.
+		 */
+		AotContext build();
+
+	}
 
 	/**
 	 * Type-based introspector to resolve {@link Class} from a type name and to introspect the bean factory for presence
