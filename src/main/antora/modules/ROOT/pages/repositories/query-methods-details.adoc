@@ -124,7 +124,7 @@ Therefore, it is not a derived query using of `id` as the property name would su
 <5> Targets the `id` property by using the descriptive token between `find` and `by` to avoid collisions with _reserved methods_.
 ====
 
-This special behaviour not only targets lookup methods but also applies to the `exits` and `delete` ones.
+This special behaviour not only targets lookup methods but also applies to the `exists` and `delete` ones.
 Please refer to the "`xref:repositories/query-keywords-reference.adoc#appendix.query.method.reserved[Repository query keywords]`" for the list of methods.
 
 [[repositories.query-methods.query-property-expressions]]
