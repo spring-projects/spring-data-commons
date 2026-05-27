@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 import groovy.lang.MetaClass;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -32,6 +33,7 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyHandler;
@@ -373,6 +375,15 @@ class AbstractMappingContextUnitTests {
 		assertThat(persistentEntity).isSameAs(persistentEntityForProxy);
 	}
 
+	@Test // GH-3485
+	void shouldNotCreatePersistentEntityForTransientProperty() {
+
+		context.getPersistentEntity(WithTransientProperty.class);
+
+		assertThat(context.hasPersistentEntityFor(WithTransientProperty.class)).isTrue();
+		assertThat(context.hasPersistentEntityFor(SecureRandom.class)).isFalse();
+	}
+
 	private static void assertHasEntityFor(Class<?> type, SampleMappingContext context, boolean expected) {
 
 		var found = false;
@@ -494,6 +505,10 @@ class AbstractMappingContextUnitTests {
 	static class ShadowedPropertyNotAssignable {
 
 		private String value;
+	}
+
+	static class WithTransientProperty {
+		@Transient private SecureRandom transientProperty;
 	}
 
 	static class ShadowingPropertyNotAssignable extends ShadowedPropertyNotAssignable {
