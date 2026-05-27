@@ -664,7 +664,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 				entity.addAssociation(property.getRequiredAssociation());
 			}
 
-			if (entity.getType().equals(property.getRawType())) {
+			if (property.isTransient() || entity.getType().equals(property.getRawType())) {
 				return;
 			}
 
