@@ -30,7 +30,7 @@
 
 	<properties>
 
-		<scala>2.11.7</scala>
+		<scala>3.8.4</scala>
 		<xmlbeam>1.4.26</xmlbeam>
 		<java-module-name>spring.data.commons</java-module-name>
 	</properties>
@@ -223,7 +223,7 @@
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
-			<version>3.0.2</version>
+			<version>4.0.9</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -237,9 +237,9 @@
 		<!-- Groovy -->
 
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>2.4.21</version>
+			<groupId>org.apache.groovy</groupId>
+			<artifactId>groovy</artifactId>
+			<version>5.0.6</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -303,14 +303,14 @@
 		<dependency>
 			<groupId>org.graalvm.sdk</groupId>
 			<artifactId>graal-sdk</artifactId>
-			<version>25.0.2</version>
+			<version>25.0.3</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>jakarta.transaction</groupId>
 			<artifactId>jakarta.transaction-api</artifactId>
-			<version>2.0.0</version>
+			<version>2.0.1</version>
 			<scope>test</scope>
 		</dependency>
 
