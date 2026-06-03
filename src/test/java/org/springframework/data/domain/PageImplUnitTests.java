@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Manousos Mathioudakis
  */
 class PageImplUnitTests {
 
@@ -191,7 +192,16 @@ class PageImplUnitTests {
 
 		Page<Integer> page = new PageImpl<>(Collections.singletonList(null));
 
-		assertThat(page).hasToString("Page 1 of 1 containing UNKNOWN instances");
+		assertThat(page).hasToString(String.format("Page 1 of 1 containing UNKNOWN instances @%s", Integer.toHexString(page.hashCode())));
 	}
+
+	@Test //issue 2066
+	void toStringShouldNotBeEqualsForDifferentPages() {
+		Page<String> page1 = new PageImpl<>(Arrays.asList("item1", "item2"), PageRequest.of(0, 5), 10);
+		Page<String> page2 = new PageImpl<>(Arrays.asList("item1", "item3"), PageRequest.of(0, 5), 10);
+
+		assertThat(page1.toString()).isNotEqualTo(page2.toString());
+	}
+
 
 }
