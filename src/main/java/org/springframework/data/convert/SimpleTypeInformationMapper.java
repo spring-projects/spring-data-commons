@@ -15,15 +15,14 @@
  */
 package org.springframework.data.convert;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.data.mapping.Alias;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 
 /**
  * Basic {@link TypeInformationMapper} implementation that interprets the alias handles as fully qualified class name
@@ -32,12 +31,30 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanClassLoaderAware {
 
-	private final Map<String, Optional<TypeInformation<?>>> cache = new ConcurrentHashMap<>();
+	private final ConcurrentLruCache<String, Optional<TypeInformation<?>>> cache;
 
 	private @Nullable ClassLoader classLoader;
+
+	/**
+	 * Creates a new {@link SimpleTypeInformationMapper} with a cache size of 1024.
+	 */
+	public SimpleTypeInformationMapper() {
+		this(1024);
+	}
+
+	/**
+	 * Creates a new {@link SimpleTypeInformationMapper} with the given cache size.
+	 *
+	 * @param cacheSize must not be negative.
+	 * @since 3.5.12
+	 */
+	public SimpleTypeInformationMapper(int cacheSize) {
+		this.cache = new ConcurrentLruCache<>(cacheSize, this::loadClass);
+	}
 
 	/**
 	 * Returns the {@link TypeInformation} that shall be used when the given {@link String} value is found as type hint.
@@ -55,7 +72,7 @@ public class SimpleTypeInformationMapper implements TypeInformationMapper, BeanC
 		String stringAlias = alias.mapTyped(String.class);
 
 		if (stringAlias != null) {
-			return cache.computeIfAbsent(stringAlias, this::loadClass).orElse(null);
+			return cache.get(stringAlias).orElse(null);
 		}
 
 		return null;
