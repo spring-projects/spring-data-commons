@@ -350,6 +350,8 @@ For usage with `RestTemplate`, register a `ProjectingJacksonHttpMessageConverter
 
 For more information, see the https://github.com/spring-projects/spring-data-examples/tree/main/web/projection[web projection example] in the canonical https://github.com/spring-projects/spring-data-examples[Spring Data Examples repository].
 
+NOTE: By default, binding collection-like properties is capped at 1024 entries. You can override this limit by setting the `spring.data.web.projection.collection-limit` property through a `spring.properties` file or as a system property.
+
 [[core.web.type-safe]]
 == Querydsl Web Support
 

@@ -53,25 +53,41 @@ import org.springframework.web.bind.WebDataBinder;
  *
  * @author Oliver Gierke
  * @author Johannes Englmeier
+ * @author Christoph Strobl
  * @since 1.10
  */
 class MapDataBinder extends WebDataBinder {
 
+	static final int DEFAULT_COLLECTION_LIMIT = 1024;
+
 	private final Class<?> type;
 	private final ConversionService conversionService;
+
+	/**
+	 * Creates a new {@link MapDataBinder} for the given type and {@link ConversionService},
+	 * limiting collections to a size of {@link #DEFAULT_COLLECTION_LIMIT} for data binding.
+	 *
+	 * @param type target type to detect property that need to be bound.
+	 * @param conversionService the {@link ConversionService} to be used to preprocess values.
+	 */
+	public MapDataBinder(Class<?> type, ConversionService conversionService) {
+		this(type, conversionService, DEFAULT_COLLECTION_LIMIT);
+	}
 
 	/**
 	 * Creates a new {@link MapDataBinder} for the given type and {@link ConversionService}.
 	 *
 	 * @param type target type to detect property that need to be bound.
 	 * @param conversionService the {@link ConversionService} to be used to preprocess values.
+	 * @param collectionSizeLimit the maximum size of a collection to be bound.
+	 * @since 3.5.12
 	 */
-	public MapDataBinder(Class<?> type, ConversionService conversionService) {
-
+	public MapDataBinder(Class<?> type, ConversionService conversionService, int collectionSizeLimit) {
 		super(new HashMap<String, Object>());
 
 		this.type = type;
 		this.conversionService = conversionService;
+		this.setAutoGrowCollectionLimit(collectionSizeLimit);
 	}
 
 	@NonNull
@@ -90,7 +106,8 @@ class MapDataBinder extends WebDataBinder {
 
 	@Override
 	protected ConfigurablePropertyAccessor getPropertyAccessor() {
-		return new MapPropertyAccessor(type, getTarget(), conversionService);
+		return new MapPropertyAccessor(type, getTarget(), conversionService, true,
+			getAutoGrowCollectionLimit());
 	}
 
 	/**
@@ -99,22 +116,32 @@ class MapDataBinder extends WebDataBinder {
 	 *
 	 * @author Oliver Gierke
 	 * @author Johannes Englmeier
+	 * @author Christoph Strobl
 	 * @since 1.10
 	 */
 	private static class MapPropertyAccessor extends AbstractPropertyAccessor {
 
 		private static final SpelExpressionParser PARSER = new SpelExpressionParser(
-				new SpelParserConfiguration(false, true));
+			new SpelParserConfiguration(false, true, MapDataBinder.DEFAULT_COLLECTION_LIMIT));
 
 		private final Class<?> type;
 		private final Map<String, Object> map;
 		private final ConversionService conversionService;
+		private final SpelExpressionParser parser;
 
-		public MapPropertyAccessor(Class<?> type, Map<String, Object> map, ConversionService conversionService) {
+		public MapPropertyAccessor(Class<?> type, Map<String, Object> map, ConversionService conversionService,
+			boolean autoGrowCollections, int maxAutoGrowCollectionSize) {
 
 			this.type = type;
 			this.map = map;
 			this.conversionService = conversionService;
+
+			if (!autoGrowCollections || maxAutoGrowCollectionSize != MapDataBinder.DEFAULT_COLLECTION_LIMIT) {
+				parser = new SpelExpressionParser(
+					new SpelParserConfiguration(false, autoGrowCollections, maxAutoGrowCollectionSize));
+			} else {
+				parser = PARSER;
+			}
 		}
 
 		@Override
@@ -179,10 +206,11 @@ class MapDataBinder extends WebDataBinder {
 			EvaluationContext context = SimpleEvaluationContext //
 					.forPropertyAccessors(new PropertyTraversingMapAccessor(type, conversionService)) //
 					.withConversionService(conversionService) //
+					.withAssignmentDisabled() //
 					.withRootObject(map) //
 					.build();
 
-			Expression expression = PARSER.parseExpression(propertyName);
+			Expression expression = parser.parseExpression(propertyName);
 
 			try {
 				expression.setValue(context, value);
