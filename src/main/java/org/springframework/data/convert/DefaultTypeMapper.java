@@ -18,10 +18,7 @@ package org.springframework.data.convert;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
@@ -31,6 +28,7 @@ import org.springframework.data.mapping.Alias;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentLruCache;
 
 /**
  * Default implementation of {@link TypeMapper}.
@@ -44,9 +42,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 	private final TypeAliasAccessor<S> accessor;
 	private final List<? extends TypeInformationMapper> mappers;
-	private final Map<Alias, Optional<TypeInformation<?>>> typeCache;
-
-	private final Function<Alias, Optional<TypeInformation<?>>> getAlias;
+	private final ConcurrentLruCache<Alias, Optional<TypeInformation<?>>> typeCache;
 
 	/**
 	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}. It will use a
@@ -70,7 +66,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	}
 
 	/**
-	 * Creates a new {@link DefaultTypeMapper} using the given {@link TypeAliasAccessor}, {@link MappingContext} and
+	 * Creates a new {@link DefaultTypeMapper} with a cache size of 1024, using the given {@link TypeAliasAccessor}, {@link MappingContext} and
 	 * additional {@link TypeInformationMapper}s. Will register a {@link MappingContextTypeInformationMapper} before the
 	 * given additional mappers.
 	 *
@@ -81,6 +77,23 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
 			@Nullable MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
 			List<? extends TypeInformationMapper> additionalMappers) {
+		this(accessor, mappingContext, additionalMappers, 1024);
+	}
+
+	/**
+	 * Creates a new {@link DefaultTypeMapper} with the given cache size, using the given {@link TypeAliasAccessor}, {@link MappingContext} and
+	 * additional {@link TypeInformationMapper}s. Will register a {@link MappingContextTypeInformationMapper} before the
+	 * given additional mappers.
+	 *
+	 * @param accessor must not be {@literal null}.
+	 * @param mappingContext
+	 * @param additionalMappers must not be {@literal null}.
+	 * @param cacheSize must not be negative.
+	 * @since 3.5.12
+	 */
+	public DefaultTypeMapper(TypeAliasAccessor<S> accessor,
+		@Nullable MappingContext<? extends PersistentEntity<?, ?>, ?> mappingContext,
+		List<? extends TypeInformationMapper> additionalMappers, int cacheSize) {
 
 		Assert.notNull(accessor, "Accessor must not be null");
 		Assert.notNull(additionalMappers, "AdditionalMappers must not be null");
@@ -93,18 +106,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 
 		this.mappers = Collections.unmodifiableList(mappers);
 		this.accessor = accessor;
-		this.typeCache = new ConcurrentHashMap<>();
-		this.getAlias = key -> {
-
-			for (TypeInformationMapper mapper : mappers) {
-				TypeInformation<?> typeInformation = mapper.resolveTypeFrom(key);
-
-				if (typeInformation != null) {
-					return Optional.of(typeInformation);
-				}
-			}
-			return Optional.empty();
-		};
+		this.typeCache = new ConcurrentLruCache<>(cacheSize, this::resolveTypeInformation);
 	}
 
 	@Override
@@ -116,6 +118,25 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	}
 
 	/**
+	 * Tries to lookup a {@link TypeInformation} for the given alias in the {@link #mappers} and return the first one found.
+	 *
+	 * @param alias must not be {@literal null}.
+	 * @return the {@link TypeInformation} for the given alias or {@link Optional#empty()} if none was found.
+	 * @since 3.5.12
+	 */
+	private Optional<TypeInformation<?>> resolveTypeInformation(Alias alias) {
+
+		for (TypeInformationMapper mapper : mappers) {
+			TypeInformation<?> typeInformation = mapper.resolveTypeFrom(alias);
+
+			if (typeInformation != null) {
+				return Optional.of(typeInformation);
+			}
+		}
+		return Optional.empty();
+	}
+
+	/**
 	 * Tries to lookup a {@link TypeInformation} for the given alias from the cache and return it if found. If none is
 	 * found it'll consult the {@link TypeInformationMapper}s and cache the value found.
 	 *
@@ -123,7 +144,7 @@ public class DefaultTypeMapper<S> implements TypeMapper<S>, BeanClassLoaderAware
 	 * @return
 	 */
 	private @Nullable TypeInformation<?> getFromCacheOrCreate(Alias alias) {
-		return typeCache.computeIfAbsent(alias, getAlias).orElse(null);
+		return typeCache.get(alias).orElse(null);
 	}
 
 	@Override
