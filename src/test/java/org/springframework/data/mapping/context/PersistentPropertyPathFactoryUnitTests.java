@@ -32,6 +32,7 @@ import org.springframework.data.mapping.context.PersistentPropertyPathFactory.Ty
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.StringUtils;
 
 /**
@@ -95,8 +96,8 @@ class PersistentPropertyPathFactoryUnitTests {
 		assertThatExceptionOfType(InvalidPersistentPropertyPath.class)//
 				.isThrownBy(() -> factory.from(PersonSample.class, "persons.firstname"));
 
-		Map<TypeAndPath, ?> propertyPaths = (Map<TypeAndPath, ?>) ReflectionTestUtils.getField(factory, "propertyPaths");
-		assertThat(propertyPaths).containsKey(TypeAndPath.of(TypeInformation.of(PersonSample.class), "persons.firstname"));
+		ConcurrentLruCache<TypeAndPath, ?> propertyPaths = (ConcurrentLruCache<TypeAndPath, ?>) ReflectionTestUtils.getField(factory, "propertyPaths");
+		assertThat(propertyPaths.contains(TypeAndPath.of(TypeInformation.of(PersonSample.class), "persons.firstname"))).isTrue();
 	}
 
 	@Test // DATACMNS-1275
