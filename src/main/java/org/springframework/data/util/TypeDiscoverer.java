@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentLruCache;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
  * Basic {@link TypeDiscoverer} that contains basic functionality to discover property types.
@@ -54,7 +55,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 			TypeDiscoverer::new);
 
 	private final ResolvableType resolvableType;
-	private final Map<String, Optional<TypeInformation<?>>> fields = new ConcurrentHashMap<>();
+	private final Lazy<Map<String, TypeInformation<?>>> fields;
 	private final Lazy<Boolean> isMap = Lazy.of(() -> CustomCollections.isMap(getType()));
 	private final Lazy<Boolean> isCollectionLike = Lazy.of(() -> {
 
@@ -77,6 +78,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		Assert.notNull(type, "Type must not be null");
 
 		this.resolvableType = type;
+		this.fields = Lazy.of(this::doGetProperties);
 		this.componentType = Lazy.of(this::doGetComponentType);
 		this.valueType = Lazy.of(this::doGetMapValueType);
 		this.typeArguments = Lazy.of(this::doGetTypeArguments);
@@ -117,7 +119,7 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		var separatorIndex = name.indexOf('.');
 
 		if (separatorIndex == -1) {
-			return fields.computeIfAbsent(name, this::getPropertyInformation).orElse(null);
+			return fields.get().get(name);
 		}
 
 		var head = name.substring(0, separatorIndex);
@@ -379,16 +381,6 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 		return arguments.get(index);
 	}
 
-	private Optional<TypeInformation<?>> getPropertyInformation(String fieldname) {
-
-		var rawType = getType();
-		var field = ReflectionUtils.findField(rawType, fieldname);
-
-		return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, resolvableType)))
-				: Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname))
-						.filter(it -> it.getName().equals(fieldname)).map(it -> from(it, rawType)).map(TypeInformation::of);
-	}
-
 	private ResolvableType from(PropertyDescriptor descriptor, Class<?> rawType) {
 
 		var method = descriptor.getReadMethod();
@@ -408,5 +400,28 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 	private boolean isNullableWrapper() {
 		return NullableWrapperConverters.supports(getType());
+	}
+
+	private Map<String, TypeInformation<?>> doGetProperties() {
+
+		Map<String, TypeInformation<?>> result = new HashMap<>();
+		Class<?> type = getType();
+		FieldCallback callback = field -> result.put(field.getName(),
+				TypeInformation.of(ResolvableType.forField(field, resolvableType)));
+
+		// Inspect fields first
+		ReflectionUtils.doWithFields(type, callback);
+
+		// Also inspect property descriptors
+		for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(type)) {
+
+			if (result.containsKey(descriptor.getName())) {
+				continue;
+			}
+
+			result.put(descriptor.getName(), TypeInformation.of(from(descriptor, type)));
+		}
+
+		return Collections.unmodifiableMap(result);
 	}
 }
