@@ -250,7 +250,7 @@ class Products implements Streamable<Product> {         <2>
   }
 }
 
-interface ProductRepository implements Repository<Product, Long> {
+interface ProductRepository extends Repository<Product, Long> {
   Products findAllByDescriptionContaining(String text); <5>
 }
 ----
@@ -284,7 +284,7 @@ That is, a `java.util.List` is turned into a Vavr `List` or `Seq`, a `java.util.
 [[repositories.query-streaming]]
 == Streaming Query Results
 
-You can process the results of query methods incrementally by using a Java 8 `Stream<T>` as the return type.
+You can process the results of query methods incrementally by using a `Stream<T>` as the return type.
 Instead of wrapping the query results in a `Stream`, data store-specific methods are used to perform the streaming, as shown in the following example:
 
 .Stream the result of a query with Java 8 `Stream<T>`
@@ -300,7 +300,7 @@ Stream<User> streamAllPaged(Pageable pageable);
 ----
 
 NOTE: A `Stream` potentially wraps underlying data store-specific resources and must, therefore, be closed after usage.
-You can either manually close the `Stream` by using the `close()` method or by using a Java 7 `try-with-resources` block, as shown in the following example:
+You can either manually close the `Stream` by using the `close()` method or by using a `try`-with-resources block, as shown in the following example:
 
 .Working with a `Stream<T>` result in a `try-with-resources` block
 [source,java]
@@ -330,7 +330,7 @@ Future<User> findByFirstname(String firstname);               <1>
 CompletableFuture<User> findOneByFirstname(String firstname); <2>
 ----
 <1> Use `java.util.concurrent.Future` as the return type.
-<2> Use a Java 8 `java.util.concurrent.CompletableFuture` as the return type.
+<2> Use `java.util.concurrent.CompletableFuture` as the return type.
 
 [[repositories.special-parameters]]
 == Paging, Iterating Large Results, Sorting & Limiting
@@ -410,7 +410,7 @@ Please consider the following list of invalid parameter combinations.
 
 |===
 
-The `Top` keyword used to limit results can be used to along with `Pageable` whereas `Top` defines the total maximum of results, whereas the Pageable parameter may reduce this number.
+The `Top` keyword can be used together with `Pageable`: `Top` defines the total maximum number of results, while the `Pageable` parameter may reduce this number further.
 ====
 
 [[repositories.scrolling.guidance]]
@@ -507,7 +507,7 @@ Sort sort = person.by(Person::getFirstname).ascending()
   .and(person.by(Person::getLastname).descending());
 ----
 
-NOTE: `TypedSort.by(…)` makes use of runtime proxies by (typically) using CGlib, which may interfere with native image compilation when using tools such as Graal VM Native.
+NOTE: `TypedSort.by(…)` makes use of runtime proxies by (typically) using CGlib, which may interfere with native image compilation when using tools such as GraalVM Native Image.
 
 If your store implementation supports Querydsl, you can also use the generated metamodel types to define sort expressions:
 

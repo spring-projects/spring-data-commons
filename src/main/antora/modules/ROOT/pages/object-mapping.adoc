@@ -210,7 +210,7 @@ If you want Spring Data to use the factory method for object instantiation, anno
 == General recommendations
 
 * _Try to stick to immutable objects_ -- Immutable objects are straightforward to create as materializing an object is then a matter of calling its constructor only.
-Also, this avoids your domain objects to be littered with setter methods that allow client code to manipulate the objects state.
+Also, this avoids littering your domain objects with setter methods that allow client code to manipulate the object's state.
 If you need those, prefer to make them package protected so that they can only be invoked by a limited amount of co-located types.
 Constructor-only materialization is up to 30% faster than properties population.
 * _Provide an all-args constructor_ -- Even if you cannot or don't want to model your entities as immutable values, there's still value in providing a constructor that takes all properties of the entity as arguments, including the mutable ones, as this allows the object mapping to skip the property population for optimal performance.

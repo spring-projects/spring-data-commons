@@ -77,11 +77,11 @@ class DefaultingEntityCallback implements BeforeSaveCallback<Person>, Ordered { 
 	@Override
 	public Object onBeforeSave(Person entity, String collection) {                   <1>
 
-		if(collection == "user") {
-		    return // ...
+		if("user".equals(collection)) {
+			return …;
 		}
 
-		return // ...
+		return …;
 	}
 
 	@Override

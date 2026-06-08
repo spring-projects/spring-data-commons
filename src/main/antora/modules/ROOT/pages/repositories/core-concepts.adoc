@@ -62,12 +62,12 @@ Following that path can easily lead to confusion and is discouraged as you will 
 NOTE: We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
 Those interfaces extend `CrudRepository` and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as `CrudRepository`.
 
-Additional to the `CrudRepository`, there are {spring-data-commons-javadoc-base}/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] and {spring-data-commons-javadoc-base}/org/springframework/data/repository/ListPagingAndSortingRepository.html[`ListPagingAndSortingRepository`] which add additional methods to ease paginated access to entities:
+In addition to `CrudRepository`, there are {spring-data-commons-javadoc-base}/org/springframework/data/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] and {spring-data-commons-javadoc-base}/org/springframework/data/repository/ListPagingAndSortingRepository.html[`ListPagingAndSortingRepository`] which add additional methods to ease paginated access to entities:
 
 .`PagingAndSortingRepository` interface
 [source,java]
 ----
-public interface PagingAndSortingRepository<T, ID>  {
+interface PagingAndSortingRepository<T, ID> extends Repository<T, ID> {
 
   Iterable<T> findAll(Sort sort);
 

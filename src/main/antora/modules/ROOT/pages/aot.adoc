@@ -29,7 +29,7 @@ If Ahead of Time compilation is enabled Spring Data can (depending on the actual
 * Repository Metadata in JSON format
 
 Each of the above is enabled by default.
-However, there users may fine tune the configuration with following options.
+However, users may fine-tune the configuration with the following options.
 
 [options = "autowidth",cols="1,1"]
 |===
