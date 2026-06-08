@@ -1,6 +1,5 @@
 [[repository-query-keywords]]
 [appendix]
-[[repository-query-keywords]]
 = Repository query keywords
 
 [[appendix.query.method.subject]]

@@ -1,7 +1,7 @@
 [[repositories.scrolling]]
 = Scrolling
 
-Scrolling is a more fine-grained approach to iterate through larger results set chunks.
+Scrolling is a more fine-grained approach to iterating through chunks of larger result sets.
 Scrolling consists of a stable sort, a scroll type (Offset- or Keyset-based scrolling) and result limiting.
 You can define simple sorting expressions by using property names and define static result limiting using the xref:repositories/query-methods-details.adoc#repositories.limit-query-result[`Top` or `First` keyword] through query derivation.
 You can concatenate expressions to collect multiple criteria into one expression.
@@ -90,7 +90,7 @@ Given the _exclusive_ nature of scrolling, using `ScrollPosition.offset(0)` skip
 [[repositories.scrolling.keyset]]
 == Scrolling using Keyset-Filtering
 
-Offset-based requires most databases require materializing the entire result before your server can return the results.
+Offset-based scrolling requires most databases to materialize the entire result before the server can return it.
 So while the client only sees the portion of the requested results, your server needs to build the full result, which causes additional load.
 
 Keyset-Filtering approaches result subset retrieval by leveraging built-in capabilities of your database aiming to reduce the computation and I/O requirements for individual queries.

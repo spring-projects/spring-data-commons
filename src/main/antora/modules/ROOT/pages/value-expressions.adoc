@@ -124,8 +124,7 @@ Accepting user-provided expressions can create an entry path to exploit the appl
 `EvaluationContextProvider` and its reactive variant `ReactiveEvaluationContextProvider` provide access to an `EvaluationContext`.
 `ExtensionAwareEvaluationContextProvider` and its reactive variant `ReactiveExtensionAwareEvaluationContextProvider` are default implementations that determine context extensions from an application context, specifically `ListableBeanFactory`.
 
-Extensions implement either `EvaluationContextExtension` or `ReactiveEvaluationContextExtension` to provide extension support to hydrate `EvaluationContext`.
-That are a root object, properties and functions (top-level methods).
+Extensions implement either `EvaluationContextExtension` or `ReactiveEvaluationContextExtension` to hydrate an `EvaluationContext` with: a root object, named properties, and functions (top-level methods).
 
 The following example shows a context extension that provides a root object, properties, functions and an aliased function.
 

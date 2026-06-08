@@ -485,7 +485,7 @@ factoryBean.addRepositoryFactoryCustomizer(repositoryFactory -> {
 	repositoryFactory.addInvocationListener(…);
 	repositoryFactory.addQueryCreationListener(…);
 
-	repositoryFactory.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> factory.addAdvice(…)));
+	repositoryFactory.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> factory.addAdvice(…));
 });
 ----
 
@@ -501,7 +501,7 @@ The most powerful approach to customize repository creation is to provide a cust
 Customizing the repository factory bean allows you to change repository creation entirely with full access to the underlying repository factory.
 
 Note that this approach requires the most effort and is typically only needed when you want to change core aspects of repository creation.
-Also, you need to take in consideration repository metadata derivation that is used to identify query methods, base implementation methods and custom implementations.
+Also, you need to take into consideration repository metadata derivation that is used to identify query methods, base implementation methods and custom implementations.
 The following summary outlines the key aspects:
 
 * `repositoryBaseClass`: The repository base class defines which methods are implemented by the base class and which methods require additional handling through aspects or custom implementations.

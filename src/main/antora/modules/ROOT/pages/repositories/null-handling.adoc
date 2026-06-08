@@ -18,11 +18,11 @@ See "`xref:repositories/query-return-types-reference.adoc[Repository query retur
 
 === JSpecify
 
-As on Spring Framework 7 and Spring Data 4, you can express nullability constraints for repository methods by using https://jspecify.dev/docs/start-here/[JSpecify].
+As of Spring Framework 7 and Spring Data 4, you can express nullability constraints for repository methods by using https://jspecify.dev/docs/start-here/[JSpecify].
 JSpecify is well integrated into IntelliJ and Eclipse to provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:
 
 * https://jspecify.dev/docs/api/org/jspecify/annotations/NullMarked.html[`@NullMarked`]: Used on the module-, package- and class-level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce `null` values.
-* https://jspecify.dev/docs/api/org/jspecify/annotations/NonNull.html[`@NonNull`]: Used on a type level for parameter or return values that must not be `null` (not needed value where `@NullMarked` applies).
+* https://jspecify.dev/docs/api/org/jspecify/annotations/NonNull.html[`@NonNull`]: Used on a type level for parameter or return values that must not be `null` (not needed on parameters and return values already covered by `@NullMarked`).
 * https://jspecify.dev/docs/api/org/jspecify/annotations/Nullable.html[`@Nullable`]: Used on the type level for parameter or return values that can be `null`.
 * https://jspecify.dev/docs/api/org/jspecify/annotations/NullUnmarked.html[`@NullUnmarked`]: Used on the package-, class-, and method-level to roll back nullness declaration and opt-out from a previous `@NullMarked`.
 Nullness changes to unspecified in such a case.
@@ -81,7 +81,7 @@ https://jspecify.dev/docs/api/org/jspecify/annotations/NullUnmarked.html[`@NullU
 
 You can express nullability constraints for repository methods by using {spring-framework-docs}/core/null-safety.html[Spring Framework's nullability annotations].
 
-NOTE: As on Spring Framework 7, Spring's nullability annotations are deprecated in favor of JSpecify.
+NOTE: As of Spring Framework 7, Spring's nullability annotations are deprecated in favor of JSpecify.
 Consult the framework documentation on {spring-framework-docs}/core/null-safety.html[Migrating from Spring null-safety annotations to JSpecify] for more information.
 
 They provide a tooling-friendly approach and opt-in `null` checks during runtime, as follows:

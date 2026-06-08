@@ -171,7 +171,7 @@ ExampleMatcher matcher = ExampleMatcher.matching()
 Queries created by `Example` use a merged view of the configuration.
 Default matching settings can be set at the `ExampleMatcher` level, while individual settings can be applied to particular property paths.
 Settings that are set on `ExampleMatcher` are inherited by property path settings unless they are defined explicitly.
-Settings on a property patch have higher precedence than default settings.
+Settings on a property path have higher precedence than default settings.
 The following table describes the scope of the various `ExampleMatcher` settings:
 
 [cols="1,2",options="header"]
