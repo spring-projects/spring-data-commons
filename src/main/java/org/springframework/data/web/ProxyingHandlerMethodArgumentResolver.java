@@ -26,10 +26,13 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.NumberUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -40,18 +43,25 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface based controller method parameters.
+ * <p>
+ * By default data binding of for collection types is limited to a size of #{@link MapDataBinder#DEFAULT_COLLECTION_LIMIT}.
+ * This value can be overridden by setting the property {@code spring.data.web.projection.collection-size-limit}.
  *
  * @author Oliver Gierke
  * @author Chris Bono
+ * @author Christoph Strobl
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
+	public static final String COLLECTION_SIZE_LIMIT_PARAM = "spring.data.web.projection.collection-limit";
+
 	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
+	private final int collectionSizeLimit;
 
 	/**
 	 * Creates a new {@link PageableHandlerMethodArgumentResolver} using the given {@link ConversionService}.
@@ -65,6 +75,13 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 		this.proxyFactory = new SpelAwareProxyProjectionFactory();
 		this.conversionService = conversionService;
+
+		String sizeFromProperty = SpringProperties.getProperty(COLLECTION_SIZE_LIMIT_PARAM);
+		if(StringUtils.hasText(sizeFromProperty)) {
+			this.collectionSizeLimit = NumberUtils.parseNumber(sizeFromProperty, Integer.class);
+		} else {
+			this.collectionSizeLimit = MapDataBinder.DEFAULT_COLLECTION_LIMIT;
+		}
 	}
 
 	@Override
@@ -120,7 +137,7 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory,
 			NativeWebRequest request) throws Exception {
 
-		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject());
+		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject(), this.collectionSizeLimit);
 		binder.bind(new MutablePropertyValues(request.getParameterMap()));
 
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());

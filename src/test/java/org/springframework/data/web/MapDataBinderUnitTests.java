@@ -40,6 +40,7 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  * Unit tests for {@link MapDataBinder}.
  *
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 class MapDataBinderUnitTests {
 
@@ -116,6 +117,31 @@ class MapDataBinderUnitTests {
 		assertThatExceptionOfType(NotWritablePropertyException.class) //
 				.isThrownBy(() -> accessor.setPropertyValue("fooBar[T(java.lang.String)]", null)) //
 				.withCauseInstanceOf(SpelEvaluationException.class);
+	}
+
+	@Test // GH-3495
+	void acceptsValuesWithinConfiguredMaxCollectionSize() {
+
+		MapDataBinder dataBinder = new MapDataBinder(Bar.class, new DefaultFormattingConversionService());
+		dataBinder.setAutoGrowCollectionLimit(300);
+		var accessor = dataBinder.getPropertyAccessor();
+
+		accessor.setPropertyValue("fooBar[299]", "Spring");
+
+		assertThat((Collection<?>) dataBinder.getTarget().get("fooBar")).hasSize(300);
+	}
+
+	@Test // GH-3495
+	void rejectsValuesBeyondConfiguredMaxCollectionSize() {
+
+		var accessor = new MapDataBinder(Bar.class, new DefaultFormattingConversionService())
+			.getPropertyAccessor();
+
+		assertThatNoException().isThrownBy(() -> accessor.setPropertyValue("fooBar[299]", "Spring"));
+
+		assertThatExceptionOfType(NotWritablePropertyException.class) //
+			.isThrownBy(() -> accessor.setPropertyValue("fooBar[2000]", "Spring")) //
+			.withCauseInstanceOf(SpelEvaluationException.class);
 	}
 
 	private static Map<String, Object> bind(PropertyValues values) {
