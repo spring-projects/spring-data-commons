@@ -8,7 +8,7 @@ If you want to expose CRUD methods for that domain type, you may extend `CrudRep
 [[repositories.definition-tuning]]
 == Fine-tuning Repository Definition
 
-There are a few variants how you can get started with your repository interface.
+There are a few ways to get started with your repository interface.
 
 The typical approach is to extend `CrudRepository`, which gives you methods for CRUD functionality.
 CRUD stands for Create, Read, Update, Delete.
@@ -19,7 +19,7 @@ If you are using a reactive store you might choose `ReactiveCrudRepository`, or 
 If you are using Kotlin you might pick `CoroutineCrudRepository` which utilizes Kotlin's coroutines.
 
 Additionally you can extend `PagingAndSortingRepository`, `ReactiveSortingRepository`, `RxJava3SortingRepository`, or `CoroutineSortingRepository` if you need methods that allow to specify a `Sort` abstraction or in the first case a `Pageable` abstraction.
-Note that the various sorting repositories no longer extended their respective CRUD repository as they did in Spring Data Versions pre 3.0.
+Note that the various sorting repositories no longer extend their respective CRUD repository as they did in Spring Data versions prior to 3.0.
 Therefore, you need to extend both interfaces if you want functionality of both.
 
 If you do not want to extend Spring Data interfaces, you can also annotate your repository interface with `@RepositoryDefinition`.

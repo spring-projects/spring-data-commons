@@ -34,7 +34,6 @@ The `@EnableSpringDataWebSupport` annotation registers a few components.
 We discuss those later in this section.
 It also detects Spring HATEOAS on the classpath and registers integration components (if present) for it as well.
 
-.Enabling Spring Data web support in XML
 [[core.web.basic]]
 == Basic Web Support
 
@@ -108,6 +107,11 @@ The preceding method signature causes Spring MVC try to derive a `Pageable` inst
 |`sort`|Properties that should be sorted by in the format `property,property(,ASC\|DESC)(,IgnoreCase)`. The default sort direction is case-sensitive ascending. Use multiple `sort` parameters if you want to switch direction or case sensitivity -- for example, `?sort=firstname&sort=lastname,asc&sort=city,ignorecase`.
 |===
 
+[IMPORTANT]
+====
+`Sort.Order` instances resolved from request parameters are plain transfer objects carrying property names as is, without any validation against the domain model. Applications are responsible for verifying these values to prevent unintended sorting.
+====
+
 To customize this behavior, register a bean that implements the `PageableHandlerMethodArgumentResolverCustomizer` interface or the `SortHandlerMethodArgumentResolverCustomizer` interface, respectively.
 Its `customize()` method gets called, letting you change settings, as the following example shows:
 
@@ -147,7 +151,7 @@ We still ultimately recommend to leverage xref:repositories/core-extensions.adoc
 But as of version 3.3 Spring Data ships a page rendering mechanism that is convenient to use but does not require the inclusion of Spring HATEOAS.
 
 [[core.web.page.paged-model]]
-=== Using Spring Data' `PagedModel`
+=== Using Spring Data's `PagedModel`
 
 At its core, the support consists of a simplified version of Spring HATEOAS' `PagedModel` (the Spring Data one located in the `org.springframework.data.web` package).
 It can be used to wrap `Page` instances and result in a simplified representation that reflects the structure established by Spring HATEOAS but omits the navigation links.
@@ -290,7 +294,7 @@ By default, the assembler points to the controller method it was invoked in, but
 == Spring Data Jackson Modules
 
 The core module, and some of the store specific ones, ship with a set of Jackson Modules for types, like `org.springframework.data.geo.Distance` and `org.springframework.data.geo.Point`, used by the Spring Data domain. +
-Those Modules are imported once xref:repositories/core-extensions.adoc#core.web[web support] is enabled and `com.fasterxml.jackson.databind.ObjectMapper` is available.
+Those Modules are imported once xref:repositories/core-extensions.adoc#core.web[web support] is enabled and a `com.fasterxml.jackson.databind.ObjectMapper` is available on the classpath.
 
 During initialization `SpringDataJacksonModules`, like the `SpringDataJacksonConfiguration`, get picked up by the infrastructure, so that the declared ``com.fasterxml.jackson.databind.Module``s are made available to the Jackson `ObjectMapper`.
 

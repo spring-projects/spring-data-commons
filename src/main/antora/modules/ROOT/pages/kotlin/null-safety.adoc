@@ -16,7 +16,7 @@ See xref:repositories/null-handling.adoc[Null Handling of Repository Methods] ho
 You can configure JSR-305 checks by adding the `-Xjsr305` compiler flag with the following options: `-Xjsr305={strict|warn|ignore}`.
 
 For Kotlin versions 1.1+, the default behavior is the same as `-Xjsr305=warn`.
-The `strict` value is required take Spring Data API null-safety into account. Kotlin types inferred from Spring API but should be used with the knowledge that Spring API nullability declaration could evolve, even between minor releases and that more checks may be added in the future.
+The `strict` value is required to take Spring Data API null-safety into account. Kotlin types inferred from Spring API but should be used with the knowledge that Spring API nullability declaration could evolve, even between minor releases and that more checks may be added in the future.
 ====
 
 NOTE: Generic type arguments, varargs, and array elements nullability are not supported yet, but should be in an upcoming release.

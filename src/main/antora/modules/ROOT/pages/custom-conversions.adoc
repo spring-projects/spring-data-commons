@@ -1,3 +1,4 @@
+[[custom-conversions]]
 = Custom Conversions
 
 The following example of a Spring `Converter` implementation converts from a `String` to a custom `Email` value object:

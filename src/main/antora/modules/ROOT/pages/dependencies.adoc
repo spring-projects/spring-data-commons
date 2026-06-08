@@ -37,7 +37,7 @@ You can find a working example of using the BOMs in our https://github.com/sprin
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-jpa</artifactId>
   </dependency>
-<dependencies>
+</dependencies>
 ----
 
 [[dependencies.spring-boot]]
