@@ -5,14 +5,13 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-commons</artifactId>
-	<version>3.5.12-SNAPSHOT</version>
+	<version>3.5.12</version>
 
 	<name>Spring Data Core</name>
 	<description>Core Spring concepts underpinning every Spring Data module.</description>
 	<url>https://spring.io/projects/spring-data</url>
 	<scm>
-		<connection>scm:git:https://github.com/spring-projects/spring-data-commons.git
-		</connection>
+		<connection>scm:git:https://github.com/spring-projects/spring-data-commons.git</connection>
 		<developerConnection>
 			scm:git:git@github.com:spring-projects/spring-data-commons.git
 		</developerConnection>
@@ -25,7 +24,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>3.5.12-SNAPSHOT</version>
+		<version>3.5.12</version>
 	</parent>
 
 	<properties>
@@ -387,20 +386,8 @@
 	</profiles>
 
 	<repositories>
-		<repository>
-			<id>spring-snapshot</id>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>spring-milestone</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
+		
+		
 	</repositories>
 
 </project>
