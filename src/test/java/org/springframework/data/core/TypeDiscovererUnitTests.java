@@ -379,6 +379,14 @@ public class TypeDiscovererUnitTests {
 		assertThat(domainType.isAssignableFrom(actualType)).isTrue();
 	}
 
+	@Test // GH-3500
+	void superclassFieldsDoNotHideSubclassFields() {
+
+		TypeDiscoverer<?> discoverer = TypeDiscoverer.ofCached(ResolvableType.forClass(TheOne.class));
+
+		assertThat(discoverer.getProperty("theOne").getType()).isEqualTo(String.class);
+	}
+
 	class Person {
 
 		Addresses addresses;
@@ -486,6 +494,16 @@ public class TypeDiscovererUnitTests {
 	static abstract class SomeType<Self extends SomeType<Self>> {
 
 	}
+
+	static class SuperclassWithProperties {
+		private CharSequence theOne;
+		private String theOther;
+	}
+
+	class TheOne extends SuperclassWithProperties {
+		private String theOne;
+	}
+
 
 	@SuppressWarnings("rawtypes")
 	interface RepoWithRawGenerics extends Repository<SomeType, SomeType> {
