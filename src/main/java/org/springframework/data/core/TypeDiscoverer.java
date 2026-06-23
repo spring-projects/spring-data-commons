@@ -407,8 +407,11 @@ class TypeDiscoverer<S> implements TypeInformation<S> {
 
 		Map<String, TypeInformation<?>> result = new HashMap<>();
 		Class<?> type = getType();
-		FieldCallback callback = field -> result.put(field.getName(),
-				TypeInformation.of(ResolvableType.forField(field, resolvableType)));
+		FieldCallback callback = field -> {
+			if (!result.containsKey(field.getName())) {
+				result.put(field.getName(), TypeInformation.of(ResolvableType.forField(field, resolvableType)));
+			}
+		};
 
 		// Inspect fields first
 		ReflectionUtils.doWithFields(type, callback);
