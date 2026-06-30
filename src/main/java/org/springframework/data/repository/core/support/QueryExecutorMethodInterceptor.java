@@ -42,7 +42,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
- * This {@link MethodInterceptor} intercepts calls to methods of the custom implementation and delegates the to it if
+ * This {@link MethodInterceptor} intercepts calls to methods of the custom implementation and delegates to it if
  * configured. Furthermore it resolves method calls to finders and triggers execution of them. You can rely on having a
  * custom repository implementation instance set if this returns true.
  *
