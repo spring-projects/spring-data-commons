@@ -335,7 +335,7 @@ public interface PersistentProperty<P extends PersistentProperty<P>> {
 	Class<?> getComponentType();
 
 	/**
-	 * Returns the raw type as it's pulled from from the reflected property.
+	 * Returns the raw type as it's pulled from the reflected property.
 	 *
 	 * @return the raw type of the property.
 	 */
