@@ -87,7 +87,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
-	 * Creates the {@link QuerydslBindings} to be used using for the given domain type. A {@link QuerydslBinderCustomizer}
+	 * Creates the {@link QuerydslBindings} to be used for the given domain type. A {@link QuerydslBinderCustomizer}
 	 * will be auto-detected.
 	 *
 	 * @param domainType must not be {@literal null}.
@@ -98,7 +98,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
-	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
+	 * Creates the {@link QuerydslBindings} to be used for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}.
 	 *
 	 * @param domainType must not be {@literal null}.
@@ -111,7 +111,7 @@ public class QuerydslBindingsFactory implements ApplicationContextAware {
 	}
 
 	/**
-	 * Creates the {@link QuerydslBindings} to be used using for the given domain type and a pre-defined
+	 * Creates the {@link QuerydslBindings} to be used for the given domain type and a pre-defined
 	 * {@link QuerydslBinderCustomizer}. If no customizer is given, auto-detection will be applied.
 	 *
 	 * @param domainType must not be {@literal null}.

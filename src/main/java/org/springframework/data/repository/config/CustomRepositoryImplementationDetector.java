@@ -55,7 +55,7 @@ public class CustomRepositoryImplementationDetector {
 	/**
 	 * Creates a new {@link CustomRepositoryImplementationDetector} with the given {@link Environment},
 	 * {@link ResourceLoader} and {@link ImplementationDetectionConfiguration}. The latter will be registered for a
-	 * one-time component scan for implementation candidates that will the be used and filtered in all subsequent calls to
+	 * one-time component scan for implementation candidates that will be used and filtered in all subsequent calls to
 	 * {@link #detectCustomImplementation(ImplementationLookupConfiguration)}.
 	 *
 	 * @param environment must not be {@literal null}.
