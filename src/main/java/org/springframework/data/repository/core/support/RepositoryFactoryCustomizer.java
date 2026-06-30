@@ -16,7 +16,7 @@
 package org.springframework.data.repository.core.support;
 
 /**
- * Callback interface that can be used to to customize a {@link RepositoryFactorySupport repository factory}.
+ * Callback interface that can be used to customize a {@link RepositoryFactorySupport repository factory}.
  *
  * @author Mark Paluch
  * @since 2.4

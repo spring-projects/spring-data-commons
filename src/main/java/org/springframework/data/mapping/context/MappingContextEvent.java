@@ -23,7 +23,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
 /**
- * Base implementation of an {@link ApplicationEvent} refering to a {@link PersistentEntity}.
+ * Base implementation of an {@link ApplicationEvent} referring to a {@link PersistentEntity}.
  *
  * @author Oliver Gierke
  * @author Jon Brisbin

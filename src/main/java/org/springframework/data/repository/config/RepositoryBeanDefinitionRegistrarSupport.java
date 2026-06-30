@@ -97,7 +97,7 @@ public abstract class RepositoryBeanDefinitionRegistrarSupport
 	}
 
 	/**
-	 * Return the annotation to obtain configuration information from. Will be wrappen into an
+	 * Return the annotation to obtain configuration information from. Will be wrapped into an
 	 * {@link AnnotationRepositoryConfigurationSource} so have a look at the constants in there for what annotation
 	 * attributes it expects.
 	 *

@@ -48,7 +48,7 @@ public interface OffsetScrollPositionArgumentResolver extends HandlerMethodArgum
 	 * @param webRequest the current request
 	 * @param binderFactory a factory for creating {@link WebDataBinder} instances
 	 * @return the resolved argument value or {@literal null} if the value cannot be resolved. The returned value
-	 *         considers {@link MethodParameter#isOptional() Optional} wrapping by returing either the value wrapped
+	 *         considers {@link MethodParameter#isOptional() Optional} wrapping by returning either the value wrapped
 	 *         within Optional or Optional.empty().
 	 */
 	@Override
