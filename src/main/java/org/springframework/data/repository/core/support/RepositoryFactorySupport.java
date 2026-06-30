@@ -650,7 +650,7 @@ public abstract class RepositoryFactorySupport
 	 * Checks if at least one {@link RepositoryFragment} indicates need to access to {@link RepositoryMetadata} by being
 	 * flagged with {@link RepositoryMetadataAccess}.
 	 *
-	 * @param fragments the fragments to intospect.
+	 * @param fragments the fragments to introspect.
 	 * @return {@literal true} if access to metadata is required.
 	 */
 	private static boolean shouldExposeMetadata(RepositoryFragments fragments) {
