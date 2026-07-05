@@ -1,0 +1,370 @@
+/*
+ * Copyright 2019-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.util;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.TypeUtils;
+
+/**
+ * Abstraction over a list of parameter value types. Allows to check whether a list of parameter values with the given
+ * type setup is a candidate for the invocation of a given {@link Method} (see {@link #areValidFor(Method)}). This is
+ * necessary to properly match parameter values against methods declaring varargs arguments. The implementation favors
+ * direct matches and only computes the alternative sets of types to be considered if the primary one doesn't match.
+ *
+ * @author Oliver Drotbohm
+ * @since 2.1.7
+ * @soundtrack Signs, High Times - Tedeschi Trucks Band (Signs)
+ * @deprecated since 4.0, this class is not intended for public use and will be removed in future versions.
+ */
+@Deprecated(since = "4.0", forRemoval = true)
+public class ParameterTypes {
+
+	private static final TypeDescriptor OBJECT_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
+	private static final ConcurrentMap<List<TypeDescriptor>, ParameterTypes> cache = new ConcurrentReferenceHashMap<>();
+
+	private final List<TypeDescriptor> types;
+	private final Lazy<Collection<ParameterTypes>> alternatives;
+
+	/**
+	 * Creates a new {@link ParameterTypes} for the given types.
+	 *
+	 * @param types
+	 */
+	private ParameterTypes(List<TypeDescriptor> types) {
+
+		this.types = types;
+		this.alternatives = Lazy.of(this::getAlternatives);
+	}
+
+	public ParameterTypes(List<TypeDescriptor> types, Lazy<Collection<ParameterTypes>> alternatives) {
+		this.types = types;
+		this.alternatives = alternatives;
+	}
+
+	/**
+	 * Returns the {@link ParameterTypes} for the given list of {@link TypeDescriptor}s.
+	 *
+	 * @param types must not be {@literal null}.
+	 * @return
+	 */
+	public static ParameterTypes of(List<TypeDescriptor> types) {
+
+		Assert.notNull(types, "Types must not be null");
+
+		return cache.computeIfAbsent(types, ParameterTypes::new);
+	}
+
+	/**
+	 * Returns the {@link ParameterTypes} for the given {@link Class}es.
+	 *
+	 * @param types must not be {@literal null}.
+	 * @return
+	 */
+	static ParameterTypes of(Class<?>... types) {
+
+		Assert.notNull(types, "Types must not be null");
+		Assert.noNullElements(types, "Types must not have null elements");
+
+		return of(Arrays.stream(types) //
+				.map(TypeDescriptor::valueOf) //
+				.collect(Collectors.toList()));
+	}
+
+	/**
+	 * Returns whether the parameter types are valid for the given {@link Method}. That means, a parameter value list with
+	 * the given type arrangement is a valid list to invoke the given method.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	public boolean areValidFor(Method method) {
+
+		Assert.notNull(method, "Method must not be null");
+
+		// Direct matches
+		if (areValidTypes(method)) {
+			return true;
+		}
+
+		return hasValidAlternativeFor(method);
+	}
+
+	/**
+	 * Returns whether we have a valid alternative variant (making use of varargs) that will match the given method's
+	 * signature.
+	 *
+	 * @param method
+	 * @return
+	 */
+	private boolean hasValidAlternativeFor(Method method) {
+
+		if (alternatives.get().stream().anyMatch(it -> it.areValidTypes(method))) {
+			return true;
+		}
+
+		ParameterTypes parent = getParent();
+
+		return parent != null && parent.hasValidAlternativeFor(method);
+	}
+
+	/**
+	 * Returns all suitable alternatives to the current {@link ParameterTypes}.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	List<ParameterTypes> getAllAlternatives() {
+
+		List<ParameterTypes> result = new ArrayList<>();
+		result.addAll(alternatives.get());
+
+		ParameterTypes parent = getParent();
+		if (parent != null) {
+			result.addAll(parent.getAllAlternatives());
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns whether the {@link ParameterTypes} consists of the given types.
+	 *
+	 * @param types must not be {@literal null}.
+	 * @return
+	 */
+	boolean hasTypes(Class<?>... types) {
+
+		Assert.notNull(types, "Types must not be null");
+
+		return Arrays.stream(types) //
+				.map(TypeDescriptor::valueOf) //
+				.toList()//
+				.equals(this.types);
+	}
+
+	/**
+	 * Returns whether the current parameter types match the given {@link Method}'s parameters exactly, i.e. they're
+	 * equal, not only assignable.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	public boolean exactlyMatchParametersOf(Method method) {
+
+		if (method.getParameterCount() != types.size()) {
+			return false;
+		}
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
+
+		for (int i = 0; i < parameterTypes.length; i++) {
+			if (parameterTypes[i] != types.get(i).getType()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	@Override
+	public String toString() {
+
+		return types.stream() //
+				.map(TypeDescriptor::getType) //
+				.map(Class::getSimpleName) //
+				.collect(Collectors.joining(", ", "(", ")"));
+	}
+
+	protected @Nullable ParameterTypes getParent() {
+		return types.isEmpty() ? null : getParent(getTail());
+	}
+
+	protected final @Nullable ParameterTypes getParent(TypeDescriptor tail) {
+
+		return types.size() <= 1 //
+				? null //
+				: ParentParameterTypes.of(types.subList(0, types.size() - 1), tail);
+	}
+
+	protected @Nullable ParameterTypes withLastVarArgs() {
+
+		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
+
+		return lastDescriptor.isArray() //
+				? null //
+				: withVarArgs(lastDescriptor);
+	}
+
+	@SuppressWarnings("null")
+	private ParameterTypes withVarArgs(TypeDescriptor descriptor) {
+
+		TypeDescriptor lastDescriptor = types.get(types.size() - 1);
+
+		if (lastDescriptor.isArray() && descriptor.equals(lastDescriptor.getElementTypeDescriptor())) {
+			return this;
+		}
+
+		List<TypeDescriptor> result = new ArrayList<>(types.subList(0, types.size() - 1));
+		result.add(TypeDescriptor.array(descriptor));
+
+		return ParameterTypes.of(result);
+	}
+
+	private Collection<ParameterTypes> getAlternatives() {
+
+		if (types.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<ParameterTypes> alternatives = new ArrayList<>();
+
+		ParameterTypes parameterTypes = withLastVarArgs();
+		if (parameterTypes != null) {
+			alternatives.add(parameterTypes);
+		}
+
+		ParameterTypes objectVarArgs = withVarArgs(OBJECT_DESCRIPTOR);
+
+		if (!alternatives.contains(objectVarArgs)) {
+			alternatives.add(objectVarArgs);
+		}
+
+		return alternatives;
+	}
+
+	/**
+	 * Returns whether the current type list makes up valid arguments for the given method.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	private boolean areValidTypes(Method method) {
+
+		Assert.notNull(method, "Method must not be null");
+
+		if (method.getParameterCount() != types.size()) {
+			return false;
+		}
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
+
+		for (int i = 0; i < parameterTypes.length; i++) {
+			if (!TypeUtils.isAssignable(parameterTypes[i], types.get(i).getType())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private TypeDescriptor getTail() {
+		return types.get(types.size() - 1);
+	}
+
+	@Override
+	public boolean equals(@Nullable Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof ParameterTypes that)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(types, that.types);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(types);
+	}
+
+	/**
+	 * Extension of {@link ParameterTypes} that remembers the seed tail and only adds typed varargs if the current tail is
+	 * assignable to the seed one.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	static class ParentParameterTypes extends ParameterTypes {
+
+		private final TypeDescriptor tail;
+
+		private ParentParameterTypes(List<TypeDescriptor> types, TypeDescriptor tail) {
+
+			super(types);
+			this.tail = tail;
+		}
+
+		public static ParentParameterTypes of(List<TypeDescriptor> types, TypeDescriptor tail) {
+			return new ParentParameterTypes(types, tail);
+		}
+
+		@Override
+		protected @Nullable ParameterTypes getParent() {
+			return super.getParent(tail);
+		}
+
+		@Override
+		protected @Nullable ParameterTypes withLastVarArgs() {
+
+			return !tail.isAssignableTo(super.getTail()) //
+					? null //
+					: super.withLastVarArgs();
+		}
+
+		@Override
+		public boolean equals(@Nullable Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof ParentParameterTypes that)) {
+				return false;
+			}
+
+			if (!super.equals(o)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(tail, that.tail);
+		}
+
+		@Override
+		public int hashCode() {
+
+			int result = super.hashCode();
+
+			result = 31 * result + ObjectUtils.nullSafeHashCode(tail);
+
+			return result;
+		}
+	}
+}

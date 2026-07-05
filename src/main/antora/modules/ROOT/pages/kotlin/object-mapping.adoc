@@ -1,0 +1,4 @@
+[[kotlin.mapping]]
+= Object Mapping
+
+See xref:object-mapping.adoc#mapping.kotlin[Kotlin support] for details on how Kotlin objects are materialized.

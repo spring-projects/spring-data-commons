@@ -1,0 +1,36 @@
+ifndef::projection-collection[]
+:projection-collection: Collection
+endif::[]
+
+Spring Data query methods usually return one or multiple instances of the aggregate root managed by the repository.
+However, it might sometimes be desirable to create projections based on certain attributes of those types.
+Spring Data allows modeling dedicated return types, to more selectively retrieve partial views of the managed aggregates.
+
+Imagine a repository and aggregate root type such as the following example:
+
+.A sample aggregate and repository
+[source,java,subs="+attributes"]
+----
+class Person {
+
+  @Id UUID id;
+  String firstname, lastname;
+  Address address;
+
+  static class Address {
+    String zipCode, city, street;
+  }
+}
+
+interface PersonRepository extends Repository<Person, UUID> {
+
+  {projection-collection}<Person> findByLastname(String lastname);
+}
+----
+
+Now imagine that we want to retrieve the person's name attributes only.
+What means does Spring Data offer to achieve this?
+The rest of this chapter answers that question.
+
+NOTE: Projection types are types residing outside the entity's type hierarchy.
+Superclasses and interfaces implemented by the entity are inside the type hierarchy hence returning a supertype (or implemented interface) returns an instance of the fully materialized entity.

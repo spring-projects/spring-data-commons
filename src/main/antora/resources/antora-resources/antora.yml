@@ -1,0 +1,20 @@
+version: ${antora-component.version}
+prerelease: ${antora-component.prerelease}
+
+asciidoc:
+  attributes:
+    attribute-missing: 'warn'
+    chomp: 'all'
+    version: '${project.version}'
+    copyright-year: '${current.year}'
+    springversionshort: '${spring.short}'
+    springversion: '${spring}'
+    spring-data-commons-docs-url: '${documentation.baseurl}/spring-data/commons/reference/{version}'
+    spring-data-commons-javadoc-base: '{spring-data-commons-docs-url}/api/java'
+    springdocsurl: '${documentation.spring-reference-url}/{springversionshort}'
+    spring-framework-docs: '{springdocsurl}'
+    springjavadocurl: '${documentation.spring-javadoc-url}'
+    spring-framework-javadoc: '{springjavadocurl}'
+    springhateoasversion: '${spring-hateoas}'
+    releasetrainversion: '${releasetrain}'
+    store: Jpa

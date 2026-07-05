@@ -1,0 +1,5 @@
+= Continuous Integration
+
+== Running CI tasks locally
+
+You can run CI jobs locally using Docker and act[https://nektosact.com/].

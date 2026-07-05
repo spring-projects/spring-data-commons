@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tests xmlns="foo">
+
+	<firstSample>
+		<include-filter type="assignable" expression="java.util.Collection"/>
+	</firstSample>
+
+	<secondSample>
+		<exclude-filter type="assignable" expression="java.util.Collection"/>
+	</secondSample>
+
+</tests>

@@ -1,0 +1,264 @@
+/*
+ * Copyright 2014-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.auditing;
+
+import java.lang.annotation.Annotation;
+import java.time.temporal.TemporalAccessor;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.domain.Auditable;
+import org.springframework.data.mapping.AccessOptions;
+import org.springframework.data.mapping.AccessOptions.SetOptions;
+import org.springframework.data.mapping.AccessOptions.SetOptions.Propagation;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPathAccessor;
+import org.springframework.data.mapping.PersistentPropertyPaths;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.util.Lazy;
+import org.springframework.lang.Contract;
+import org.springframework.util.Assert;
+
+/**
+ * {@link AuditableBeanWrapperFactory} that will create am {@link AuditableBeanWrapper} using mapping information
+ * obtained from a {@link MappingContext} to detect auditing configuration and eventually invoking setting the auditing
+ * values.
+ *
+ * @author Oliver Gierke
+ * @author Christoph Strobl
+ * @author Pavel Horal
+ * @since 1.8
+ */
+public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
+
+	private final PersistentEntities entities;
+	private final Map<Class<?>, MappingAuditingMetadata> metadataCache;
+
+	/**
+	 * Creates a new {@link MappingAuditableBeanWrapperFactory} using the given {@link PersistentEntities}.
+	 *
+	 * @param entities must not be {@literal null}.
+	 */
+	public MappingAuditableBeanWrapperFactory(PersistentEntities entities) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null");
+
+		this.entities = entities;
+		this.metadataCache = new ConcurrentHashMap<>();
+
+		entities
+				.forEach(it -> entities.mapOnContext(it.getType(), (context, entity) -> getMetadata(context, it.getType())));
+	}
+
+	@Override
+	public <T> Optional<AuditableBeanWrapper<T>> getBeanWrapperFor(T source) {
+
+		return Optional.of(source).flatMap(it -> {
+
+			if (it instanceof Auditable) {
+				return super.getBeanWrapperFor(source);
+			}
+
+			Class<?> entityClass = it.getClass();
+			return entities.mapOnContext(entityClass, (context, entity) -> {
+
+				MappingAuditingMetadata metadata = getMetadata(context, entityClass);
+
+				if (metadata.isAuditable()) {
+					return Optional.<AuditableBeanWrapper<T>> of(new MappingMetadataAuditableBeanWrapper<>(getConversionService(),
+							entity.getPropertyPathAccessor(it), metadata));
+				}
+
+				return Optional.<AuditableBeanWrapper<T>> empty();
+			}).orElseGet(() -> super.getBeanWrapperFor(source));
+		});
+	}
+
+	private MappingAuditingMetadata getMetadata(MappingContext<?, ? extends PersistentProperty<?>> context,
+			Class<?> entityClass) {
+		return metadataCache.computeIfAbsent(entityClass, key -> new MappingAuditingMetadata(context, entityClass));
+	}
+
+	/**
+	 * Captures {@link PersistentProperty} instances equipped with auditing annotations.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.8
+	 */
+	static class MappingAuditingMetadata {
+
+		private static final Predicate<? super PersistentProperty<?>> HAS_COLLECTION_PROPERTY = it -> it.isCollectionLike()
+				|| it.isMap();
+
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdByPaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> createdDatePaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> lastModifiedByPaths;
+		private final PersistentPropertyPaths<?, ? extends PersistentProperty<?>> lastModifiedDatePaths;
+
+		private final Lazy<Boolean> isAuditable;
+
+		/**
+		 * Creates a new {@link MappingAuditingMetadata} instance from the given {@link PersistentEntity}.
+		 *
+		 * @param context must not be {@literal null}.
+		 * @param type must not be {@literal null}.
+		 */
+		public <P> MappingAuditingMetadata(MappingContext<?, ? extends PersistentProperty<?>> context, Class<?> type) {
+
+			Assert.notNull(type, "Type must not be null");
+
+			this.createdByPaths = findPropertyPaths(type, CreatedBy.class, context);
+			this.createdDatePaths = findPropertyPaths(type, CreatedDate.class, context);
+			this.lastModifiedByPaths = findPropertyPaths(type, LastModifiedBy.class, context);
+			this.lastModifiedDatePaths = findPropertyPaths(type, LastModifiedDate.class, context);
+
+			this.isAuditable = Lazy.of( //
+					() -> //
+					Stream.of(createdByPaths, createdDatePaths, lastModifiedByPaths, lastModifiedDatePaths) //
+							.anyMatch(it -> !it.isEmpty())//
+			);
+		}
+
+		/**
+		 * Returns whether the {@link PersistentEntity} is auditable at all (read: any of the auditing annotations is
+		 * present).
+		 *
+		 * @return
+		 */
+		public boolean isAuditable() {
+			return isAuditable.get();
+		}
+
+		private PersistentPropertyPaths<?, ? extends PersistentProperty<?>> findPropertyPaths(Class<?> type,
+				Class<? extends Annotation> annotation, MappingContext<?, ? extends PersistentProperty<?>> context) {
+
+			return context //
+					.findPersistentPropertyPaths(type, withAnnotation(annotation)) //
+					.dropPathIfSegmentMatches(HAS_COLLECTION_PROPERTY);
+		}
+
+		private static Predicate<PersistentProperty<?>> withAnnotation(Class<? extends Annotation> type) {
+			return t -> t.findAnnotation(type) != null;
+		}
+	}
+
+	/**
+	 * {@link AuditableBeanWrapper} using {@link MappingAuditingMetadata} and a {@link PersistentPropertyAccessor} to set
+	 * values on auditing properties.
+	 *
+	 * @author Oliver Gierke
+	 * @since 1.8
+	 */
+	static class MappingMetadataAuditableBeanWrapper<T> extends DateConvertingAuditableBeanWrapper<T> {
+
+		private static final SetOptions OPTIONS = AccessOptions.defaultSetOptions() //
+				.skipNulls() // ;
+				.withCollectionAndMapPropagation(Propagation.SKIP);
+
+		private final PersistentPropertyPathAccessor<T> accessor;
+		private final MappingAuditingMetadata metadata;
+
+		/**
+		 * Creates a new {@link MappingMetadataAuditableBeanWrapper} for the given target and
+		 * {@link MappingAuditingMetadata}.
+		 *
+		 * @param accessor must not be {@literal null}.
+		 * @param metadata must not be {@literal null}.
+		 */
+		public MappingMetadataAuditableBeanWrapper(
+				ConversionService conversionService,
+				PersistentPropertyPathAccessor<T> accessor,
+				MappingAuditingMetadata metadata) {
+			super(conversionService);
+
+			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null");
+			Assert.notNull(metadata, "Auditing metadata must not be null");
+
+			this.accessor = accessor;
+			this.metadata = metadata;
+		}
+
+		@Override
+		public @Nullable Object setCreatedBy(@Nullable Object value) {
+			return setProperty(metadata.createdByPaths, value);
+		}
+
+		@Override
+		public TemporalAccessor setCreatedDate(TemporalAccessor value) {
+			return setDateProperty(metadata.createdDatePaths, value);
+		}
+
+		@Override
+		public @Nullable Object setLastModifiedBy(@Nullable Object value) {
+			return setProperty(metadata.lastModifiedByPaths, value);
+		}
+
+		@Override
+		public Optional<TemporalAccessor> getLastModifiedDate() {
+
+			Optional<Object> firstValue = metadata.lastModifiedDatePaths.getFirst() //
+					.map(accessor::getProperty);
+
+			return getAsTemporalAccessor(firstValue, TemporalAccessor.class);
+		}
+
+		@Override
+		public TemporalAccessor setLastModifiedDate(TemporalAccessor value) {
+			return setDateProperty(metadata.lastModifiedDatePaths, value);
+		}
+
+		@Override
+		public T getBean() {
+			return accessor.getBean();
+		}
+
+		@Nullable
+		@Contract("_, null -> null; _, !null -> !null")
+		private <S> S setProperty(
+				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, @Nullable S value) {
+
+			paths.forEach(it -> this.accessor.setProperty(it, value, OPTIONS));
+
+			return value;
+		}
+
+		private TemporalAccessor setDateProperty(
+				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> property, TemporalAccessor value) {
+
+			property.forEach(it -> {
+
+				Class<?> type = it.getLeafProperty().getType();
+
+				this.accessor.setProperty(it, getDateValueToSet(value, type, accessor.getBean()), OPTIONS);
+			});
+
+			return value;
+		}
+	}
+}

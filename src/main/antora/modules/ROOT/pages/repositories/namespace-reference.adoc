@@ -1,0 +1,20 @@
+[[repositories.namespace-reference]]
+[appendix]
+[[namespace-reference]]
+= Namespace reference
+:page-section-summary-toc: 1
+
+[[populator.namespace-dao-config]]
+== The `<repositories />` Element
+The `<repositories />` element triggers the setup of the Spring Data repository infrastructure. The most important attribute is `base-package`, which defines the package to scan for Spring Data repository interfaces. See "`xref:repositories/create-instances.adoc#repositories.create-instances.xml[XML Configuration]`". The following table describes the attributes of the `<repositories />` element:
+
+.Attributes
+[options="header", cols="1,3"]
+|===============
+|Name|Description
+|`base-package`|Defines the package to be scanned for repository interfaces that extend `*Repository` (the actual interface is determined by the specific Spring Data module) in auto-detection mode. All packages below the configured package are scanned, too. Wildcards are allowed.
+|`repository-impl-postfix`|Defines the postfix to autodetect custom repository implementations. Classes whose names end with the configured postfix are considered as candidates. Defaults to `Impl`.
+|`query-lookup-strategy`|Determines the strategy to be used to create finder queries. See "`xref:repositories/query-methods-details.adoc#repositories.query-methods.query-lookup-strategies[Query Lookup Strategies]`" for details. Defaults to `create-if-not-found`.
+|`named-queries-location`|Defines the location to search for a Properties file containing externally defined queries.
+|`consider-nested-repositories`|Whether nested repository interface definitions should be considered. Defaults to `false`.
+|===============

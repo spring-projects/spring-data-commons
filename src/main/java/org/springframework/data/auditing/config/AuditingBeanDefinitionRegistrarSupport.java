@@ -1,0 +1,195 @@
+/*
+ * Copyright 2013-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.auditing.config;
+
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
+
+import java.lang.annotation.Annotation;
+
+import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.target.LazyInitTargetSource;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+/**
+ * A {@link ImportBeanDefinitionRegistrar} that serves as a base class for store specific implementations for
+ * configuring audit support. Registers a {@link AuditingHandler} based on the provided configuration(
+ * {@link AuditingConfiguration}).
+ *
+ * @author Ranie Jade Ramiso
+ * @author Thomas Darimont
+ * @author Oliver Gierke
+ * @author Francisco Soler
+ * @author Jaeyeon Kim
+ */
+public abstract class AuditingBeanDefinitionRegistrarSupport implements ImportBeanDefinitionRegistrar {
+
+	private static final String AUDITOR_AWARE = "auditorAware";
+	private static final String DATE_TIME_PROVIDER = "dateTimeProvider";
+	private static final String MODIFY_ON_CREATE = "modifyOnCreation";
+	private static final String SET_DATES = "dateTimeForNow";
+
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+
+		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null");
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+
+		AbstractBeanDefinition ahbd = registerAuditHandlerBeanDefinition(getConfiguration(annotationMetadata), registry);
+		registerAuditListenerBeanDefinition(ahbd, registry);
+	}
+
+	/**
+	 * Registers an appropriate BeanDefinition for an {@link AuditingHandler}.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @return the {@link AbstractBeanDefinition} for the {@link AuditingConfiguration}.
+	 */
+	protected AbstractBeanDefinition registerAuditHandlerBeanDefinition(AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {
+
+		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		Assert.notNull(configuration, "AuditingConfiguration must not be null");
+
+		BeanDefinitionBuilder builder = getAuditHandlerBeanDefinitionBuilder(configuration);
+		postProcess(builder, configuration, registry);
+		AbstractBeanDefinition ahbd = builder.getBeanDefinition();
+		registry.registerBeanDefinition(getAuditingHandlerBeanName(), ahbd);
+		return ahbd;
+	}
+
+	/**
+	 * Customization hook to post-process the AuditHandler BeanDefinition.
+	 *
+	 * @param builder must not be {@literal null}.
+	 * @param registry must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
+	 * @since 3.0
+	 */
+	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {}
+
+	/**
+	 * Creates a {@link BeanDefinitionBuilder} to ease the definition of store specific {@link AuditingHandler}
+	 * implementations.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @return the {@link BeanDefinitionBuilder} for the {@link AuditingConfiguration}.
+	 */
+	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AuditingConfiguration configuration) {
+
+		Assert.notNull(configuration, "AuditingConfiguration must not be null");
+
+		return configureDefaultAuditHandlerAttributes(configuration,
+				BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class));
+	}
+
+	/**
+	 * Configures the given {@link BeanDefinitionBuilder} with the default attributes from the given
+	 * {@link AuditingConfiguration}.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @param builder must not be {@literal null}.
+	 * @return the builder with the audit attributes configured.
+	 */
+	protected BeanDefinitionBuilder configureDefaultAuditHandlerAttributes(AuditingConfiguration configuration,
+			BeanDefinitionBuilder builder) {
+
+		builder.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+
+		if (StringUtils.hasText(configuration.getAuditorAwareRef())) {
+			builder.addPropertyValue(AUDITOR_AWARE,
+					createLazyInitTargetSourceBeanDefinition(configuration.getAuditorAwareRef()));
+		}
+
+		builder.addPropertyValue(SET_DATES, configuration.isSetDates());
+		builder.addPropertyValue(MODIFY_ON_CREATE, configuration.isModifyOnCreate());
+
+		if (StringUtils.hasText(configuration.getDateTimeProviderRef())) {
+			builder.addPropertyReference(DATE_TIME_PROVIDER, configuration.getDateTimeProviderRef());
+		}
+
+		builder.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE);
+
+		return builder;
+	}
+
+	/**
+	 * Retrieve auditing configuration from the given {@link AnnotationMetadata}.
+	 *
+	 * @param annotationMetadata will never be {@literal null}.
+	 * @return a new {@link AnnotationAuditingConfiguration}.
+	 */
+	protected AuditingConfiguration getConfiguration(AnnotationMetadata annotationMetadata) {
+		return new AnnotationAuditingConfiguration(annotationMetadata, getAnnotation());
+	}
+
+	/**
+	 * Return the annotation type to lookup configuration values from.
+	 *
+	 * @return must not be {@literal null}.
+	 */
+	protected abstract Class<? extends Annotation> getAnnotation();
+
+	/**
+	 * Register the listener to eventually trigger the {@link AuditingHandler}.
+	 *
+	 * @param auditingHandlerDefinition will never be {@literal null}.
+	 * @param registry will never be {@literal null}.
+	 */
+	protected abstract void registerAuditListenerBeanDefinition(BeanDefinition auditingHandlerDefinition,
+			BeanDefinitionRegistry registry);
+
+	/**
+	 * Return the name to be used to register the {@link AuditingHandler} under.
+	 *
+	 * @return name of the {@link AuditingHandler} bean.
+	 */
+	protected abstract String getAuditingHandlerBeanName();
+
+	/**
+	 * Registers the given {@link AbstractBeanDefinition} as infrastructure bean under the given id.
+	 *
+	 * @param definition must not be {@literal null}.
+	 * @param id must not be {@literal null} or empty.
+	 * @param registry must not be {@literal null}.
+	 */
+	protected void registerInfrastructureBeanWithId(AbstractBeanDefinition definition, String id,
+			BeanDefinitionRegistry registry) {
+
+		definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		registry.registerBeanDefinition(id, definition);
+	}
+
+	private BeanDefinition createLazyInitTargetSourceBeanDefinition(String auditorAwareRef) {
+
+		BeanDefinitionBuilder targetSourceBuilder = rootBeanDefinition(LazyInitTargetSource.class);
+		targetSourceBuilder.addPropertyValue("targetBeanName", auditorAwareRef);
+
+		BeanDefinitionBuilder builder = rootBeanDefinition(ProxyFactoryBean.class);
+		builder.addPropertyValue("targetSource", targetSourceBuilder.getBeanDefinition());
+
+		return builder.getBeanDefinition();
+	}
+}

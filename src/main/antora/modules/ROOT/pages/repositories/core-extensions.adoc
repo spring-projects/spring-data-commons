@@ -1,0 +1,13 @@
+[[core.extensions]]
+= Spring Data Extensions
+
+This section documents a set of Spring Data extensions that enable Spring Data usage in a variety of contexts.
+Currently, most of the integration is targeted towards Spring MVC.
+
+include::core-extensions-querydsl.adoc[leveloffset=1]
+
+include::core-extensions-web.adoc[leveloffset=1]
+
+ifeval::[{include-xml-namespaces} != false]
+include::core-extensions-populators.adoc[leveloffset=1]
+endif::[]

@@ -1,0 +1,85 @@
+ifndef::projection-collection[]
+:projection-collection: Collection
+endif::[]
+
+[[projections.dtos]]
+= Class-based Projections (DTOs)
+
+Another way of defining projections is by using value type DTOs (Data Transfer Objects) that hold properties for the fields that are supposed to be retrieved.
+These DTO types can be used in exactly the same way projection interfaces are used, except that no proxying happens and no nested projections can be applied.
+
+If the store optimizes the query execution by limiting the fields to be loaded, the fields to be loaded are determined from the parameter names of the constructor that is exposed.
+
+The following example shows a projecting DTO:
+
+.A projecting DTO
+[source,java]
+----
+record NamesOnly(String firstname, String lastname) {
+}
+----
+
+Java Records are ideal to define DTO types since they adhere to value semantics:
+All fields are `private final` and ``equals(…)``/``hashCode()``/``toString()`` methods are created automatically.
+Alternatively, you can use any class that defines the properties you want to project.
+
+[[projection.dynamic]]
+== Dynamic Projections
+
+So far, we have used the projection type as the return type or element type of a collection.
+However, you might want to select the type to be used at invocation time (which makes it dynamic).
+To apply dynamic projections, use a query method such as the one shown in the following example:
+
+.A repository using a dynamic projection parameter
+[source,java,subs="+attributes"]
+----
+interface PersonRepository extends Repository<Person, UUID> {
+
+  <T> {projection-collection}<T> findByLastname(String lastname, Class<T> type);
+}
+----
+
+This way, the method can be used to obtain the aggregates as is or with a projection applied, as shown in the following example:
+
+.Using a repository with dynamic projections
+[source,java,subs="+attributes"]
+----
+void someMethod(PersonRepository people) {
+
+  {projection-collection}<Person> aggregates =
+    people.findByLastname("Matthews", Person.class);
+
+  {projection-collection}<NamesOnly> aggregates =
+    people.findByLastname("Matthews", NamesOnly.class);
+}
+----
+
+NOTE: Query parameters of type `Class` are inspected whether they qualify as dynamic projection parameter.
+If the actual return type of the query equals the generic parameter type of the `Class` parameter, then the matching `Class` parameter is not available for usage within the query or SpEL expressions.
+If you want to use a `Class` parameter as query argument then make sure to use a different generic parameter, for example `Class<?>`.
+
+[NOTE]
+====
+When using <<projections.dtos,Class-based projection>>, types must declare a single constructor so that Spring Data can determine their input properties.
+If your class defines more than one constructor, then you cannot use the type without further hints for DTO projections.
+In such a case annotate the desired constructor with `@PersistenceCreator` as outlined below so that Spring Data can determine which properties to select:
+
+[source,java]
+----
+public class NamesOnly {
+
+  private final String firstname;
+  private final String lastname;
+
+  protected NamesOnly() { }
+
+  @PersistenceCreator
+  public NamesOnly(String firstname, String lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+  }
+
+  // ...
+}
+----
+====

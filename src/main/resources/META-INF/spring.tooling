@@ -1,0 +1,4 @@
+# Tooling related information for the repository namespace
+http\://www.springframework.org/schema/data/repository@name=Repository Namespace
+http\://www.springframework.org/schema/data/repository@prefix=repository
+http\://www.springframework.org/schema/data/repository@icon=org/springframework/jdbc/config/spring-jdbc.gif

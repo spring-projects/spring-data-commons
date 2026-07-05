@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:repository="http://www.springframework.org/schema/data/repository"
+	xmlns:oxm="http://www.springframework.org/schema/oxm"
+	xsi:schemaLocation="http://www.springframework.org/schema/oxm https://www.springframework.org/schema/oxm/spring-oxm.xsd
+		http://www.springframework.org/schema/data/repository https://www.springframework.org/schema/data/repository/spring-repository.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+		
+	<repository:jackson2-populator id="jackson2-populator"
+		locations="classpath:org/springframework/data/repository/init/data.json" />
+		
+	<repository:unmarshaller-populator
+		id="xml-populator" locations="classpath:org/springframework/data/repository/init/data.xml"
+		unmarshaller-ref="unmarshaller" />
+
+	<oxm:jaxb2-marshaller id="unmarshaller" context-path="org.springframework.data.repository.config" />
+
+</beans>

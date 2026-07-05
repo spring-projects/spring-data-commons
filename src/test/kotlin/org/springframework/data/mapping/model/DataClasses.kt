@@ -1,0 +1,102 @@
+/*
+ * Copyright 2018-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.mapping.model
+
+import org.jmolecules.ddd.types.AggregateRoot
+import org.jmolecules.ddd.types.Identifier
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
+import java.time.LocalDateTime
+
+/**
+ * @author Mark Paluch
+ */
+data class DataClassKt(val id: String)
+
+data class ExtendedDataClassKt(val id: Long, val name: String) {
+	fun copy(name: String, id: Long): ExtendedDataClassKt {
+		throw UnsupportedOperationException("Wrong copy method")
+	}
+}
+
+data class DataClassWithLazy(
+	val amount: Int,
+	val currency: String,
+) {
+	val foo by lazy { 123 }
+}
+
+data class DataClassWithAssociation(
+	val assoc: org.jmolecules.ddd.types.Association<DataClassAggregate, DataClassId>
+)
+
+data class DataClassId(val id: String) : Identifier {
+
+}
+
+data class DataClassAggregate(val identifier: DataClassId) :
+	AggregateRoot<DataClassAggregate, DataClassId> {
+	override fun getId() = this.identifier
+}
+
+data class SingleSettableProperty constructor(val id: Double = Math.random()) {
+	val version: Int? = null
+}
+
+// note: Kotlin ships also a @Transient annotation to indicate JVM's transient keyword.
+data class DataClassWithTransientProperty(val firstname: String, @Transient val lastname: String)
+data class DataClassWithTransientProperties(@Transient val foo: String = "foo", @Transient val bar: Int)
+
+data class WithCustomCopyMethod(
+	val id: String?,
+	val userId: String,
+	val status: String,
+	val attempts: Int,
+	val createdAt: LocalDateTime,
+	val updatedAt: LocalDateTime,
+	val sessionId: String?
+) {
+
+	fun copy(
+		status: String,
+		updatedAt: LocalDateTime,
+		sessionId: String,
+		attempts: Int = this.attempts
+	) = WithCustomCopyMethod(
+		this.id,
+		this.userId,
+		status,
+		attempts,
+		this.createdAt,
+		updatedAt,
+		sessionId
+	)
+
+}
+
+data class ImmutableKotlinPerson(
+	@Id val name: String,
+	val wasOnboardedBy: List<ImmutableKotlinPerson>
+)
+
+data class DataClassWithParametrizedCollections<T>(
+	val id: String? = null,
+	val flags: Map<out String, Any>,
+	val stringStringFlags: Map<in String, String>,
+	val parametrized: List<T>,
+	val anyList: List<*>
+)
+

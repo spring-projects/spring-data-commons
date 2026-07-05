@@ -1,0 +1,23 @@
+[[spring-data-commons-reference-documentation]]
+= Spring Data Commons
+Oliver Gierke; Thomas Darimont; Christoph Strobl; Mark Pollack; Thomas Risberg; Mark Paluch; Jay Bryant
+:revnumber: {version}
+:revdate: {localdate}
+
+(C) 2008-{copyright-year} The original authors.
+
+NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
+
+[[preface]]
+== Preface
+
+The Spring Data Commons project applies core Spring concepts to the development of solutions using many relational and non-relational data stores.
+
+[[project]]
+== Project Metadata
+
+* Version control: https://github.com/spring-projects/spring-data-commons
+* Bugtracker: https://github.com/spring-projects/spring-data-commons/issues
+* Release repository: https://repo1.maven.org/maven2/
+* Milestone repository: https://repo.spring.io/milestone/
+* Snapshot repository: https://repo.spring.io/snapshot/

@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/data/repository=org.springframework.data.repository.config.RepositoryNameSpaceHandler
+http\://www.springframework.org/schema/data/keyvalue=org.springframework.data.keyvalue.repository.config.KeyValueRepositoryNameSpaceHandler

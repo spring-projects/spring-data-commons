@@ -1,0 +1,13 @@
+name: data-commons
+version: true
+title: Spring Data Commons
+nav:
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    - run:
+        command: ./mvnw -B validate process-resources dependency:unpack -am -Pantora-process-resources
+        local: true
+      scan:
+        - dir: target/classes/antora-resources/
+        - dir: target/antora/

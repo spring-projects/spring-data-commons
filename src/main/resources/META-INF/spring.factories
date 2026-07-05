@@ -1,0 +1,5 @@
+org.springframework.beans.BeanInfoFactory=org.springframework.data.util.KotlinBeanInfoFactory
+org.springframework.data.core.CustomCollectionRegistrar=org.springframework.data.core.CustomCollections.VavrCollections, \
+org.springframework.data.core.CustomCollections.EclipseCollections
+org.springframework.data.web.config.SpringDataJacksonModules=org.springframework.data.web.config.SpringDataJacksonConfiguration
+org.springframework.data.web.config.SpringDataJackson3Modules=org.springframework.data.web.config.SpringDataJackson3Configuration

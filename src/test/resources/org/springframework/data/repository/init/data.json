@@ -1,0 +1,3 @@
+[ { "_class" : "org.springframework.data.repository.init.Person",
+ "firstname" : "Dave",
+  "lastname" : "Matthews" } ]
