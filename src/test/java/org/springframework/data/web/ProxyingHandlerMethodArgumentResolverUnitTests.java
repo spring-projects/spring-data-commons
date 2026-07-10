@@ -23,17 +23,20 @@ import example.SampleInterface;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.function.Supplier;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.log.LogAccessor;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Oliver Gierke
  * @author Chris Bono
  * @author Mark Paluch
+ * @author hutiefang
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
@@ -132,39 +136,24 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
 
-	@ParameterizedTest // GH-3300
+	@ParameterizedTest // GH-3302
 	@ValueSource(strings = { "withModelAttribute", "withUserUnannotatedInterface" })
-	@SuppressWarnings("unchecked")
-	void deprecationLoggerOnlyLogsOncePerParameter(String methodName) {
+	void doesNotLogDeprecationForUnsupportedParameter(String methodName) {
 
 		var parameter = getParameter(methodName);
+		Appender<ILoggingEvent> appender = mock();
+		Logger logger = (Logger) LoggerFactory.getLogger(ProxyingHandlerMethodArgumentResolver.class);
+		Level previousLevel = logger.getLevel();
+		logger.addAppender(appender);
+		logger.setLevel(Level.WARN);
 
-		// Spy on the actual logger
-		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
-		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
-				LogAccessor.class);
-
-		// Invoke twice but should only log the first time
-		assertThat(resolver.supportsParameter(parameter)).isFalse();
-		verify(actualLoggerSpy, times(1)).warn(any(Supplier.class));
-		assertThat(resolver.supportsParameter(parameter)).isFalse();
-		verifyNoMoreInteractions(actualLoggerSpy);
-	}
-
-	@ParameterizedTest // GH-3300
-	@ValueSource(strings = { "withProjectedPayload", "withSpringAnnotatedInterface", "withUserAnnotatedInterface" })
-	void shouldNotLogDeprecationForValidUsage(String methodName) {
-
-		var parameter = getParameter(methodName);
-
-		// Spy on the actual logger
-		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
-		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
-				LogAccessor.class);
-
-		// Invoke should not log
-		assertThat(resolver.supportsParameter(parameter)).isTrue();
-		verifyNoInteractions(actualLoggerSpy);
+		try {
+			assertThat(resolver.supportsParameter(parameter)).isFalse();
+			verify(appender, never()).doAppend(any(ILoggingEvent.class));
+		} finally {
+			logger.setLevel(previousLevel);
+			logger.detachAppender(appender);
+		}
 	}
 
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {

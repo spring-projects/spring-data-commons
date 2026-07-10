@@ -340,6 +340,9 @@ public interface UserPayload {
 }
 ----
 
+For Spring MVC handler method argument resolution, annotate either the handler method parameter or the projection interface with `@ProjectedPayload`.
+Interfaces without `@ProjectedPayload` on either the handler method parameter or the interface type are not considered projection payloads.
+
 You can use the type shown in the preceding example as a Spring MVC handler method argument or by using `ParameterizedTypeReference` on one of methods of the `RestTemplate`.
 The preceding method declarations would try to find `firstname` anywhere in the given document.
 The `lastname` XML lookup is performed on the top-level of the incoming document.

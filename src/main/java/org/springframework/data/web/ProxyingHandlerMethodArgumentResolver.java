@@ -15,13 +15,6 @@
  */
 package org.springframework.data.web;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -32,13 +25,10 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.log.LogAccessor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
@@ -55,20 +45,16 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
  * @author Chris Bono
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author hutiefang
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
-	// NonFinalForTesting
-	private static LogAccessor LOGGER = new LogAccessor(ProxyingHandlerMethodArgumentResolver.class);
 	public static final String COLLECTION_SIZE_LIMIT_PARAM = "spring.data.web.projection.collection-limit";
-
-	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
-	private final ProjectedPayloadDeprecationLogger deprecationLogger = new ProjectedPayloadDeprecationLogger();
 	private final int collectionSizeLimit;
 
 	/**
@@ -122,35 +108,8 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 			return false;
 		}
 
-		// Type or parameter explicitly annotated with @ProjectedPayload
-		if (parameter.hasParameterAnnotation(ProjectedPayload.class) || AnnotatedElementUtils.findMergedAnnotation(type,
-				ProjectedPayload.class) != null) {
-			return true;
-		}
-
-		// Parameter annotated with @ModelAttribute
-		if (parameter.hasParameterAnnotation(ModelAttribute.class)) {
-			this.deprecationLogger.logDeprecationForParameter(parameter);
-			return false;
-		}
-
-		// Exclude any other parameters annotated with Spring annotation
-		if (Arrays.stream(parameter.getParameterAnnotations())
-				.map(Annotation::annotationType)
-				.map(Class::getPackageName)
-				.anyMatch(it -> it.startsWith("org.springframework"))) {
-
-			return false;
-		}
-
-		// Fallback for only user defined interfaces
-		String packageName = ClassUtils.getPackageName(type);
-		if (IGNORED_PACKAGES.stream().noneMatch(packageName::startsWith)) {
-			this.deprecationLogger.logDeprecationForParameter(parameter);
-			return false;
-		}
-
-		return false;
+		return parameter.hasParameterAnnotation(ProjectedPayload.class)
+				|| AnnotatedElementUtils.findMergedAnnotation(type, ProjectedPayload.class) != null;
 	}
 
 	@Override
@@ -165,36 +124,5 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	@Override
 	protected void bindRequestParameters(WebDataBinder binder, NativeWebRequest request) {}
-
-	/**
-	 * Logs a warning message when a parameter is proxied but not explicitly annotated with {@link @ProjectedPayload}.
-	 * <p>
-	 * To avoid log spamming, the message is only logged the first time the parameter is encountered.
-	 */
-	static class ProjectedPayloadDeprecationLogger {
-
-		private static final String MESSAGE = "Parameter %sat index %s in [%s] is not annotated with @ProjectedPayload. Make sure to annotate it with @ProjectedPayload (at the parameter or type level) to use it for projections.";
-
-		private final Set<MethodParameter> loggedParameters = Collections.synchronizedSet(new HashSet<>());
-
-		/**
-		 * Log a warning the first time a non-annotated method parameter is encountered.
-		 *
-		 * @param parameter the parameter
-		 */
-		void logDeprecationForParameter(MethodParameter parameter) {
-
-			if (!this.loggedParameters.add(parameter)) {
-				return;
-			}
-
-			String paramName = parameter.getParameterName();
-			String paramNameOrEmpty = paramName != null ? ("'" + paramName + "' ") : "";
-			String methodName = parameter.getMethod() != null ? parameter.getMethod().toGenericString() : "constructor";
-
-			LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), methodName));
-		}
-
-	}
 
 }
