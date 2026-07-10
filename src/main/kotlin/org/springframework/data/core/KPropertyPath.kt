@@ -17,6 +17,8 @@
 
 package org.springframework.data.core
 
+import org.springframework.data.mapping.KIterablePropertyPath as MappingKIterablePropertyPath
+import org.springframework.data.mapping.KPropertyPath as MappingKPropertyPath
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
@@ -101,6 +103,7 @@ internal class KIterablePropertyReference<T, M, out P>(
  *
  * @author Tjeu Kayim
  * @author Mikhail Polivakha
+ * @author hutiefang
  * @since 4.1
  */
 internal fun asString(property: KProperty<*>): String {
@@ -109,8 +112,13 @@ internal fun asString(property: KProperty<*>): String {
 		is KPropertyPath<*, *> ->
 			"${asString(property.property)}.${property.leaf.name}"
 
+		is MappingKPropertyPath<*, *> ->
+			"${asString(property.parent)}.${property.child.name}"
+
+		is MappingKIterablePropertyPath<*, *> ->
+			"${asString(property.parent)}.${property.child.name}"
+
 		else -> property.name
 	}
 
 }
-

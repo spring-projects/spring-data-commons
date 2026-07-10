@@ -17,6 +17,7 @@ package org.springframework.data.mapping
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.springframework.data.core.toDotPath as coreToDotPath
 
 /**
  * Unit tests for [KPropertyPath] and its extensions.
@@ -25,6 +26,7 @@ import org.junit.Test
  * @author Yoann de Martino
  * @author Mark Paluch
  * @author Mikhail Polivakha
+ * @author hutiefang
  */
 class KPropertyPathTests {
 
@@ -44,12 +46,36 @@ class KPropertyPathTests {
 		assertThat(property).isEqualTo("author.name")
 	}
 
+	@Test // GH-3503
+	fun `Core toDotPath renders nested mapping KProperty`() {
+
+		val property = (Book::author / Author::name).coreToDotPath()
+
+		assertThat(property).isEqualTo("author.name")
+	}
+
 	@Test // GH-3010
 	fun `Convert from Iterable nested KProperty to field name`() {
 
 		val property = (Author::books / Book::title).toDotPath()
 
 		assertThat(property).isEqualTo("books.title")
+	}
+
+	@Test // GH-3503
+	fun `Core toDotPath renders iterable mapping KProperty`() {
+
+		val property = (Author::books / Book::title).coreToDotPath()
+
+		assertThat(property).isEqualTo("books.title")
+	}
+
+	@Test // GH-3503
+	fun `Core toDotPath renders recursively nested mapping KProperty`() {
+
+		val property = (Author::books / Book::author / Author::name).coreToDotPath()
+
+		assertThat(property).isEqualTo("books.author.name")
 	}
 
 	@Test // GH-3010

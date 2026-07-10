@@ -24,9 +24,10 @@ import kotlin.reflect.KProperty1
  * @author Tjeu Kayim
  * @author Mark Paluch
  * @author Yoann de Martino
+ * @author hutiefang
  * @since 2.5
  */
-private class KPropertyPath<T, U>(
+internal class KPropertyPath<T, U>(
 	val parent: KProperty<U?>,
 	val child: KProperty1<U, T>
 ) : KProperty<T> by child
