@@ -51,6 +51,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  * @author Christoph Strobl
  * @author John Blum
  * @author Johannes Englmeier
+ * @author Donghwan Kim
  */
 class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
@@ -137,7 +138,7 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 	public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
-		MethodParameter returnType = returnTypeMap.computeIfAbsent(method, it -> new MethodParameter(it, -1));
+		MethodParameter returnType = returnTypeMap.computeIfAbsent(method, this::createReturnTypeParameter);
 
 		QueryExecutionConverters.ExecutionAdapter executionAdapter = QueryExecutionConverters //
 				.getExecutionAdapter(returnType.getParameterType());
@@ -148,6 +149,16 @@ class QueryExecutorMethodInterceptor implements MethodInterceptor {
 
 		return executionAdapter //
 				.apply(() -> resultHandler.postProcessInvocationResult(doInvoke(invocation), returnType));
+	}
+
+	/**
+	 * Creates the {@link MethodParameter} describing the return type of the given {@link Method}. The repository
+	 * interface is registered as containing class so that a return type declared as type variable on a base interface
+	 * (e.g. {@code T findById(ID id)}) resolves against the concrete repository interface instead of the type variable's
+	 * bound.
+	 */
+	private MethodParameter createReturnTypeParameter(Method method) {
+		return new MethodParameter(method, -1).withContainingClass(repositoryInformation.getRepositoryInterface());
 	}
 
 	@SuppressWarnings("NullAway")
