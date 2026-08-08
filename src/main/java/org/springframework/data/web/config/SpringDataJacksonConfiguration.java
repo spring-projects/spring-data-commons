@@ -27,8 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.geo.GeoModule;
 import org.springframework.data.web.PagedModel;
+import org.springframework.data.web.SlicedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.util.ClassUtils;
 
@@ -46,6 +49,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Adrien Caubel
  * @deprecated since 4.0, in favor of {@link SpringDataJackson3Configuration} which uses Jackson 3.
  */
 @SuppressWarnings("removal")
@@ -66,13 +70,14 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 	}
 
 	/**
-	 * A Jackson module customizing the serialization of {@link PageImpl} instances depending on the
+	 * A Jackson module customizing the serialization of {@link PageImpl} and {@link SliceImpl} instances depending on the
 	 * {@link SpringDataWebSettings} handed into the instance. In case of {@link PageSerializationMode#DIRECT} being
 	 * configured, a no-op {@link StdConverter} is registered to issue a one-time warning about the mode being used (as
-	 * it's not recommended). {@link PageSerializationMode#VIA_DTO} would register a converter wrapping {@link PageImpl}
-	 * instances into {@link PagedModel}.
+	 * it's not recommended). {@link PageSerializationMode#VIA_DTO} would register converters wrapping {@link PageImpl}
+	 * instances into {@link PagedModel} and {@link SliceImpl} instances into {@link SlicedModel}.
 	 *
 	 * @author Oliver Drotbohm
+	 * @author Adrien Caubel
 	 */
 	public static class PageModule extends SimpleModule {
 
@@ -99,6 +104,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
+				setMixInAnnotation(SliceImpl.class, SliceWrappingMixin.class);
 			}
 		}
 
@@ -133,8 +139,20 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			}
 		}
 
+		@JsonSerialize(converter = SlicedModelConverter.class)
+		abstract static class SliceWrappingMixin {}
+
+		static class SlicedModelConverter extends StdConverter<Slice<?>, SlicedModel<?>> {
+
+			@Override
+			public @Nullable SlicedModel<?> convert(@Nullable Slice<?> value) {
+				return value == null ? null : new SlicedModel<>(value);
+			}
+		}
+
 		/**
-		 * A {@link BeanSerializerModifier} that logs a warning message if an instance of {@link Page} will be rendered.
+		 * A {@link BeanSerializerModifier} that logs a warning message if an instance of {@link Slice} (which includes
+		 * {@link Page}) will be rendered.
 		 *
 		 * @author Oliver Drotbohm
 		 */
@@ -142,9 +160,9 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 
 			private static final Logger LOGGER = LoggerFactory.getLogger(WarningLoggingModifier.class);
 			private static final String MESSAGE = """
-					Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
-						For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
-						or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+					Serializing PageImpl and SliceImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+						For a stable JSON structure, please use Spring Data's PagedModel or SlicedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+						or Spring HATEOAS and Spring Data's PagedResourcesAssembler or SlicedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
 					""";
 
 			private static final @Serial long serialVersionUID = 954857444010009875L;
@@ -155,7 +173,7 @@ public class SpringDataJacksonConfiguration implements SpringDataJacksonModules 
 			public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
 					List<BeanPropertyWriter> beanProperties) {
 
-				if (Page.class.isAssignableFrom(beanDesc.getBeanClass()) && !warningRendered) {
+				if (Slice.class.isAssignableFrom(beanDesc.getBeanClass()) && !warningRendered) {
 
 					this.warningRendered = true;
 					LOGGER.warn(MESSAGE);

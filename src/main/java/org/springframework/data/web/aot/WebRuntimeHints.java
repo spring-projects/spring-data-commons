@@ -22,6 +22,7 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.data.web.PagedModel;
+import org.springframework.data.web.SlicedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.SpringDataJackson3Configuration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
@@ -32,6 +33,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Adrien Caubel
  * @since 3.2.3
  */
 class WebRuntimeHints implements RuntimeHintsRegistrar {
@@ -57,6 +59,13 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 			hints.reflection().registerType(PagedModel.PageMetadata.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
 					MemberCategory.INVOKE_PUBLIC_METHODS);
 
+			// Slice Model for Jackson Rendering
+			hints.reflection().registerType(org.springframework.data.web.SlicedModel.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS);
+
+			hints.reflection().registerType(SlicedModel.SliceMetadata.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+					MemberCategory.INVOKE_PUBLIC_METHODS);
+
 			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"));
 
 			if (JACKSON2_PRESENT) {
@@ -80,8 +89,15 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(PageModule.class);
 				});
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$SlicedModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(PageModule.class);
+				});
 		hints.reflection().registerType(TypeReference.of(
-				"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PlainPageSerializationWarning"),
+				"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$WarningLoggingModifier"),
 				hint -> {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(PageModule.class);
@@ -98,8 +114,15 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
 				});
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$SlicedModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
+				});
 		hints.reflection().registerType(TypeReference.of(
-				"org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$PlainPageSerializationWarning"),
+				"org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$WarningLoggingModifier"),
 				hint -> {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
