@@ -18,6 +18,8 @@ package org.springframework.data.web.config;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +27,7 @@ import java.util.List;
 
 /**
  * @author Yanming Zhou
+ * @author Adrien Caubel
  */
 @RestController
 class PageSampleController {
@@ -32,5 +35,10 @@ class PageSampleController {
 	@RequestMapping("/page")
 	Page<String> page() {
 		return new PageImpl<>(List.of("a", "b", "c"), Pageable.ofSize(10).withPage(0), 3);
+	}
+
+	@RequestMapping("/slice")
+	Slice<String> slice() {
+		return new SliceImpl<>(List.of("a", "b", "c"), Pageable.ofSize(10).withPage(0), true);
 	}
 }

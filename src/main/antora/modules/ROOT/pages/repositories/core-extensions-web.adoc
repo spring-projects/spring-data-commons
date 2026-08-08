@@ -195,10 +195,55 @@ This will result in a JSON structure looking like this:
 
 Note how the document contains a `page` field exposing the essential pagination metadata.
 
-[[core.web.page.config]]
-=== Globally enabling simplified `Page` rendering
+[[core.web.page.sliced-model]]
+=== Using Spring Data's `SlicedModel`
 
-If you don't want to change all your existing controllers to add the mapping step to return `PagedModel` instead of `Page` you can enable the automatic translation of `PageImpl` instances into `PagedModel` by tweaking `@EnableSpringDataWebSupport` as follows:
+`Slice` instances have the same rendering-stability problem as `Page` instances, and `org.springframework.data.web.SlicedModel` is their equivalent DTO.
+It is used in exactly the same way:
+
+[source,java]
+----
+import org.springframework.data.web.SlicedModel;
+
+@Controller
+class MyController {
+
+  private final MyRepository repository;
+
+  // Constructor omitted
+
+  @GetMapping("/slice")
+  SlicedModel<?> slice(Pageable pageable) {
+    return new SlicedModel<>(repository.findAllBy(pageable)); // <1>
+  }
+}
+----
+
+<1> Wraps the `Slice` instance into a `SlicedModel`.
+
+This will result in a JSON structure looking like this:
+
+[source,javascript]
+----
+{
+  "content" : [
+     … // Slice content rendered here
+  ],
+  "page" : {
+    "size" : 20,
+    "number" : 0,
+    "hasNext" : true
+  }
+}
+----
+
+The metadata is exposed under the same `page` field as for `PagedModel`.
+As a `Slice` does not know the total number of elements, `totalElements` and `totalPages` are replaced by `hasNext`, which tells the client whether a further slice can be requested.
+
+[[core.web.page.config]]
+=== Globally enabling simplified `Page` and `Slice` rendering
+
+If you don't want to change all your existing controllers to add the mapping step to return `PagedModel` instead of `Page` (or `SlicedModel` instead of `Slice`) you can enable the automatic translation of `PageImpl` instances into `PagedModel` and of `SliceImpl` instances into `SlicedModel` by tweaking `@EnableSpringDataWebSupport` as follows:
 
 [source,java]
 ----
@@ -206,7 +251,7 @@ If you don't want to change all your existing controllers to add the mapping ste
 class MyConfiguration { }
 ----
 
-This will allow your controller to still return `Page` instances and they will automatically be rendered into the simplified representation:
+This will allow your controller to still return `Page` and `Slice` instances and they will automatically be rendered into the simplified representation:
 
 [source,java]
 ----
@@ -220,6 +265,11 @@ class MyController {
   @GetMapping("/page")
   Page<?> page(Pageable pageable) {
     return repository.findAll(pageable);
+  }
+
+  @GetMapping("/slice")
+  Slice<?> slice(Pageable pageable) {
+    return repository.findAllBy(pageable);
   }
 }
 ----

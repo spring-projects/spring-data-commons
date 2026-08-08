@@ -64,6 +64,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Vedran Pavic
  * @author Yanming Zhou
  * @author Christoph Strobl
+ * @author Adrien Caubel
  */
 class EnableSpringDataWebSupportIntegrationTests {
 
@@ -331,6 +332,33 @@ class EnableSpringDataWebSupportIntegrationTests {
 		mvc.perform(post("/page")) //
 				.andExpect(status().isOk()) //
 				.andExpect(jsonPath("$.page").exists());
+	}
+
+	@Test // GH-3516
+	void usesDirectSliceSerializationMode() throws Exception {
+
+		var context = WebTestUtils.createApplicationContext(PageSampleConfigWithDirect.class);
+
+		var mvc = MockMvcBuilders.webAppContextSetup(context).build();
+
+		mvc.perform(post("/slice"))//
+				.andExpect(status().isOk()) //
+				.andExpect(jsonPath("$.pageable").exists());
+	}
+
+	@Test // GH-3516
+	void usesViaDtoSliceSerializationMode() throws Exception {
+
+		var context = WebTestUtils.createApplicationContext(PageSampleConfigWithViaDto.class);
+
+		var mvc = MockMvcBuilders.webAppContextSetup(context).build();
+
+		mvc.perform(post("/slice")) //
+				.andExpect(status().isOk()) //
+				.andExpect(jsonPath("$.content").isArray()) //
+				.andExpect(jsonPath("$.page.size").value(10)) //
+				.andExpect(jsonPath("$.page.number").value(0)) //
+				.andExpect(jsonPath("$.page.hasNext").value(true));
 	}
 
 	private static void assertResolversRegistered(ApplicationContext context, Class<?>... resolverTypes) {
