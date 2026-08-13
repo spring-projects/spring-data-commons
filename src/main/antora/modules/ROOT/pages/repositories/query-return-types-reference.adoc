@@ -27,7 +27,7 @@ Some store modules may define their own result wrapper types.
 |`Stream<T>`|A Java `Stream`.
 |`Streamable<T>`|A convenience extension of `Iterable` that directly exposes methods to stream, map and filter results, concatenate them etc.
 |Types that implement `Streamable` and take a `Streamable` constructor or factory method argument|Types that expose a constructor or `….of(…)`/`….valueOf(…)` factory method taking a `Streamable` as argument. See xref:repositories/query-methods-details.adoc#repositories.collections-and-iterables.streamable-wrapper[Returning Custom Streamable Wrapper Types] for details.
-|Vavr `Seq`, `List`, `Map`, `Set`|Vavr collection types. See xref:repositories/query-methods-details.adoc#repositories.collections-and-iterables.vavr[Support for Vavr Collections] for details.
+|Vavr `Seq`, `List`, `Map`, `Set`|Vavr collection types, also accepted as query method parameters. See xref:repositories/query-methods-details.adoc#repositories.collections-and-iterables.vavr[Support for Vavr Collections] for details.
 |`Future<T>`|A `Future`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`CompletableFuture<T>`|A `CompletableFuture`. Expects a method to be annotated with `@Async` and requires Spring's asynchronous method execution capability to be enabled.
 |`Slice<T>`|A sized chunk of data with an indication of whether there is more data available. Requires a `Pageable` method parameter.
