@@ -280,9 +280,9 @@ You can use the types in the first column (or subtypes thereof) as query method 
 Alternatively, you can declare `Traversable` (the Vavr `Iterable` equivalent), and we then derive the implementation class from the actual return value.
 That is, a `java.util.List` is turned into a Vavr `List` or `Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet` `Set`, and so on.
 
-The same types are also accepted as query method *parameters*.
-Spring Data unwraps a Vavr `Seq`, `Set`, or `Map` argument to a Java collection before the store sees it, so a derived query such as `findByStatusIn(io.vavr.collection.List<Status> statuses)` binds as a regular `IN` clause.
-A Vavr `Option` argument is unwrapped to its value (or `null`), not to `java.util.Optional`.
+These Vavr types are also accepted as query method *parameters* (as of 2.0). If a repository method parameter uses one of the types above (or `Traversable`), Spring Data automatically unwraps it into its Java-native equivalent before executing the query.
+
+For example, a derived query method declared as `findAllByIdIn(io.vavr.collection.List<Long> ids)` accepts a Vavr `List` and unwraps it to a `java.util.List` so it binds correctly as an `IN`-clause. A Vavr `Option` parameter is similarly unwrapped to its inner value (or `null`).
 
 
 [[repositories.query-streaming]]
