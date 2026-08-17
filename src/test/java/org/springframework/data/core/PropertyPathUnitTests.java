@@ -173,6 +173,54 @@ class PropertyPathUnitTests {
 		assertThat(propertyPath.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
 	}
 
+	@Test // GH-3533
+	void continuesAfterCamelCaseSegmentAtItsLeaf() {
+
+		var propertyPath = PropertyPath.from("barUser.name", Sample.class);
+
+		assertThat(propertyPath.toDotPath()).isEqualTo("bar.user.name");
+		assertThat(propertyPath.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
+	}
+
+	@Test // GH-3533
+	void continuesAfterCamelCaseSegmentAtItsLeafWithUnderscore() {
+
+		var propertyPath = PropertyPath.from("barUser_name", Sample.class);
+
+		assertThat(propertyPath.toDotPath()).isEqualTo("bar.user.name");
+		assertThat(propertyPath.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
+	}
+
+	@Test // GH-3533
+	void continuesAfterCollectionCamelCaseSegmentAtItsLeaf() {
+		assertThat(PropertyPath.from("barUsers.name", Sample.class).toDotPath()).isEqualTo("bar.users.name");
+	}
+
+	@Test // GH-3533
+	void continuesAfterMapCamelCaseSegmentAtItsLeaf() {
+		assertThat(PropertyPath.from("barUserMap.name", Sample.class).toDotPath()).isEqualTo("bar.userMap.name");
+	}
+
+	@Test // GH-3533
+	void rejectsPropertyMissingOnLeafOfPrecedingCamelCaseSegment() {
+
+		// FooBar, the leaf of barUser, has no property 'user'; Bar, its owner, has one
+		assertThatExceptionOfType(PropertyReferenceException.class) //
+				.isThrownBy(() -> PropertyPath.from("barUser.user", Sample.class)) //
+				.withMessageContaining("No property 'user' found for type 'FooBar'");
+	}
+
+	@Test // GH-3533
+	void keepsCamelCaseSegmentIntactWhenFollowedByDotNotation() {
+
+		var propertyPath = PropertyPath.from("barUser.name", Sample.class);
+
+		List<String> segments = new ArrayList<>();
+		propertyPath.forEach(it -> segments.add(it.getSegment()));
+
+		assertThat(segments).containsExactly("bar", "user", "name");
+	}
+
 	@Test
 	void returnsCorrectIteratorForSingleElement() {
 
