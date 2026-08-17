@@ -144,6 +144,21 @@ class SimplePropertyPath implements PropertyPath {
 		return next != null;
 	}
 
+	/**
+	 * Reimplementation of {@link #getLeafProperty()} in order to
+	 * retain the concrete type {@link SimplePropertyPath}.
+	 */
+	public SimplePropertyPath getLeafProperty() {
+
+		SimplePropertyPath result = this;
+
+		while (result.next != null) {
+			result = result.next;
+		}
+
+		return result;
+	}
+
 	@Override
 	public boolean isCollection() {
 		return isCollection;
@@ -269,6 +284,10 @@ class SimplePropertyPath implements PropertyPath {
 
 	/**
 	 * Creates a new {@link SimplePropertyPath} as subordinary of the given {@link SimplePropertyPath}.
+	 * <p>
+	 * {@code base} holds one entry per part of the path, namely the part's first property. A part spelled in camel case
+	 * stands for a chain of properties rather than a single one, so what the next part continues from is that entry's
+	 * {@link #getLeafProperty()}  leaf}, not the entry itself.
 	 *
 	 * @param source
 	 * @param base
@@ -276,11 +295,9 @@ class SimplePropertyPath implements PropertyPath {
 	 */
 	private static SimplePropertyPath create(String source, Stack<SimplePropertyPath> base) {
 
-		SimplePropertyPath previous = base.peek();
+		SimplePropertyPath previous = base.peek().getLeafProperty();
 
-		SimplePropertyPath propertyPath = create(source, previous.typeInformation.getRequiredActualType(), base);
-		previous.next = propertyPath;
-		return propertyPath;
+		return create(source, previous.typeInformation.getRequiredActualType(), base);
 	}
 
 	/**
@@ -322,7 +339,7 @@ class SimplePropertyPath implements PropertyPath {
 			current = new SimplePropertyPath(source, type, base);
 
 			if (!base.isEmpty()) {
-				base.get(base.size() - 1).next = current;
+				base.get(base.size() - 1).getLeafProperty().next = current;
 			}
 
 			List<SimplePropertyPath> newBase = new ArrayList<>(base);
