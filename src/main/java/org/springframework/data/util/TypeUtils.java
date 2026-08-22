@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -37,6 +38,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * @author Christoph Strobl
+ * @author arimu1
  */
 // TODO: Consider moving to the org.springframework.data.util package or make this package-private if not used somewhere
 // else.
@@ -159,21 +161,25 @@ public class TypeUtils {
 	}
 
 	private static void resolveTypesInSignature(ResolvableType current, Set<Class<?>> signatures) {
+		resolveTypesInSignature(current, signatures, new HashSet<>());
+	}
+
+	private static void resolveTypesInSignature(ResolvableType current, Set<Class<?>> signatures, Set<String> visited) {
 
 		if (ResolvableType.NONE.equals(current) || ObjectUtils.nullSafeEquals(Void.TYPE, current.getType())
 				|| ObjectUtils.nullSafeEquals(Object.class, current.getType())) {
 			return;
 		}
-		if (signatures.contains(current.toClass())) {
+		if (!visited.add(current.toString())) {
 			return;
 		}
 		signatures.add(current.toClass());
-		resolveTypesInSignature(current.getSuperType(), signatures);
+		resolveTypesInSignature(current.getSuperType(), signatures, visited);
 		for (ResolvableType type : current.getGenerics()) {
-			resolveTypesInSignature(type, signatures);
+			resolveTypesInSignature(type, signatures, visited);
 		}
 		for (ResolvableType type : current.getInterfaces()) {
-			resolveTypesInSignature(type, signatures);
+			resolveTypesInSignature(type, signatures, visited);
 		}
 	}
 
