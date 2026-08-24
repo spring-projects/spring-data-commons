@@ -47,6 +47,7 @@ import org.springframework.core.convert.support.GenericConversionService;
  * @author Barak Schoster
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Jan Durovec
  */
 class Jsr310ConvertersUnitTests {
 
@@ -149,6 +150,14 @@ class Jsr310ConvertersUnitTests {
 		var convertedDateTime = CONVERSION_SERVICE.convert(dateTime, LocalDateTime.class);
 
 		assertThat(convertedDateTime).isEqualTo(dateTime);
+	}
+
+	@Test
+	void convertsIsoFormattedStringToLocalTime() {
+
+		var time = LocalTime.now();
+
+		assertThat(CONVERSION_SERVICE.convert(time.toString(), LocalTime.class)).isEqualTo(time);
 	}
 
 	@Test
