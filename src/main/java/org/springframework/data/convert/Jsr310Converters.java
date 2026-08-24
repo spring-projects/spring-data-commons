@@ -45,6 +45,7 @@ import org.springframework.core.convert.converter.Converter;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Jan Durovec
  */
 public abstract class Jsr310Converters {
 
@@ -75,6 +76,7 @@ public abstract class Jsr310Converters {
 		converters.add(StringToDurationConverter.INSTANCE);
 		converters.add(PeriodToStringConverter.INSTANCE);
 		converters.add(StringToPeriodConverter.INSTANCE);
+		converters.add(StringToLocalTimeConverter.INSTANCE);
 		converters.add(StringToLocalDateConverter.INSTANCE);
 		converters.add(StringToLocalDateTimeConverter.INSTANCE);
 		converters.add(StringToInstantConverter.INSTANCE);
@@ -283,6 +285,18 @@ public abstract class Jsr310Converters {
 		@Override
 		public Period convert(String s) {
 			return Period.parse(s);
+		}
+	}
+
+	@ReadingConverter
+	public enum StringToLocalTimeConverter implements Converter<String, LocalTime> {
+
+		INSTANCE;
+
+		@NonNull
+		@Override
+		public LocalTime convert(String source) {
+			return LocalTime.parse(source);
 		}
 	}
 
