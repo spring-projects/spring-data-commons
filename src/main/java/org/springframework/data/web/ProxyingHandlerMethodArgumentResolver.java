@@ -17,10 +17,7 @@ package org.springframework.data.web;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -32,7 +29,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.log.LogAccessor;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
@@ -46,10 +42,11 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
 /**
- * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface based controller method parameters.
+ * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface-based controller method parameters.
  * <p>
- * By default data binding of for collection types is limited to a size of #{@link MapDataBinder#DEFAULT_COLLECTION_LIMIT}.
- * This value can be overridden by setting the property {@code spring.data.web.projection.collection-size-limit}.
+ * By default, data binding of for collection types is limited to a size of
+ * #{@link MapDataBinder#DEFAULT_COLLECTION_LIMIT}. This value can be overridden by setting the property
+ * {@code spring.data.web.projection.collection-size-limit}.
  *
  * @author Oliver Gierke
  * @author Chris Bono
@@ -60,15 +57,12 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
-	// NonFinalForTesting
-	private static LogAccessor LOGGER = new LogAccessor(ProxyingHandlerMethodArgumentResolver.class);
 	public static final String COLLECTION_SIZE_LIMIT_PARAM = "spring.data.web.projection.collection-limit";
 
 	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
-	private final ProjectedPayloadDeprecationLogger deprecationLogger = new ProjectedPayloadDeprecationLogger();
 	private final int collectionSizeLimit;
 
 	/**
@@ -130,7 +124,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 		// Parameter annotated with @ModelAttribute
 		if (parameter.hasParameterAnnotation(ModelAttribute.class)) {
-			this.deprecationLogger.logDeprecationForParameter(parameter);
 			return false;
 		}
 
@@ -146,7 +139,6 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		// Fallback for only user defined interfaces
 		String packageName = ClassUtils.getPackageName(type);
 		if (IGNORED_PACKAGES.stream().noneMatch(packageName::startsWith)) {
-			this.deprecationLogger.logDeprecationForParameter(parameter);
 			return false;
 		}
 
@@ -165,36 +157,5 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 	@Override
 	protected void bindRequestParameters(WebDataBinder binder, NativeWebRequest request) {}
-
-	/**
-	 * Logs a warning message when a parameter is proxied but not explicitly annotated with {@link @ProjectedPayload}.
-	 * <p>
-	 * To avoid log spamming, the message is only logged the first time the parameter is encountered.
-	 */
-	static class ProjectedPayloadDeprecationLogger {
-
-		private static final String MESSAGE = "Parameter %sat index %s in [%s] is not annotated with @ProjectedPayload. Make sure to annotate it with @ProjectedPayload (at the parameter or type level) to use it for projections.";
-
-		private final Set<MethodParameter> loggedParameters = Collections.synchronizedSet(new HashSet<>());
-
-		/**
-		 * Log a warning the first time a non-annotated method parameter is encountered.
-		 *
-		 * @param parameter the parameter
-		 */
-		void logDeprecationForParameter(MethodParameter parameter) {
-
-			if (!this.loggedParameters.add(parameter)) {
-				return;
-			}
-
-			String paramName = parameter.getParameterName();
-			String paramNameOrEmpty = paramName != null ? ("'" + paramName + "' ") : "";
-			String methodName = parameter.getMethod() != null ? parameter.getMethod().toGenericString() : "constructor";
-
-			LOGGER.warn(() -> MESSAGE.formatted(paramNameOrEmpty, parameter.getParameterIndex(), methodName));
-		}
-
-	}
 
 }

@@ -16,24 +16,18 @@
 package org.springframework.data.web;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import example.ProjectedPayloadMarkedSampleInterface;
 import example.SampleInterface;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.log.LogAccessor;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.multipart.MultipartFile;
@@ -130,41 +124,6 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		var parameter = getParameter("withProjectedPayloadMultipart", MultipartFile.class);
 
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
-	}
-
-	@ParameterizedTest // GH-3300
-	@ValueSource(strings = { "withModelAttribute", "withUserUnannotatedInterface" })
-	@SuppressWarnings("unchecked")
-	void deprecationLoggerOnlyLogsOncePerParameter(String methodName) {
-
-		var parameter = getParameter(methodName);
-
-		// Spy on the actual logger
-		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
-		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
-				LogAccessor.class);
-
-		// Invoke twice but should only log the first time
-		assertThat(resolver.supportsParameter(parameter)).isFalse();
-		verify(actualLoggerSpy, times(1)).warn(any(Supplier.class));
-		assertThat(resolver.supportsParameter(parameter)).isFalse();
-		verifyNoMoreInteractions(actualLoggerSpy);
-	}
-
-	@ParameterizedTest // GH-3300
-	@ValueSource(strings = { "withProjectedPayload", "withSpringAnnotatedInterface", "withUserAnnotatedInterface" })
-	void shouldNotLogDeprecationForValidUsage(String methodName) {
-
-		var parameter = getParameter(methodName);
-
-		// Spy on the actual logger
-		var actualLoggerSpy = spy(new LogAccessor(ProxyingHandlerMethodArgumentResolver.class));
-		ReflectionTestUtils.setField(ProxyingHandlerMethodArgumentResolver.class, "LOGGER", actualLoggerSpy,
-				LogAccessor.class);
-
-		// Invoke should not log
-		assertThat(resolver.supportsParameter(parameter)).isTrue();
-		verifyNoInteractions(actualLoggerSpy);
 	}
 
 	private static MethodParameter getParameter(String methodName, Class<?> parameterType) {

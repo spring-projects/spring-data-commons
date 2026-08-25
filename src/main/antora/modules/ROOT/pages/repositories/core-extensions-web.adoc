@@ -346,6 +346,9 @@ The `lastname` XML lookup is performed on the top-level of the incoming document
 The JSON variant of that tries a top-level `lastname` first but also tries `lastname` nested in a `user` sub-document if the former does not return a value.
 That way, changes in the structure of the source document can be mitigated easily without having clients calling the exposed methods (usually a drawback of class-based payload binding).
 
+For Spring MVC handler method argument resolution, annotate either the handler method parameter or the projection interface with `@ProjectedPayload`.
+Interfaces without `@ProjectedPayload` on either the handler method parameter or the interface type are not considered projection payloads.
+
 Nested projections are supported as described in xref:repositories/projections.adoc[Projections].
 If the method returns a complex, non-interface type, a Jackson `ObjectMapper` is used to map the final value.
 
