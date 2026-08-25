@@ -79,7 +79,7 @@ class PropertyPathUnitTests {
 	}
 
 	@Test
-	void testname() {
+	void shouldResolveNestedProperty() {
 
 		var reference = PropertyPath.from("userName", Sample2.class);
 		assertThat(reference.getSegment()).isEqualTo("user");
@@ -129,13 +129,12 @@ class PropertyPathUnitTests {
 	@Test
 	void handlesInvalidCollectionCompoundTypeProperly() {
 
-		try {
+		assertThatExceptionOfType(PropertyReferenceException.class).isThrownBy(() -> {
 			PropertyPath.from("usersMame", Bar.class);
-			fail("Expected PropertyReferenceException");
-		} catch (PropertyReferenceException e) {
+		}).satisfies(e -> {
 			assertThat(e.getPropertyName()).isEqualTo("mame");
 			assertThat(e.getBaseProperty()).isEqualTo(PropertyPath.from("users", Bar.class));
-		}
+		});
 	}
 
 	@Test
@@ -178,16 +177,20 @@ class PropertyPathUnitTests {
 	}
 
 	@Test // GH-3533
-	void continuesAfterCamelCaseSegmentAtItsLeaf() {
+	void resolvesDotAndCamelCasePath() {
 
 		var propertyPath = PropertyPath.from("barUser.name", Sample.class);
 
+		List<String> segments = new ArrayList<>();
+		propertyPath.forEach(it -> segments.add(it.getSegment()));
+
+		assertThat(propertyPath).extracting(PropertyPath::getSegment).containsExactly("bar", "user", "name");
 		assertThat(propertyPath.toDotPath()).isEqualTo("bar.user.name");
 		assertThat(propertyPath.getLeafProperty()).isEqualTo(PropertyPath.from("name", FooBar.class));
 	}
 
 	@Test // GH-3533
-	void continuesAfterCamelCaseSegmentAtItsLeafWithUnderscore() {
+	void resolvesCamelCaseAndUnderscorePath() {
 
 		var propertyPath = PropertyPath.from("barUser_name", Sample.class);
 
@@ -196,33 +199,25 @@ class PropertyPathUnitTests {
 	}
 
 	@Test // GH-3533
-	void continuesAfterCollectionCamelCaseSegmentAtItsLeaf() {
+	void resolvesThroughCollection() {
+
 		assertThat(PropertyPath.from("barUsers.name", Sample.class).toDotPath()).isEqualTo("bar.users.name");
+		assertThat(PropertyPath.from("barUsers_name", Sample.class).toDotPath()).isEqualTo("bar.users.name");
+		assertThat(PropertyPath.from("barUsersName", Sample.class).toDotPath()).isEqualTo("bar.users.name");
 	}
 
 	@Test // GH-3533
-	void continuesAfterMapCamelCaseSegmentAtItsLeaf() {
+	void resolvesDotAndCamelCaseThroughMap() {
 		assertThat(PropertyPath.from("barUserMap.name", Sample.class).toDotPath()).isEqualTo("bar.userMap.name");
 	}
 
 	@Test // GH-3533
-	void rejectsPropertyMissingOnLeafOfPrecedingCamelCaseSegment() {
+	void rejectsUnknownPropertyInDotAndCamelCasePath() {
 
-		// FooBar, the leaf of barUser, has no property 'user'; Bar, its owner, has one
+		// FooBar user has no property 'user'. Bar, its owner, has one
 		assertThatExceptionOfType(PropertyReferenceException.class) //
 				.isThrownBy(() -> PropertyPath.from("barUser.user", Sample.class)) //
 				.withMessageContaining("No property 'user' found for type 'FooBar'");
-	}
-
-	@Test // GH-3533
-	void keepsCamelCaseSegmentIntactWhenFollowedByDotNotation() {
-
-		var propertyPath = PropertyPath.from("barUser.name", Sample.class);
-
-		List<String> segments = new ArrayList<>();
-		propertyPath.forEach(it -> segments.add(it.getSegment()));
-
-		assertThat(segments).containsExactly("bar", "user", "name");
 	}
 
 	@Test
@@ -281,7 +276,7 @@ class PropertyPathUnitTests {
 	}
 
 	@Test // DATACMNS-139, GH-2395
-	void rejectsNestedInvalidPropertyExplictlySplitWithLeadingUnderscore() {
+	void rejectsNestedInvalidPropertyExplicitlySplitWithLeadingUnderscore() {
 
 		assertThatExceptionOfType(PropertyReferenceException.class)//
 				.isThrownBy(() -> PropertyPath.from("_foo__id", Sample2.class))//
@@ -306,14 +301,6 @@ class PropertyPathUnitTests {
 		assertThat(from("sample.bar1foo", SampleHolder.class)).isNotNull();
 		assertThat(from("sampleBar1", SampleHolder.class)).isNotNull();
 		assertThat(from("sampleBar1foo", SampleHolder.class)).isNotNull();
-	}
-
-	@Test
-	void rejectsInvalidProperty() {
-
-		assertThatExceptionOfType(PropertyReferenceException.class)//
-				.isThrownBy(() -> from("_foo_id", Sample2.class))//
-				.matches(e -> e.getBaseProperty().getSegment().equals("_foo"));
 	}
 
 	@Test
