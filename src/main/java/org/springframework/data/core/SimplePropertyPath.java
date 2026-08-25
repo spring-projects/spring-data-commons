@@ -144,19 +144,9 @@ class SimplePropertyPath implements PropertyPath {
 		return next != null;
 	}
 
-	/**
-	 * Reimplementation of {@link #getLeafProperty()} in order to
-	 * retain the concrete type {@link SimplePropertyPath}.
-	 */
+	@Override
 	public SimplePropertyPath getLeafProperty() {
-
-		SimplePropertyPath result = this;
-
-		while (result.next != null) {
-			result = result.next;
-		}
-
-		return result;
+		return (SimplePropertyPath) PropertyPath.super.getLeafProperty();
 	}
 
 	@Override
