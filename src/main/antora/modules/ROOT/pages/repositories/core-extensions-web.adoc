@@ -340,7 +340,7 @@ public interface UserPayload {
 }
 ----
 
-You can use the type shown in the preceding example as a Spring MVC handler method argument or by using `ParameterizedTypeReference` on one of methods of the `RestTemplate`.
+You can use the type shown in the preceding example as a Spring MVC handler method argument or by using `ParameterizedTypeReference` on one of the methods of `RestTemplate`.
 The preceding method declarations would try to find `firstname` anywhere in the given document.
 The `lastname` XML lookup is performed on the top-level of the incoming document.
 The JSON variant of that tries a top-level `lastname` first but also tries `lastname` nested in a `user` sub-document if the former does not return a value.

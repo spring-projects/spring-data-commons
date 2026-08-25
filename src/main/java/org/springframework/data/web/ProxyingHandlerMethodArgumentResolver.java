@@ -15,10 +15,6 @@
  */
 package org.springframework.data.web;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -30,11 +26,9 @@ import org.springframework.core.SpringProperties;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
@@ -43,10 +37,10 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
 /**
  * {@link HandlerMethodArgumentResolver} to create Proxy instances for interface-based controller method parameters.
+ * Resolution requires the method parameter or its interface type to be annotated with {@link ProjectedPayload}.
  * <p>
- * By default, data binding of for collection types is limited to a size of
- * #{@link MapDataBinder#DEFAULT_COLLECTION_LIMIT}. This value can be overridden by setting the property
- * {@code spring.data.web.projection.collection-size-limit}.
+ * By default, data binding for collection properties is limited to {@code 1024} elements. This limit can be overridden
+ * by setting the {@value #COLLECTION_SIZE_LIMIT_PARAM} Spring property.
  *
  * @author Oliver Gierke
  * @author Chris Bono
@@ -57,9 +51,10 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
 		implements BeanFactoryAware, BeanClassLoaderAware {
 
+	/**
+	 * Name of the Spring property to configure the collection size limit for data binding.
+	 */
 	public static final String COLLECTION_SIZE_LIMIT_PARAM = "spring.data.web.projection.collection-limit";
-
-	private static final List<String> IGNORED_PACKAGES = List.of("java", "org.springframework");
 
 	private final SpelAwareProxyProjectionFactory proxyFactory;
 	private final ObjectFactory<ConversionService> conversionService;
@@ -69,6 +64,8 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 	 * Creates a new {@link ProxyingHandlerMethodArgumentResolver} using the given {@link ConversionService}.
 	 *
 	 * @param conversionService must not be {@literal null}.
+	 * @param annotationNotRequired whether interface-based method arguments are considered without requiring a
+	 *          {@code @ModelAttribute} annotation.
 	 */
 	public ProxyingHandlerMethodArgumentResolver(ObjectFactory<ConversionService> conversionService,
 			boolean annotationNotRequired) {
@@ -79,11 +76,9 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		this.conversionService = conversionService;
 
 		String sizeFromProperty = SpringProperties.getProperty(COLLECTION_SIZE_LIMIT_PARAM);
-		if(StringUtils.hasText(sizeFromProperty)) {
-			this.collectionSizeLimit = NumberUtils.parseNumber(sizeFromProperty, Integer.class);
-		} else {
-			this.collectionSizeLimit = MapDataBinder.DEFAULT_COLLECTION_LIMIT;
-		}
+		this.collectionSizeLimit = StringUtils.hasText(sizeFromProperty)
+				? NumberUtils.parseNumber(sizeFromProperty, Integer.class)
+				: MapDataBinder.DEFAULT_COLLECTION_LIMIT;
 	}
 
 	@Override
@@ -117,39 +112,16 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 		}
 
 		// Type or parameter explicitly annotated with @ProjectedPayload
-		if (parameter.hasParameterAnnotation(ProjectedPayload.class) || AnnotatedElementUtils.findMergedAnnotation(type,
-				ProjectedPayload.class) != null) {
-			return true;
-		}
-
-		// Parameter annotated with @ModelAttribute
-		if (parameter.hasParameterAnnotation(ModelAttribute.class)) {
-			return false;
-		}
-
-		// Exclude any other parameters annotated with Spring annotation
-		if (Arrays.stream(parameter.getParameterAnnotations())
-				.map(Annotation::annotationType)
-				.map(Class::getPackageName)
-				.anyMatch(it -> it.startsWith("org.springframework"))) {
-
-			return false;
-		}
-
-		// Fallback for only user defined interfaces
-		String packageName = ClassUtils.getPackageName(type);
-		if (IGNORED_PACKAGES.stream().noneMatch(packageName::startsWith)) {
-			return false;
-		}
-
-		return false;
+		return parameter.hasParameterAnnotation(ProjectedPayload.class)
+				|| AnnotatedElementUtils.findMergedAnnotation(type, ProjectedPayload.class) != null;
 	}
 
 	@Override
 	protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory,
 			NativeWebRequest request) throws Exception {
 
-		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject(), this.collectionSizeLimit);
+		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject(),
+				collectionSizeLimit);
 		binder.bind(new MutablePropertyValues(request.getParameterMap()));
 
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());
