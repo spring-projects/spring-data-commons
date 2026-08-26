@@ -266,7 +266,7 @@ You do not need to return `Streamable<Product>` and manually wrap it after the q
 === Support for Vavr Collections
 
 https://www.vavr.io/[Vavr] is a library that embraces functional programming concepts in Java.
-It ships with a custom set of collection types that you can use as query method return types, as the following table shows:
+It ships with a custom set of collection types that you can use as query method argument and return types, as the following table shows:
 
 [options=header]
 |====
@@ -276,14 +276,15 @@ It ships with a custom set of collection types that you can use as query method 
 |`io.vavr.collection.Map`|`io.vavr.collection.LinkedHashMap`|`java.util.Map`
 |====
 
-You can use the types in the first column (or subtypes thereof) as query method return types and get the types in the second column used as implementation type, depending on the Java type of the actual query result (third column).
+You can use the types in the first column (or subtypes thereof) as query method return type and get the types in the second column used as implementation type, depending on the Java type of the actual query result (third column).
 Alternatively, you can declare `Traversable` (the Vavr `Iterable` equivalent), and we then derive the implementation class from the actual return value.
 That is, a `java.util.List` is turned into a Vavr `List` or `Seq`, a `java.util.Set` becomes a Vavr `LinkedHashSet` `Set`, and so on.
 
-These Vavr types are also accepted as query method *parameters* (as of 2.0). If a repository method parameter uses one of the types above (or `Traversable`), Spring Data automatically unwraps it into its Java-native equivalent before executing the query.
+Vavr types are also accepted as query method parameters.
+If a repository method parameter uses one of the types above (or `Traversable`), Spring Data automatically unwraps it into its Java-native equivalent before running the query.
 
-For example, a derived query method declared as `findAllByIdIn(io.vavr.collection.List<Long> ids)` accepts a Vavr `List` and unwraps it to a `java.util.List` so it binds correctly as an `IN`-clause. A Vavr `Option` parameter is similarly unwrapped to its inner value (or `null`).
-
+For example, a derived query method declared as `findAllByIdIn(io.vavr.collection.List<Long> ids)` accepts a Vavr `List` and unwraps it to a `java.util.List` so that it binds correctly to an `IN`-clause.
+A Vavr `Option` parameter is similarly unwrapped to its inner value (or `null`).
 
 [[repositories.query-streaming]]
 == Streaming Query Results
