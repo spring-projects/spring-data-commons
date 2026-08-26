@@ -69,58 +69,50 @@ class Jsr310ConvertersUnitTests {
 	static final String FORMAT_TIME = "HH:mm:ss.SSS";
 	static final String FORMAT_FULL = String.format("%s'T'%s", FORMAT_DATE, FORMAT_TIME);
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsDateToLocalDateTime() {
 		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDateTime.class)).matches(formatted(NOW, FORMAT_FULL));
 	}
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsLocalDateTimeToDate() {
 
 		var now = LocalDateTime.now();
 		assertThat(CONVERSION_SERVICE.convert(now, Date.class)).matches(formatted(now, FORMAT_FULL));
 	}
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsDateToLocalDate() {
 		assertThat(CONVERSION_SERVICE.convert(NOW, LocalDate.class)).matches(formatted(NOW, FORMAT_DATE));
 	}
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsLocalDateToDate() {
 
 		var now = LocalDate.now();
 		assertThat(CONVERSION_SERVICE.convert(now, Date.class)).matches(formatted(now, FORMAT_DATE));
 	}
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsDateToLocalTime() {
 		assertThat(CONVERSION_SERVICE.convert(NOW, LocalTime.class)).matches(formatted(NOW, FORMAT_TIME));
 	}
 
-	@Test
-	// DATACMNS-606, DATACMNS-1091
+	@Test // DATACMNS-606, DATACMNS-1091
 	void convertsLocalTimeToDate() {
 
 		var now = LocalTime.now();
 		assertThat(CONVERSION_SERVICE.convert(now, Date.class)).matches(formatted(now, FORMAT_TIME));
 	}
 
-	@Test
-	// DATACMNS-623
+	@Test // DATACMNS-623
 	void convertsDateToInstant() {
 
 		var now = new Date();
 		assertThat(CONVERSION_SERVICE.convert(now, Instant.class)).isEqualTo(now.toInstant());
 	}
 
-	@Test
-	// DATACMNS-623
+	@Test // DATACMNS-623
 	void convertsInstantToDate() {
 
 		var now = new Date();
@@ -140,28 +132,27 @@ class Jsr310ConvertersUnitTests {
 		}
 	}
 
-	@Test
-	// DATACMNS-1243
+	@Test // DATACMNS-1243
 	void convertsLocalDateTimeToInstantAndBack() {
 
 		var dateTime = LocalDateTime.now();
 
 		var instant = CONVERSION_SERVICE.convert(dateTime, Instant.class);
-		var convertedDateTime = CONVERSION_SERVICE.convert(dateTime, LocalDateTime.class);
+		var convertedDateTime = CONVERSION_SERVICE.convert(instant, LocalDateTime.class);
 
 		assertThat(convertedDateTime).isEqualTo(dateTime);
 	}
 
-	@Test
+	@Test // GH-3535
 	void convertsIsoFormattedStringToLocalTime() {
 
 		var time = LocalTime.now();
 
 		assertThat(CONVERSION_SERVICE.convert(time.toString(), LocalTime.class)).isEqualTo(time);
+		assertThat(CONVERSION_SERVICE.convert(time, String.class)).isEqualTo(time.toString());
 	}
 
-	@Test
-	// DATACMNS-1440
+	@Test // DATACMNS-1440
 	void convertsIsoFormattedStringToLocalDate() {
 
 		var date = LocalDate.now();
@@ -169,8 +160,7 @@ class Jsr310ConvertersUnitTests {
 		assertThat(CONVERSION_SERVICE.convert(date.toString(), LocalDate.class)).isEqualTo(date);
 	}
 
-	@Test
-	// DATACMNS-1440
+	@Test // DATACMNS-1440
 	void convertsIsoFormattedStringToLocalDateTime() {
 
 		var date = LocalDateTime.now();
@@ -178,8 +168,7 @@ class Jsr310ConvertersUnitTests {
 		assertThat(CONVERSION_SERVICE.convert(date.toString(), LocalDateTime.class)).isEqualTo(date);
 	}
 
-	@Test
-	// DATACMNS-1440
+	@Test // DATACMNS-1440
 	void convertsIsoFormattedStringToInstant() {
 
 		var date = Instant.now();
