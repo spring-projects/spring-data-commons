@@ -21,6 +21,26 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 /**
+ * Internal API describing a nested Kotlin property path consisting of a parent [property] and a [leaf] property.
+ * Serves as interop contract between the `org.springframework.data.core` and the deprecated
+ * `org.springframework.data.mapping` property path implementations.
+ *
+ * @author Mark Paluch
+ * @since 4.1.2
+ */
+internal interface NestedKPropertyPath {
+
+	val property: KProperty<*>
+	val leaf: KProperty<*>
+
+	/**
+	 * Render this property path in dot notation, unwrapping nested paths in both, the parent and the leaf position.
+	 */
+	fun toDotPath(): String = "${asString(property)}.${asString(leaf)}"
+
+}
+
+/**
  * Abstraction of a property path consisting of [KProperty1].
  *
  * @author Tjeu Kayim
@@ -28,9 +48,9 @@ import kotlin.reflect.KProperty1
  * @author Yoann de Martino
  * @since 4.1
  */
-internal interface KPropertyPath<T, out P> : KProperty1<T, P> {
-	val property: KProperty1<T, *>
-	val leaf: KProperty1<*, P>
+internal interface KPropertyPath<T, out P> : KProperty1<T, P>, NestedKPropertyPath {
+	override val property: KProperty1<T, *>
+	override val leaf: KProperty1<*, P>
 
 }
 
@@ -106,11 +126,8 @@ internal class KIterablePropertyReference<T, M, out P>(
 internal fun asString(property: KProperty<*>): String {
 
 	return when (property) {
-		is KPropertyPath<*, *> ->
-			"${asString(property.property)}.${property.leaf.name}"
-
+		is NestedKPropertyPath -> property.toDotPath()
 		else -> property.name
 	}
 
 }
-
