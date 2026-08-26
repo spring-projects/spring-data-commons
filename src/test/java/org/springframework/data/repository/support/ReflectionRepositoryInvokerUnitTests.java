@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.AdditionalAnswers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -52,6 +53,7 @@ import org.springframework.util.MultiValueMap;
  * Integration tests for {@link ReflectionRepositoryInvoker}.
  *
  * @author Oliver Gierke
+ * @author Seonwoo Jung
  */
 @ExtendWith(MockitoExtension.class)
 class ReflectionRepositoryInvokerUnitTests {
@@ -221,6 +223,24 @@ class ReflectionRepositoryInvokerUnitTests {
 		}
 	}
 
+	@Test // GH-3502
+	void convertsElementsOfCollectionValuedQueryParameter() throws Exception {
+
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+		parameters.put("colors", Arrays.asList("RED", "GREEN"));
+
+		var method = ColorRepository.class.getMethod("findByColorIn", Collection.class);
+		var repository = mock(ColorRepository.class);
+
+		getInvokerFor(repository, expectInvocationOf(method)).invokeQueryMethod(method, parameters, Pageable.unpaged(),
+				Sort.unsorted());
+
+		var captor = ArgumentCaptor.forClass(Collection.class);
+		verify(repository).findByColorIn(captor.capture());
+
+		assertThat(captor.getValue()).containsExactly(Color.RED, Color.GREEN);
+	}
+
 	@Test // DATACMNS-700
 	void failedParameterConversionCapturesContext() throws Exception {
 
@@ -371,4 +391,13 @@ class ReflectionRepositoryInvokerUnitTests {
 	}
 
 	interface DeleteByIdOverrideSubRepository extends DeleteByIdOverrideRepository<Domain, Long> {}
+
+	// GH-3502
+	enum Color {
+		RED, GREEN;
+	}
+
+	interface ColorRepository extends Repository<Domain, Long> {
+		List<Domain> findByColorIn(@Param("colors") Collection<Color> colors);
+	}
 }
