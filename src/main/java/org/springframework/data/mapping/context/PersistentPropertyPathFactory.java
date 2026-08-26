@@ -15,8 +15,16 @@
  */
 package org.springframework.data.mapping.context;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -48,8 +56,6 @@ import org.springframework.util.StringUtils;
  * @soundtrack Cypress Hill - Boom Biddy Bye Bye (Fugees Remix, Unreleased & Revamped)
  */
 class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends PersistentProperty<P>> {
-
-	private static final Predicate<PersistentProperty<? extends PersistentProperty<?>>> IS_ENTITY = PersistentProperty::isEntity;
 
 	private final ConcurrentLruCache<TypeAndPath, PathResolution> propertyPaths = new ConcurrentLruCache<>(512, it -> createPersistentPropertyPath(it.path(), it.type()));
 	private final MappingContext<E, P> context;
@@ -228,7 +234,18 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 			return Collections.emptyList();
 		}
 
-		return from(context.getRequiredPersistentEntity(actualType), filter, traversalGuard, basePath);
+		E entity;
+		if (type.isCollectionLike() || type.isMap()) {
+			entity = context.getPersistentEntity(actualType);
+		} else {
+			entity = context.getRequiredPersistentEntity(actualType);
+		}
+
+		if (entity == null) {
+			return Collections.emptyList();
+		}
+
+		return from(entity, filter, traversalGuard, basePath);
 	}
 
 	private Collection<PersistentPropertyPath<P>> from(E entity, Predicate<? super P> filter, Predicate<P> traversalGuard,
@@ -251,9 +268,11 @@ class PersistentPropertyPathFactory<E extends PersistentEntity<?, P>, P extends 
 				properties.add(currentPath);
 			}
 
-			if (traversalGuard.and(IS_ENTITY).test(persistentProperty)) {
-				var persistentEntity = context.getRequiredPersistentEntity(persistentProperty);
-				properties.addAll(from(persistentEntity, filter, traversalGuard, currentPath));
+			if (traversalGuard.test(persistentProperty)) {
+				E persistentEntity = context.getPersistentEntity(persistentProperty);
+				if (persistentEntity != null) {
+					properties.addAll(from(persistentEntity, filter, traversalGuard, currentPath));
+				}
 			}
 		};
 
