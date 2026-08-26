@@ -15,8 +15,10 @@
  */
 package org.springframework.data.mapping
 
+import org.springframework.data.core.NestedKPropertyPath
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
+import org.springframework.data.core.toDotPath as coreToDotPath
 
 /**
  * Abstraction of a property path consisting of [KProperty].
@@ -29,7 +31,14 @@ import kotlin.reflect.KProperty1
 private class KPropertyPath<T, U>(
 	val parent: KProperty<U?>,
 	val child: KProperty1<U, T>
-) : KProperty<T> by child
+) : KProperty<T> by child, NestedKPropertyPath {
+
+	override val property: KProperty<*>
+		get() = parent
+	override val leaf: KProperty<*>
+		get() = child
+
+}
 
 /**
  * Abstraction of a property path that consists of parent [KProperty],
@@ -42,22 +51,22 @@ private class KPropertyPath<T, U>(
 internal class KIterablePropertyPath<T, U>(
 	val parent: KProperty<Iterable<U?>?>,
 	val child: KProperty1<U, T>
-) : KProperty<T> by child
+) : KProperty<T> by child, NestedKPropertyPath {
+
+	override val property: KProperty<*>
+		get() = parent
+	override val leaf: KProperty<*>
+		get() = child
+
+}
 
 /**
- * Recursively construct field name for a nested property.
+ * Render a nested property path in dot notation.
  * @author Tjeu Kayim
  * @author Mikhail Polivakha
  */
-fun asString(property: KProperty<*>): String {
-	return when (property) {
-		is KPropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-		is KIterablePropertyPath<*, *> ->
-			"${asString(property.parent)}.${property.child.name}"
-		else -> property.name
-	}
-}
+@Deprecated("since 4.1.2, use the org.springframework.data.core extensions instead")
+fun asString(property: KProperty<*>): String = property.coreToDotPath()
 
 /**
  * Builds [KPropertyPath] from Property References.

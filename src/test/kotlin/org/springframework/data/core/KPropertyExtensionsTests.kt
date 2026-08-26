@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.ArgumentSet
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
+import org.springframework.data.mapping.div as mappingDiv
 
 /**
  * Unit tests for [kotlin.reflect.KProperty] extensions.
@@ -78,6 +79,48 @@ class KPropertyExtensionsTests {
 		val property = (Book::author / Author::name).toDotPath()
 
 		assertThat(property).isEqualTo("author.name")
+	}
+
+	@Test // GH-3503
+	fun `Convert legacy nested KProperty to field name`() {
+
+		val property = Book::author.mappingDiv(Author::name).toDotPath()
+
+		assertThat(property).isEqualTo("author.name")
+	}
+
+	@Test // GH-3503
+	fun `Convert legacy Iterable nested KProperty to field name`() {
+
+		val property = Author::books.mappingDiv(Book::title).toDotPath()
+
+		assertThat(property).isEqualTo("books.title")
+	}
+
+	@Test // GH-3503
+	fun `Convert nested KProperty in leaf position to field name`() {
+
+		val property = (Book::author / (Author::books / Book::title)).toDotPath()
+
+		assertThat(property).isEqualTo("author.books.title")
+	}
+
+	@Test // GH-3503
+	fun `Convert legacy nested KProperty with nested leaf to field name`() {
+
+		val property = Book::author.mappingDiv(Author::books / Book::title).toDotPath()
+
+		assertThat(property).isEqualTo("author.books.title")
+	}
+
+	@Test // GH-3503
+	fun `Convert legacy nested KProperty with nested parent to field name`() {
+
+		class Entity(val book: Book)
+
+		val property = (Entity::book / Book::author).mappingDiv(Author::name).toDotPath()
+
+		assertThat(property).isEqualTo("book.author.name")
 	}
 
 	@Test // GH-3010

@@ -45,7 +45,7 @@ class PropertyPathTck {
 		assertThat(actual.next()).isEqualTo(expected.next());
 
 		Iterator<PropertyPath> actualIterator = actual.iterator();
-		Iterator<PropertyPath> expectedIterator = actual.iterator();
+		Iterator<PropertyPath> expectedIterator = expected.iterator();
 
 		assertThat(actualIterator.hasNext()).isEqualTo(expectedIterator.hasNext());
 

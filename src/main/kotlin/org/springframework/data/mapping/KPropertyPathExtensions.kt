@@ -16,6 +16,7 @@
 package org.springframework.data.mapping
 
 import kotlin.reflect.KProperty
+import org.springframework.data.core.toDotPath as coreToDotPath
 
 /**
  * Extension for [KProperty] providing an `toPath` function to render a [KProperty] in dot notation.
@@ -25,4 +26,4 @@ import kotlin.reflect.KProperty
  * @see org.springframework.data.core.PropertyPath.toDotPath
  */
 @Deprecated("since 4.1, use the org.springframework.data.core extensions instead")
-fun KProperty<*>.toDotPath(): String = asString(this)
+fun KProperty<*>.toDotPath(): String = coreToDotPath()
