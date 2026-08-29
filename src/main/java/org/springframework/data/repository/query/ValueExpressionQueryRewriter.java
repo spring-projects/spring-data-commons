@@ -224,6 +224,7 @@ public class ValueExpressionQueryRewriter {
 	 * @author Jens Schauder
 	 * @author Oliver Gierke
 	 * @author Mark Paluch
+	 * @author Greg Taube
 	 */
 	public class ParsedQuery {
 
@@ -243,15 +244,23 @@ public class ValueExpressionQueryRewriter {
 
 			Assert.notNull(query, "Query must not be null");
 
-			Map<String, ValueExpression> expressions = new HashMap<>();
 			Matcher matcher = EXPRESSION_PATTERN.matcher(query);
-			StringBuilder resultQuery = new StringBuilder();
 			QuotationMap quotedAreas = new QuotationMap(query);
+
+			if (!matcher.find()) {
+				this.expressions = Collections.emptyMap();
+				this.query = query;
+				this.quotations = quotedAreas;
+				return;
+			}
+
+			Map<String, ValueExpression> expressions = new HashMap<>();
+			StringBuilder resultQuery = new StringBuilder();
 
 			int expressionCounter = 0;
 			int matchedUntil = 0;
 
-			while (matcher.find()) {
+			do {
 
 				if (quotedAreas.isQuoted(matcher.start())) {
 					resultQuery.append(query, matchedUntil, matcher.end());
@@ -272,7 +281,7 @@ public class ValueExpressionQueryRewriter {
 				}
 
 				matchedUntil = matcher.end();
-			}
+			} while (matcher.find());
 
 			resultQuery.append(query.substring(matchedUntil));
 

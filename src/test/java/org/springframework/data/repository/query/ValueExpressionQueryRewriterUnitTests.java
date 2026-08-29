@@ -34,6 +34,7 @@ import org.springframework.data.spel.EvaluationContextProvider;
  * Unit tests for {@link ValueExpressionQueryRewriter}.
  *
  * @author Mark Paluch
+ * @author Greg Taube
  */
 class ValueExpressionQueryRewriterUnitTests {
 
@@ -84,6 +85,34 @@ class ValueExpressionQueryRewriterUnitTests {
 
 		assertThat(extractor.getQueryString()).isEqualTo("abcdef");
 		assertThat(extractor.getParameterMap()).isEmpty();
+	}
+
+	@Test // GH-3536
+	void reusesQueryStringWhenNoMatchIsFound() {
+
+		var context = ValueExpressionQueryRewriter.of(PARSER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var query = new String("abcdef");
+
+		assertThat(context.parse(query).getQueryString()).isSameAs(query);
+	}
+
+	@Test // GH-3536
+	void keepsQuotationInformationWhenNoMatchIsFound() {
+
+		var context = ValueExpressionQueryRewriter.of(PARSER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+		var query = "select ':name' as quoted, :name as parameter";
+		var parsedQuery = context.parse(query);
+
+		assertThat(parsedQuery.isQuoted(query.indexOf(":name"))).isTrue();
+		assertThat(parsedQuery.isQuoted(query.lastIndexOf(":name"))).isFalse();
+	}
+
+	@Test // GH-3536
+	void rejectsUnbalancedQuotationWhenNoMatchIsFound() {
+
+		var context = ValueExpressionQueryRewriter.of(PARSER, PARAMETER_NAME_SOURCE, REPLACEMENT_SOURCE);
+
+		assertThatIllegalArgumentException().isThrownBy(() -> context.parse("select 'unterminated"));
 	}
 
 	@Test // GH-3049
