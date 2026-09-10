@@ -42,6 +42,11 @@ class ExampleMatcherUnitTests {
 		assertThat(matcher.getDefaultStringMatcher()).isEqualTo(StringMatcher.DEFAULT);
 	}
 
+	@Test // GH-3539
+	void withStringMatcherShouldThrowExceptionWhenStringMatcherIsNull() {
+		assertThatIllegalArgumentException().isThrownBy(() -> matcher.withStringMatcher(null));
+	}
+
 	@Test // DATACMNS-810
 	void ignoreCaseShouldReturnFalseByDefault() {
 		assertThat(matcher.isIgnoreCaseEnabled()).isFalse();
