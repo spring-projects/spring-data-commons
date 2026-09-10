@@ -28,7 +28,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.support.DefaultDataBinderFactory;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -37,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Oliver Gierke
  * @author Chris Bono
  * @author Mark Paluch
+ * @author Seonggon Cho
  * @soundtrack Karlijn Langendijk & Sönke Meinen - Englishman In New York (Sting,
  *             https://www.youtube.com/watch?v=O7LZsqrnaaA)
  */
@@ -125,6 +131,39 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		assertThat(resolver.supportsParameter(parameter)).isFalse();
 	}
 
+	@Test // GH-1136
+	void bindsMultipartFileIntoProjectedPayload() throws Exception {
+
+		var request = new MockMultipartHttpServletRequest();
+		request.addParameter("name", "Dave");
+		request.addFile(new MockMultipartFile("file", "hello.txt", "text/plain", "Hello".getBytes()));
+
+		var result = resolver.resolveArgument(getParameter("withMultipartForm"), new ModelAndViewContainer(),
+				new ServletWebRequest(request), new DefaultDataBinderFactory(null));
+
+		assertThat(result).isInstanceOfSatisfying(MultipartForm.class, form -> {
+			assertThat(form.getName()).isEqualTo("Dave");
+			assertThat(form.getFile()).isNotNull();
+			assertThat(form.getFile().getOriginalFilename()).isEqualTo("hello.txt");
+		});
+	}
+
+	@Test // GH-1136
+	void bindsMultipleMultipartFilesIntoProjectedPayload() throws Exception {
+
+		var request = new MockMultipartHttpServletRequest();
+		request.addFile(new MockMultipartFile("files", "first.txt", "text/plain", "First".getBytes()));
+		request.addFile(new MockMultipartFile("files", "second.txt", "text/plain", "Second".getBytes()));
+
+		var result = resolver.resolveArgument(getParameter("withMultipartForm"), new ModelAndViewContainer(),
+				new ServletWebRequest(request), new DefaultDataBinderFactory(null));
+
+		assertThat(result).isInstanceOfSatisfying(MultipartForm.class, form -> {
+			assertThat(form.getFiles()).extracting(MultipartFile::getOriginalFilename).containsExactly("first.txt",
+					"second.txt");
+		});
+	}
+
 	private static MethodParameter getParameter(String methodName) {
 
 		for (Method method : Controller.class.getMethods()) {
@@ -141,6 +180,16 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 	interface AnnotatedInterface {}
 
 	interface UnannotatedInterface {}
+
+	@ProjectedPayload
+	interface MultipartForm {
+
+		String getName();
+
+		MultipartFile getFile();
+
+		List<MultipartFile> getFiles();
+	}
 
 	interface Controller {
 
@@ -163,6 +212,8 @@ class ProxyingHandlerMethodArgumentResolverUnitTests {
 		void withProjectedPayload(@ProjectedPayload SampleInterface param);
 
 		void withProjectedPayloadMultipart(@ProjectedPayload MultipartFile file);
+
+		void withMultipartForm(MultipartForm form);
 	}
 
 }
