@@ -73,7 +73,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher) {
 
-		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty");
+		Assert.notNull(defaultStringMatcher, "DefaultStringMatcher must not be empty");
 
 		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase, mode);
