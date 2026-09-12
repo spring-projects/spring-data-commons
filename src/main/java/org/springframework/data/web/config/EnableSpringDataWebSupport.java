@@ -70,6 +70,7 @@ import org.springframework.util.ClassUtils;
  * @see HateoasAwareSpringDataWebConfiguration
  * @author Oliver Gierke
  * @author Yanming Zhou
+ * @author Arnab Nandy
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
@@ -82,11 +83,14 @@ import org.springframework.util.ClassUtils;
 public @interface EnableSpringDataWebSupport {
 
 	/**
-	 * Configures how to render {@link org.springframework.data.domain.PageImpl} instances. Defaults to
+	 * Configures how to render {@link org.springframework.data.domain.PageImpl} and
+	 * {@link org.springframework.data.domain.SliceImpl} instances. Defaults to
 	 * {@link PageSerializationMode#DIRECT} for backward compatibility reasons. Prefer explicitly setting this to
 	 * {@link PageSerializationMode#VIA_DTO}, or manually convert {@link org.springframework.data.domain.PageImpl}
-	 * instances before handing them out of a controller method, either by manually calling {@code new PagedModel<>(page)}
-	 * or using Spring HATEOAS {@link org.springframework.hateoas.PagedModel} abstraction.
+	 * and {@link org.springframework.data.domain.SliceImpl} instances before handing them out of a controller method,
+	 * either by manually calling {@code new PagedModel<>(page)} / {@code new SlicedModel<>(slice)}
+	 * or using Spring HATEOAS {@link org.springframework.hateoas.PagedModel} /
+	 * {@link org.springframework.hateoas.SlicedModel} abstraction.
 	 *
 	 * @return will never be {@literal null}.
 	 * @since 3.3
@@ -96,16 +100,17 @@ public @interface EnableSpringDataWebSupport {
 	enum PageSerializationMode {
 
 		/**
-		 * {@link org.springframework.data.domain.PageImpl} instances will be rendered as is (discouraged, as there's no
-		 * guarantee on the stability of the serialization result as we might need to change the type's API for unrelated
-		 * reasons).
+		 * {@link org.springframework.data.domain.PageImpl} and {@link org.springframework.data.domain.SliceImpl}
+		 * instances will be rendered as is (discouraged, as there's no guarantee on the stability of the serialization
+		 * result as we might need to change the type's API for unrelated reasons).
 		 */
 		DIRECT,
 
 		/**
-		 * Causes {@link org.springframework.data.domain.PageImpl} instances to be wrapped into
-		 * {@link org.springframework.data.web.PagedModel} instances before rendering them as JSON to make sure the
-		 * representation stays stable even if {@link org.springframework.data.domain.PageImpl} is changed.
+		 * Causes {@link org.springframework.data.domain.PageImpl} and {@link org.springframework.data.domain.SliceImpl}
+		 * instances to be wrapped into {@link org.springframework.data.web.PagedModel} and
+		 * {@link org.springframework.data.web.SlicedModel} instances before rendering them as JSON to make sure the
+		 * representation stays stable even if domain types are changed.
 		 */
 		VIA_DTO;
 	}
