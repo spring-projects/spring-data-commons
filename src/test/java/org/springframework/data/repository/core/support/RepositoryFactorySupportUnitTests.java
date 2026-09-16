@@ -87,6 +87,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @author Ariel Carrera
  * @author Johannes Englmeier
+ * @author Donghwan Kim
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -458,6 +459,17 @@ class RepositoryFactorySupportUnitTests {
 		verify(backingRepo).deleteAll();
 	}
 
+	@Test // GH-3507
+	void unwrapsOptionalForTypeVariableReturnTypeDeclaredOnBaseInterface() {
+
+		var user = new User();
+		when(backingRepo.findById(any())).thenReturn(Optional.of(user));
+
+		var repository = factory.getRepository(TypeVariableReturningRepository.class);
+
+		assertThat(repository.findById(1L)).isSameAs(user);
+	}
+
 	@Test // DATACMNS-1154
 	void considersRequiredKotlinParameter() {
 
@@ -632,6 +644,15 @@ class RepositoryFactorySupportUnitTests {
 	}
 
 	interface CustomRepository extends ReadOnlyRepository<Object, Long> {
+
+	}
+
+	interface TypeVariableReturningBaseRepository<T, ID> extends Repository<T, ID> {
+
+		T findById(ID id);
+	}
+
+	interface TypeVariableReturningRepository extends TypeVariableReturningBaseRepository<User, Long> {
 
 	}
 
