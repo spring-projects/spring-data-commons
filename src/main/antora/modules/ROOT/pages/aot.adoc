@@ -157,5 +157,5 @@ These are in particular hints for:
 ** Repository fragments
 ** Querydsl `Q` classes
 ** Kotlin Coroutine support
-* Web support (Jackson Hints for `PagedModel`)
+* Web support (Jackson Hints for `PagedModel` and `SlicedModel`)
 
