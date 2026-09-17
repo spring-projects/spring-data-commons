@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Dongho Kim
  * @since 2.0
  */
 class TypedExampleMatcher implements ExampleMatcher {
@@ -73,7 +74,7 @@ class TypedExampleMatcher implements ExampleMatcher {
 	@Override
 	public ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher) {
 
-		Assert.notNull(ignoredPaths, "DefaultStringMatcher must not be empty");
+		Assert.notNull(defaultStringMatcher, "DefaultStringMatcher must not be empty");
 
 		return new TypedExampleMatcher(nullHandler, defaultStringMatcher, propertySpecifiers, ignoredPaths,
 				defaultIgnoreCase, mode);
