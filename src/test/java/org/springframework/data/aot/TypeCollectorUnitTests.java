@@ -29,6 +29,7 @@ import org.springframework.data.util.TypeCollector;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author arimu1
  */
 public class TypeCollectorUnitTests {
 
@@ -97,6 +98,12 @@ public class TypeCollectorUnitTests {
 
 		assertThat(filter.test(FieldsAndMethods.class)).isFalse();
 		assertThat(TypeCollector.inspect(c -> c.filterTypes(cls -> false), FieldsAndMethods.class).list()).isEmpty();
+	}
+
+	@Test // GH-3530
+	void detectsTypesNestedMoreThanOneGenericLevel() {
+		assertThat(TypeCollector.inspect(NestedGenericMaps.class).list()).contains(NestedGenericMaps.class,
+				EmptyType1.class, EmptyType2.class);
 	}
 
 }
