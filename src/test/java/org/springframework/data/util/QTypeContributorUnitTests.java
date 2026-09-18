@@ -23,10 +23,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
+import org.springframework.aot.generate.NameGenerator;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.data.aot.sample.ConfigWithQuerydslPredicateExecutor.Person;
 import org.springframework.data.aot.sample.QConfigWithQuerydslPredicateExecutor_Person;
@@ -47,7 +47,7 @@ class QTypeContributorUnitTests {
 	void addsQTypeHintIfPresent() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		QTypeContributor.contributeEntityPath(Person.class, generationContext, null);
 
@@ -59,7 +59,7 @@ class QTypeContributorUnitTests {
 	void doesNotAddQTypeHintIfTypeNotPresent() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		QTypeContributor.contributeEntityPath(Person.class, generationContext,
 				HidingClassLoader.hideTypes(QConfigWithQuerydslPredicateExecutor_Person.class));
@@ -72,7 +72,7 @@ class QTypeContributorUnitTests {
 	void doesNotAddQTypeHintIfQuerydslNotPresent() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		QTypeContributor.contributeEntityPath(Person.class, generationContext, HidingClassLoader.hide(EntityPath.class));
 
@@ -84,7 +84,7 @@ class QTypeContributorUnitTests {
 	void addsQTypeHintForArrayType() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		QTypeContributor.contributeEntityPath(Person[].class, generationContext, HidingClassLoader.hideTypes());
 
@@ -98,7 +98,7 @@ class QTypeContributorUnitTests {
 	void doesNotAddQTypeHintForPrimitiveType() {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		QTypeContributor.contributeEntityPath(int.class, generationContext, getClass().getClassLoader());
 
@@ -109,7 +109,7 @@ class QTypeContributorUnitTests {
 	void doesNotFailForTypeInDefaultPackage() throws Exception {
 
 		GenerationContext generationContext = new DefaultGenerationContext(
-				new ClassNameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
+				new NameGenerator(ClassName.get(this.getClass())), new InMemoryGeneratedFiles());
 
 		class CapturingClassLoader extends ClassLoader {
 
