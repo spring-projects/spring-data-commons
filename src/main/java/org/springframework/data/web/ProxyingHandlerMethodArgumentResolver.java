@@ -33,6 +33,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
 /**
@@ -46,6 +47,7 @@ import org.springframework.web.multipart.support.MultipartResolutionDelegate;
  * @author Chris Bono
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Seonggon Cho
  * @since 1.10
  */
 public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor
@@ -122,9 +124,31 @@ public class ProxyingHandlerMethodArgumentResolver extends ModelAttributeMethodP
 
 		MapDataBinder binder = new MapDataBinder(parameter.getParameterType(), conversionService.getObject(),
 				collectionSizeLimit);
-		binder.bind(new MutablePropertyValues(request.getParameterMap()));
+		binder.bind(getPropertyValues(request));
 
 		return proxyFactory.createProjection(parameter.getParameterType(), binder.getTarget());
+	}
+
+	/**
+	 * Returns the request parameters and, in case of a multipart request, the uploaded files of the given
+	 * {@link NativeWebRequest} as {@link MutablePropertyValues}. Files are bound the same way
+	 * {@link org.springframework.web.bind.WebDataBinder} binds them: a single file as is, multiple files for the same
+	 * name as {@link java.util.List}.
+	 *
+	 * @param request must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 */
+	private static MutablePropertyValues getPropertyValues(NativeWebRequest request) {
+
+		MutablePropertyValues values = new MutablePropertyValues(request.getParameterMap());
+		MultipartRequest multipartRequest = request.getNativeRequest(MultipartRequest.class);
+
+		if (multipartRequest != null) {
+			multipartRequest.getMultiFileMap()
+					.forEach((name, files) -> values.add(name, files.size() == 1 ? files.get(0) : files));
+		}
+
+		return values;
 	}
 
 	@Override
