@@ -43,6 +43,7 @@ import org.springframework.core.annotation.AnnotationUtils;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Johannes Englmeier
+ * @author Greg Taube
  * @since 2.3
  * @see org.springframework.core.KotlinDetector#isKotlinReflectPresent()
  */
@@ -109,8 +110,11 @@ public final class KotlinReflectionUtils {
 	 */
 	public static boolean isSuspend(Method method) {
 
-		KFunction<?> invokedFunction = KotlinDetector.isKotlinType(method.getDeclaringClass()) ? findKotlinFunction(method)
-				: null;
+		if (!KotlinDetector.isSuspendingFunction(method) || !KotlinDetector.isKotlinType(method.getDeclaringClass())) {
+			return false;
+		}
+
+		KFunction<?> invokedFunction = findKotlinFunction(method);
 
 		return invokedFunction != null && invokedFunction.isSuspend();
 	}
