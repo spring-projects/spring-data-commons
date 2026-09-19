@@ -29,6 +29,7 @@ import org.springframework.data.util.TypeCollector;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Blaz Snuderl
  */
 public class TypeCollectorUnitTests {
 
@@ -65,6 +66,13 @@ public class TypeCollectorUnitTests {
 	void includesDeclaredClassesInInspection() {
 		assertThat(TypeCollector.inspect(WithDeclaredClass.class).list()).containsExactlyInAnyOrder(WithDeclaredClass.class,
 				WithDeclaredClass.SomeEnum.class);
+	}
+
+	@Test
+	void inspectsTypesReachableFromMultipleRootsOnce() {
+
+		assertThat(TypeCollector.inspect(CyclicPropertiesA.class, CyclicPropertiesB.class).list())
+				.containsExactlyInAnyOrder(CyclicPropertiesA.class, CyclicPropertiesB.class);
 	}
 
 	@Test // GH-2744
