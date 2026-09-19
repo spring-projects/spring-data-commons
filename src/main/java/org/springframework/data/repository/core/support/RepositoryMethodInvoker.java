@@ -16,7 +16,6 @@
 package org.springframework.data.repository.core.support;
 
 import kotlin.Unit;
-import kotlin.reflect.KFunction;
 import kotlinx.coroutines.flow.Flow;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -46,6 +45,7 @@ import org.springframework.data.util.KotlinReflectionUtils;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Greg Taube
  * @since 2.4
  * @see #forFragmentMethod(Method, Object, Method)
  * @see #forRepositoryQuery(Method, RepositoryQuery)
@@ -319,15 +319,8 @@ abstract class RepositoryMethodInvoker {
 							baseClassMethod.getParameterCount());
 				}
 
-				KFunction<?> declaredFunction = KotlinDetector.isKotlinType(declaredMethod.getDeclaringClass())
-						? KotlinReflectionUtils.findKotlinFunction(declaredMethod)
-						: null;
-				KFunction<?> baseClassFunction = KotlinDetector.isKotlinType(baseClassMethod.getDeclaringClass())
-						? KotlinReflectionUtils.findKotlinFunction(baseClassMethod)
-						: null;
-
-				boolean suspendedDeclaredMethod = declaredFunction != null && declaredFunction.isSuspend();
-				boolean suspendedBaseClassMethod = baseClassFunction != null && baseClassFunction.isSuspend();
+				boolean suspendedDeclaredMethod = KotlinReflectionUtils.isSuspend(declaredMethod);
+				boolean suspendedBaseClassMethod = KotlinReflectionUtils.isSuspend(baseClassMethod);
 				boolean reactiveBaseClassMethod = !suspendedBaseClassMethod
 						&& ReactiveWrapperConverters.supports(baseClassMethod.getReturnType());
 
