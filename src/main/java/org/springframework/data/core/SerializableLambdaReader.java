@@ -18,6 +18,7 @@ package org.springframework.data.core;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlin.jvm.internal.PropertyReference;
 import kotlin.reflect.KClass;
+import kotlin.reflect.KProperty;
 import kotlin.reflect.KProperty1;
 
 import java.io.IOException;
@@ -140,10 +141,9 @@ class SerializableLambdaReader {
 	 */
 	public MemberDescriptor read(Object lambdaObject) {
 
-		// Kotlin 2.0
-		Object k2Lambda = KotlinDetectorUtils.detectKotlin2SamLambda(lambdaObject);
-		if (k2Lambda != null) {
-			return KotlinDelegate.read(k2Lambda, lambdaObject);
+		Object property = KotlinDetectorUtils.getCapturedProperty(lambdaObject);
+		if (property != null) {
+			return KotlinDelegate.read(property, lambdaObject);
 		}
 
 		SerializedLambda lambda = serialize(lambdaObject);
@@ -175,6 +175,12 @@ class SerializableLambdaReader {
 
 		throw new LambdaIntrospectionException("Cannot extract method or field from: " + lambdaObject
 				+ ". The given value is not a lambda or method reference.");
+	}
+
+	Object getCacheKey(Object lambdaObject) {
+
+		Object property = KotlinDetectorUtils.getCapturedProperty(lambdaObject);
+		return property != null ? property : lambdaObject;
 	}
 
 	private void assertNotConstructor(SerializedLambda lambda) {
@@ -233,30 +239,33 @@ class SerializableLambdaReader {
 	static class KotlinDetectorUtils {
 
 		/**
-		 * Detect whether the given lambda object is a Kotlin 2 SAM wrapper around a property reference
-		 * {@link kotlin.reflect.KProperty} usage with {@link PropertyReference} or {@link TypedPropertyPath}.
-		 * <p>
-		 * Kotlin 1 lambdas use {@link SerializedLambda} directly and provide the function object through
-		 * {@link SerializedLambda#getCapturedArg(int) argument capture}.
-		 *
-		 * @param lambdaObject the lambda object to introspect.
-		 * @return the function object or {@code null} if not detected.
+		 * Detect whether the given lambda object is a Kotlin 2 SAM wrapper around a property reference.
 		 */
-		public static @Nullable Object detectKotlin2SamLambda(Object lambdaObject) {
+		static @Nullable Object getCapturedProperty(Object lambdaObject) {
 
-			Class<?> cls = lambdaObject.getClass();
-			if (!KotlinDetector.isKotlinType(cls)) {
+			if (!KotlinDetector.isKotlinReflectPresent()) {
 				return null;
 			}
 
-			Field field = ReflectionUtils.findField(lambdaObject.getClass(), "function");
+			Class<?> cls = lambdaObject.getClass();
+			Field field;
+
+			if (KotlinDetector.isKotlinType(cls)) {
+				field = ReflectionUtils.findField(cls, "function");
+			} else if (cls.isHidden() && ClassUtils.isLambdaClass(cls)) {
+				Field[] fields = cls.getDeclaredFields();
+				field = fields.length == 1 ? fields[0] : null;
+			} else {
+				return null;
+			}
+
 			if (field == null) {
 				return null;
 			}
 
 			ReflectionUtils.makeAccessible(field);
-			Object function = ReflectionUtils.getField(field, lambdaObject);
-			return isKotlinPropertyReference(function) ? function : null;
+			Object value = ReflectionUtils.getField(field, lambdaObject);
+			return value != null && KotlinDelegate.isKProperty(value) ? value : null;
 		}
 
 		public static boolean isKotlinPropertyReference(SerializedLambda lambda) {
@@ -279,6 +288,10 @@ class SerializableLambdaReader {
 	 * Inner class delays loading of Kotlin classes.
 	 */
 	static class KotlinDelegate {
+
+		static boolean isKProperty(Object candidate) {
+			return candidate instanceof KProperty<?>;
+		}
 
 		public static MemberDescriptor read(SerializedLambda lambda) {
 			return read(lambda.getCapturedArg(0), lambda);

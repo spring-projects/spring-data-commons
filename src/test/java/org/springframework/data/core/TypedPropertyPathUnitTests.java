@@ -18,6 +18,7 @@ package org.springframework.data.core;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
@@ -60,6 +61,14 @@ class TypedPropertyPathUnitTests {
 	@Test // GH-3400
 	void resolvesMHSimplePath() {
 		assertThat(PropertyPath.of(PersonQuery::getName).toDotPath()).isEqualTo("name");
+	}
+
+	@Test // GH-3521
+	void shouldCacheResolvedMethodReference() {
+
+		Supplier<TypedPropertyPath<PersonQuery, String>> factory = () -> PropertyPath.of(PersonQuery::getName);
+
+		assertThat(factory.get()).isSameAs(factory.get());
 	}
 
 	@Test // GH-3400

@@ -81,6 +81,26 @@ class TypedPropertyPathKtUnitTests {
 		).isEqualTo("address")
 	}
 
+	@Test // GH-3521
+	fun shouldCacheSamPropertyReference() {
+
+		assertThat(TypedPropertyPath.path(Person::address))
+			.isSameAs(TypedPropertyPath.path(Person::address))
+		assertThat(TypedPropertyPath.of(Person::address))
+			.isSameAs(TypedPropertyPath.of(Person::address))
+	}
+
+	@Test // GH-3521
+	fun shouldCacheComposedKProperty() {
+
+		assertThat(TypedPropertyPath.path(Person::address / Address::city))
+			.isSameAs(TypedPropertyPath.path(Person::address / Address::city))
+		assertThat(TypedPropertyPath.of(Person::address / Address::city))
+			.isSameAs(TypedPropertyPath.of(Person::address / Address::city))
+		assertThat(TypedPropertyPath.path(Person::addresses / Address::city))
+			.isSameAs(TypedPropertyPath.path(Person::addresses / Address::city))
+	}
+
 	@Test // GH-3400
 	fun shouldSupportComposedPropertyReference() {
 
@@ -118,6 +138,7 @@ class TypedPropertyPathKtUnitTests {
 		var name: String? = null
 		var age: Int = 0
 		var address: Address? = null
+		var addresses: List<Address> = emptyList()
 		var emergencyContact: Person? = null
 	}
 
