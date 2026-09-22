@@ -31,6 +31,15 @@ class PropertyReferenceKtUnitTests {
 		assertThat(PropertyReference.property(Person::address).name).isEqualTo("address")
 	}
 
+	@Test // GH-3521
+	fun shouldCacheSamPropertyReference() {
+		assertThat(PropertyReference.property(Person::address)).isSameAs(
+			PropertyReference.property(
+				Person::address
+			)
+		)
+	}
+
 	@Test // GH-3400
 	fun resolutionShouldFailForComposedPropertyPath() {
 		assertThatExceptionOfType(PropertyResolutionException::class.java)
