@@ -191,6 +191,24 @@ class KPropertyExtensionsTests {
 		assertThat(property).isEqualTo("author.name")
 	}
 
+	@Test // GH-3521
+	fun `Nested KProperty should be equal`() {
+
+		assertThat(Book::author / Author::name).isEqualTo(Book::author / Author::name)
+			.hasSameHashCodeAs(Book::author / Author::name)
+		assertThat(Book::author / Author::name).isNotEqualTo(Book::author / Author::books)
+		assertThat(Book::author / Author::name).isNotEqualTo(Book::editor / Author::name)
+	}
+
+	@Test // GH-3521
+	fun `Iterable nested KProperty should be equal`() {
+
+		assertThat(Author::books / Book::title).isEqualTo(Author::books / Book::title)
+			.hasSameHashCodeAs(Author::books / Book::title)
+		assertThat(Author::books / Book::title).isNotEqualTo(Author::books / Book::author)
+		assertThat(Author::books / Book::title).isNotEqualTo(Author::favorites / Book::title)
+	}
+
 	@Test // DATACMNS-1835
 	fun `Convert nullable KProperty to field name`() {
 
@@ -201,8 +219,12 @@ class KPropertyExtensionsTests {
 		assertThat(property).isEqualTo("cat.name")
 	}
 
-	class Book(val title: String, val author: Author)
-	class Author(val name: String, val books: List<Book>)
+	class Book(val title: String, val author: Author, val editor: Author = author)
+	class Author(
+		val name: String,
+		val books: List<Book>,
+		val favorites: List<Book> = books
+	)
 
 	class Person {
 		var name: String? = null

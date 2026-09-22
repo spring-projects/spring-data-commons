@@ -27,6 +27,7 @@ import org.graalvm.nativeimage.hosted.RuntimeSerialization;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.aot.AotProcessingException;
+import org.springframework.util.ClassUtils;
 
 /**
  * GraalVM {@link Feature} that registers serializable {@link TypedPropertyPath} and {@link PropertyReference} lambdas.
@@ -42,16 +43,6 @@ import org.springframework.beans.factory.aot.AotProcessingException;
  */
 class TypedPropertyPathFeature implements Feature {
 
-	/**
-	 * Token indicating a class is or is not a lambda.
-	 */
-	private static final String LAMBDA_CLASS_MARKER = "$$Lambda";
-
-	/**
-	 * The offset from {@link #LAMBDA_CLASS_MARKER} where the end marker is found.
-	 */
-	private static final int LAMBDA_CLASS_END_MARKER = LAMBDA_CLASS_MARKER.length();
-
 	private final SerializableLambdaReader reader = new SerializableLambdaReader();
 
 	@Override
@@ -59,7 +50,7 @@ class TypedPropertyPathFeature implements Feature {
 
 		BiConsumer<DuringAnalysisAccess, Class<?>> serializableLambdaHandler = (ignore, cls) -> {
 
-			if (isLambdaClass(cls)) {
+			if (ClassUtils.isLambdaClass(cls)) {
 
 				try {
 					registerLambdaSerialization(cls);
@@ -118,33 +109,6 @@ class TypedPropertyPathFeature implements Feature {
 
 			RuntimeReflection.registerFieldLookup(descriptor.getOwner(), property.getName());
 		}
-	}
-
-	/**
-	 * Return true if the specified Class represents a raw lambda.
-	 *
-	 * @param cls class to inspect.
-	 * @return true if the class represents a raw lambda.
-	 */
-	public static boolean isLambdaClass(Class<?> cls) {
-
-		String name = cls.getName();
-		int marker = name.indexOf(LAMBDA_CLASS_MARKER);
-		if (marker == -1) {
-			return false;
-		}
-
-		int noffset = marker + LAMBDA_CLASS_END_MARKER;
-		if (noffset > name.length()) {
-			return false;
-		}
-
-		char c = name.charAt(noffset);
-
-		// '$' character will be seen in releases between Java {8,20}
-		// '/' is used in Java 21
-		// See bug 35177243
-		return c == '$' || c == '/';
 	}
 
 }
