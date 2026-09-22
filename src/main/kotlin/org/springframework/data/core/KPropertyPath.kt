@@ -85,6 +85,11 @@ internal class KSinglePropertyReference<T, M, out P>(
 	override val leaf: KProperty1<*, P>
 		get() = child
 
+	override fun equals(other: Any?): Boolean =
+		other is KSinglePropertyReference<*, *, *> && parent == other.parent && child == other.child
+
+	override fun hashCode(): Int = 31 * parent.hashCode() + child.hashCode()
+
 }
 
 /**
@@ -112,6 +117,11 @@ internal class KIterablePropertyReference<T, M, out P>(
 		get() = parent
 	override val leaf: KProperty1<*, P>
 		get() = child
+
+	override fun equals(other: Any?): Boolean =
+		other is KIterablePropertyReference<*, *, *> && parent == other.parent && child == other.child
+
+	override fun hashCode(): Int = 31 * parent.hashCode() + child.hashCode()
 
 }
 
