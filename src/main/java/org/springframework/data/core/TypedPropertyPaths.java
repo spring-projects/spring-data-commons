@@ -19,7 +19,6 @@ import kotlin.reflect.KProperty;
 import kotlin.reflect.KProperty1;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -50,7 +49,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  */
 class TypedPropertyPaths {
 
-	private static final Map<ClassLoader, Map<Serializable, ResolvedTypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
+	private static final Map<ClassLoader, Map<Object, TypedPropertyPath<?, ?>>> resolved = new WeakHashMap<>();
 
 	private static final SerializableLambdaReader reader = new SerializableLambdaReader(PropertyPath.class,
 			PropertyReference.class, PropertyReferences.class, TypedPropertyPath.class, TypedPropertyPaths.class);
@@ -97,32 +96,46 @@ class TypedPropertyPaths {
 	}
 
 	/**
-	 * Introspect {@link PropertyReference} and return an introspected {@link ResolvedTypedPropertyPath} variant.
+	 * Introspect {@link PropertyReference} and return a resolved {@link ResolvedTypedPropertyPath} object.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	public static <P, T> TypedPropertyPath<T, P> of(PropertyReference<T, P> lambda) {
+		return resolve(lambda);
+	}
+
+	/**
+	 * Introspect {@link TypedPropertyPath} and return a resolved {@link ResolvedTypedPropertyPath} object.
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public static <P, T> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
+		return resolve(lambda);
+	}
+
+	@SuppressWarnings({ "rawtypes" })
+	private static TypedPropertyPath resolve(Object lambda) {
 
 		if (lambda instanceof Resolved) {
 			return (TypedPropertyPath) lambda;
 		}
 
-		Map<PropertyReference<?, ?>, TypedPropertyPath<?, ?>> cache;
+		Map<Object, TypedPropertyPath<?, ?>> cache;
 		synchronized (resolved) {
-			cache = (Map) resolved.computeIfAbsent(lambda.getClass().getClassLoader(),
-					k -> new ConcurrentReferenceHashMap<>());
+			cache = resolved.computeIfAbsent(lambda.getClass().getClassLoader(),
+					ignore -> new ConcurrentReferenceHashMap<>());
 		}
 
-		return (TypedPropertyPath) cache.computeIfAbsent(lambda, TypedPropertyPaths::doResolvePropertyReference);
+		return cache.computeIfAbsent(reader.getCacheKey(lambda), k -> createPath(lambda));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static <T, P> TypedPropertyPath<?, ?> doResolvePropertyReference(PropertyReference<T, P> lambda) {
+	@SuppressWarnings("NullableProblems")
+	private static TypedPropertyPath<?, ?> createPath(Object lambda) {
 
-		if (lambda instanceof PropertyReferences.ResolvedPropertyReferenceSupport resolved) {
-			return new PropertyReferenceWrapper<>(resolved);
+		if (lambda instanceof PropertyReference<?, ?> reference
+				&& lambda instanceof PropertyReferences.ResolvedPropertyReferenceSupport) {
+			return new PropertyReferenceWrapper<>(reference);
 		}
 
-		PropertyMetadata metadata = read(lambda);
+		PropertyMetadata metadata = readMetadata(lambda);
 
 		if (KotlinDetector.isKotlinReflectPresent()) {
 			if (metadata instanceof KPropertyPathMetadata kMetadata
@@ -131,44 +144,18 @@ class TypedPropertyPaths {
 			}
 		}
 
-		return new ResolvedPropertyReference<>(lambda, metadata);
-	}
-
-	/**
-	 * Introspect {@link TypedPropertyPath} and return an introspected {@link ResolvedTypedPropertyPath} variant.
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <P, T> TypedPropertyPath<T, P> of(TypedPropertyPath<T, P> lambda) {
-
-		if (lambda instanceof Resolved) {
-			return lambda;
+		if (lambda instanceof PropertyReference<?, ?> reference) {
+			return new ResolvedPropertyReference<>(reference, metadata);
 		}
 
-		Map<TypedPropertyPath<?, ?>, TypedPropertyPath<?, ?>> cache;
-		synchronized (resolved) {
-			cache = (Map) resolved.computeIfAbsent(lambda.getClass().getClassLoader(),
-					k -> new ConcurrentReferenceHashMap<>());
+		if (lambda instanceof TypedPropertyPath<?, ?> path) {
+			return new ResolvedTypedPropertyPath<>(path, metadata);
 		}
 
-		return (TypedPropertyPath) cache.computeIfAbsent(lambda,
-				TypedPropertyPaths::doResolvePropertyPathReference);
+		throw new UnsupportedOperationException("Cannot resolve lambda: " + lambda);
 	}
 
-	private static <T, P> TypedPropertyPath<?, ?> doResolvePropertyPathReference(TypedPropertyPath<T, P> lambda) {
-
-		PropertyMetadata metadata = read(lambda);
-
-		if (KotlinDetector.isKotlinReflectPresent()) {
-			if (metadata instanceof KPropertyPathMetadata kMetadata
-					&& kMetadata.getProperty() instanceof KPropertyPath<?, ?> ref) {
-				return KotlinDelegate.of(ref);
-			}
-		}
-
-		return new ResolvedTypedPropertyPath<>(lambda, metadata);
-	}
-
-	private static PropertyMetadata read(Object lambda) {
+	private static PropertyMetadata readMetadata(Object lambda) {
 
 		MemberDescriptor reference = reader.read(lambda);
 
