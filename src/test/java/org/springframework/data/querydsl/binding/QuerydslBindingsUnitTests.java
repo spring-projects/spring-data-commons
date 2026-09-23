@@ -17,6 +17,8 @@ package org.springframework.data.querydsl.binding;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +33,9 @@ import org.springframework.data.querydsl.QUser;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.User;
 
-import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.SimpleExpression;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.StringPath;
 
 /**
@@ -47,7 +50,7 @@ class QuerydslBindingsUnitTests {
 	QuerydslPredicateBuilder builder;
 	QuerydslBindings bindings;
 
-	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = (path, value) -> path.contains(value);
+	static final SingleValueBinding<StringPath, String> CONTAINS_BINDING = StringExpression::contains;
 
 	@BeforeEach
 	void setUp() {
@@ -59,6 +62,16 @@ class QuerydslBindingsUnitTests {
 	@Test // DATACMNS-669
 	void rejectsNullPath() {
 		assertThatIllegalArgumentException().isThrownBy(() -> bindings.getBindingForPath(null));
+	}
+
+	@Test // GH-3547
+	void explicitBindNotHiddenByDefaultExclusion() {
+
+		bindings.excludeUnlistedProperties(true);
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
+
+		assertThat(bindings.isPathAvailable("User.firstname", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("firstname", User.class)).isTrue();
 	}
 
 	@Test // DATACMNS-669
@@ -178,12 +191,13 @@ class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("firstname", User.class)).isTrue();
 	}
 
-	@Test // DATACMNS-669
-	void nestedPathIsNotAvailableIfAParanetPathWasExcluded() {
+	@Test // DATACMNS-669, GH-3547
+	void nestedPathIsNotAvailableIfParentPathWasExcluded() {
 
 		bindings.excluding(QUser.user.address);
 
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("User.address.city", User.class)).isFalse();
 	}
 
 	@Test // DATACMNS-669
@@ -195,13 +209,60 @@ class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
 	}
 
-	@Test // DATACMNS-669
+	@Test // DATACMNS-669, GH-3547
 	void isPathAvailableShouldReturnFalseWhenPartialPathContainedInExcludingAndConcretePathToDifferentPropertyIsIncluded() {
 
 		bindings.excluding(QUser.user.address);
 		bindings.including(QUser.user.address.city);
 
 		assertThat(bindings.isPathAvailable("address.street", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
+	}
+
+	@Test // GH-3547
+	void excludesAliasAfterBinding() {
+
+		bindings.bind(QUser.user.inceptionYear).first(SimpleExpression::eq);
+
+		bindings.excluding(QUser.user.inceptionYear);
+
+		assertThat(bindings.isPathAvailable("inceptionYear", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("User.inceptionYear", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void considersAliasProperly() {
+
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
+		bindings.bind(QUser.user.lastname).as("User.firstname").first(CONTAINS_BINDING);
+
+		assertThat(bindings.getPropertyPath("User.firstname", TypeInformation.of(String.class)).getLeafProperty())
+				.isEqualTo("lastname");
+
+		assertThat(bindings.getPropertyPath("firstname", TypeInformation.of(User.class)).getLeafProperty())
+				.isEqualTo("lastname");
+	}
+
+	@Test // GH-3547
+	void considersShadowedAliasProperly() {
+
+		bindings.bind(QUser.user.address.description).as("description").first(CONTAINS_BINDING);
+		bindings.bind(QUser.user.description).first(CONTAINS_BINDING);
+
+		PathInformation path = bindings.getPropertyPath("description", TypeInformation.of(User.class));
+
+		assertThat(path).isNotNull();
+		assertThat(path.toDotPath()).isEqualTo("description");
+	}
+
+	@Test // GH-3547
+	void excludesParentAfterBinding() {
+
+		bindings.bind(QUser.user.address.city).first(SimpleExpression::eq);
+		bindings.excluding(QUser.user.address);
+
+		assertThat(bindings.isPathAvailable("User.address.city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
 	}
 
 	@Test // DATACMNS-669, DATACMNS-1744
@@ -259,7 +320,7 @@ class QuerydslBindingsUnitTests {
 	}
 
 	@Test // DATACMNS-787
-	void registedAliasWithNullBinding() {
+	void registeredAliasWithNullBinding() {
 
 		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
 
@@ -277,12 +338,13 @@ class QuerydslBindingsUnitTests {
 		assertThat(bindings.isPathAvailable("specialProperty", User.class)).isTrue();
 	}
 
-	private static <P extends Path<? extends S>, S> void assertAdapterWithTargetBinding(
-			Optional<MultiValueBinding<P, S>> binding, SingleValueBinding<? extends Path<?>, ?> expected) {
+	private static void assertAdapterWithTargetBinding(Optional<MultiValueBinding<StringPath, String>> binding,
+			SingleValueBinding<StringPath, String> expected) {
 
 		assertThat(binding).hasValueSatisfying(it -> {
-			// assertThat(binding, is(instanceOf(QuerydslBindings.MultiValueBindingAdapter.class)));
-			// assertThat(ReflectionTestUtils.getField(binding, "delegate"), is((Object) expected));
+			assertThat(it.bind(QUser.user.firstname, Arrays.asList("Walter", "White")))
+					.contains(expected.bind(QUser.user.firstname, "Walter"));
+			assertThat(it.bind(QUser.user.firstname, Collections.emptyList())).isEmpty();
 		});
 	}
 
@@ -295,4 +357,5 @@ class QuerydslBindingsUnitTests {
 			return path.contains(value);
 		}
 	}
+
 }
