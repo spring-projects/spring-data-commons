@@ -31,7 +31,6 @@ import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Path;
 
@@ -247,31 +246,38 @@ public class QuerydslBindings {
 		Assert.notNull(path, "Path must not be null");
 		Assert.notNull(type, "Type information must not be null");
 
-		if (!isPathVisible(path)) {
+		String dotPath = normalize(path, type);
+
+		if (!isPathVisible(dotPath, type)) {
 			return null;
 		}
 
-		// fully-qualified path lookup
-		String key = createKey(type, path);
-		if (pathSpecs.containsKey(key)) {
-			return pathSpecs.get(key).getPath()//
-					.map(QuerydslPathInformation::of)//
-					.orElse(null);
+		// explicitly bound path
+		PathAndBinding<?, ?> spec = pathSpecs.get(createKey(type, dotPath));
+		if (spec != null) {
+			return spec.getPath().map(QuerydslPathInformation::of).orElse(null);
 		}
 
 		// alias lookup
-		if (pathSpecs.containsKey(path)) {
-			return pathSpecs.get(path).getPath()//
-					.map(QuerydslPathInformation::of)//
-					.orElse(null);
+		if (aliases.contains(dotPath)) {
+			return pathSpecs.get(dotPath).getPath().map(QuerydslPathInformation::of).orElse(null);
 		}
 
 		try {
-			PathInformation propertyPath = PropertyPathInformation.of(path, type);
-			return isPathVisible(propertyPath) ? propertyPath : null;
+			return PropertyPathInformation.of(dotPath, type);
 		} catch (PropertyReferenceException o_O) {
 			return null;
 		}
+	}
+
+	/**
+	 * Strip the type qualifier from the given path if present. A path qualified with the simple name of the type
+	 * ({@code User.firstname}) is equivalent to its unqualified form ({@code firstname}).
+	 */
+	private static String normalize(String path, TypeInformation<?> type) {
+
+		String qualifier = type.getType().getSimpleName() + ".";
+		return path.startsWith(qualifier) ? path.substring(qualifier.length()) : path;
 	}
 
 	/**
@@ -296,51 +302,42 @@ public class QuerydslBindings {
 		return type.getSimpleName() + "." + path;
 	}
 
-	/**
-	 * Checks if a given {@link PropertyPath} should be visible for binding values.
-	 *
-	 * @param path
-	 * @return
-	 */
-	private boolean isPathVisible(PathInformation path) {
+	private boolean isPathVisible(String path, TypeInformation<?> type) {
 
-		List<String> segments = Arrays.asList(path.toDotPath().split("\\."));
+		if (allowList.contains(path)) {
+			return true;
+		}
 
-		for (int i = 1; i <= segments.size(); i++) {
+		if (aliases.contains(path)) {
+			return !denyList.contains(path);
+		}
 
-			if (!isPathVisible(StringUtils.collectionToDelimitedString(segments.subList(0, i), "."))) {
+		if (isDenied(path)) {
+			return false;
+		}
 
-				// check if full path is on allowList although the partial one is not
-				if (!allowList.isEmpty()) {
-					return allowList.contains(path.toDotPath());
-				}
-
-				return false;
-			}
+		if (!allowList.isEmpty() || excludeUnlistedProperties) {
+			return pathSpecs.containsKey(createKey(type, path));
 		}
 
 		return true;
 	}
 
 	/**
-	 * Returns whether the given path is visible, which means either an alias and not explicitly denied, explicitly
-	 * allowed or not on the denylist if no allowlist configured.
+	 * Returns whether the given dot path or any of its parent paths is on the denylist.
 	 *
-	 * @param path must not be {@literal null}.
+	 * @param dotPath must not be {@literal null}.
 	 * @return
 	 */
-	private boolean isPathVisible(String path) {
+	private boolean isDenied(String dotPath) {
 
-		// Aliases are visible if not explicitly denied
-		if (aliases.contains(path) && !denyList.contains(path)) {
-			return true;
+		for (int i = dotPath.indexOf('.'); i != -1; i = dotPath.indexOf('.', i + 1)) {
+			if (denyList.contains(dotPath.substring(0, i))) {
+				return true;
+			}
 		}
 
-		if (allowList.isEmpty()) {
-			return excludeUnlistedProperties ? false : !denyList.contains(path);
-		}
-
-		return allowList.contains(path);
+		return denyList.contains(dotPath);
 	}
 
 	/**
@@ -434,7 +431,7 @@ public class QuerydslBindings {
 		/**
 		 * Creates a new {@link AliasingPathBinder} for the given {@link Path}.
 		 *
-		 * @param paths must not be {@literal null}.
+		 * @param path must not be {@literal null}.
 		 */
 		AliasingPathBinder(P path) {
 			this(null, path);
