@@ -197,7 +197,29 @@ class QuerydslBindingsUnitTests {
 		bindings.excluding(QUser.user.address);
 
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("address_city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("addressCity", User.class)).isFalse();
 		assertThat(bindings.isPathAvailable("User.address.city", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void nestedPathIsNotAvailableUsingNonCanonicalNotationIfExcluded() {
+
+		bindings.excluding(QUser.user.address.city);
+
+		assertThat(bindings.isPathAvailable("address_city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("addressCity", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void aliasingHidesOriginalPathUsingNonCanonicalNotation() {
+
+		bindings.bind(QUser.user.address.city).as("city").withDefaultBinding();
+
+		assertThat(bindings.isPathAvailable("city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("address.city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("address_city", User.class)).isFalse();
+		assertThat(bindings.isPathAvailable("addressCity", User.class)).isFalse();
 	}
 
 	@Test // DATACMNS-669
@@ -207,6 +229,8 @@ class QuerydslBindingsUnitTests {
 		bindings.including(QUser.user.address.city);
 
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("address_city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("addressCity", User.class)).isTrue();
 	}
 
 	@Test // DATACMNS-669, GH-3547
@@ -217,6 +241,8 @@ class QuerydslBindingsUnitTests {
 
 		assertThat(bindings.isPathAvailable("address.street", User.class)).isFalse();
 		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("address_city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("addressCity", User.class)).isTrue();
 	}
 
 	@Test // GH-3547
