@@ -248,23 +248,23 @@ public class QuerydslBindings {
 
 		String dotPath = normalize(path, type);
 
-		if (!isPathVisible(dotPath, type)) {
-			return null;
-		}
-
 		// explicitly bound path
 		PathAndBinding<?, ?> spec = pathSpecs.get(createKey(type, dotPath));
 		if (spec != null) {
-			return spec.getPath().map(QuerydslPathInformation::of).orElse(null);
+			return isPathVisible(dotPath, type) ? spec.getPath().map(QuerydslPathInformation::of).orElse(null) : null;
 		}
 
 		// alias lookup
 		if (aliases.contains(dotPath)) {
-			return pathSpecs.get(dotPath).getPath().map(QuerydslPathInformation::of).orElse(null);
+			return isPathVisible(dotPath, type) ? pathSpecs.get(dotPath).getPath().map(QuerydslPathInformation::of).orElse(null)
+					: null;
 		}
 
+		// property lookup (check the dotPath to capture camel case and underscore split paths)
 		try {
-			return PropertyPathInformation.of(dotPath, type);
+
+			PropertyPathInformation propertyPath = PropertyPathInformation.of(dotPath, type);
+			return isPathVisible(propertyPath.toDotPath(), type) ? propertyPath : null;
 		} catch (PropertyReferenceException o_O) {
 			return null;
 		}
