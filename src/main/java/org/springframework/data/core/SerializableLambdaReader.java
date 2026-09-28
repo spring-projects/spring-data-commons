@@ -253,8 +253,9 @@ class SerializableLambdaReader {
 			if (KotlinDetector.isKotlinType(cls)) {
 				field = ReflectionUtils.findField(cls, "function");
 			} else if (cls.isHidden() && ClassUtils.isLambdaClass(cls)) {
-				Field[] fields = cls.getDeclaredFields();
-				field = fields.length == 1 ? fields[0] : null;
+				Field[] fields = new Field[1];
+				ReflectionUtils.doWithFields(cls, it -> fields[0] = it);
+				field = fields[0];
 			} else {
 				return null;
 			}
