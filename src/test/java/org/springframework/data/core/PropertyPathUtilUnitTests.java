@@ -15,6 +15,8 @@
  */
 package org.springframework.data.core;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
@@ -26,6 +28,7 @@ import org.springframework.core.convert.converter.Converter;
  * Unit test {@link PropertyPathUtil}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class PropertyPathUtilUnitTests {
 
@@ -35,6 +38,20 @@ class PropertyPathUtilUnitTests {
 		Converter<Person, String> c = convert(Person::getName);
 
 		System.out.println(PropertyPathUtil.resolve(c));
+	}
+
+	@Test // GH-3521
+	@SuppressWarnings("unchecked")
+	void resolvedPathShouldDelegatePropertyAccess() {
+
+		Person person = new Person();
+		person.name = "Walter";
+
+		Converter<Person, String> c = convert(Person::getName);
+		PropertyPath path = PropertyPathUtil.resolve(c);
+
+		assertThat(path.toDotPath()).isEqualTo("name");
+		assertThat(((TypedPropertyPath<Person, String>) path).get(person)).isEqualTo("Walter");
 	}
 
 	static <T, P, C extends Converter<T, P> & Serializable> Serializable of(C mapping) {

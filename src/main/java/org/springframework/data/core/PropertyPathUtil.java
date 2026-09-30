@@ -21,14 +21,17 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-
+import org.springframework.asm.Type;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility class for {@link PropertyPath} and {@link PropertyReference} implementations.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 4.1
  */
 public class PropertyPathUtil {
@@ -48,10 +51,48 @@ public class PropertyPathUtil {
 		return TypedPropertyPaths.of(new SerializableWrapper((Serializable) obj));
 	}
 
-	private record SerializableWrapper(Serializable serializable) implements PropertyReference<Object, @Nullable Object> {
+	private static final class SerializableWrapper
+			implements PropertyReference<Object, @Nullable Object>, SerializableLambdaReader.LambdaWrapper {
+
+		private final Serializable serializable;
+
+		private final Lazy<Method> bridgeMethod = Lazy.of(this::resolveBridge);
+
+		SerializableWrapper(Serializable serializable) {
+			this.serializable = serializable;
+		}
+
+		@Override
+		public Object unwrap() {
+			return serializable;
+		}
 
 		@Override
 		public @Nullable Object get(Object obj) {
+
+			Method bridgeMethod = this.bridgeMethod.getNullable();
+			if (bridgeMethod == null) {
+				return null;
+			}
+			return ReflectionUtils.invokeMethod(bridgeMethod, serializable, obj);
+		}
+
+		private @Nullable Method resolveBridge() {
+
+			SerializedLambda lambda = writeReplace();
+
+			Class<?> functionalInterface = ClassUtils.resolveClassName(lambda.getFunctionalInterfaceClass().replace('/', '.'),
+					serializable.getClass().getClassLoader());
+
+			// TODO: actual arg count vs. hardcoded value '1'
+			int argumentCount = Type.getArgumentCount(lambda.getFunctionalInterfaceMethodSignature());
+
+			for (Method method : functionalInterface.getDeclaredMethods()) {
+				if (method.getName().equals(lambda.getFunctionalInterfaceMethodName())
+						&& method.getParameterCount() == argumentCount) {
+					return method;
+				}
+			}
 			return null;
 		}
 
@@ -67,6 +108,16 @@ public class PropertyPathUtil {
 
 			ReflectionUtils.makeAccessible(method);
 			return (SerializedLambda) ReflectionUtils.invokeMethod(method, serializable);
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+			return obj instanceof SerializableWrapper that && serializable.equals(that.serializable);
+		}
+
+		@Override
+		public int hashCode() {
+			return serializable.hashCode();
 		}
 
 	}
