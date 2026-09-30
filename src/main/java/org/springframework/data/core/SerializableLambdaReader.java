@@ -99,6 +99,7 @@ import org.springframework.util.StringUtils;
  * </ul>
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 4.1
  */
 class SerializableLambdaReader {
@@ -179,7 +180,9 @@ class SerializableLambdaReader {
 
 	Object getCacheKey(Object lambdaObject) {
 
-		Object property = KotlinDetectorUtils.getCapturedProperty(lambdaObject);
+		Object target = lambdaObject instanceof LambdaWrapper wrapper ? wrapper.unwrap() : lambdaObject;
+		Object property = KotlinDetectorUtils.getCapturedProperty(target);
+
 		return property != null ? property : lambdaObject;
 	}
 
@@ -617,6 +620,15 @@ class SerializableLambdaReader {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * Marker interface to distinguish between a wrapped and an actual lambda.
+	 */
+	interface LambdaWrapper {
+
+		Object unwrap();
 	}
 
 	/**
