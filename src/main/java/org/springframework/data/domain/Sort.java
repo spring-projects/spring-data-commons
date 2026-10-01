@@ -24,12 +24,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
-
+import org.springframework.data.core.PathResolutionException;
+import org.springframework.data.core.PathValidationRules;
+import org.springframework.data.core.PathValidationRules.ValidationRulesCustomizer;
+import org.springframework.data.core.PathValidator;
 import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.MethodInvocationRecorder.Recorded;
@@ -49,6 +54,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Johannes Englmeier
  * @author Jan Kurella
+ * @author Christoph Strobl
  */
 public class Sort implements Streamable<org.springframework.data.domain.Sort.Order>, Serializable {
 
@@ -111,8 +117,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return properties.length == 0 //
 				? Sort.unsorted() //
 				: new Sort(DEFAULT_DIRECTION,
-						Arrays.stream(properties).map(PropertyPath::toDotPath)
-						.collect(Collectors.toList()));
+						Arrays.stream(properties).map(PropertyPath::toDotPath).collect(Collectors.toList()));
 	}
 
 	/**
@@ -156,8 +161,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		Assert.notNull(properties, "Properties must not be null");
 		Assert.isTrue(properties.length > 0, "At least one property must be given");
 
-		return by(Arrays.stream(properties).map(PropertyPath::toDotPath)
-				.map(it -> new Order(direction, it)).toList());
+		return by(Arrays.stream(properties).map(PropertyPath::toDotPath).map(it -> new Order(direction, it)).toList());
 	}
 
 	/**
@@ -189,6 +193,69 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 	@Deprecated(since = "4.1")
 	public static <T> TypedSort<T> sort(Class<T> type) {
 		return new TypedSort<>(type);
+	}
+
+	/**
+	 * Validates the property path of every {@link Order} of the given {@link Sort} against the properties available on
+	 * the given type.
+	 *
+	 * <pre class="code">
+	 * Sort.validate(Person.class, sort);
+	 * </pre>
+	 *
+	 * @param type the type to validate property paths against, must not be {@literal null}.
+	 * @param sort the {@link Sort} to validate, must not be {@literal null}.
+	 * @throws PathResolutionException if one of the {@link Order Orders} does not refer to a property of {@code type}.
+	 * @since 4.2
+	 * @see PathValidator#validate(String, Class)
+	 */
+	public static void validate(Class<?> type, Sort sort) {
+		validate(type, sort, PathValidationRules.strict());
+	}
+
+	/**
+	 * Validates the path of every {@link Order} of the given {@link Sort} against the properties available on the given
+	 * type.
+	 *
+	 * @param type the type to validate property paths against, must not be {@literal null}.
+	 * @param sort the {@link Sort} to validate, must not be {@literal null}.
+	 * @param customizer customizer callback to build validation rules.
+	 * @throws PathResolutionException if one of the {@link Order Orders} violates the rules.
+	 * @since 4.2
+	 * @see PathValidator#validate(String, Class, PathValidationRules)
+	 */
+	public static void validate(Class<?> type, Sort sort, Consumer<ValidationRulesCustomizer> customizer) {
+
+		if (sort.isUnsorted()) {
+			return;
+		}
+
+		PathValidationRules.Builder builder = PathValidationRules.builder();
+		customizer.accept(builder);
+		validate(type, sort, builder.build());
+	}
+
+	/**
+	 * Validates the path of every {@link Order} of the given {@link Sort} against the properties available on the given
+	 * type, applying the given {@link PathValidationRules} .
+	 *
+	 * @param type the type to validate property paths against, must not be {@literal null}.
+	 * @param sort the {@link Sort} to validate, must not be {@literal null}.
+	 * @param rules the rules to apply, must not be {@literal null}.
+	 * @throws PathResolutionException if one of the {@link Order Orders} violates the rules.
+	 * @since 4.2
+	 * @see PathValidator#validate(String, Class, PathValidationRules)
+	 */
+	public static void validate(Class<?> type, Sort sort, PathValidationRules rules) {
+
+		if (sort.isUnsorted()) {
+			return;
+		}
+
+		TypeInformation<?> typeInformation = TypeInformation.of(type);
+		for (Order order : sort) {
+			PathValidator.validate(order.getProperty(), typeInformation, rules);
+		}
 	}
 
 	/**
