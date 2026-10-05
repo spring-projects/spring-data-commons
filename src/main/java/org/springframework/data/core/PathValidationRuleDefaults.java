@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.core.PathValidationRules.AccessValidationContext;
 import org.springframework.data.core.PathValidationRules.AccessValidator;
 import org.springframework.data.core.PathValidationRules.IndexValidator;
 import org.springframework.data.core.PathValidationRules.MapKeyValidator;
@@ -185,7 +186,7 @@ class PathValidationRuleDefaults {
 		}
 
 		@Override
-		public void validateAccess(String segment, PathValidationContext context) {
+		public void validateAccess(String segment, AccessValidationContext context) {
 
 			String navigablePath = context.navigablePath();
 

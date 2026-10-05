@@ -18,15 +18,16 @@ package org.springframework.data.core;
 import static org.springframework.data.core.PathResolutionException.abbreviate;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.data.core.PathValidationRules.AccessValidator;
 import org.springframework.data.core.PathValidationRules.IndexValidator;
 import org.springframework.data.core.PathValidationRules.MapKeyValidator;
-import org.springframework.data.core.PathValidationRules.PathValidationContext;
 import org.springframework.data.core.PathValidationRules.SegmentClassification;
 import org.springframework.data.core.PathValidationRules.SegmentType;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Validates property paths against the properties available on a given type considering a dedicated
@@ -116,125 +117,23 @@ public final class PathValidator {
 
 		validateMaxLength(path, rules.maxPathLength());
 
-		int maxDepth = rules.maxAllowedSegments();
-		int maxSegmentLength = rules.maxSegmentLength();
-
-		SegmentClassification segmentClassifier = rules.segmentClassifier();
-		AccessValidator accessValidator = rules.accessValidator();
-		MapKeyValidator mapKeyValidator = rules.mapKeyValidator();
-		IndexValidator indexValidator = rules.indexValidator();
-
-		TypeInformation<?> currentType = type;
-		String owningSegment = "";
-		String navigablePath = "";
-		int position = 0;
-		int depth = 0;
-
-		while (true) {
-
-			checkDepth(++depth, maxDepth, path);
-
-			// scanning stops one character past the limit, so an oversized segment is neither read nor copied in full
-			int scanLimit = maxSegmentLength > 0 && path.length() - position > maxSegmentLength
-					? position + maxSegmentLength + 1
-					: path.length();
-			int end = position;
-
-			while (end < scanLimit && path.charAt(end) != '.' && path.charAt(end) != '[') {
-				end++;
-			}
-
-			String segment = path.substring(position, end);
-
-			// the segment was deliberately not read in full, so it is reported by position rather than by value
-			if (maxSegmentLength > 0 && segment.length() > maxSegmentLength) {
-				throw new PathResolutionException(path,
-						String.format("Property path '%s' is invalid; Segment at index %d must not be longer than %d characters",
-								abbreviate(path), position, maxSegmentLength));
-			}
-
-			String segmentPath = navigablePath.isEmpty() ? segment : navigablePath + "." + segment;
-			PathValidationContext context = new PathValidationContext(path, owningSegment.isEmpty() ? segment : owningSegment,
-					currentType, position, segmentPath);
-
-			TypeInformation<?> resolved;
-			if (segmentClassifier.classify(segment, context) == SegmentType.INDEX) {
-
-				// the segment addresses an entry of the current type rather than a property of its value type
-				resolved = resolveIndex(segment,
-						new PathValidationContext(path, context.property(), currentType, position, navigablePath), mapKeyValidator,
-						indexValidator);
-			} else {
-
-				accessValidator.validateAccess(segment, context);
-
-				if (!PROPERTY_SEGMENT.matcher(segment).matches()) {
-					throw new PathResolutionException(path,
-							String.format("Property path '%s' is invalid; Segment '%s' is not a valid Java identifier",
-									abbreviate(path), abbreviate(segment)));
-				}
-
-				resolved = resolveProperty(navigable(currentType), segment, path);
-				owningSegment = segment;
-				navigablePath = segmentPath;
-			}
-
-			position = end;
-
-			// indexes apply to the resolved type itself, hence they must not be unwrapped in between
-			while (position < path.length() && path.charAt(position) == '[') {
-
-				int close = path.indexOf(']', position);
-
-				if (close == -1) {
-					throw new PathResolutionException(path,
-							String.format("Property path '%s' is invalid; Unbalanced '[' at index %d", abbreviate(path), position));
-				}
-
-				checkDepth(++depth, maxDepth, path);
-
-				// checked before the literal is copied, so an oversized one is not materialized either
-				if (maxSegmentLength > 0 && close - position - 1 > maxSegmentLength) {
-					throw new PathResolutionException(path,
-							String.format("Property path '%s' is invalid; Index at index %d must not be longer than %d characters",
-									abbreviate(path), position, maxSegmentLength));
-				}
-
-				resolved = resolveIndex(path.substring(position + 1, close),
-						new PathValidationContext(path, segment, resolved, position, navigablePath), mapKeyValidator,
-						indexValidator);
-				position = close + 1;
-			}
-
-			if (position == path.length()) {
-				return;
-			}
-
-			if (path.charAt(position) != '.') {
-				throw new PathResolutionException(path,
-						String.format("Property path '%s' is invalid; Unexpected character '%s' at index %d", abbreviate(path),
-								path.charAt(position), position));
-			}
-
-			// retained unwrapped so that the rules can tell a container apart from its value type
-			currentType = resolved;
-			position++;
-		}
+		new SegmentScanningPathValidator(path, type, rules).validate();
 	}
 
 	private static void validateMaxLength(String path, int maxLength) {
+
 		if (path.length() > maxLength) {
 			throw new PathResolutionException(path,
-					String.format("Invalid path '%s'. Must not be longer than %d", abbreviate(path), maxLength));
+					"Invalid path '%s'. Must not be longer than %d".formatted(abbreviate(path), maxLength));
 		}
 	}
 
-	private static void checkDepth(int depth, int maxDepth, String path) {
+	private static void validatedDepth(int currentDepth, int maxDepth, String path) {
 
-		if (depth > maxDepth) {
+		if (currentDepth > maxDepth) {
 			throw new PathResolutionException(path,
-					String.format("Property path '%s' is invalid; Paths must not consist of more than %d segments",
-							abbreviate(path), maxDepth));
+					"Property path '%s' is invalid; Paths must not consist of more than %d segments".formatted(abbreviate(path),
+							maxDepth));
 		}
 	}
 
@@ -272,7 +171,7 @@ public final class PathValidator {
 	 * @throws PathResolutionException if the type is neither a map nor indexed, the literal is no valid key or index, or
 	 *           the type exposes no value or component type.
 	 */
-	private static TypeInformation<?> resolveIndex(String literal, PathValidationContext context,
+	private static TypeInformation<?> resolveIndex(String literal, SimplePathValidationContext context,
 			MapKeyValidator mapKeyValidator, IndexValidator indexValidator) {
 
 		TypeInformation<?> type = context.type();
@@ -286,7 +185,7 @@ public final class PathValidator {
 			TypeInformation<?> valueType = type.getMapValueType();
 
 			if (valueType == null) {
-				throw context.reject(String.format("Property '%s' is a raw map exposing no value type", abbreviate(segment)));
+				throw context.reject("Property '%s' is a raw map exposing no value type".formatted(abbreviate(segment)));
 			}
 
 			return valueType;
@@ -298,7 +197,7 @@ public final class PathValidator {
 
 			if (componentType == null) {
 				throw context
-						.reject(String.format("Property '%s' is a raw collection exposing no component type", abbreviate(segment)));
+						.reject("Property '%s' is a raw collection exposing no component type".formatted(abbreviate(segment)));
 			}
 
 			indexValidator.validateIndex(key, componentType, context);
@@ -306,14 +205,13 @@ public final class PathValidator {
 			return componentType;
 		}
 
-		throw context.reject(String.format("Property '%s' of type '%s' is neither a map nor an indexed structure",
-				abbreviate(segment), type.getType().getSimpleName()));
+		throw context.reject("Property '%s' of type '%s' is neither a map nor an indexed structure"
+				.formatted(abbreviate(segment), type.getType().getSimpleName()));
 	}
 
 	private static String unquote(String literal) {
 
-		if (literal.length() > 1) {
-
+		if (StringUtils.hasText(literal)) {
 			char first = literal.charAt(0);
 
 			if ((first == '\'' || first == '"') && literal.charAt(literal.length() - 1) == first) {
@@ -338,5 +236,160 @@ public final class PathValidator {
 		TypeInformation<?> actualType = type.getActualType();
 
 		return actualType == null ? type : actualType;
+	}
+
+	private static class SegmentScanningPathValidator {
+
+		private final String path;
+		private final int maxDepth;
+		private final int maxSegmentLength;
+		private final SegmentClassification segmentClassifier;
+		private final AccessValidator accessValidator;
+		private final MapKeyValidator mapKeyValidator;
+		private final IndexValidator indexValidator;
+		private final Set<String> deniedPaths;
+
+		private TypeInformation<?> currentType;
+		private String owningSegment = "";
+		private String navigablePath = "";
+		private int position = 0;
+		private int depth = 0;
+
+		SegmentScanningPathValidator(String fullPath, TypeInformation<?> aggregateRoot, PathValidationRules rules) {
+
+			this.path = fullPath;
+			this.currentType = aggregateRoot;
+			this.maxDepth = rules.maxAllowedSegments();
+			this.maxSegmentLength = rules.maxSegmentLength();
+			this.segmentClassifier = rules.segmentClassifier();
+			this.accessValidator = rules.accessValidator();
+			this.mapKeyValidator = rules.mapKeyValidator();
+			this.indexValidator = rules.indexValidator();
+			this.deniedPaths = rules.deniedPaths();
+		}
+
+		void validate() {
+			do {
+				validatedDepth(++depth, maxDepth, path);
+			} while (parseSegment());
+		}
+
+		private boolean parseSegment() {
+
+			int start = position;
+			String segment = nextSegment(start);
+
+			String segmentPath = navigablePath.isEmpty() ? segment : navigablePath + "." + segment;
+			SimplePathValidationContext context = new SimplePathValidationContext(path, owningSegment.isEmpty() ? segment : owningSegment,
+					currentType, start, segmentPath, deniedPaths);
+
+			TypeInformation<?> resolved = resolveSegment(segment, start, segmentPath, context);
+			resolved = parseTrailingIndexes(segment, resolved);
+
+			return consumeSeparator(resolved);
+		}
+
+		/**
+		 * @param start index to start scanning from.
+		 * @return the next segment in the path.
+		 * @throws PathResolutionException if the segment is too long.
+		 */
+		private String nextSegment(int start) {
+
+			int scanLimit = maxSegmentLength > 0 && path.length() - start > maxSegmentLength ? start + maxSegmentLength + 1
+					: path.length();
+			int end = start;
+
+			while (end < scanLimit && path.charAt(end) != '.' && path.charAt(end) != '[') {
+				end++;
+			}
+
+			String segment = path.substring(start, end);
+
+			// the segment was deliberately not read in full, so it is reported by position rather than by value
+			if (maxSegmentLength > 0 && segment.length() > maxSegmentLength) {
+				throw new PathResolutionException(path,
+						String.format("Property path '%s' is invalid; Segment at index %d must not be longer than %d characters",
+								abbreviate(path), start, maxSegmentLength));
+			}
+
+			position = end;
+			return segment;
+		}
+
+		private TypeInformation<?> resolveSegment(String segment, int start, String segmentPath,
+				SimplePathValidationContext context) {
+
+			if (segmentClassifier.classify(segment, context) == SegmentType.INDEX) {
+
+				// the segment addresses an entry of the current type rather than a property of its value type
+				return resolveIndex(segment,
+						new SimplePathValidationContext(path, context.property(), currentType, start, navigablePath, deniedPaths),
+						mapKeyValidator, indexValidator);
+			}
+
+			accessValidator.validateAccess(segment, context);
+
+			if (!PROPERTY_SEGMENT.matcher(segment).matches()) {
+				throw new PathResolutionException(path,
+						String.format("Property path '%s' is invalid; Segment '%s' is not a valid Java identifier",
+								abbreviate(path), abbreviate(segment)));
+			}
+
+			TypeInformation<?> resolved = resolveProperty(navigable(currentType), segment, path);
+			owningSegment = segment;
+			navigablePath = segmentPath;
+
+			return resolved;
+		}
+
+		// indexes apply to the resolved type itself, hence they must not be unwrapped in between
+		private TypeInformation<?> parseTrailingIndexes(String segment, TypeInformation<?> resolved) {
+
+			while (position < path.length() && path.charAt(position) == '[') {
+
+				int close = path.indexOf(']', position);
+
+				if (close == -1) {
+					throw new PathResolutionException(path,
+							String.format("Property path '%s' is invalid; Unbalanced '[' at index %d", abbreviate(path), position));
+				}
+
+				validatedDepth(++depth, maxDepth, path);
+
+				// checked before the literal is copied, so an oversized one is not materialized either
+				if (maxSegmentLength > 0 && close - position - 1 > maxSegmentLength) {
+					throw new PathResolutionException(path,
+							String.format("Property path '%s' is invalid; Index at index %d must not be longer than %d characters",
+									abbreviate(path), position, maxSegmentLength));
+				}
+
+				resolved = resolveIndex(path.substring(position + 1, close),
+						new SimplePathValidationContext(path, segment, resolved, position, navigablePath, deniedPaths), mapKeyValidator,
+						indexValidator);
+				position = close + 1;
+			}
+
+			return resolved;
+		}
+
+		private boolean consumeSeparator(TypeInformation<?> resolved) {
+
+			if (position == path.length()) {
+				return false;
+			}
+
+			if (path.charAt(position) != '.') {
+				throw new PathResolutionException(path,
+						String.format("Property path '%s' is invalid; Unexpected character '%s' at index %d", abbreviate(path),
+								path.charAt(position), position));
+			}
+
+			// retained unwrapped so that the rules can tell a container apart from its value type
+			currentType = resolved;
+			position++;
+
+			return true;
+		}
 	}
 }

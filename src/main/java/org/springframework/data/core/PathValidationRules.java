@@ -16,6 +16,7 @@
 package org.springframework.data.core;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -85,13 +86,7 @@ public interface PathValidationRules {
 
 	/**
 	 * Decides whether a property can be navigated accessed at all.
-	 * <p>
-	 * The {@link #excluding(String...) exluding} variants allow creating an {@link AccessValidator} denying access to a
-	 * navigable path that is one of the excluded paths. Allows prefix matches, like {@code "address"} which denies access
-	 * to {@code address}, {@code address.city} and {@code address[0].city} as well as ant path style wildcards where
-	 * {@code "**.password"} denies {@code password} at any depth. <br />
-	 * <strong>Note:</strong> Ant Path style patterns are more costly to evaluate than prefix matches.
-	 * 
+	 *
 	 * @since 4.2
 	 * @author Christoph Strobl
 	 */
@@ -108,35 +103,13 @@ public interface PathValidationRules {
 		}
 
 		/**
-		 * @param deniedPaths must not be {@literal null}, nor contain empty elements.
-		 * @return an {@link AccessValidator} denying the given paths.
-		 */
-		static AccessValidator excluding(String... deniedPaths) {
-
-			Assert.notNull(deniedPaths, "Denied paths must not be null");
-
-			return excluding(new LinkedHashSet<>(Arrays.asList(deniedPaths)));
-		}
-
-		/**
-		 * Returns a validator denying every navigable path that is, or lies underneath, one of the given paths.
-		 *
-		 * @param deniedPaths must not be {@literal null}, nor contain empty elements.
-		 * @return an {@link AccessValidator} denying the given paths.
-		 */
-		static AccessValidator excluding(Set<String> deniedPaths) {
-			return new PathAccessValidator(deniedPaths);
-		}
-
-		/**
 		 * Validates that the given property segment may be navigated.
 		 *
 		 * @param segment the property name reached.
 		 * @param context segment context information.
-		 * @throws PathResolutionException if the property must not be navigated; use {@code throw context.reject("…")} to
-		 *           say why.
+		 * @throws PathResolutionException
 		 */
-		void validateAccess(String segment, PathValidationContext context);
+		void validateAccess(String segment, AccessValidationContext context);
 	}
 
 	/**
@@ -212,6 +185,7 @@ public interface PathValidationRules {
 	static PathValidationRules lenient() {
 
 		return new PathValidationRules() {
+
 			@Override
 			public SegmentClassification segmentClassifier() {
 				return SegmentClassification.lenient();
@@ -257,6 +231,15 @@ public interface PathValidationRules {
 	}
 
 	/**
+	 * Collection of paths that must not be accessible.
+	 *
+	 * @return never {@literal null}.
+	 */
+	default Set<String> deniedPaths() {
+		return Set.of();
+	}
+
+	/**
 	 * @return the {@link SegmentClassification} to apply, never {@literal null}.
 	 */
 	default SegmentClassification segmentClassifier() {
@@ -289,18 +272,68 @@ public interface PathValidationRules {
 	 */
 	interface ValidationRulesCustomizer {
 
+		/**
+		 * Applies the given {@link SegmentClassification}.
+		 *
+		 * @param classifier must not be {@literal null}.
+		 * @return this {@link Builder}.
+		 */
 		ValidationRulesCustomizer segments(SegmentClassification classifier);
 
+		/**
+		 * Applies the given {@link IndexValidator}.
+		 *
+		 * @param validator must not be {@literal null}.
+		 * @return this {@link Builder}.
+		 */
 		ValidationRulesCustomizer indexValidation(IndexValidator validator);
 
+		/**
+		 * Applies the given {@link MapKeyValidator}.
+		 *
+		 * @param validator must not be {@literal null}.
+		 * @return this {@link Builder}.
+		 */
 		ValidationRulesCustomizer mapKeyValidation(MapKeyValidator validator);
 
+		/**
+		 * Applies the given {@link AccessValidator}.
+		 *
+		 * @param validator must not be {@literal null}.
+		 * @return this {@link Builder}.
+		 */
 		ValidationRulesCustomizer accessValidation(AccessValidator validator);
 
+		/**
+		 * Limits the number of segments and indexes a path may consist of.
+		 *
+		 * @param maxAllowedSegments must be greater than zero.
+		 * @return this {@link Builder}.
+		 * @see PathValidationRules#maxAllowedSegments()
+		 */
 		ValidationRulesCustomizer maxSegmentsAllowed(int maxAllowedSegments);
 
+		/**
+		 * Limits the number of characters a single path element may consist of. Any value smaller than one leaves
+		 * individual elements unbounded.
+		 * <p>
+		 * Unless {@link #maxPathLength(int)} is given as well, this also derives the overall length limit, as a path cannot
+		 * be longer than {@link #maxSegmentsAllowed(int)} elements of this length.
+		 *
+		 * @param maxSegmentLength the maximum element length, or a value smaller than one to not limit elements.
+		 * @return this {@link Builder}.
+		 * @see PathValidationRules#maxSegmentLength()
+		 */
 		ValidationRulesCustomizer maxSegmentLength(int maxSegmentLength);
 
+		/**
+		 * Limits the number of characters a path may consist of, overriding what would be derived from
+		 * {@link #maxSegmentLength(int)} and {@link #maxSegmentsAllowed(int)}.
+		 *
+		 * @param maxPathLength must be greater than zero.
+		 * @return this {@link Builder}.
+		 * @see PathValidationRules#maxPathLength()
+		 */
 		ValidationRulesCustomizer maxPathLength(int maxPathLength);
 
 		default ValidationRulesCustomizer denyAccess(String... deniedPaths) {
@@ -323,16 +356,11 @@ public interface PathValidationRules {
 		private MapKeyValidator mapKeyValidator = MapKeyValidator.strict();
 		private IndexValidator indexValidator = IndexValidator.numeric();
 		private AccessValidator accessValidator = AccessValidator.none();
+		private final Set<String> deniedPaths = new LinkedHashSet<>();
 		private int maxAllowedSegments = PathValidationRuleDefaults.MAX_SEGMENTS;
 		private int maxSegmentLength = PathValidationRuleDefaults.MAX_SEGMENT_LENGTH;
 		private @Nullable Integer maxPathLength;
 
-		/**
-		 * Applies the given {@link SegmentClassification}.
-		 *
-		 * @param classifier must not be {@literal null}.
-		 * @return this {@link Builder}.
-		 */
 		public Builder segments(SegmentClassification classifier) {
 
 			Assert.notNull(classifier, "SegmentClassifier must not be null");
@@ -341,12 +369,6 @@ public interface PathValidationRules {
 			return this;
 		}
 
-		/**
-		 * Applies the given {@link MapKeyValidator}.
-		 *
-		 * @param validator must not be {@literal null}.
-		 * @return this {@link Builder}.
-		 */
 		public Builder mapKeyValidation(MapKeyValidator validator) {
 
 			Assert.notNull(validator, "MapKeyValidator must not be null");
@@ -355,12 +377,6 @@ public interface PathValidationRules {
 			return this;
 		}
 
-		/**
-		 * Applies the given {@link IndexValidator}.
-		 *
-		 * @param validator must not be {@literal null}.
-		 * @return this {@link Builder}.
-		 */
 		public Builder indexValidation(IndexValidator validator) {
 
 			Assert.notNull(validator, "IndexValidator must not be null");
@@ -369,13 +385,6 @@ public interface PathValidationRules {
 			return this;
 		}
 
-		/**
-		 * Limits the number of segments and indexes a path may consist of.
-		 *
-		 * @param maxAllowedSegments must be greater than zero.
-		 * @return this {@link Builder}.
-		 * @see PathValidationRules#maxAllowedSegments()
-		 */
 		public Builder maxSegmentsAllowed(int maxAllowedSegments) {
 
 			Assert.isTrue(maxAllowedSegments > 0, "Maximum path depth must be greater than zero");
@@ -384,31 +393,12 @@ public interface PathValidationRules {
 			return this;
 		}
 
-		/**
-		 * Limits the number of characters a single path element may consist of. Any value smaller than one leaves
-		 * individual elements unbounded.
-		 * <p>
-		 * Unless {@link #maxPathLength(int)} is given as well, this also derives the overall length limit, as a path cannot
-		 * be longer than {@link #maxSegmentsAllowed(int)} elements of this length.
-		 *
-		 * @param maxSegmentLength the maximum element length, or a value smaller than one to not limit elements.
-		 * @return this {@link Builder}.
-		 * @see PathValidationRules#maxSegmentLength()
-		 */
 		public Builder maxSegmentLength(int maxSegmentLength) {
 
 			this.maxSegmentLength = maxSegmentLength;
 			return this;
 		}
 
-		/**
-		 * Limits the number of characters a path may consist of, overriding what would be derived from
-		 * {@link #maxSegmentLength(int)} and {@link #maxSegmentsAllowed(int)}.
-		 *
-		 * @param maxPathLength must be greater than zero.
-		 * @return this {@link Builder}.
-		 * @see PathValidationRules#maxPathLength()
-		 */
 		public Builder maxPathLength(int maxPathLength) {
 
 			Assert.isTrue(maxPathLength > 0, "Maximum path length must be greater than zero");
@@ -433,26 +423,33 @@ public interface PathValidationRules {
 		}
 
 		/**
-		 * Denies every navigable path that is, or lies underneath, one of the given paths.
+		 * Denies every navigable path that is, or lies underneath, one of the given paths. Adds to the paths denied so far
+		 * rather than replacing them.
 		 *
 		 * @param deniedAccess must not be {@literal null} and must not contain a key or an index.
 		 * @return this {@link Builder}.
-		 * @see AccessValidator#excluding(Set)
 		 */
 		@Override
 		public Builder denyAccess(Set<String> deniedAccess) {
-			return accessValidation(AccessValidator.excluding(deniedAccess));
+
+			Assert.notNull(deniedAccess, "Denied paths must not be null");
+
+			this.deniedPaths.addAll(deniedAccess);
+			return this;
 		}
 
 		/**
-		 * Denies every navigable path that is, or lies underneath, one of the given paths.
+		 * Denies every navigable path that is, or lies underneath, one of the given paths. Adds to the paths denied so far
+		 * rather than replacing them.
 		 *
 		 * @param deniedAccess must not be {@literal null} and must not contain a key or an index.
 		 * @return this {@link Builder}.
-		 * @see AccessValidator#excluding(String...)
 		 */
 		public Builder denyAccess(String... deniedAccess) {
-			return accessValidation(AccessValidator.excluding(deniedAccess));
+
+			Assert.notNull(deniedAccess, "Denied paths must not be null");
+
+			return denyAccess(new LinkedHashSet<>(Arrays.asList(deniedAccess)));
 		}
 
 		/**
@@ -466,8 +463,25 @@ public interface PathValidationRules {
 					? this.maxPathLength //
 					: PathValidationRuleDefaults.derivePathLength(this.maxSegmentLength, this.maxAllowedSegments);
 
-			return new SimplePathValidationRules(this.segmentClassifier, this.accessValidator, this.mapKeyValidator,
-					this.indexValidator, this.maxAllowedSegments, this.maxSegmentLength, maxPathLength);
+			HashSet<String> inaccessiblePaths = new LinkedHashSet<>(this.deniedPaths);
+			return new SimplePathValidationRules(this.segmentClassifier, getOrBuildAccessValidator(inaccessiblePaths),
+					this.mapKeyValidator, this.indexValidator, this.maxAllowedSegments, this.maxSegmentLength, maxPathLength,
+					inaccessiblePaths);
+		}
+
+		/**
+		 * Combines the {@link #accessValidation(AccessValidator) configured} validator with the {@link #denyAccess(Set)
+		 * denied paths} so that neither silently replaces the other.
+		 *
+		 * @return the {@link AccessValidator} to apply.
+		 */
+		private AccessValidator getOrBuildAccessValidator(Set<String> inaccessiblePaths) {
+
+			if (this.accessValidator != AccessValidator.none() || inaccessiblePaths.isEmpty()) {
+				return this.accessValidator;
+			}
+
+			return new PathAccessValidator(this.deniedPaths);
 		}
 	}
 
@@ -493,106 +507,25 @@ public interface PathValidationRules {
 	}
 
 	/**
-	 * Contextual information about a path element.
-	 *
 	 * @author Christoph Strobl
-	 * @since 4.2
 	 */
-	final class PathValidationContext {
+	interface PathValidationContext {
 
-		private final String path;
-		private final String property;
-		private final TypeInformation<?> type;
-		private final int index;
-		private final String navigablePath;
+		String navigablePath();
 
-		PathValidationContext(String path, String property, TypeInformation<?> type, int index, String navigablePath) {
+		String path();
 
-			this.path = path;
-			this.property = property;
-			this.type = type;
-			this.index = index;
-			this.navigablePath = navigablePath;
-		}
+		String property();
 
-		/**
-		 * Returns the path reached so far as a chain of property names separated by {@code "."}, with keys and indexes left
-		 * out, so that {@code phoneBook[WORK].city} is navigated as {@code phoneBook.city}. For a property segment this
-		 * includes the segment itself.
-		 * <p>
-		 * Only maintained while an {@link AccessValidator} other than {@link AccessValidator#none()} is configured, as
-		 * building it costs allocation a path would otherwise not pay for; it is empty otherwise.
-		 *
-		 * @return the navigable path reached so far, never {@literal null}.
-		 */
-		public String navigablePath() {
-			return navigablePath;
-		}
+		TypeInformation<?> type();
 
-		/**
-		 * Returns the full property path being validated.
-		 *
-		 * @return the full property path being validated.
-		 */
-		public String path() {
-			return path;
-		}
+		int index();
 
-		/**
-		 * Returns the property the path element belongs to, that is the property a key or index is applied to, or the one a
-		 * segment follows. The segment or literal being checked is passed to the callback itself rather than exposed here.
-		 *
-		 * @return the owning property.
-		 */
-		public String property() {
-			return property;
-		}
+		PathResolutionException reject(String reason); // TODO: lacks better concept
+	}
 
-		/**
-		 * Returns the type the path element is applied to, not unwrapped, so that a {@link java.util.Map} or indexed
-		 * property can be told apart from its value or element type. Note that the type a check is about is passed to the
-		 * callback itself; for a map {@link TypeInformation#getComponentType()} is the key and
-		 * {@link TypeInformation#getMapValueType()} the value type, which is easy to mix up.
-		 *
-		 * @return the type the path element is applied to.
-		 */
-		public TypeInformation<?> type() {
-			return type;
-		}
+	interface AccessValidationContext extends PathValidationContext {
 
-		/**
-		 * Returns the index of the path element within {@link #path()}, counted in characters.
-		 *
-		 * @return the character index the path element starts at.
-		 */
-		public int index() {
-			return index;
-		}
-
-		/**
-		 * Creates the {@link PathResolutionException} to throw for the given reason. The reason becomes part of the
-		 * {@link PathResolutionException#getDetailedMessage() detailed message} and is therefore free to name types and
-		 * properties; it does not reach {@link PathResolutionException#getMessage()}. Returned rather than thrown so that
-		 * control flow stays visible to the compiler and the reader, as in {@code throw context.reject("…")}; a rule
-		 * returning a value could not otherwise reject without a dead {@code return} behind the call.
-		 *
-		 * @param reason why the path element was rejected.
-		 * @return the exception to throw.
-		 */
-		public PathResolutionException reject(String reason) {
-			return new PathResolutionException(path,
-					String.format("Property path '%s' is invalid; %s", PathResolutionException.abbreviate(path), reason));
-		}
-
-		public void error(String reason) {
-			throw new PathResolutionException(path,
-					String.format("Property path '%s' is invalid; %s", PathResolutionException.abbreviate(path), reason));
-		}
-
-		@Override
-		public String toString() {
-			return String.format("PathValidationContext[path='%s', property='%s', type=%s, index=%d, navigablePath='%s']",
-					path, property, type.getType().getSimpleName(), index, navigablePath);
-		}
+		Set<String> deniedPaths();
 	}
 }

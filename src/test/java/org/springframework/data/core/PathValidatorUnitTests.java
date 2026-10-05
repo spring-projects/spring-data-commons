@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -645,6 +646,43 @@ class PathValidatorUnitTests {
 		}
 	}
 
+	@Test // GH-1365
+	void accumulatesDeniedPathsAcrossInvocations() {
+
+		PathValidationRules rules = PathValidationRules.builder() //
+				.denyAccess("nested") //
+				.denyAccess("**.firstname") //
+				.denyAccess(Set.of("list")) //
+				.build();
+
+		for (String property : List.of("nested", "byName[WORK].firstname", "list[0]")) {
+			assertThatExceptionOfType(PathResolutionException.class) //
+					.isThrownBy(() -> PathValidator.validate(property, ROOT, rules));
+		}
+	}
+
+	@Test // GH-1365
+	void providesDeniedPathsInContext() {
+
+		List<String> seen = new ArrayList<>();
+
+		PathValidationRules rules = PathValidationRules.builder() //
+				.accessValidation((segment, context) -> {
+
+					seen.addAll(context.deniedPaths());
+					if (context.deniedPaths().contains(context.property())) {
+						throw context.reject("Cannot access '%s'".formatted(context.property()));
+					}
+				}) //
+				.denyAccess("nested") //
+				.build();
+
+		assertThatExceptionOfType(PathResolutionException.class) //
+				.isThrownBy(() -> PathValidator.validate("nested", ROOT, rules));
+
+		assertThat(seen).containsExactly("nested");
+	}
+
 	@ParameterizedTest // GH-1365
 	@ValueSource(strings = { "byName", "byName.firstname", "byName[WORK]", "byName[WORK].firstname", "list", "list[0]",
 			"list[0].firstname", "list.firstname" })
@@ -661,7 +699,7 @@ class PathValidatorUnitTests {
 	void rejectsExclusionsNamingAKeyOrIndex(String path) {
 
 		assertThatIllegalArgumentException() //
-				.isThrownBy(() -> AccessValidator.excluding(path));
+				.isThrownBy(() -> PathValidationRules.builder().denyAccess(path).build());
 	}
 
 	@Test // GH-1365

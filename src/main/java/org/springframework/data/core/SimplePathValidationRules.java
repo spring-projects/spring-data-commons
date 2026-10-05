@@ -15,6 +15,9 @@
  */
 package org.springframework.data.core;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Just a value object to hold the validation rules.
  *
@@ -27,13 +30,15 @@ class SimplePathValidationRules implements PathValidationRules {
 	private final AccessValidator accessValidator;
 	private final MapKeyValidator mapKeyValidator;
 	private final IndexValidator indexValidator;
+
+	private final Set<String> deniedPaths;
 	private final int maxAllowedSegments;
 	private final int maxSegmentLength;
 	private final int maxPathLength;
 
 	public SimplePathValidationRules(SegmentClassification segmentClassifier, AccessValidator accessValidator,
 			MapKeyValidator mapKeyValidator, IndexValidator indexValidator, int maxAllowedSegments, int maxSegmentLength,
-			int maxPathLength) {
+			int maxPathLength, Set<String> deniedPaths) {
 
 		this.segmentClassifier = segmentClassifier;
 		this.accessValidator = accessValidator;
@@ -42,6 +47,7 @@ class SimplePathValidationRules implements PathValidationRules {
 		this.maxAllowedSegments = maxAllowedSegments;
 		this.maxSegmentLength = maxSegmentLength;
 		this.maxPathLength = maxPathLength;
+		this.deniedPaths = Collections.unmodifiableSet(deniedPaths);
 	}
 
 	@Override
@@ -77,5 +83,10 @@ class SimplePathValidationRules implements PathValidationRules {
 	@Override
 	public int maxPathLength() {
 		return maxPathLength;
+	}
+
+	@Override
+	public Set<String> deniedPaths() {
+		return deniedPaths;
 	}
 }
