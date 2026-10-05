@@ -189,9 +189,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 				Object value = unwrapSingleElement(rawParameters.get(parameterName));
 
-				// Collection- and array-valued parameters must be converted even if the value already is an instance of
-				// the target type (e.g. a List), as the raw elements (typically String) still need to be converted to the
-				// declared element type (see GH-3502).
 				boolean elementConversionRequired = value != null
 						&& (targetType.isArray() || Iterable.class.isAssignableFrom(targetType));
 
