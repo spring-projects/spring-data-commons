@@ -392,7 +392,6 @@ class ReflectionRepositoryInvokerUnitTests {
 
 	interface DeleteByIdOverrideSubRepository extends DeleteByIdOverrideRepository<Domain, Long> {}
 
-	// GH-3502
 	enum Color {
 		RED, GREEN;
 	}
