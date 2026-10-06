@@ -115,7 +115,6 @@ public final class KotlinReflectionUtils {
 		}
 
 		KFunction<?> invokedFunction = findKotlinFunction(method);
-
 		return invokedFunction != null && invokedFunction.isSuspend();
 	}
 
@@ -144,7 +143,6 @@ public final class KotlinReflectionUtils {
 	 * @since 3.2
 	 */
 	public static boolean isValueClass(KType type) {
-
 		return type.getClassifier() instanceof KClass<?> kc && kc.isValue();
 	}
 
@@ -214,7 +212,6 @@ public final class KotlinReflectionUtils {
 	private static boolean isLast(MethodParameter parameter) {
 
 		Method method = parameter.getMethod();
-
 		return method != null && parameter.getParameterIndex() == method.getParameterCount() - 1;
 	}
 
@@ -238,12 +235,10 @@ public final class KotlinReflectionUtils {
 	private static Stream<? extends KFunction<?>> toKFunctionStream(KCallable<?> it) {
 
 		if (it instanceof KMutableProperty<?> property) {
-
 			return Stream.of(property.getGetter(), property.getSetter());
 		}
 
 		if (it instanceof KProperty<?> property) {
-
 			return Stream.of(property.getGetter());
 		}
 
