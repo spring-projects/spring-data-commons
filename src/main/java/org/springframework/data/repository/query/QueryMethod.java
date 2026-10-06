@@ -66,6 +66,7 @@ public class QueryMethod {
 	private final ResultProcessor resultProcessor;
 	private final Lazy<Class<?>> domainClass;
 	private final Lazy<Boolean> isCollectionQuery;
+	private final Lazy<Boolean> isSearchQuery;
 
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct query to use for following
@@ -125,6 +126,7 @@ public class QueryMethod {
 
 		this.resultProcessor = new ResultProcessor(this, factory);
 		this.isCollectionQuery = Lazy.of(this::calculateIsCollectionQuery);
+		this.isSearchQuery = Lazy.of(this::calculateIsSearchQuery);
 
 		validate();
 	}
@@ -192,6 +194,18 @@ public class QueryMethod {
 		}
 
 		return TypeInformation.of(unwrappedReturnType).isCollectionLike();
+	}
+
+	private Boolean calculateIsSearchQuery() {
+
+		if (ClassUtils.isAssignable(SearchResults.class, unwrappedReturnType)) {
+			return true;
+		}
+
+		TypeInformation<?> returnType = metadata.getReturnType(method);
+		TypeInformation<?> componentType = returnType.getComponentType();
+
+		return componentType != null && SearchResult.class.isAssignableFrom(componentType.getType());
 	}
 
 	/**
@@ -294,15 +308,7 @@ public class QueryMethod {
 	 * @since 4.0
 	 */
 	public boolean isSearchQuery() {
-
-		if (ClassUtils.isAssignable(SearchResults.class, unwrappedReturnType)) {
-			return true;
-		}
-
-		TypeInformation<?> returnType = metadata.getReturnType(method);
-		TypeInformation<?> componentType = returnType.getComponentType();
-
-		return componentType != null && SearchResult.class.isAssignableFrom(componentType.getType());
+		return isSearchQuery.get();
 	}
 
 	/**

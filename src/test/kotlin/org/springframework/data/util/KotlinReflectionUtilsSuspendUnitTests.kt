@@ -66,4 +66,5 @@ class KotlinReflectionUtilsSuspendUnitTests {
 
 		fun withParameter(user: User): User
 	}
+
 }
