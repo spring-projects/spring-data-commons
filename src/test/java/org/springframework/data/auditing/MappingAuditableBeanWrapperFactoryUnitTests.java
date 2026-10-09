@@ -84,6 +84,18 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		assertThat(metadataCache).hasSize(4);
 	}
 
+	@Test // GH-3515
+	void initializesFactoryForEntityWithNestedMapProperty() {
+
+		var context = new SampleMappingContext();
+		context.getPersistentEntity(WithNestedMap.class);
+		context.findPersistentPropertyPaths(WithNestedMap.class, it -> true);
+
+		var factory = new MappingAuditableBeanWrapperFactory(PersistentEntities.of(context));
+
+		assertThat(factory.getBeanWrapperFor(new WithNestedMap())).isNotNull();
+	}
+
 	@Test // DATACMNS-365
 	void discoversAuditingPropertyOnField() {
 
@@ -405,5 +417,13 @@ class MappingAuditableBeanWrapperFactoryUnitTests {
 		Embedded embedded;
 		Collection<Embedded> embeddeds;
 		Map<String, Embedded> embeddedMap;
+	}
+
+	static class Cell {
+		Object value;
+	}
+
+	static class WithNestedMap {
+		Map<String, Map<String, Cell>> values;
 	}
 }
