@@ -76,6 +76,10 @@ However, consult the store-specific documentation for the exact list of supporte
 |`WITHIN`|`Within`, `IsWithin`
 |===============
 
+Some Spring Data modules also support `java.util.regex.Pattern` values for
+`Like` and `IsLike` predicates. See the documentation for the specific module
+for details.
+
 In addition to filter predicates, the following list of modifiers is supported:
 
 .Query predicate modifier keywords
