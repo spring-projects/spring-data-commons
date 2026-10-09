@@ -44,7 +44,7 @@ public interface Predicates {
 	Predicate<Member> IS_PUBLIC = member -> Modifier.isPublic(member.getModifiers());
 	Predicate<Member> IS_SYNTHETIC = Member::isSynthetic;
 
-	Predicate<Class<?>> IS_KOTLIN =  KotlinDetector.isKotlinPresent() ? KotlinReflectionUtils::isSupportedKotlinClass : type -> false;
+	Predicate<Class<?>> IS_KOTLIN = KotlinDetector.isKotlinPresent() ? KotlinReflectionUtils::isSupportedKotlinClass : type -> false;
 	Predicate<Member> IS_STATIC = member -> Modifier.isStatic(member.getModifiers());
 
 	Predicate<Method> IS_BRIDGE_METHOD = Method::isBridge;
