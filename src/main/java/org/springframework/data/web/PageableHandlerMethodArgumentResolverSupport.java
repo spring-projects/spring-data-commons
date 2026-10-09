@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Mark Paluch
  * @author Vedran Pavic
+ * @author BEN YOUSSEF Hamza
  * @see ReactivePageableHandlerMethodArgumentResolver
  * @see PageableHandlerMethodArgumentResolver
  * @since 2.2
@@ -247,14 +248,14 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 				.get(PageableDefault.class);
 
 		if (defaults.isPresent()) {
-			return getDefaultPageRequestFrom(methodParameter, defaults);
+			return getDefaultPageRequestFrom(methodParameter, defaults, oneIndexedParameters);
 		}
 
 		return fallbackPageable;
 	}
 
 	private static Pageable getDefaultPageRequestFrom(MethodParameter parameter,
-			MergedAnnotation<PageableDefault> defaults) {
+			MergedAnnotation<PageableDefault> defaults, boolean oneIndexedParameters) {
 
 		int defaultPageNumber = defaults.getInt("page");
 		int defaultPageSize = defaults.getInt("size");
@@ -262,6 +263,10 @@ public abstract class PageableHandlerMethodArgumentResolverSupport {
 		if (defaultPageSize < 1) {
 			Method annotatedMethod = parameter.getMethod();
 			throw new IllegalStateException(String.format(INVALID_DEFAULT_PAGE_SIZE, annotatedMethod));
+		}
+
+		if (oneIndexedParameters) {
+			defaultPageNumber--;
 		}
 
 		String[] sort = defaults.getStringArray("sort");
