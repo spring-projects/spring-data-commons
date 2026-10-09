@@ -61,6 +61,7 @@ import com.querydsl.core.types.Path;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Sharang Gupta
  * @since 1.11
  * @see QuerydslBinderCustomizer
  */
@@ -247,7 +248,7 @@ public class QuerydslBindings {
 		Assert.notNull(path, "Path must not be null");
 		Assert.notNull(type, "Type information must not be null");
 
-		if (!isPathVisible(path)) {
+		if (!isPathVisible(path, type)) {
 			return null;
 		}
 
@@ -320,6 +321,29 @@ public class QuerydslBindings {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns whether the given path is visible for the given type. Explicitly bound paths are visible unless explicitly
+	 * denied, just like aliases. All other paths are subject to the allowlist and denylist, see
+	 * {@link #isPathVisible(String)}.
+	 *
+	 * @param path must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private boolean isPathVisible(String path, TypeInformation<?> type) {
+
+		// Explicitly bound paths are visible if not explicitly denied
+		if (isExplicitlyBound(path, type) && !denyList.contains(path)) {
+			return true;
+		}
+
+		return isPathVisible(path);
+	}
+
+	private boolean isExplicitlyBound(String path, TypeInformation<?> type) {
+		return pathSpecs.containsKey(createKey(type, path));
 	}
 
 	/**
