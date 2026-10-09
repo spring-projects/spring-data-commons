@@ -22,6 +22,8 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.data.web.config.SpringDataWebSettings;
@@ -30,10 +32,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * Unit tests for PageImpl serialization.
+ * Unit tests for PageImpl and SliceImpl serialization.
  *
  * @author Oliver Drotbohm
  * @author Mark Paluch
+ * @author Arnab Nandy
  */
 class PageImplJsonJackson2SerializationUnitTests {
 
@@ -52,11 +55,29 @@ class PageImplJsonJackson2SerializationUnitTests {
 		assertJsonRendering(PageSerializationMode.DIRECT, new Extension<>("header"), "$.pageable", "$.last", "$.first");
 	}
 
+	@Test // GH-3516
+	void serializesSliceImplAsJson() {
+		assertJsonRendering(PageSerializationMode.DIRECT, new SliceImpl<>(Collections.emptyList()), "$.pageable",
+				"$.hasNext", "$.first");
+	}
+
+	@Test // GH-3516
+	void serializesSliceImplAsSlicedModel() {
+		assertJsonRendering(PageSerializationMode.VIA_DTO, new SliceImpl<>(Collections.emptyList()), "$.content",
+				"$.page.size", "$.page.number", "$.page.numberOfElements", "$.page.hasNext");
+	}
+
+	@Test // GH-3516
+	void serializesCustomSliceAsSliceImpl() {
+		assertJsonRendering(PageSerializationMode.DIRECT, new SliceExtension<>("header"), "$.pageable", "$.hasNext",
+				"$.first");
+	}
+
 	private static void assertJsonRendering(PageSerializationMode mode, String... jsonPaths) {
 		assertJsonRendering(mode, new PageImpl<>(Collections.emptyList()), jsonPaths);
 	}
 
-	private static void assertJsonRendering(PageSerializationMode mode, PageImpl<?> page, String... jsonPaths) {
+	private static void assertJsonRendering(PageSerializationMode mode, Object payload, String... jsonPaths) {
 
 		SpringDataWebSettings settings = new SpringDataWebSettings(mode);
 
@@ -65,7 +86,7 @@ class PageImplJsonJackson2SerializationUnitTests {
 
 		assertThatNoException().isThrownBy(() -> {
 
-			String result = mapper.writeValueAsString(page);
+			String result = mapper.writeValueAsString(payload);
 
 			for (String jsonPath : jsonPaths) {
 				assertThat(JsonPath.<Object> read(result, jsonPath)).isNotNull();
@@ -78,6 +99,19 @@ class PageImplJsonJackson2SerializationUnitTests {
 		private Object header;
 
 		public Extension(Object header) {
+			super(Collections.emptyList());
+		}
+
+		public Object getHeader() {
+			return header;
+		}
+	}
+
+	static class SliceExtension<T> extends SliceImpl<T> {
+
+		private Object header;
+
+		public SliceExtension(Object header) {
 			super(Collections.emptyList());
 		}
 
