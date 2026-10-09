@@ -85,7 +85,7 @@ public class SlicedResourcesAssembler<T>
 
 	/**
 	 * Configures whether to always add {@code first} links to the {@link SlicedModel} * created. Defaults to
-	 * {@literal false} which means that {@code first} links onlys appear in conjunction with {@code prev} and
+	 * {@literal false} which means that {@code first} links only appear in conjunction with {@code prev} and
 	 * {@code next} links.
 	 *
 	 * @param forceFirstRel whether to always add {@code first} links to the {@link SlicedModel} created.

@@ -155,7 +155,7 @@ public interface Pageable {
 	/**
 	 * Creates a new {@link Pageable} with {@code pageNumber} applied.
 	 *
-	 * @param pageNumber the page numbe, zero-based.
+	 * @param pageNumber the page number, zero-based.
 	 * @return a new {@link PageRequest} or throws {@link UnsupportedOperationException} if the object is
 	 *         {@link #isUnpaged()} and the {@code pageNumber} is not zero.
 	 * @since 2.5

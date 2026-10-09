@@ -101,8 +101,8 @@ public interface PersistentPropertyPath<P extends PersistentProperty<P>> extends
 
 	/**
 	 * Returns the sub-path of the current one as if it was based on the given base path. So for a current path
-	 * {@code foo.bar} and a given base {@code foo} it would return {@code bar}. If the given path is not a base of the
-	 * the current one the current {@link PersistentPropertyPath} will be returned as is.
+	 * {@code foo.bar} and a given base {@code foo} it would return {@code bar}. If the given path is not a base of
+	 * the current {@link PersistentPropertyPath} will be returned as is.
 	 *
 	 * @param base must not be {@literal null}.
 	 * @return will never be {@literal null}.

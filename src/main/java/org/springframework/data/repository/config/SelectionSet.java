@@ -67,7 +67,7 @@ class SelectionSet<T> {
 	}
 
 	/**
-	 * Filters the collection with the predicate if there are still more then one elements in the collection.
+	 * Filters the collection with the predicate if there are still more than one element in the collection.
 	 *
 	 * @param predicate To be used for filtering.
 	 */

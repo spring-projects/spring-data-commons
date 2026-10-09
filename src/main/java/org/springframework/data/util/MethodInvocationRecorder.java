@@ -56,7 +56,7 @@ public class MethodInvocationRecorder {
 	private final @Nullable RecordingMethodInterceptor interceptor;
 
 	/**
-	 * Creates a new {@link MethodInvocationRecorder}. For ad-hoc instantation prefer the static
+	 * Creates a new {@link MethodInvocationRecorder}. For ad-hoc instantiation prefer the static
 	 * {@link #forProxyOf(Class)}.
 	 */
 	private MethodInvocationRecorder() {

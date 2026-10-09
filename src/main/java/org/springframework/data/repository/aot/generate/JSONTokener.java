@@ -176,7 +176,7 @@ class JSONTokener {
 	 * along the way. The opening quote should have already been read. This consumes the closing quote, but does not
 	 * include it in the returned string.
 	 *
-	 * @param quote either ' or ".
+	 * @param quote either {@code '} or {@code "}.
 	 * @return the string up to but not including {@code quote}
 	 * @throws NumberFormatException if any unicode escape sequences are malformed.
 	 * @throws JSONException if processing of json failed
