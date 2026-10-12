@@ -24,6 +24,7 @@ import kotlin.jvm.internal.PropertyReference1Impl
  * Kotlin unit tests for [TypedPropertyPathFeature].
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class TypedPropertyPathFeatureKtUnitTests {
 
@@ -54,6 +55,14 @@ class TypedPropertyPathFeatureKtUnitTests {
 		)
 
 		assertThat(descriptor).isNull()
+	}
+
+	@Test // GH-3521
+	fun shouldIgnorePropertyReferencesForInternalKotlinTypes/* those are unresolvable and throw KotlinReflectionInternalError */() {
+
+		val cls = Class.forName("kotlin.reflect.jvm.internal.impl.km.Attributes\$modality\$2")
+
+		assertThat(TypedPropertyPathFeature.KotlinDelegate.getPropertyReference(cls)).isNull()
 	}
 
 	class Person {
