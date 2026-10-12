@@ -173,9 +173,13 @@ class TypedPropertyPathFeature implements Feature {
 		 * Describe the property referenced by the given unbound property reference class.
 		 *
 		 * @param cls the property reference class to inspect.
-		 * @return the descriptor or {@code null} if {@code cls} is not an unbound reference to a class property.
+		 * @return the descriptor or {@code null} if {@code cls} is not an unbound reference to a domain class property.
 		 */
 		static @Nullable MemberDescriptor getPropertyReference(Class<?> cls) throws ReflectiveOperationException {
+
+			if (isKotlinInternalClass(cls)) {
+				return null;
+			}
 
 			// unbound references have a no-arg constructor, bound references capture their receiver.
 			Constructor<?> constructor = ReflectionUtils.findConstructor(cls);
@@ -195,6 +199,16 @@ class TypedPropertyPathFeature implements Feature {
 			return null;
 		}
 
+		/**
+		 * @param cls the property reference class to inspect.
+		 * @return {@code true} if given {@link Class} belongs to Kotlin (like {@code KmClass::flags}) and cannot be
+		 *         resolved via {@link kotlin.reflect.jvm.ReflectJvmMapping}.
+		 */
+		private static boolean isKotlinInternalClass(Class<?> cls) {
+
+			String name = cls.getName();
+			return name.startsWith("kotlin.") || name.startsWith("kotlinx.") || name.startsWith("org.jetbrains.");
+		}
 	}
 
 }
