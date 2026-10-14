@@ -41,6 +41,7 @@ import com.querydsl.core.types.dsl.StringPath;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Sharang Gupta
  */
 class QuerydslBindingsUnitTests {
 
@@ -275,6 +276,47 @@ class QuerydslBindingsUnitTests {
 		bindings.bind(QUser.user.as(QSpecialUser.class).specialProperty).first(ContainsBinding.INSTANCE);
 
 		assertThat(bindings.isPathAvailable("specialProperty", User.class)).isTrue();
+	}
+
+	@Test // GH-3547
+	void explicitlyBoundPathIsAvailableWhenUnlistedPropertiesAreExcluded() {
+
+		bindings.excludeUnlistedProperties(true);
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
+
+		assertThat(bindings.isPathAvailable("firstname", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("lastname", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void explicitlyBoundNestedPathIsAvailableWhenUnlistedPropertiesAreExcluded() {
+
+		bindings.excludeUnlistedProperties(true);
+		bindings.bind(QUser.user.address.city).first(CONTAINS_BINDING);
+
+		assertThat(bindings.isPathAvailable("address.city", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("address.street", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void explicitlyBoundPathIsAvailableDespiteAllowlistNotContainingIt() {
+
+		bindings.including(QUser.user.lastname);
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
+
+		assertThat(bindings.isPathAvailable("firstname", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("lastname", User.class)).isTrue();
+		assertThat(bindings.isPathAvailable("inceptionYear", User.class)).isFalse();
+	}
+
+	@Test // GH-3547
+	void explicitlyBoundPathIsNotAvailableIfExplicitlyExcluded() {
+
+		bindings.excludeUnlistedProperties(true);
+		bindings.bind(QUser.user.firstname).first(CONTAINS_BINDING);
+		bindings.excluding(QUser.user.firstname);
+
+		assertThat(bindings.isPathAvailable("firstname", User.class)).isFalse();
 	}
 
 	private static <P extends Path<? extends S>, S> void assertAdapterWithTargetBinding(
