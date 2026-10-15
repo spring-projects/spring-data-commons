@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.aot.AotServices;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.core.CustomCollections;
 import org.springframework.lang.Contract;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -215,18 +216,35 @@ public class TypeCollector {
 		}
 
 		Set<Type> additionalTypes = new LinkedHashSet<>();
-		additionalTypes.addAll(TypeUtils.resolveTypesInSignature(type));
-		additionalTypes.addAll(visitConstructorsOfType(type));
-		additionalTypes.addAll(visitMethodsOfType(type));
-		additionalTypes.addAll(visitFieldsOfType(type));
 
-		if (!ObjectUtils.isEmpty(type.toClass().getDeclaredClasses())) {
-			additionalTypes.addAll(Arrays.asList(type.toClass().getDeclaredClasses()));
+		if (typeFilter.test(type.toClass())) {
+
+			additionalTypes.addAll(TypeUtils.resolveTypesInSignature(type));
+			additionalTypes.addAll(visitConstructorsOfType(type));
+			additionalTypes.addAll(visitMethodsOfType(type));
+			additionalTypes.addAll(visitFieldsOfType(type));
+
+			if (!ObjectUtils.isEmpty(type.toClass().getDeclaredClasses())) {
+				additionalTypes.addAll(Arrays.asList(type.toClass().getDeclaredClasses()));
+			}
+		}
+		else if (isCustomCollectionOrMapType(type.toClass())) {
+
+			for (ResolvableType generic : type.getGenerics()) {
+				additionalTypes.add(generic.getType());
+			}
+		}
+		else {
+			additionalTypes.addAll(TypeUtils.resolveTypesInSignature(type));
 		}
 
 		for (Type discoveredType : additionalTypes) {
 			processType(ResolvableType.forType(discoveredType, type), cache, callback);
 		}
+	}
+
+	private static boolean isCustomCollectionOrMapType(Class<?> type) {
+		return CustomCollections.isCollection(type) || CustomCollections.isMap(type);
 	}
 
 	private Set<Type> visitConstructorsOfType(ResolvableType type) {

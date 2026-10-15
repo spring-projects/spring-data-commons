@@ -40,12 +40,15 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.aot.AotContext;
 import org.springframework.data.aot.AotTypeConfiguration;
+import org.springframework.data.core.CustomCollections;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.aot.generate.RepositoryContributor;
@@ -234,6 +237,36 @@ public class RepositoryRegistrationAotProcessor
 		repositoryContext.getResolvedAnnotations().stream()
 				.filter(RepositoryRegistrationAotProcessor::isSpringDataManagedAnnotation).map(MergedAnnotation::getType)
 				.forEach(it -> contributeType(it, generationContext));
+
+		registerCustomCollectionTypeHints(information, generationContext);
+	}
+
+	private void registerCustomCollectionTypeHints(RepositoryInformation information,
+			GenerationContext generationContext) {
+
+		Class<?> repositoryInterface = information.getRepositoryInterface();
+
+		information.getQueryMethods().forEach(method -> {
+
+			contributeCustomCollectionTypeIfNecessary(
+					ResolvableType.forMethodReturnType(method, repositoryInterface), generationContext);
+
+			for (int i = 0; i < method.getParameterCount(); i++) {
+				contributeCustomCollectionTypeIfNecessary(
+						ResolvableType.forMethodParameter(MethodParameter.forParameter(method.getParameters()[i])
+								.withContainingClass(repositoryInterface)),
+						generationContext);
+			}
+		});
+	}
+
+	private void contributeCustomCollectionTypeIfNecessary(ResolvableType type, GenerationContext generationContext) {
+
+		Class<?> rawType = type.toClass();
+
+		if (CustomCollections.isCollection(rawType) || CustomCollections.isMap(rawType)) {
+			contributeType(rawType, generationContext);
+		}
 	}
 
 	/**
