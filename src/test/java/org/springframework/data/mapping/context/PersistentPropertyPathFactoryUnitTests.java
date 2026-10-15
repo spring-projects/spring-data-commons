@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  * @author Christoph Strobl
+ * @author Mark Paluch
  * @soundtrack Cypress Hill - Illusions (Q-Tip Remix, Unreleased & Revamped)
  */
 class PersistentPropertyPathFactoryUnitTests {
@@ -176,6 +177,22 @@ class PersistentPropertyPathFactoryUnitTests {
 				.hasValueSatisfying(it -> assertThat(it.toDotPath()).isEqualTo("third.lastname"));
 	}
 
+	@Test // GH-3515
+	void returnsPathsForMapWithEntityKeyAndSimpleValueType() {
+
+		var paths = factory.from(WithEntityKeyMap.class, it -> true);
+
+		assertThat(paths).extracting(PersistentPropertyPath::toDotPath).containsExactly("map");
+	}
+
+	@Test // GH-3515
+	void returnsPathsForRawTypeComplexBound() {
+
+		var paths = factory.from(BoundedGeneric.class, it -> true);
+
+		assertThat(paths).extracting(PersistentPropertyPath::toDotPath).containsExactly("map");
+	}
+
 	static class PersonSample {
 		List<Person> persons;
 	}
@@ -222,4 +239,13 @@ class PersistentPropertyPathFactoryUnitTests {
 	static class Third {
 		String lastname;
 	}
+
+	static class WithEntityKeyMap {
+		Map<Second, Double> map;
+	}
+
+	static class BoundedGeneric<T extends Second> {
+		Map<T, Double> map;
+	}
+
 }
