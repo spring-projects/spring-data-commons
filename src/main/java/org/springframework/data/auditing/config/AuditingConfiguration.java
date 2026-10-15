@@ -28,7 +28,7 @@ import org.springframework.data.domain.AuditorAware;
 public interface AuditingConfiguration {
 
 	/**
-	 * Returns the bean name of the {@link AuditorAware} instance to be used..
+	 * Returns the bean name of the {@link AuditorAware} instance to be used.
 	 *
 	 * @return
 	 */

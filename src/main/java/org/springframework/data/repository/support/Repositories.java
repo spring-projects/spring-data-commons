@@ -323,7 +323,7 @@ public class Repositories implements Iterable<Class<?>> {
 	/**
 	 * Returns the repository domain type for which to look up the repository. The input can either be a repository
 	 * managed type directly. Or it can be a sub-type of a repository managed one, in which case we check the domain types
-	 * we have repositories registered for for assignability.
+	 * we have repositories registered for assignability.
 	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return
