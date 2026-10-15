@@ -44,6 +44,7 @@ import org.springframework.data.util.ReflectionUtils;
  *
  * @author Mark Paluch
  * @author Yohan Lee
+ * @author Blaz Snuderl
  * @since 3.1
  */
 class KotlinInstantiationDelegate {
@@ -54,6 +55,10 @@ class KotlinInstantiationDelegate {
 	private final Map<KParameter, Integer> indexByKParameter;
 	private final List<Function<@Nullable Object, @Nullable Object>> wrappers;
 	private final boolean hasDefaultConstructorMarker;
+	private final int[] optionalParameterIndices;
+	private final int[] optionalParameterBitPositions;
+	private final int defaultMaskSlotCount;
+	private final boolean hasOptionalParameters;
 
 	private KotlinInstantiationDelegate(PreferredConstructor<?, ?> constructor, KFunction<?> constructorFunction) {
 
@@ -64,9 +69,26 @@ class KotlinInstantiationDelegate {
 		this.kParameters = constructorFunction.getParameters();
 		this.indexByKParameter = new IdentityHashMap<>(kParameters.size());
 
+		List<Integer> optIndices = new ArrayList<>();
+		List<Integer> optBitPositions = new ArrayList<>();
+		int valueIndex = 0;
+
 		for (int i = 0; i < kParameters.size(); i++) {
 			indexByKParameter.put(kParameters.get(i), i);
+			KParameter kp = kParameters.get(i);
+			if (kp.getKind() == KParameter.Kind.VALUE) {
+				if (kp.isOptional()) {
+					optIndices.add(i);
+					optBitPositions.add(valueIndex);
+				}
+				valueIndex++;
+			}
 		}
+
+		this.optionalParameterIndices = optIndices.stream().mapToInt(Integer::intValue).toArray();
+		this.optionalParameterBitPositions = optBitPositions.stream().mapToInt(Integer::intValue).toArray();
+		this.hasOptionalParameters = optionalParameterIndices.length > 0;
+		this.defaultMaskSlotCount = hasOptionalParameters ? KotlinDefaultMask.getMaskCount(valueIndex) : 0;
 
 		this.wrappers = new ArrayList<>(kParameters.size());
 
@@ -133,29 +155,30 @@ class KotlinInstantiationDelegate {
 
 		if (hasDefaultConstructorMarker) {
 
-			KotlinDefaultMask defaultMask = KotlinDefaultMask.forConstructor(constructorFunction, it -> {
+			int[] masks = new int[defaultMaskSlotCount];
 
-				int index = indexByKParameter.get(it);
+			if (hasOptionalParameters) {
+				for (int j = 0; j < optionalParameterIndices.length; j++) {
+					int paramIndex = optionalParameterIndices[j];
+					int bitPosition = optionalParameterBitPositions[j];
 
-				Parameter<Object, P> parameter = parameters.get(index);
-				Class<Object> type = parameter.getType().getType();
+					if (params[paramIndex] == null) {
+						Parameter<Object, P> parameter = parameters.get(paramIndex);
+						Class<Object> type = parameter.getType().getType();
 
-				if (it.isOptional() && (params[index] == null)) {
-					if (type.isPrimitive()) {
+						if (type.isPrimitive()) {
 
-						// apply primitive defaulting to prevent NPE on primitive downcast
-						params[index] = ReflectionUtils.getPrimitiveDefault(type);
+							// apply primitive defaulting to prevent NPE on primitive downcast
+							params[paramIndex] = ReflectionUtils.getPrimitiveDefault(type);
+						}
+						masks[bitPosition / Integer.SIZE] |= (1 << (bitPosition % Integer.SIZE));
 					}
-					return false;
 				}
+			}
 
-				return true;
-			});
-
-			int[] defaulting = defaultMask.getDefaulting();
 			// append nullability masks to creation arguments
-			for (int i = 0; i < defaulting.length; i++) {
-				params[userParameterCount + i] = defaulting[i];
+			for (int i = 0; i < masks.length; i++) {
+				params[userParameterCount + i] = masks[i];
 			}
 		}
 	}
