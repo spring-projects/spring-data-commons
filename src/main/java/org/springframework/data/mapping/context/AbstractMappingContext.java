@@ -95,6 +95,7 @@ import org.springframework.util.ReflectionUtils.FieldFilter;
  * @author Mikael Klamra
  * @author Christoph Strobl
  * @author Kamil Krzywański
+ * @author Greg Taube
  */
 public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?, P>, P extends PersistentProperty<P>>
 		implements MappingContext<E, P>, ApplicationEventPublisherAware, ApplicationContextAware, BeanFactoryAware,
@@ -770,7 +771,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 			matches.add(new PropertyMatch("this\\$.*", null));
 			matches.add(new PropertyMatch("\\$\\$_.*", null));
 			matches.add(new PropertyMatch("metaClass", "groovy.lang.MetaClass"));
-			matches.add(new KotlinDataClassPropertyMatch(".*\\$delegate", null));
+			matches.add(new KotlinDataClassPropertyMatch());
 
 			UNMAPPED_PROPERTIES = matches;
 		}
@@ -880,37 +881,27 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 		}
 
 		/**
-		 * Value object extension to {@link PropertyMatch} that matches for fields only for Kotlin data classes.
+		 * Matches delegate fields and properties declared by Kotlin data classes.
 		 *
 		 * @author Mark Paluch
 		 * @since 3.3.2
 		 */
 		static class KotlinDataClassPropertyMatch extends PropertyMatch {
 
-			public KotlinDataClassPropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
-				super(namePattern, typeName);
+			public KotlinDataClassPropertyMatch() {
+				super(".*\\$delegate", null);
 			}
 
 			@Override
 			public boolean matches(Field field) {
 
-				if (!KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
-					return false;
-				}
-
-				return super.matches(field);
+				return field.getName().endsWith("$delegate") && KotlinReflectionUtils.isDataClass(field.getDeclaringClass())
+						&& super.matches(field);
 			}
 
 			@Override
 			public boolean matches(Property property) {
-
-				Field field = property.getField().orElse(null);
-
-				if (field == null || !KotlinReflectionUtils.isDataClass(field.getDeclaringClass())) {
-					return false;
-				}
-
-				return super.matches(property);
+				return property.getField().filter(this::matches).isPresent();
 			}
 
 		}
