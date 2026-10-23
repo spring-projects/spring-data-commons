@@ -17,5 +17,10 @@ package org.springframework.data.mapping.context
 
 /**
  * @author Mark Paluch
+ * @author Greg Taube
  */
 data class SimpleDataClass(val firstname: String, val lastname: String)
+
+class RegularClassWithLazy {
+	val foo by lazy { 123 }
+}
