@@ -61,6 +61,7 @@ public @interface SortDefault {
 
 	/**
 	 * Specifies whether to apply case-sensitive sorting. Defaults to {@literal true}.
+	 *
 	 * @since 2.3
 	 */
 	boolean caseSensitive() default true;

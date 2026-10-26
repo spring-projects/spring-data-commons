@@ -63,7 +63,7 @@ public abstract class PageableExecutionUtils {
 
 			if (isFirstPage(pageable)) {
 				return new PageImpl<>(content, pageable, content.size());
-			} else if ( !content.isEmpty()) {
+			} else if (!content.isEmpty()) {
 				return new PageImpl<>(content, pageable, pageable.getOffset() + content.size());
 			}
 		}

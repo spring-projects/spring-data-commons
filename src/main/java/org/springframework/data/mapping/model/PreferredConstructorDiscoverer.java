@@ -187,7 +187,7 @@ public interface PreferredConstructorDiscoverer {
 						.filter(it -> it.isSynthetic() && AnnotationUtils.findAnnotation(it, PersistenceCreator.class) != null)
 						.map(it -> buildPreferredConstructor(it, type, entity)).findFirst();
 
-				if(first.isPresent()){
+				if (first.isPresent()) {
 					return first.get();
 				}
 
@@ -223,7 +223,7 @@ public interface PreferredConstructorDiscoverer {
 		 */
 		private static Discoverers findDiscoverer(Class<?> type) {
 
-			if(!KotlinDetector.isKotlinPresent()) {
+			if (!KotlinDetector.isKotlinPresent()) {
 				return DEFAULT;
 			}
 			return KotlinReflectionUtils.isSupportedKotlinClass(type) ? KOTLIN : DEFAULT;

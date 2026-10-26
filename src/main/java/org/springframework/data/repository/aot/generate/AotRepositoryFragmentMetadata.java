@@ -147,10 +147,10 @@ class AotRepositoryFragmentMetadata {
 	}
 
 	static TypeName typeNameOf(ResolvableType type) {
-        return TypeNames.resolvedTypeName(type);
-    }
+		return TypeNames.resolvedTypeName(type);
+	}
 
-    public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
+	public record ConstructorArgument(String parameterName, ResolvableType parameterType, boolean bindToField,
 			AotRepositoryConstructorBuilder.ParameterOrigin parameterOrigin) {
 
 		boolean isBoundToField() {

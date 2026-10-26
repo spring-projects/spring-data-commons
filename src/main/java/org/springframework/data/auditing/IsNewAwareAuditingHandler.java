@@ -54,7 +54,7 @@ public class IsNewAwareAuditingHandler extends AuditingHandler {
 	 * @param mappingContext must not be {@literal null}.
 	 * @since 3.0
 	 */
-	public static IsNewAwareAuditingHandler from(MappingContext<?,?> mappingContext) {
+	public static IsNewAwareAuditingHandler from(MappingContext<?, ?> mappingContext) {
 		return new IsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 

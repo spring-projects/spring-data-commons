@@ -136,8 +136,7 @@ public final class QueryCreationException extends RepositoryCreationException {
 	 */
 	public static QueryCreationException create(@Nullable String message, @Nullable Throwable cause,
 			Class<?> repositoryInterface, Method method) {
-		return new QueryCreationException(message,
-				cause, repositoryInterface, method);
+		return new QueryCreationException(message, cause, repositoryInterface, method);
 	}
 
 	/**
@@ -153,6 +152,5 @@ public final class QueryCreationException extends RepositoryCreationException {
 		return "Cannot create query for method [%s.%s]; %s".formatted(ClassUtils.getShortName(method.getDeclaringClass()),
 				ReflectionUtils.toString(getMethod()), getMessage());
 	}
-
 
 }

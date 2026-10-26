@@ -219,7 +219,7 @@ class RepositoryConstructorBuilder implements AotRepositoryConstructorBuilder {
 
 		CodeBlock.Builder customCtorCode = CodeBlock.builder();
 		customizer.customize(customCtorCode);
-		if(!customCtorCode.isEmpty()) {
+		if (!customCtorCode.isEmpty()) {
 			builder.addCode(customCtorCode.build());
 		}
 

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.web.config;
 
-
 import java.io.Serial;
 import java.util.List;
 
