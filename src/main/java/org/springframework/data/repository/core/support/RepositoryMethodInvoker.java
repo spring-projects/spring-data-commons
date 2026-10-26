@@ -213,8 +213,7 @@ abstract class RepositoryMethodInvoker {
 
 		@SuppressWarnings("unchecked")
 		Publisher<Object> decorate(Class<?> repositoryInterface, RepositoryInvocationMulticaster multicaster,
-				@Nullable Object[] args,
-				Object result) {
+				@Nullable Object[] args, Object result) {
 
 			if (result instanceof Mono) {
 				return Mono.usingWhen(
@@ -360,8 +359,7 @@ abstract class RepositoryMethodInvoker {
 		private final @Nullable Throwable error;
 
 		protected RepositoryMethodInvocationCaptor(Class<?> repositoryInterface, long startTime, @Nullable Long endTime,
-				State state,
-				@Nullable Throwable exception) {
+				State state, @Nullable Throwable exception) {
 
 			this.repositoryInterface = repositoryInterface;
 			this.startTime = startTime;

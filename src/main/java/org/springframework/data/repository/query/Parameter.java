@@ -75,7 +75,6 @@ public class Parameter {
 		TYPES = Collections.unmodifiableList(types);
 	}
 
-
 	/**
 	 * Creates a new {@link Parameter} for the given {@link MethodParameter} and domain {@link TypeInformation}.
 	 *
@@ -208,7 +207,6 @@ public class Parameter {
 	public Class<?> getType() {
 		return parameterType;
 	}
-
 
 	@Override
 	public String toString() {

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.repository.query.parser;
 
-
 import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -622,7 +622,6 @@ class SerializableLambdaReader {
 		return false;
 	}
 
-
 	/**
 	 * Marker interface to distinguish between a wrapped and an actual lambda.
 	 */

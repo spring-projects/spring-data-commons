@@ -54,7 +54,7 @@ public class ReactiveIsNewAwareAuditingHandler extends ReactiveAuditingHandler {
 	 * @param mappingContext must not be {@literal null}.
 	 * @since 3.0
 	 */
-	public static ReactiveIsNewAwareAuditingHandler from(MappingContext<?,?> mappingContext) {
+	public static ReactiveIsNewAwareAuditingHandler from(MappingContext<?, ?> mappingContext) {
 		return new ReactiveIsNewAwareAuditingHandler(PersistentEntities.of(mappingContext));
 	}
 

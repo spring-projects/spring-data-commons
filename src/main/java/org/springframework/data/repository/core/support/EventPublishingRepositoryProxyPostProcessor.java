@@ -144,8 +144,7 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 
 		private static final Map<Class<?>, EventPublishingMethod> cache = new ConcurrentReferenceHashMap<>();
 		private static final @SuppressWarnings("null") EventPublishingMethod NONE = new EventPublishingMethod(Object.class,
-				null,
-				null);
+				null, null);
 		private static final String ILLEGAL_MODIFICATION = "Aggregate's events were modified during event publication. "
 				+ "Make sure event listeners obtain a fresh instance of the aggregate before adding further events. "
 				+ "Additional events found: %s.";
@@ -314,8 +313,6 @@ public class EventPublishingRepositoryProxyPostProcessor implements RepositoryPr
 	@SuppressWarnings("unchecked")
 	private static @Nullable Iterable<Object> asIterable(@Nullable Object source, @Nullable Method method) {
 
-		return method != null && method.getName().startsWith("saveAll")
-				? (Iterable<Object>) source
-				: asCollection(source);
+		return method != null && method.getName().startsWith("saveAll") ? (Iterable<Object>) source : asCollection(source);
 	}
 }

@@ -111,7 +111,7 @@ class DefaultRepositoryInformation extends RepositoryInformationSupport implemen
 	protected boolean isQueryMethodCandidate(Method method) {
 
 		boolean queryMethodCandidate = super.isQueryMethodCandidate(method);
-		if(!isQueryAnnotationPresentOn(method)) {
+		if (!isQueryAnnotationPresentOn(method)) {
 			return queryMethodCandidate;
 		}
 

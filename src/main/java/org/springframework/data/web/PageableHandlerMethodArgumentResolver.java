@@ -94,8 +94,7 @@ public class PageableHandlerMethodArgumentResolver extends PageableHandlerMethod
 			return pageable;
 		}
 
-		return pageable.isPaged()
-				? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+		return pageable.isPaged() ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
 				: Pageable.unpaged(sort);
 	}
 }

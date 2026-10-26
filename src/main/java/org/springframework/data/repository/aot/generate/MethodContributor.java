@@ -56,7 +56,6 @@ public abstract class MethodContributor<M extends QueryMethod> {
 				return new MetadataContributor<>(queryMethod, metadata);
 			}
 
-
 			@Override
 			public QueryMethodContributorBuilder<M> withMetadata(QueryMetadata metadata) {
 

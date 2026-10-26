@@ -15,7 +15,6 @@
  */
 package org.springframework.data.geo;
 
-
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
