@@ -2,7 +2,8 @@
 = Object Mapping Fundamentals
 
 This section covers the fundamentals of Spring Data object mapping, object creation, field and property access, mutability and immutability.
-Note, that this section only applies to Spring Data modules that do not use the object mapping of the underlying data store (like JPA).
+This section applies only to Spring Data modules that implement their own object mapping (e.g. MongoDB, Redis, Cassandra, JDBC).
+It does not apply to Spring Data JPA, which delegates mapping to the JPA provider (e.g. Hibernate).
 Also be sure to consult the store-specific sections for store-specific object mapping, like indexes, customizing column or field names or the like.
 
 Core responsibility of the Spring Data object mapping is to create instances of domain objects and map the store-native data structures onto those.
@@ -202,7 +203,7 @@ With the design shown, the database value will trump the defaulting as Spring Da
 Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no `with…` method being present.
 <4> The `comment` property is mutable and is populated by setting its field directly.
 <5> The `remarks` property is mutable and is populated by invoking the setter method.
-<6> The `summary` property transient and will not be persisted as it is annotated with `@Transient`.
+<6> The `summary` property is transient and will not be persisted, as it is annotated with `@Transient`.
 Spring Data doesn't use Java's `transient` keyword to exclude properties from being persisted as `transient` is part of the Java Serialization Framework.
 Note that this property can be used with a persistence constructor, but its value will default to `null` (or the respective primitive initial value if the property type was a primitive one).
 <7> The class exposes a factory method and a constructor for object creation.
@@ -220,8 +221,9 @@ Constructor-only materialization is up to 30% faster than properties population.
 * _Provide an all-args constructor_ -- Even if you cannot or don't want to model your entities as immutable values, there's still value in providing a constructor that takes all properties of the entity as arguments, including the mutable ones, as this allows the object mapping to skip the property population for optimal performance.
 * _Use factory methods instead of overloaded constructors to avoid ``@PersistenceCreator``_ -- With an all-argument constructor needed for optimal performance, we usually want to expose more application use case specific constructors that omit things like auto-generated identifiers etc.
 It's an established pattern to rather use static factory methods to expose these variants of the all-args constructor.
-* _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ --
-* _For identifiers to be generated, still use a final field in combination with an all-arguments persistence constructor (preferred) or a `with…` method_ --
+* _Make sure you adhere to the constraints that allow the generated instantiator and property accessor classes to be used_ -- See the constraints for <<mapping.object-creation.details,object creation>> and <<mapping.property-population.details,property population>>.
+Otherwise, Spring Data falls back to reflection.
+* _For identifiers to be generated, still use a final field in combination with an all-arguments persistence constructor (preferred) or a `with…` method_ -- This keeps the identifier immutable while still allowing Spring Data to set the generated value.
 * _Use Lombok to avoid boilerplate code_ -- As persistence operations usually require a constructor taking all arguments, their declaration becomes a tedious repetition of boilerplate parameter to field assignments that can best be avoided by using Lombok's `@AllArgsConstructor`.
 
 [[mapping.general-recommendations.override.properties]]
@@ -303,7 +305,7 @@ Spring Data automatically tries to detect a persistent entity's constructor to b
 The resolution algorithm works as follows:
 
 1. If there is a constructor that is annotated with `@PersistenceCreator`, it is used.
-2. If the type is a <<mapping.kotlin,Kotlin data class>> the primary constructor is used.
+2. If the type is a https://kotlinlang.org/docs/data-classes.html[Kotlin data class], the primary constructor is used.
 3. If there is a single static factory method annotated with `@PersistenceCreator` then it is used.
 4. If there is a single constructor, it is used.
 5. If there are multiple constructors and exactly one is annotated with `@PersistenceCreator`, it is used.
