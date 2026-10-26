@@ -203,7 +203,7 @@ With the design shown, the database value will trump the defaulting as Spring Da
 Even if the intent is that the calculation should be preferred, it's important that this constructor also takes `age` as parameter (to potentially ignore it) as otherwise the property population step will attempt to set the age field and fail due to it being immutable and no `with…` method being present.
 <4> The `comment` property is mutable and is populated by setting its field directly.
 <5> The `remarks` property is mutable and is populated by invoking the setter method.
-<6> The `summary` property transient and will not be persisted as it is annotated with `@Transient`.
+<6> The `summary` property is transient and will not be persisted, as it is annotated with `@Transient`.
 Spring Data doesn't use Java's `transient` keyword to exclude properties from being persisted as `transient` is part of the Java Serialization Framework.
 Note that this property can be used with a persistence constructor, but its value will default to `null` (or the respective primitive initial value if the property type was a primitive one).
 <7> The class exposes a factory method and a constructor for object creation.
