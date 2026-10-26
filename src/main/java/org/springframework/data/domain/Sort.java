@@ -111,8 +111,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		return properties.length == 0 //
 				? Sort.unsorted() //
 				: new Sort(DEFAULT_DIRECTION,
-						Arrays.stream(properties).map(PropertyPath::toDotPath)
-						.collect(Collectors.toList()));
+						Arrays.stream(properties).map(PropertyPath::toDotPath).collect(Collectors.toList()));
 	}
 
 	/**
@@ -156,8 +155,7 @@ public class Sort implements Streamable<org.springframework.data.domain.Sort.Ord
 		Assert.notNull(properties, "Properties must not be null");
 		Assert.isTrue(properties.length > 0, "At least one property must be given");
 
-		return by(Arrays.stream(properties).map(PropertyPath::toDotPath)
-				.map(it -> new Order(direction, it)).toList());
+		return by(Arrays.stream(properties).map(PropertyPath::toDotPath).map(it -> new Order(direction, it)).toList());
 	}
 
 	/**

@@ -29,7 +29,8 @@ public interface OffsetScrollPositionHandlerMethodArgumentResolverCustomizer {
 	/**
 	 * Customize the given {@link OffsetScrollPositionHandlerMethodArgumentResolver}.
 	 *
-	 * @param offsetResolver the {@link OffsetScrollPositionHandlerMethodArgumentResolver} to customize, will never be {@literal null}.
+	 * @param offsetResolver the {@link OffsetScrollPositionHandlerMethodArgumentResolver} to customize, will never be
+	 *          {@literal null}.
 	 */
 	void customize(OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver);
 }

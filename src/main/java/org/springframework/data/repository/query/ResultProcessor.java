@@ -265,7 +265,7 @@ public class ResultProcessor {
 		}
 	}
 
-	private static class ProjectingConverter implements Converter<Object,  @Nullable Object> {
+	private static class ProjectingConverter implements Converter<Object, @Nullable Object> {
 
 		private final ReturnedType type;
 		private final ProjectionFactory factory;

@@ -235,8 +235,7 @@ public class SlicedResourcesAssembler<T>
 		boolean isNavigable = slice.hasPrevious() || slice.hasNext();
 
 		if (isNavigable || forceFirstRel) {
-			resources.add(
-					createLink(base, PageRequest.of(0, slice.getSize(), slice.getSort()), IanaLinkRelations.FIRST));
+			resources.add(createLink(base, PageRequest.of(0, slice.getSize(), slice.getSort()), IanaLinkRelations.FIRST));
 		}
 
 		Link selfLink = link != null ? link.withSelfRel() : createLink(base, slice.getPageable(), IanaLinkRelations.SELF);

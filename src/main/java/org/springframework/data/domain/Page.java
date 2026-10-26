@@ -29,6 +29,7 @@ public interface Page<T> extends Slice<T> {
 
 	/**
 	 * Creates a new empty {@link Page}.
+	 *
 	 * @since 2.0
 	 */
 	static <T> Page<T> empty() {

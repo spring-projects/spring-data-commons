@@ -62,7 +62,7 @@ import org.springframework.data.aot.PublicMethodReflectiveProcessor;
  * @see org.springframework.core.Ordered
  * @see org.springframework.core.annotation.Order
  */
-@Reflective({PublicMethodReflectiveProcessor.class})
+@Reflective({ PublicMethodReflectiveProcessor.class })
 public interface EntityCallback<T> {
 
 }
