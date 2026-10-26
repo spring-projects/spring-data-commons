@@ -2,7 +2,8 @@
 = Object Mapping Fundamentals
 
 This section covers the fundamentals of Spring Data object mapping, object creation, field and property access, mutability and immutability.
-Note, that this section only applies to Spring Data modules that do not use the object mapping of the underlying data store (like JPA).
+This section applies only to Spring Data modules that implement their own object mapping (e.g. MongoDB, Redis, Cassandra, JDBC).
+It does not apply to Spring Data JPA, which delegates mapping to the JPA provider (e.g. Hibernate).
 Also be sure to consult the store-specific sections for store-specific object mapping, like indexes, customizing column or field names or the like.
 
 Core responsibility of the Spring Data object mapping is to create instances of domain objects and map the store-native data structures onto those.
