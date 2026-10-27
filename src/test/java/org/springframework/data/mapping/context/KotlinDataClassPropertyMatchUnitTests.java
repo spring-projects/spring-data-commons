@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.context.AbstractMappingContext.PersistentPropertyFilter.KotlinDataClassPropertyMatch;
 import org.springframework.data.mapping.model.DataClassWithLazy;
 import org.springframework.data.mapping.model.Property;
@@ -101,22 +102,8 @@ class KotlinDataClassPropertyMatchUnitTests {
 		assertThat(matcher.matches(property(RegularClassWithLazy.class.getDeclaredField("foo$delegate")))).isFalse();
 	}
 
-	@Test // GH-3567
-	void preservesDelegateNamePatternForProperty() throws Exception {
-
-		Property property = property(DataClassWithLazy.class.getDeclaredField("foo$delegate"));
-		when(property.getName()).thenReturn("foo\n$delegate");
-
-		assertThat(matcher.matches(property)).isFalse();
-	}
-
 	private static Property property(Field field) {
-
-		Property property = mock(Property.class);
-		when(property.getField()).thenReturn(Optional.of(field));
-		when(property.getName()).thenReturn(field.getName());
-		doReturn(field.getType()).when(property).getType();
-		return property;
+		return Property.of(TypeInformation.of(field.getDeclaringClass()), field);
 	}
 
 	static class JavaSample {

@@ -901,11 +901,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			@Override
 			public boolean matches(Property property) {
-
-				Field field = property.getField().orElse(null);
-
-				return field != null && property.getName().endsWith("$delegate")
-						&& KotlinReflectionUtils.isDataClass(field.getDeclaringClass()) && super.matches(property);
+				return property.getField().filter(this::matches).isPresent();
 			}
 
 		}
