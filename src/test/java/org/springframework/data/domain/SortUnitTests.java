@@ -15,13 +15,19 @@
  */
 package org.springframework.data.domain;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.NullHandling.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.springframework.data.domain.Sort.NullHandling.NATIVE;
+import static org.springframework.data.domain.Sort.NullHandling.NULLS_FIRST;
+import static org.springframework.data.domain.Sort.NullHandling.NULLS_LAST;
 
 import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
-
+import org.springframework.data.core.PathResolutionException;
+import org.springframework.data.core.PathValidationRules;
 import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -36,6 +42,7 @@ import org.springframework.data.mapping.Person;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author Hiufung Kwok
+ * @author Christoph Strobl
  */
 class SortUnitTests {
 
@@ -59,10 +66,8 @@ class SortUnitTests {
 		}
 
 		assertThat(Sort.by(Person::getFirstName).iterator().next().getProperty()).isEqualTo("firstName");
-		assertThat(
-				Sort.by(TypedPropertyPath.path(PersonHolder::person).then(Person::getFirstName)).iterator().next()
-						.getProperty())
-				.isEqualTo("person.firstName");
+		assertThat(Sort.by(TypedPropertyPath.path(PersonHolder::person).then(Person::getFirstName)).iterator().next()
+				.getProperty()).isEqualTo("person.firstName");
 	}
 
 	@Test // GH-3400
@@ -255,7 +260,7 @@ class SortUnitTests {
 
 		assertThat(Sort.sort(Circle.class).by(Circle::getCenter) //
 				.and(Sort.sort(Circle.class).by(Circle::getRadius))) //
-						.containsExactly(Order.by("center"), Order.by("radius"));
+				.containsExactly(Order.by("center"), Order.by("radius"));
 
 		assertThat(Sort.by("center").and(Sort.sort(Circle.class).by(Circle::getRadius))) //
 				.containsExactly(Order.by("center"), Order.by("radius"));
@@ -274,6 +279,47 @@ class SortUnitTests {
 		assertThat(reverse) //
 				.containsExactly(Order.desc("center"));
 
+	}
+
+	@Test // GH-1365
+	void validatesSortAgainstType() {
+
+		Sort sort = Sort.by(Order.desc("nested.firstname"), Order.asc("nesteds.firstname"));
+
+		assertThatNoException().isThrownBy(() -> Sort.validate(Sample.class, sort));
+
+		assertThatExceptionOfType(PathResolutionException.class) //
+				.isThrownBy(() -> Sort.validate(Sample.class, Sort.by("unknown"))) //
+				.withMessage("Invalid property path 'unknown'");
+
+		assertThatExceptionOfType(PathResolutionException.class) //
+				.isThrownBy(() -> Sort.validate(Sample.class, Sort.by("1 AND sleep(5)"))) //
+				.withMessage("Invalid property path '1 AND sleep(5)'");
+	}
+
+	@Test // GH-1365
+	void validatesEveryOrderOfASort() {
+
+		assertThatExceptionOfType(PathResolutionException.class) //
+				.isThrownBy(() -> Sort.validate(Sample.class, Sort.by("nested.firstname", "unknown"))) //
+				.withMessage("Invalid property path 'unknown'");
+	}
+
+	@Test // GH-1365
+	void validateAppliesGivenValidationRules() {
+
+		PathValidationRules anyIndex = PathValidationRules.builder() //
+				.indexValidation((index, elementType, context) -> {}) //
+				.build();
+
+		Sort sort = Sort.by("nesteds[last].firstname");
+
+		assertThatNoException().isThrownBy(() -> Sort.validate(Sample.class, sort, anyIndex));
+	}
+
+	@Test // GH-1365
+	void validateAcceptsUnsortedSort() {
+		assertThatNoException().isThrownBy(() -> Sort.validate(Sample.class, Sort.unsorted()));
 	}
 
 	static class Sample {
