@@ -39,6 +39,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 
 /**
  * Default implementation of {@link ProjectionInformation}. Exposes all properties of the type as required input
@@ -48,6 +50,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author Mark Paluch
  * @author Johannes Englmeier
+ * @author Raphael Zanarelli
  * @since 1.12
  */
 class DefaultProjectionInformation implements ProjectionInformation {
@@ -124,6 +127,16 @@ class DefaultProjectionInformation implements ProjectionInformation {
 	private static class PropertyDescriptorSource {
 
 		private static final Log logger = LogFactory.getLog(PropertyDescriptorSource.class);
+
+		/**
+		 * Cache for the {@link AnnotationMetadata} read for a given type, shared across {@link PropertyDescriptorSource}
+		 * (and therefore {@link DefaultProjectionInformation}/{@link ProjectionFactory}) instances. The underlying class
+		 * file read via {@link MetadataReader} is purely type-derived and does not depend on the requesting factory, so
+		 * unlike {@link ProjectionInformation} itself it is safe, and desirable, to memoize below the per-factory layer.
+		 * Weak keys avoid pinning classes/class loaders that would otherwise become unreachable.
+		 */
+		private static final Map<Class<?>, Optional<AnnotationMetadata>> METADATA_CACHE = new ConcurrentReferenceHashMap<>(
+				256, ReferenceType.WEAK);
 
 		private final Class<?> type;
 		private final Optional<AnnotationMetadata> metadata;
@@ -219,6 +232,10 @@ class DefaultProjectionInformation implements ProjectionInformation {
 		 * @return the optional {@link AnnotationMetadata}.
 		 */
 		private static Optional<AnnotationMetadata> getMetadata(Class<?> type) {
+			return METADATA_CACHE.computeIfAbsent(type, PropertyDescriptorSource::readMetadata);
+		}
+
+		private static Optional<AnnotationMetadata> readMetadata(Class<?> type) {
 
 			try {
 
