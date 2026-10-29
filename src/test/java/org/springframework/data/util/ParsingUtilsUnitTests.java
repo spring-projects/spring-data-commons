@@ -17,12 +17,15 @@ package org.springframework.data.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Locale;
+
 import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link ParsingUtils}.
  *
  * @author Oliver Gierke
+ * @author Sharang Gupta
  */
 public class ParsingUtilsUnitTests {
 
@@ -49,5 +52,19 @@ public class ParsingUtilsUnitTests {
 	@Test // DATCMNS-486
 	public void reconcatenatesCamelCaseString() {
 		assertThat(ParsingUtils.reconcatenateCamelCase("myCamelCase", "-")).isEqualTo("my-camel-case");
+	}
+
+	@Test
+	public void lowercasesPartsRegardlessOfDefaultLocale() {
+
+		var defaultLocale = Locale.getDefault();
+		Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+
+		try {
+			assertThat(ParsingUtils.reconcatenateCamelCase("InvoiceItem", "_")).isEqualTo("invoice_item");
+			assertThat(ParsingUtils.splitCamelCaseToLower("invoiceId")).containsExactly("invoice", "id");
+		} finally {
+			Locale.setDefault(defaultLocale);
+		}
 	}
 }
