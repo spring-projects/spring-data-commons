@@ -160,7 +160,7 @@ public interface FluentQuery<T> {
 		@Override
 		@Contract("_ -> new")
 		@CheckReturnValue
-		default FluentQuery<T> project(TypedPropertyPath<T, ?>... properties) {
+		default FetchableFluentQuery<T> project(TypedPropertyPath<T, ?>... properties) {
 			return project(Arrays.stream(properties).map(PropertyPath::toDotPath).toList());
 		}
 
@@ -304,7 +304,7 @@ public interface FluentQuery<T> {
 		@Override
 		@Contract("_ -> new")
 		@CheckReturnValue
-		default FluentQuery<T> project(TypedPropertyPath<T, ?>... properties) {
+		default ReactiveFluentQuery<T> project(TypedPropertyPath<T, ?>... properties) {
 			return project(Arrays.stream(properties).map(PropertyPath::toDotPath).toList());
 		}
 
