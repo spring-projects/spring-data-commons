@@ -33,8 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.geo.GeoJacksonModule;
 import org.springframework.data.web.PagedModel;
+import org.springframework.data.web.SlicedModel;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.util.ClassUtils;
 
@@ -43,6 +46,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Arnab Nandy
  * @since 4.0
  */
 public class SpringDataJackson3Configuration implements SpringDataJackson3Modules {
@@ -95,6 +99,7 @@ public class SpringDataJackson3Configuration implements SpringDataJackson3Module
 
 			} else {
 				setMixInAnnotation(PageImpl.class, WrappingMixing.class);
+				setMixInAnnotation(SliceImpl.class, SliceWrappingMixing.class);
 			}
 		}
 
@@ -127,8 +132,20 @@ public class SpringDataJackson3Configuration implements SpringDataJackson3Module
 			}
 		}
 
+		@JsonSerialize(converter = SliceModelConverter.class)
+		abstract static class SliceWrappingMixing {}
+
+		static class SliceModelConverter extends StdConverter<Slice<?>, SlicedModel<?>> {
+
+			@Override
+			public @Nullable SlicedModel<?> convert(@Nullable Slice<?> value) {
+				return value == null ? null : new SlicedModel<>(value);
+			}
+		}
+
 		/**
-		 * A {@link ValueSerializerModifier} that logs a warning message if an instance of {@link Page} will be rendered.
+		 * A {@link ValueSerializerModifier} that logs a warning message if an instance of {@link Page} or {@link Slice} will
+		 * be rendered.
 		 *
 		 * @author Oliver Drotbohm
 		 */
@@ -140,19 +157,34 @@ public class SpringDataJackson3Configuration implements SpringDataJackson3Module
 						For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
 						or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
 					""";
+			private static final String SLICE_MESSAGE = """
+					Serializing SliceImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+						For a stable JSON structure, please use Spring Data's SlicedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+						or Spring HATEOAS and Spring Data's SlicedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+					""";
 
 			private static final @Serial long serialVersionUID = 954857444010009875L;
 
-			private boolean warningRendered = false;
+			private boolean pageWarningRendered = false;
+			private boolean sliceWarningRendered = false;
 
 			@Override
 			public List<BeanPropertyWriter> changeProperties(tools.jackson.databind.SerializationConfig config,
 					tools.jackson.databind.BeanDescription.Supplier beanDesc, List<BeanPropertyWriter> beanProperties) {
 
-				if (Page.class.isAssignableFrom(beanDesc.getBeanClass()) && !warningRendered) {
+				if (Page.class.isAssignableFrom(beanDesc.getBeanClass())) {
 
-					this.warningRendered = true;
-					LOGGER.warn(MESSAGE);
+					if (!pageWarningRendered) {
+						this.pageWarningRendered = true;
+						LOGGER.warn(MESSAGE);
+					}
+
+				} else if (Slice.class.isAssignableFrom(beanDesc.getBeanClass())) {
+
+					if (!sliceWarningRendered) {
+						this.sliceWarningRendered = true;
+						LOGGER.warn(SLICE_MESSAGE);
+					}
 				}
 
 				return super.changeProperties(config, beanDesc, beanProperties);
