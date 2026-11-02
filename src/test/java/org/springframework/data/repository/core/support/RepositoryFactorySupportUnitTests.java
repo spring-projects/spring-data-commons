@@ -237,10 +237,8 @@ class RepositoryFactorySupportUnitTests {
 
 		var repository = factory.getRepository(ConvertingRepository.class);
 
-		try {
-			repository.findByLastname("Foo");
-			fail("Missing exception");
-		} catch (IllegalStateException e) {}
+		assertThatThrownBy(() -> repository.findByLastname("Foo"))
+				.isInstanceOf(IllegalStateException.class);
 
 		var captor = ArgumentCaptor.forClass(RepositoryMethodInvocation.class);
 		verify(invocationListener).afterInvocation(captor.capture());

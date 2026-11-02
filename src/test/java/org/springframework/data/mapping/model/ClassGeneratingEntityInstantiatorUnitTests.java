@@ -134,21 +134,18 @@ class ClassGeneratingEntityInstantiatorUnitTests<P extends PersistentProperty<P>
 
 		List<Object> parameters = Arrays.asList("FOO", "FOO");
 
-		try {
+		assertThatThrownBy(() -> this.instance.createInstance(entity, provider))
+				.isInstanceOf(MappingInstantiationException.class)
+				.satisfies(ex -> {
+					MappingInstantiationException o_O = (MappingInstantiationException) ex;
+					assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
+					assertThat(o_O.getEntityType()).isEqualTo(Sample.class);
 
-			this.instance.createInstance(entity, provider);
-			fail("Expected MappingInstantiationException");
-
-		} catch (MappingInstantiationException o_O) {
-
-			assertThat(o_O.getConstructorArguments()).isEqualTo(parameters);
-			assertThat(o_O.getEntityType()).isEqualTo(Sample.class);
-
-			assertThat(o_O.getMessage()).contains(Sample.class.getName());
-			assertThat(o_O.getMessage()).contains(Long.class.getName());
-			assertThat(o_O.getMessage()).contains(String.class.getName());
-			assertThat(o_O.getMessage()).contains("FOO");
-		}
+					assertThat(o_O.getMessage()).contains(Sample.class.getName());
+					assertThat(o_O.getMessage()).contains(Long.class.getName());
+					assertThat(o_O.getMessage()).contains(String.class.getName());
+					assertThat(o_O.getMessage()).contains("FOO");
+				});
 	}
 
 	@Test // DATACMNS-1175

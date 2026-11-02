@@ -89,12 +89,8 @@ class RepositoryFactoryBeanSupportUnitTests {
 				})));
 		factoryBean.afterPropertiesSet();
 
-		try {
-			factoryBean.getObject().someMethod();
-			fail("Missing UnsupportedOperationException");
-		} catch (UnsupportedOperationException e) {
-			// all good
-		}
+		assertThatThrownBy(() -> factoryBean.getObject().someMethod())
+				.isInstanceOf(UnsupportedOperationException.class);
 	}
 
 	@Test // DATACMNS-1345

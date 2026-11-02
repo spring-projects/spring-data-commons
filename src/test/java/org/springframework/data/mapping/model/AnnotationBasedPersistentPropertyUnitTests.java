@@ -113,12 +113,9 @@ public class AnnotationBasedPersistentPropertyUnitTests<P extends AnnotationBase
 	@Test // DATACMNS-282
 	public void discoversAmbiguousMappingUsingDirectAnnotationsOnAccessors() {
 
-		try {
-			context.getPersistentEntity(InvalidSample.class);
-			fail("Expected MappingException");
-		} catch (MappingException o_O) {
-			assertThat(context.hasPersistentEntityFor(InvalidSample.class)).isFalse();
-		}
+		assertThatThrownBy(() -> context.getPersistentEntity(InvalidSample.class))
+				.isInstanceOf(MappingException.class);
+		assertThat(context.hasPersistentEntityFor(InvalidSample.class)).isFalse();
 	}
 
 	@Test // DATACMNS-243
