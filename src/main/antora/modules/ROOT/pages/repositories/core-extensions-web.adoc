@@ -282,9 +282,9 @@ You can now trigger a request (`GET http://localhost:8080/people`) and see outpu
 ----
 
 WARNING: The JSON envelope format shown here doesn't follow any formally specified structure and it's not guaranteed stable and we might change it at any time.
-It's highly recommended to enable the rendering as a hypermedia-enabled, official media type, supported by Spring HATEOAS, like https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#mediatypes.hal[HAL].
+It's highly recommended to enable the rendering as a hypermedia-enabled, official media type, supported by Spring HATEOAS, like {spring-hateoas-docs}/#mediatypes.hal[HAL].
 Those can be activated by using its `@EnableHypermediaSupport` annotation.
-Find more information in the https://docs.spring.io/spring-hateoas/docs/{springHateoasVersion}/reference/html/#configuration.at-enable[Spring HATEOAS reference documentation].
+Find more information in the {spring-hateoas-docs}/#configuration.at-enable[Spring HATEOAS reference documentation].
 
 The assembler produced the correct URI and also picked up the default configuration to resolve the parameters into a `Pageable` for an upcoming request.
 This means that, if you change that configuration, the links automatically adhere to the change.
