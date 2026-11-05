@@ -124,7 +124,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	public interface QueryMethodContributorBuilder<M extends QueryMethod> {
 
 		/**
-		 * Terminal method accepting a consumer that uses {@link AotRepositoryMethodBuilder} to build the method.
+		 * Terminal method accepting a consumer that uses {@code AotRepositoryMethodBuilder} to build the method.
 		 *
 		 * @param contribution the method contribution that provides the method to be added to the repository.
 		 * @return the method contributor to use.
@@ -134,7 +134,7 @@ public abstract class MethodContributor<M extends QueryMethod> {
 	}
 
 	/**
-	 * AOT contribution from a {@link AotRepositoryMethodBuilder} used to contribute a repository query method body.
+	 * AOT contribution from a {@code AotRepositoryMethodBuilder} used to contribute a repository query method body.
 	 */
 	public interface RepositoryMethodContribution {
 

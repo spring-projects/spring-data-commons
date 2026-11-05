@@ -498,9 +498,9 @@ public class BasicPersistentEntity<T, P extends PersistentProperty<P>>
 	}
 
 	/**
-	 * Returns the default {@link IsNewStrategy} to be used. Will be a {@link PersistentEntityIsNewStrategy} by default.
-	 * Note, that this strategy only gets used if the entity doesn't implement {@link Persistable} as this indicates the
-	 * user wants to be in control over whether an entity is new or not.
+	 * Returns the default {@link IsNewStrategy} to be used. Defaults to {@code PersistentEntityIsNewStrategy}. Note, that
+	 * this strategy only gets used if the entity doesn't implement {@link Persistable} as this indicates the user wants
+	 * to be in control over whether an entity is new or not.
 	 *
 	 * @return
 	 * @since 2.1

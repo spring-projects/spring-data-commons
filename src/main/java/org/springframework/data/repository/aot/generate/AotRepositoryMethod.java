@@ -30,11 +30,8 @@ public record AotRepositoryMethod(String name, String signature, @Nullable Query
 
 	/**
 	 * Convert this {@link AotRepositoryMethod} to a {@link JSONObject}.
-	 *
-	 * @return
-	 * @throws JSONException
 	 */
-	public JSONObject toJson() throws JSONException {
+	JSONObject toJson() throws JSONException {
 
 		JSONObject method = new JSONObject();
 		method.put("name", name());

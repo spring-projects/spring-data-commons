@@ -24,7 +24,6 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.convert.PropertyValueConverterFactories.ChainedPropertyValueConverterFactory;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
@@ -104,10 +103,6 @@ public class SimplePropertyValueConversions implements PropertyValueConversions,
 
 	/**
 	 * Set the {@link ValueConverterRegistry converter registry} used for path configured converters.
-	 * <p>
-	 * This is short for adding a
-	 * {@link org.springframework.data.convert.PropertyValueConverterFactories.ConfiguredInstanceServingValueConverterFactory}
-	 * at the end of a {@link ChainedPropertyValueConverterFactory}.
 	 *
 	 * @param valueConverterRegistry registry of {@link PropertyValueConverter PropertyValueConverters}.
 	 * @see ValueConverterRegistry

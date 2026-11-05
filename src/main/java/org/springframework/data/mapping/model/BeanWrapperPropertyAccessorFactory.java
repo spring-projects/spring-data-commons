@@ -19,7 +19,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 
 /**
- * PersistentPropertyAccessorFactory that uses a {@link BeanWrapper}.
+ * PersistentPropertyAccessorFactory that uses a {@code BeanWrapper}.
  *
  * @author Oliver Gierke
  */

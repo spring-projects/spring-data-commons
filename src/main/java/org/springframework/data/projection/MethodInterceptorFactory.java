@@ -19,7 +19,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 
 /**
  * SPI to create {@link MethodInterceptor} instances based on the given source object and the target type to produce. To
- * be registered with a {@link ProxyProjectionFactory} to customize the way method executions on projection proxies are
+ * be registered with a {@code ProxyProjectionFactory} to customize the way method executions on projection proxies are
  * handled.
  *
  * @author Oliver Gierke
