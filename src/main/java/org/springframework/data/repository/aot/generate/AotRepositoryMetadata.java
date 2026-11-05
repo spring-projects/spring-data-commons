@@ -35,9 +35,6 @@ record AotRepositoryMetadata(String name, @Nullable String module,
 
 	/**
 	 * Convert this {@link AotRepositoryMetadata} to a {@link JSONObject}.
-	 *
-	 * @return
-	 * @throws JSONException
 	 */
 	JSONObject toJson() throws JSONException {
 
