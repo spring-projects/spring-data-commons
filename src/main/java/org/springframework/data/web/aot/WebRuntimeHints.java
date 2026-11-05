@@ -32,6 +32,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Christoph Strobl
  * @author Mark Paluch
+ * @author Arnab Nandy
  * @since 3.2.3
  */
 class WebRuntimeHints implements RuntimeHintsRegistrar {
@@ -50,12 +51,18 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 
 		if (JACKSON2_PRESENT || JACKSON3_PRESENT) {
 
-			// Page Model for Jackson Rendering
+			// Page and Slice Models for Jackson Rendering
 			hints.reflection().registerType(org.springframework.data.web.PagedModel.class,
 					MemberCategory.INVOKE_PUBLIC_METHODS);
 
 			hints.reflection().registerType(PagedModel.PageMetadata.class, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
 					MemberCategory.INVOKE_PUBLIC_METHODS);
+
+			hints.reflection().registerType(org.springframework.data.web.SlicedModel.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS);
+
+			hints.reflection().registerType(org.springframework.data.web.SlicedModel.SliceMetadata.class,
+					MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 
 			hints.reflection().registerType(TypeReference.of("org.springframework.data.domain.Unpaged"));
 
@@ -80,6 +87,13 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(PageModule.class);
 				});
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$SliceModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(PageModule.class);
+				});
 		hints.reflection().registerType(TypeReference.of(
 				"org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule$PlainPageSerializationWarning"),
 				hint -> {
@@ -94,6 +108,13 @@ class WebRuntimeHints implements RuntimeHintsRegistrar {
 		hints.reflection().registerType(
 				TypeReference
 						.of("org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$PageModelConverter"),
+				hint -> {
+					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
+				});
+		hints.reflection().registerType(
+				TypeReference
+						.of("org.springframework.data.web.config.SpringDataJackson3Configuration$PageModule$SliceModelConverter"),
 				hint -> {
 					hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
 					hint.onReachableType(SpringDataJackson3Configuration.PageModule.class);
