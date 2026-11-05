@@ -96,6 +96,23 @@ String-based property paths offer simplicity and can be broadly applied but ther
 Typed as textual content they do not have a dependency on the underlying domain type.
 * **Refactoring risk**: Renaming domain properties requires often manual updates to string literals; IDEs cannot reliably track these references.
 
+[TIP]
+====
+Accepting paths from untrusted sources (like a web request) bears a security risk.
+It is highly recommended to always validate input before further computation.
+
+You can use `Sort.validate(Class, sort)` to check if the paths contained in its `Order` instances are actually navigable from a given aggregate root and have a reasonable length and traversal depth.
+
+If more control is needed, rule customization allows fine-tuning validation needs, like excluding certain paths.
+
+[source, java]
+----
+Sort.validate(User.class, untrustedSort, rules -> {
+	rules.denyAccess("**.password"); // any property named password
+});
+----
+====
+
 To improve refactoring safety and type consistency, prefer type-safe property references using method references.
 This approach associates property paths with compile-time type information and enables compiler validation and IDE-driven refactoring.
 See <<type-safe-property-references>> for details.
