@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -78,6 +79,7 @@ import org.springframework.util.ClassUtils;
  * @author Christoph Strobl
  * @author John Blum
  * @author Mark Paluch
+ * @author Blaz Snuderl
  * @since 3.0
  */
 public class RepositoryRegistrationAotProcessor
@@ -102,6 +104,8 @@ public class RepositoryRegistrationAotProcessor
 	private Environment environment = new StandardEnvironment();
 
 	private Map<String, RepositoryConfiguration<?>> configMap = Collections.emptyMap();
+
+	private final Map<DefaultAotRepositoryContext.IdentifyingTypesKey, Set<Class<?>>> identifyingTypesCache = new ConcurrentHashMap<>();
 
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -261,8 +265,9 @@ public class RepositoryRegistrationAotProcessor
 				.filter(it -> TypeContributor.isPartOf(it, Set.of(information.getDomainType().getPackageName())))
 				.forEach(it -> configureTypeContribution(it, repositoryContext));
 
-		repositoryContext.getResolvedTypes().stream().filter(it -> !isJavaOrPrimitiveType(it))
-				.forEach(it -> contributeType(it, generationContext));
+		TypeContributor.contribute(
+				repositoryContext.getResolvedTypes().stream().filter(it -> !isJavaOrPrimitiveType(it)).toList(), it -> true,
+				generationContext);
 	}
 
 	/**
@@ -365,6 +370,7 @@ public class RepositoryRegistrationAotProcessor
 				extension.getModuleName(), aotContext, configuration.getConfigurationSource());
 
 		repositoryContext.setIdentifyingAnnotations(extension.getIdentifyingAnnotations());
+		repositoryContext.setIdentifyingTypesCache(identifyingTypesCache);
 
 		return repositoryContext;
 	}

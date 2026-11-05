@@ -60,6 +60,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Sebastien Deleuze
  * @author John Blum
  * @author Mark Paluch
+ * @author Blaz Snuderl
  * @since 3.0
  */
 public class TypeCollector {
@@ -197,8 +198,8 @@ public class TypeCollector {
 		return this.typeFilter;
 	}
 
-	private void process(Class<?> root, Consumer<ResolvableType> consumer) {
-		processType(ResolvableType.forType(root), new InspectionCache(), consumer);
+	private void process(Class<?> root, InspectionCache cache, Consumer<ResolvableType> consumer) {
+		processType(ResolvableType.forType(root), cache, consumer);
 	}
 
 	private void processType(ResolvableType type, InspectionCache cache, Consumer<ResolvableType> callback) {
@@ -318,7 +319,10 @@ public class TypeCollector {
 		 * @param action The action to be performed for each element
 		 */
 		public void forEach(Consumer<ResolvableType> action) {
-			roots.forEach(it -> typeCollector.process(it, action));
+
+			InspectionCache cache = new InspectionCache();
+
+			roots.forEach(it -> typeCollector.process(it, cache, action));
 		}
 
 		/**

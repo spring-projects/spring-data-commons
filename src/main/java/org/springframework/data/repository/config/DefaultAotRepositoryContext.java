@@ -19,7 +19,9 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.support.RegisteredBean;
@@ -36,6 +38,7 @@ import org.springframework.data.util.TypeUtils;
  * @author Christoph Strobl
  * @author John Blum
  * @author Mark Paluch
+ * @author Blaz Snuderl
  * @see AotRepositoryContext
  * @since 3.0
  */
@@ -50,6 +53,7 @@ class DefaultAotRepositoryContext extends AotRepositoryContextSupport {
 
 	private Collection<Class<? extends Annotation>> identifyingAnnotations = Collections.emptySet();
 	private String beanName;
+	private Map<IdentifyingTypesKey, Set<Class<?>>> identifyingTypesCache = new ConcurrentHashMap<>();
 
 	public DefaultAotRepositoryContext(RegisteredBean bean, RepositoryInformation repositoryInformation,
 			String moduleName, AotContext aotContext, RepositoryConfigurationSource configurationSource) {
@@ -89,6 +93,15 @@ class DefaultAotRepositoryContext extends AotRepositoryContextSupport {
 
 	public void setIdentifyingAnnotations(Collection<Class<? extends Annotation>> identifyingAnnotations) {
 		this.identifyingAnnotations = identifyingAnnotations;
+	}
+
+	/**
+	 * Set the cache to reuse types discovered through scanning base packages for
+	 * {@link #getIdentifyingAnnotations() identifying annotations}. Repository contexts sharing a cache scan and inspect a
+	 * set of base packages once instead of once per repository.
+	 */
+	public void setIdentifyingTypesCache(Map<IdentifyingTypesKey, Set<Class<?>>> identifyingTypesCache) {
+		this.identifyingTypesCache = identifyingTypesCache;
 	}
 
 	@Override
@@ -132,13 +145,27 @@ class DefaultAotRepositoryContext extends AotRepositoryContextSupport {
 
 		if (!getIdentifyingAnnotations().isEmpty()) {
 
-			Set<Class<?>> classes = aotContext.getTypeScanner()
-					.scanPackages(getConfigurationSource().getBasePackages().toSet())
-					.forTypesAnnotatedWith(getIdentifyingAnnotations()).collectAsSet();
-			types.addAll(TypeCollector.inspect(classes).list());
+			Set<String> basePackages = getConfigurationSource().getBasePackages().toSet();
+			IdentifyingTypesKey cacheKey = new IdentifyingTypesKey(basePackages, Set.copyOf(getIdentifyingAnnotations()));
+
+			types.addAll(identifyingTypesCache.computeIfAbsent(cacheKey, this::discoverIdentifyingTypes));
 		}
 
 		return types;
+	}
+
+	private Set<Class<?>> discoverIdentifyingTypes(IdentifyingTypesKey key) {
+
+		Set<Class<?>> classes = aotContext.getTypeScanner().scanPackages(key.basePackages())
+				.forTypesAnnotatedWith(key.identifyingAnnotations()).collectAsSet();
+
+		return new LinkedHashSet<>(TypeCollector.inspect(classes).list());
+	}
+
+	/**
+	 * Key to cache types discovered by scanning base packages for identifying annotations.
+	 */
+	record IdentifyingTypesKey(Set<String> basePackages, Set<Class<? extends Annotation>> identifyingAnnotations) {
 	}
 
 }
