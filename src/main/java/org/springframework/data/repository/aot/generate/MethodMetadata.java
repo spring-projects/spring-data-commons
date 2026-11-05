@@ -108,7 +108,9 @@ class MethodMetadata {
 		MergedAnnotations annotations = MergedAnnotations.from(methodParameter.getParameterAnnotations());
 
 		for (MergedAnnotation<Annotation> annotation : annotations) {
-			builder.addAnnotation(AnnotationSpec.get(annotation.synthesize()));
+			if (annotation.isDirectlyPresent()) {
+				builder.addAnnotation(AnnotationSpec.get(annotation.synthesize()));
+			}
 		}
 
 		return builder.build();

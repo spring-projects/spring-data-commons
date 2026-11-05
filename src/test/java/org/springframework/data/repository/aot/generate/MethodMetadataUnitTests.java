@@ -18,6 +18,10 @@ package org.springframework.data.repository.aot.generate;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
@@ -61,6 +65,16 @@ class MethodMetadataUnitTests {
 				.containsExactly(SortDefault.class.getTypeName(), Param.class.getTypeName());
 	}
 
+	@Test // GH-3499
+	void doesNotRenderMetaAnnotations() throws NoSuchMethodException {
+
+		MethodMetadata metadata = methodMetadataFor("metaAnnotatedArgMethod");
+
+		ParameterSpec arg0 = metadata.getMethodArguments().get("arg0");
+		assertThat(arg0.annotations()).extracting(annotationSpec -> annotationSpec.type().toString())
+				.containsExactly(MetaAnnotated.class.getCanonicalName());
+	}
+
 	@Test // GH-3270
 	void getParameterNameByNonExistingIndex() throws NoSuchMethodException {
 
@@ -100,5 +114,16 @@ class MethodMetadataUnitTests {
 		String noArgsMethod();
 
 		String threeArgsMethod(Object arg0, @SortDefault Pageable arg1, @SortDefault @Param("foo") Object arg2);
+
+		String metaAnnotatedArgMethod(@MetaAnnotated Object arg0);
 	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.ANNOTATION_TYPE)
+	private @interface Meta {}
+
+	@Meta
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	private @interface MetaAnnotated {}
 }
