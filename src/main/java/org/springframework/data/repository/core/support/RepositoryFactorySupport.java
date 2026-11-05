@@ -252,7 +252,7 @@ public abstract class RepositoryFactorySupport
 
 	/**
 	 * Adds {@link RepositoryProxyPostProcessor}s to the factory to allow manipulation of the {@link ProxyFactory} before
-	 * the proxy gets created. Note that the {@link QueryExecutorMethodInterceptor} will be added to the proxy
+	 * the proxy gets created. Note that a {@code QueryExecutorMethodInterceptor} will be added to the proxy
 	 * <em>after</em> the {@link RepositoryProxyPostProcessor}s are considered.
 	 *
 	 * @param processor the post-processor to add.

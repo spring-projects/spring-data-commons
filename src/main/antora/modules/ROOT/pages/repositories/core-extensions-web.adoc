@@ -1,3 +1,7 @@
+ifndef::spring-hateoas-docs[]
+:spring-hateoas-docs: https://docs.spring.io/spring-hateoas/docs/current/reference/html
+endif::[]
+
 [[core.web]]
 = Web support
 

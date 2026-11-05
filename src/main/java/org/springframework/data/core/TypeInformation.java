@@ -32,8 +32,9 @@ import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
 
 /**
- * Interface to access property types and resolving generics on the way. Starting with a {@link ClassTypeInformation}
- * you can traverse properties using {@link #getProperty(String)} to access type information.
+ * Interface to access property types and resolving generics on the way. Starting with a
+ * {@link TypeInformation#of(Class) ClassTypeInformation}, you can traverse properties using
+ * {@link #getProperty(String)} to access type information.
  *
  * @author Oliver Gierke
  * @author Mark Paluch
