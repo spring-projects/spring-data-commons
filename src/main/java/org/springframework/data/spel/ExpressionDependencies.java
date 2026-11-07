@@ -78,7 +78,7 @@ public class ExpressionDependencies implements Streamable<ExpressionDependencies
 
 	/**
 	 * Return an {@link ExpressionDependencies} object representing the merged collection of {@link ExpressionDependency
-	 * dependencies} withing the given {@link ExpressionDependencies} collection.
+	 * dependencies} within the given {@link ExpressionDependencies} collection.
 	 *
 	 * @return {@link ExpressionDependencies} holding a set of merged {@link ExpressionDependency dependencies} or
 	 *         {@link ExpressionDependencies#none() none} if the given {@link Iterable} is {@link Collection#isEmpty()
