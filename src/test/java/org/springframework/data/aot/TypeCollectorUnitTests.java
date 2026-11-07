@@ -21,6 +21,9 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.aot.types.EntityWithEclipseCollections;
+import org.springframework.data.aot.types.EntityWithVavrCollections;
+import org.springframework.data.aot.types.EntityWithVavrDomain;
 import org.springframework.data.aot.types.*;
 import org.springframework.data.util.TypeCollector;
 
@@ -97,6 +100,31 @@ public class TypeCollectorUnitTests {
 
 		assertThat(filter.test(FieldsAndMethods.class)).isFalse();
 		assertThat(TypeCollector.inspect(c -> c.filterTypes(cls -> false), FieldsAndMethods.class).list()).isEmpty();
+	}
+
+	@Test // GH-3416
+	void filtersCustomCollectionLibraryTypes() {
+		assertThat(TypeCollector.create(tc -> {}).getTypeFilter().test(io.vavr.collection.Traversable.class)).isFalse();
+		assertThat(TypeCollector.create(tc -> {}).getTypeFilter().test(org.eclipse.collections.api.list.ImmutableList.class))
+				.isFalse();
+	}
+
+	@Test // GH-3416
+	void skipsVavrCollectionIntrospection() {
+		assertThat(TypeCollector.inspect(EntityWithVavrCollections.class).list())
+				.containsExactly(EntityWithVavrCollections.class);
+	}
+
+	@Test // GH-3416
+	void collectsDomainTypesFromVavrCollectionProperties() {
+		assertThat(TypeCollector.inspect(EntityWithVavrDomain.class).list()).containsExactlyInAnyOrder(
+				EntityWithVavrDomain.class, EntityWithVavrDomain.SamplePerson.class);
+	}
+
+	@Test // GH-3416
+	void collectsDomainTypesFromEclipseCollectionProperties() {
+		assertThat(TypeCollector.inspect(EntityWithEclipseCollections.class).list()).containsExactlyInAnyOrder(
+				EntityWithEclipseCollections.class, EntityWithEclipseCollections.SampleItem.class);
 	}
 
 }
