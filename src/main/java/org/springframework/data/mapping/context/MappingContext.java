@@ -134,14 +134,13 @@ public interface MappingContext<E extends PersistentEntity<?, P>, P extends Pers
 	E getPersistentEntity(P persistentProperty);
 
 	/**
-	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
+	 * Returns the {@link PersistentEntity} mapped by the given {@link PersistentProperty}. Will throw
+	 * {@link MappingException} for types that are considered simple ones.
 	 *
 	 * @param persistentProperty must not be {@literal null}.
-	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty} or {@literal null} if no
-	 *         {@link PersistentEntity} exists for it or the {@link PersistentProperty} does not refer to an entity (the
-	 *         type of the property is considered simple see
-	 *         {@link org.springframework.data.mapping.model.SimpleTypeHolder#isSimpleType(Class)}).
+	 * @return the {@link PersistentEntity} mapped by the given {@link PersistentProperty}.
 	 * @throws MappingException when no {@link PersistentEntity} can be found for given {@link PersistentProperty}.
+	 * @see #getPersistentEntity(PersistentProperty)
 	 */
 	default E getRequiredPersistentEntity(P persistentProperty) throws MappingException {
 
