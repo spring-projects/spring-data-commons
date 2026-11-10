@@ -39,6 +39,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Vedran Pavic
  * @author Mark Paluch
  * @author Yanming Zhou
+ * @author BEN YOUSSEF Hamza
  */
 class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnitTests {
 
@@ -258,6 +259,20 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		assertThat(result.getPageNumber()).isEqualTo(0);
 	}
 
+	@Test // GH-3483
+	void returnCorrectPageNumberOneIndexedParametersDefaults() throws NoSuchMethodException {
+
+		var resolver = getResolver();
+		resolver.setOneIndexedParameters(true);
+
+		var oneIndexedDefault = new MethodParameter(Sample.class.getMethod("oneIndexedDefault", Pageable.class), 0);
+
+		var request = new MockHttpServletRequest();
+		var result = resolver.resolveArgument(oneIndexedDefault, null, new ServletWebRequest(request), null);
+
+		assertThat(result.getPageNumber()).isEqualTo(0);
+	}
+
 	@Test // DATACMNS-761
 	void returnsCorrectPageSizeForOneIndexParameters() {
 
@@ -327,6 +342,8 @@ class PageableHandlerMethodArgumentResolverUnitTests extends PageableDefaultUnit
 		void invalidDefaultPageSize(@PageableDefault(size = 0) Pageable pageable);
 
 		void valuePageSize(@PageableDefault(2) Pageable pageable);
+
+		void oneIndexedDefault(@PageableDefault(size = PAGE_SIZE, page = 1) Pageable pageable);
 
 		void simpleDefault(@PageableDefault(size = PAGE_SIZE, page = PAGE_NUMBER) Pageable pageable);
 
