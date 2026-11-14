@@ -53,6 +53,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Christoph Strobl
  * @author Pavel Horal
+ * @author Alpha
  * @since 1.8
  */
 public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrapperFactory {
@@ -243,7 +244,8 @@ public class MappingAuditableBeanWrapperFactory extends DefaultAuditableBeanWrap
 		private <S> S setProperty(
 				PersistentPropertyPaths<?, ? extends PersistentProperty<?>> paths, @Nullable S value) {
 
-			paths.forEach(it -> this.accessor.setProperty(it, value, OPTIONS));
+			paths.forEach(it -> this.accessor.setProperty(it,
+					getAuditorValueToSet(value, it.getLeafProperty().getType()), OPTIONS));
 
 			return value;
 		}

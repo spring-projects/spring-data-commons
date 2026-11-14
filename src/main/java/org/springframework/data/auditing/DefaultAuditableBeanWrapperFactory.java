@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @author Pavel Horal
  * @author Johannes Englmeier
+ * @author Alpha
  * @since 1.5
  */
 class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory {
@@ -171,6 +172,27 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 
 		DateConvertingAuditableBeanWrapper(ConversionService conversionService) {
 			this.conversionService = conversionService;
+		}
+
+		/**
+		 * Returns the auditor value converted to the target type if a conversion is available.
+		 *
+		 * @param value can be {@literal null}.
+		 * @param targetType must not be {@literal null}.
+		 * @return the converted value, or the original value if no conversion is available.
+		 */
+		@Nullable
+		protected Object getAuditorValueToSet(@Nullable Object value, Class<?> targetType) {
+
+			if (value == null || targetType.isInstance(value)) {
+				return value;
+			}
+
+			if (conversionService.canConvert(value.getClass(), targetType)) {
+				return conversionService.convert(value, targetType);
+			}
+
+			return value;
 		}
 
 		/**
@@ -312,7 +334,7 @@ class DefaultAuditableBeanWrapperFactory implements AuditableBeanWrapperFactory 
 		@Nullable
 		private <S> S setField(Optional<Field> field, @Nullable S value) {
 
-			field.ifPresent(it -> ReflectionUtils.setField(it, target, value));
+			field.ifPresent(it -> ReflectionUtils.setField(it, target, getAuditorValueToSet(value, it.getType())));
 
 			return value;
 		}
