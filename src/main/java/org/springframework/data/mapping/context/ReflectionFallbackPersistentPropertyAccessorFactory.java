@@ -44,6 +44,7 @@ class ReflectionFallbackPersistentPropertyAccessorFactory implements PersistentP
 
 	@Override
 	public boolean isSupported(PersistentEntity<?, ?> entity) {
-		return true;
+		return accessorFactory.isSupported(entity);
 	}
+
 }
