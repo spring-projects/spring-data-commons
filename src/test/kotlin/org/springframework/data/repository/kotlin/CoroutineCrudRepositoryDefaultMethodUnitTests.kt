@@ -39,7 +39,6 @@ class CoroutineCrudRepositoryDefaultMethodUnitTests {
 	val factory =
 		DummyReactiveRepositoryFactory(mockk<ReactiveCrudRepository<User, String>>())
 
-
 	@Test // GH-3578
 	fun exposesMethodContextToDefaultMethod() {
 

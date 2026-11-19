@@ -131,11 +131,10 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 	 */
 	static class CoroutinesDelegate {
 
-		@SuppressWarnings("unchecked")
-		static Object invoke(MethodHandle handle, Object[] arguments) throws Throwable {
+		static Mono<Object> invoke(MethodHandle handle, Object[] arguments) throws Throwable {
 
 			int last = arguments.length - 1;
-			Continuation<Object> caller = (Continuation<Object>) arguments[last];
+			Continuation<?> caller = (Continuation<?>) arguments[last];
 			Sinks.One<Object> sink = Sinks.one();
 
 			Object[] args = arguments.clone();
