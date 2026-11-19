@@ -15,6 +15,13 @@
  */
 package org.springframework.data.projection;
 
+import kotlin.ResultKt;
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.intrinsics.IntrinsicsKt;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -30,6 +37,8 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.aop.ProxyMethodInvocation;
+import org.springframework.core.KotlinDetector;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -43,6 +52,8 @@ import org.springframework.util.ReflectionUtils;
 public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor {
 
 	private static final Lookup LOOKUP = MethodHandles.lookup();
+	private static final boolean COROUTINES_REACTOR_PRESENT = ClassUtils.isPresent("kotlinx.coroutines.reactor.MonoKt",
+			DefaultMethodInvokingMethodInterceptor.class.getClassLoader());
 	private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
 	/**
@@ -72,7 +83,13 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 		Object[] arguments = invocation.getArguments();
 		Object proxy = ((ProxyMethodInvocation) invocation).getProxy();
 
-		return getMethodHandle(method).bindTo(proxy).invokeWithArguments(arguments);
+		MethodHandle handle = getMethodHandle(method).bindTo(proxy);
+
+		if (COROUTINES_REACTOR_PRESENT && KotlinDetector.isSuspendingFunction(method)) {
+			return CoroutinesDelegate.invoke(handle, arguments);
+		}
+
+		return handle.invokeWithArguments(arguments);
 	}
 
 	private MethodHandle getMethodHandle(Method method) throws Exception {
@@ -105,4 +122,47 @@ public class DefaultMethodInvokingMethodInterceptor implements MethodInterceptor
 				? lookup.findStatic(declaringClass, method.getName(), methodType)
 				: lookup.findSpecial(declaringClass, method.getName(), methodType, declaringClass);
 	}
+
+	/**
+	 * Invoke a {@code suspend} default method with its own completion {@link Continuation}. Spring AOP awaits the
+	 * returned value on the caller's {@link Continuation}, so the method must not resume that continuation itself.
+	 *
+	 * @since 4.0.10
+	 */
+	static class CoroutinesDelegate {
+
+		static Mono<Object> invoke(MethodHandle handle, Object[] arguments) throws Throwable {
+
+			int last = arguments.length - 1;
+			Continuation<?> caller = (Continuation<?>) arguments[last];
+			Sinks.One<Object> sink = Sinks.one();
+
+			Object[] args = arguments.clone();
+			args[last] = new Continuation<>() {
+
+				@Override
+				public CoroutineContext getContext() {
+					return caller.getContext();
+				}
+
+				@Override
+				public void resumeWith(Object result) {
+
+					try {
+						ResultKt.throwOnFailure(result);
+					} catch (Throwable ex) {
+						sink.tryEmitError(ex);
+						return;
+					}
+
+					sink.tryEmitValue(result);
+				}
+			};
+
+			Object result = handle.invokeWithArguments(args);
+			return result == IntrinsicsKt.getCOROUTINE_SUSPENDED() ? sink.asMono() : Mono.justOrEmpty(result);
+		}
+
+	}
+
 }
