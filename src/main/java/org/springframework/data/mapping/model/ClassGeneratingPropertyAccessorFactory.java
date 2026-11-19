@@ -48,6 +48,7 @@ import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.KotlinDetector;
+import org.springframework.core.NativeDetector;
 import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -146,6 +147,10 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 			return true;
 		}
 
+		if (NativeDetector.inNativeImage()) {
+			return false;
+		}
+
 		return isClassLoaderDefineClassAvailable(entity) && isTypeInjectable(entity) && hasUniquePropertyHashCodes(entity);
 	}
 
@@ -230,10 +235,14 @@ public class ClassGeneratingPropertyAccessorFactory implements PersistentPropert
 		}
 	}
 
-	private static @Nullable Class<?> findAccessorClass(PersistentEntity<?, ?> entity) {
+	private @Nullable Class<?> findAccessorClass(PersistentEntity<?, ?> entity) {
+
+		Constructor<?> constructor = constructorMap.get(entity);
+		if (constructor != null) {
+			return constructor.getDeclaringClass();
+		}
 
 		String accessorClassName = PropertyAccessorClassGenerator.generateClassName(entity);
-
 		return org.springframework.data.util.ClassUtils.loadIfPresent(accessorClassName, entity.getType().getClassLoader());
 	}
 

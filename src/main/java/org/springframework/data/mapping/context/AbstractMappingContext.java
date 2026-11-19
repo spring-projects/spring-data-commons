@@ -60,6 +60,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPaths;
+import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
 import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
@@ -106,6 +107,7 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 	private final Optional<E> NONE = Optional.empty();
 	private final Map<TypeInformation<?>, Optional<E>> persistentEntities = new HashMap<>();
 	private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
+	private final EntityInstantiators entityInstantiators = new EntityInstantiators();
 	private final PersistentPropertyPathFactory<E, P> persistentPropertyPathFactory;
 
 	private @Nullable ApplicationEventPublisher applicationEventPublisher;
@@ -125,13 +127,9 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 		this.persistentPropertyPathFactory = new PersistentPropertyPathFactory<>(this);
 
-		EntityInstantiators instantiators = new EntityInstantiators();
-		PersistentPropertyAccessorFactory accessorFactory = NativeDetector.inNativeImage()
+		this.persistentPropertyAccessorFactory = NativeDetector.inNativeImage()
 				? new ReflectionFallbackPersistentPropertyAccessorFactory()
 				: new ClassGeneratingPropertyAccessorFactory();
-
-		this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory,
-				instantiators);
 	}
 
 	@Override
@@ -478,9 +476,15 @@ public abstract class AbstractMappingContext<E extends MutablePersistentEntity<?
 
 			entity.verify();
 
-			if (persistentPropertyAccessorFactory.isSupported(entity)) {
-				entity.setPersistentPropertyAccessorFactory(persistentPropertyAccessorFactory);
+			PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
+			if (this.persistentPropertyAccessorFactory.isSupported(entity)) {
+				persistentPropertyAccessorFactory = this.persistentPropertyAccessorFactory;
+			} else {
+				persistentPropertyAccessorFactory = BeanWrapperPropertyAccessorFactory.INSTANCE;
 			}
+
+			entity.setPersistentPropertyAccessorFactory(
+					new InstantiationAwarePropertyAccessorFactory(persistentPropertyAccessorFactory, entityInstantiators));
 
 			return entity;
 
