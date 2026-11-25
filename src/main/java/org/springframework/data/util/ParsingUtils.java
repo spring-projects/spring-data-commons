@@ -18,6 +18,7 @@ package org.springframework.data.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.springframework.util.Assert;
@@ -27,6 +28,7 @@ import org.springframework.util.StringUtils;
  * Utility methods for {@link String} parsing.
  *
  * @author Oliver Gierke
+ * @author Sharang Gupta
  * @since 1.5
  */
 public abstract class ParsingUtils {
@@ -84,7 +86,9 @@ public abstract class ParsingUtils {
 		List<String> result = new ArrayList<>(parts.length);
 
 		for (String part : parts) {
-			result.add(toLower ? part.toLowerCase() : part);
+			// Locale.ROOT: the parts become identifiers (table, column and field names) and must not follow the default
+			// locale, under which e.g. "Item" would become "ıtem" (dotless i) for tr-TR.
+			result.add(toLower ? part.toLowerCase(Locale.ROOT) : part);
 		}
 
 		return Collections.unmodifiableList(result);
