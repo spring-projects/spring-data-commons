@@ -44,6 +44,8 @@ class WebRuntimeHintsUnitTests {
 
 		assertThat(runtimeHints).matches(
 				RuntimeHintsPredicates.reflection().onType(TypeReference.of("org.springframework.data.domain.Unpaged")));
+		assertThat(runtimeHints).matches(
+				RuntimeHintsPredicates.reflection().onType(org.springframework.data.web.SlicedModel.class));
 	}
 
 	@Test // GH-3033, GH-3171
