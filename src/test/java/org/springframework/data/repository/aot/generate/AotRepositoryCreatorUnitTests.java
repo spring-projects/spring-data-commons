@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
+import org.eclipse.collections.api.list.ImmutableList;
+
 import javax.lang.model.element.Modifier;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -240,6 +242,42 @@ class AotRepositoryCreatorUnitTests {
 						"public %s(List<Metric> param1, String param2, Object ctorScoped)".formatted(targetType.getSimpleName()));
 	}
 
+	@Test // GH-3416
+	void supportsVavrAndEclipseCollectionReturnTypes() throws NoSuchMethodException {
+
+		assertThat(ResolvableGenerics.of(CustomCollectionRepository.class.getMethod("findAllVavr"),
+				CustomCollectionRepository.class).hasUnresolvableGenerics()).isFalse();
+		assertThat(ResolvableGenerics.of(CustomCollectionRepository.class.getMethod("findAllEclipse"),
+				CustomCollectionRepository.class).hasUnresolvableGenerics()).isFalse();
+
+		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+		AotRepositoryInformation repositoryInformation = new AotRepositoryInformation(
+				AnnotationRepositoryMetadata.getMetadata(CustomCollectionRepository.class), CrudRepository.class,
+				List.of(RepositoryFragment.structural(DummyModuleDefaultRepositoryImplementation.class)));
+
+		AotRepositoryCreator repositoryCreator = AotRepositoryCreator.forRepository(repositoryInformation, "Commons",
+				projectionFactory);
+		repositoryCreator.contributeMethods(method -> {
+
+			QueryMethod queryMethod = new QueryMethod(method, repositoryInformation, projectionFactory,
+					DefaultParameters::new);
+
+			return MethodContributor.forQueryMethod(queryMethod).withMetadata(Map::of).contribute(context -> {
+
+				CodeBlock.Builder builder = CodeBlock.builder();
+				if (!ClassUtils.isVoidType(method.getReturnType())) {
+					builder.addStatement("return null");
+				}
+
+				return builder.build();
+			});
+		});
+
+		String generated = generate(repositoryCreator);
+
+		assertThat(generated).contains("io.vavr.collection.List<").contains("ImmutableList<");
+	}
+
 	@Test // GH-3374
 	void skipsMethodWithUnresolvableGenericReturnType() {
 
@@ -381,6 +419,13 @@ class AotRepositoryCreatorUnitTests {
 
 		T typedInputParameter(T value);
 
+	}
+
+	interface CustomCollectionRepository extends BaseRepository<User, String> {
+
+		io.vavr.collection.List<User> findAllVavr();
+
+		ImmutableList<User> findAllEclipse();
 	}
 
 	interface UserRepository extends BaseRepository<User, String> {

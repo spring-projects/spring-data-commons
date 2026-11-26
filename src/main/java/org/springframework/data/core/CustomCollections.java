@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,7 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.io.support.SpringFactoriesLoader;
+import org.springframework.data.util.TypeCollector.TypeCollectorFilters;
 import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -646,6 +648,30 @@ public class CustomCollections {
 			}
 		}
 
+	}
+
+	/**
+	 * {@link TypeCollectorFilters} to exclude custom collection and map types from AOT type introspection while still
+	 * considering their component types.
+	 *
+	 * @since 4.2
+	 */
+	public static class AotTypeCollectorFilters implements TypeCollectorFilters {
+
+		private static final Predicate<Class<?>> CUSTOM_COLLECTION_TYPE_FILTER = type -> !isCollection(type) && !isMap(type)
+				&& !isCustomCollectionLibraryType(type);
+
+		@Override
+		public Predicate<Class<?>> classPredicate() {
+			return CUSTOM_COLLECTION_TYPE_FILTER;
+		}
+
+		private static boolean isCustomCollectionLibraryType(Class<?> type) {
+
+			String packageName = type.getPackageName();
+
+			return packageName.startsWith("io.vavr") || packageName.startsWith("org.eclipse.collections");
+		}
 	}
 
 }

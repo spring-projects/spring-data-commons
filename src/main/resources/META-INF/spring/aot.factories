@@ -10,4 +10,5 @@ org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
 	org.springframework.data.aot.AuditingBeanRegistrationAotProcessor
 
 org.springframework.data.util.TypeCollector$TypeCollectorFilters=\
-	org.springframework.data.util.TypeCollector$DefaultTypeCollectorFilters
+	org.springframework.data.util.TypeCollector$DefaultTypeCollectorFilters, \
+	org.springframework.data.core.CustomCollections$AotTypeCollectorFilters
