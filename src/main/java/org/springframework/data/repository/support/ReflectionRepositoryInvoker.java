@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Alessandro Nistico
  * @author Johannes Englmeier
+ * @author Seonwoo Jung
  * @since 1.10
  */
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
@@ -188,7 +189,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 				Object value = unwrapSingleElement(rawParameters.get(parameterName));
 
-				result[i] = targetType.isInstance(value) ? value : convert(value, param);
+				boolean elementConversionRequired = value != null
+						&& (targetType.isArray() || Iterable.class.isAssignableFrom(targetType));
+
+				result[i] = (targetType.isInstance(value) && !elementConversionRequired) ? value : convert(value, param);
 			}
 		}
 
